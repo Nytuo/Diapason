@@ -69,6 +69,7 @@ import 'package:path/path.dart' as path_helper;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:flutter_carplay/flutter_carplay.dart';
 
 import 'components/Buttons/simple_button.dart';
 import 'components/LogsScreen/copy_logs_button.dart';
@@ -533,6 +534,10 @@ class _FinampState extends State<Finamp> with WindowListener {
   static final Logger windowManagerLogger = Logger("WindowManager");
   static final Logger linkHandlingLogger = Logger("LinkHandling");
 
+  ConnectionStatusTypes connectionStatus = ConnectionStatusTypes.unknown;
+  final FlutterCarplay flutterCarplay = FlutterCarplay();
+  //final FlutterAndroidAuto flutterAndroidAuto = FlutterAndroidAuto();
+
   StreamSubscription<Uri>? _uriLinkSubscription;
 
   @override
@@ -558,6 +563,14 @@ class _FinampState extends State<Finamp> with WindowListener {
       WindowManager.instance.addListener(this);
       // windowManager.setPreventClose(true); //!!! destroying the window manager instance doesn't seem to work on Windows release builds, the app just freezes instead
     }
+
+    // Carplay / Android Auto 
+    if (Platform.isIOS) { 
+      setupCarplay();
+    } else if (Platform.isAndroid) {
+      // TODO android auto not implemented at Finamp level.
+      // setupAndroidAuto() 
+    }
   }
 
   @override
@@ -567,6 +580,10 @@ class _FinampState extends State<Finamp> with WindowListener {
 
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
       WindowManager.instance.removeListener(this);
+    }
+
+    if(Platform.isIOS || Platform.isAndroid) {
+      flutterCarplay.removeListenerOnConnectionChange();
     }
     super.dispose();
   }
@@ -612,6 +629,109 @@ class _FinampState extends State<Finamp> with WindowListener {
     if (Platform.isWindows || Platform.isLinux) {
       await GetIt.instance<MusicPlayerBackgroundTask>().dispose();
       windowManagerLogger.info("Player disposed.");
+    }
+  }
+
+  void setupCarplay() {
+    flutterCarplay.addListenerOnConnectionChange(onConnectionChange);
+    setInitialCarplayRootTemplate();
+  }
+
+  // void setupAndroidAuto() {
+  //    flutterAndroidAuto.addListenerOnConnectionChange(onConnectionChange);
+  //    setInitialAndroidAutoRootTemplate();
+  // }
+
+  void setInitialCarplayRootTemplate() {
+    final List<CPListSection> section1Items = [];
+    section1Items.add(CPListSection(
+      items: [
+        CPListItem(
+          text: 'Item 1',
+          detailText: 'Detail Text',
+          onPress: (complete, self) {
+            self.setDetailText('You can change the detail text.. 🚀');
+            self.setAccessoryType(CPListItemAccessoryTypes.cloud);
+            Future.delayed(const Duration(seconds: 1), () {
+              self.setDetailText('Customizable Detail Text');
+              complete();
+            });
+          },
+        ),
+        CPListItem(
+          text: 'Item 2',
+          detailText: 'Start progress bar',
+          isPlaying: false,
+          playbackProgress: 0,
+          onPress: (complete, self) {
+            for (var i = 1; i <= 100; i++) {
+              sleep(const Duration(milliseconds: 10));
+              self.setPlaybackProgress(i / 100);
+              if (i == 100) {
+                complete();
+              }
+            }
+          },
+        ),
+      ],
+      header: 'First Section',
+    ));
+    section1Items.add(CPListSection(
+      items: [
+        CPListItem(
+          text: 'Item 3',
+          detailText: 'Detail Text',
+          onPress: (complete, self) {
+            self.updateTexts(
+              text: 'You can also change the title',
+              detailText: 'and detail text while loading',
+            );
+            self.setAccessoryType(CPListItemAccessoryTypes.none);
+            Future.delayed(const Duration(seconds: 1), () {
+              complete();
+            });
+          },
+          accessoryType: CPListItemAccessoryTypes.disclosureIndicator,
+        ),
+        CPListItem(text: 'Item 4', detailText: 'Detail Text'),
+        CPListItem(text: 'Item 5', detailText: 'Detail Text'),
+      ],
+      header: 'Second Section',
+    ));
+
+
+    FlutterCarplay.setRootTemplate(
+      rootTemplate: CPTabBarTemplate(
+        templates: [
+          CPListTemplate(
+            sections: section1Items,
+            title: 'Home',
+            systemIcon: 'house.fill',
+          ),
+          CPListTemplate(
+            sections: [],
+            title: 'Settings',
+            emptyViewTitleVariants: ['Settings'],
+            emptyViewSubtitleVariants: [
+              'No settings have been added here yet. You can start adding right away'
+            ],
+            systemIcon: 'gear',
+          ),
+        ],
+      ),
+    );
+
+    flutterCarplay.forceUpdateRootTemplate();
+  }
+
+  void onConnectionChange(ConnectionStatusTypes status) {
+    // Do things when carplay/android auto state is connected, background or disconnected
+    setState(() {
+      connectionStatus = status;
+    });
+
+    if(status == ConnectionStatusTypes.connected) { 
+      FlutterCarplay.showSharedNowPlaying(animated: true);
     }
   }
 }
