@@ -536,7 +536,6 @@ class _FinampState extends State<Finamp> with WindowListener {
 
   ConnectionStatusTypes connectionStatus = ConnectionStatusTypes.unknown;
   final FlutterCarplay flutterCarplay = FlutterCarplay();
-  //final FlutterAndroidAuto flutterAndroidAuto = FlutterAndroidAuto();
 
   StreamSubscription<Uri>? _uriLinkSubscription;
 
@@ -564,12 +563,9 @@ class _FinampState extends State<Finamp> with WindowListener {
       // windowManager.setPreventClose(true); //!!! destroying the window manager instance doesn't seem to work on Windows release builds, the app just freezes instead
     }
 
-    // Carplay / Android Auto 
+    // Carplay
     if (Platform.isIOS) { 
       setupCarplay();
-    } else if (Platform.isAndroid) {
-      // TODO android auto not implemented at Finamp level.
-      // setupAndroidAuto() 
     }
   }
 
@@ -582,7 +578,7 @@ class _FinampState extends State<Finamp> with WindowListener {
       WindowManager.instance.removeListener(this);
     }
 
-    if(Platform.isIOS || Platform.isAndroid) {
+    if(Platform.isIOS) {
       flutterCarplay.removeListenerOnConnectionChange();
     }
     super.dispose();
@@ -637,85 +633,45 @@ class _FinampState extends State<Finamp> with WindowListener {
     setInitialCarplayRootTemplate();
   }
 
-  // void setupAndroidAuto() {
-  //    flutterAndroidAuto.addListenerOnConnectionChange(onConnectionChange);
-  //    setInitialAndroidAutoRootTemplate();
-  // }
-
   void setInitialCarplayRootTemplate() {
-    final List<CPListSection> section1Items = [];
-    section1Items.add(CPListSection(
-      items: [
-        CPListItem(
-          text: 'Item 1',
-          detailText: 'Detail Text',
-          onPress: (complete, self) {
-            self.setDetailText('You can change the detail text.. 🚀');
-            self.setAccessoryType(CPListItemAccessoryTypes.cloud);
-            Future.delayed(const Duration(seconds: 1), () {
-              self.setDetailText('Customizable Detail Text');
-              complete();
-            });
-          },
-        ),
-        CPListItem(
-          text: 'Item 2',
-          detailText: 'Start progress bar',
-          isPlaying: false,
-          playbackProgress: 0,
-          onPress: (complete, self) {
-            for (var i = 1; i <= 100; i++) {
-              sleep(const Duration(milliseconds: 10));
-              self.setPlaybackProgress(i / 100);
-              if (i == 100) {
-                complete();
-              }
-            }
-          },
-        ),
-      ],
-      header: 'First Section',
-    ));
-    section1Items.add(CPListSection(
-      items: [
-        CPListItem(
-          text: 'Item 3',
-          detailText: 'Detail Text',
-          onPress: (complete, self) {
-            self.updateTexts(
-              text: 'You can also change the title',
-              detailText: 'and detail text while loading',
-            );
-            self.setAccessoryType(CPListItemAccessoryTypes.none);
-            Future.delayed(const Duration(seconds: 1), () {
-              complete();
-            });
-          },
-          accessoryType: CPListItemAccessoryTypes.disclosureIndicator,
-        ),
-        CPListItem(text: 'Item 4', detailText: 'Detail Text'),
-        CPListItem(text: 'Item 5', detailText: 'Detail Text'),
-      ],
-      header: 'Second Section',
-    ));
-
-
     FlutterCarplay.setRootTemplate(
       rootTemplate: CPTabBarTemplate(
         templates: [
           CPListTemplate(
-            sections: section1Items,
+            sections: [],
             title: 'Home',
-            systemIcon: 'house.fill',
+            emptyViewTitleVariants: ['Home'],
+            emptyViewSubtitleVariants: [
+              'Home not yet implemented.'
+            ],
+            systemIcon: 'music.note.house',
           ),
           CPListTemplate(
             sections: [],
-            title: 'Settings',
-            emptyViewTitleVariants: ['Settings'],
+            title: 'Recent',
+            emptyViewTitleVariants: ['Recent'],
             emptyViewSubtitleVariants: [
-              'No settings have been added here yet. You can start adding right away'
+              'Recent not yet implemented.'
             ],
-            systemIcon: 'gear',
+            systemIcon: 'magnifyingglass',
+          ),
+          CPListTemplate(
+            sections: [],
+            title: 'Search',
+            emptyViewTitleVariants: ['Search'],
+            emptyViewSubtitleVariants: [
+              'Search not yet implemented.'
+            ],
+            systemIcon: 'clock',
+          ),
+          CPListTemplate(
+            sections: [],
+            title: 'Library',
+            emptyViewTitleVariants: ['Library'],
+            emptyViewSubtitleVariants: [
+              'Library not yet implemented.'
+            ],
+            systemIcon: 'play.square.stack',
           ),
         ],
       ),
