@@ -31,6 +31,7 @@ import 'package:finamp/screens/queue_restore_screen.dart';
 import 'package:finamp/services/album_image_provider.dart';
 import 'package:finamp/services/android_auto_helper.dart';
 import 'package:finamp/services/audio_service_smtc.dart';
+import 'package:finamp/services/carplay_helper.dart';
 import 'package:finamp/services/data_source_service.dart';
 import 'package:finamp/services/dbus_manager.dart';
 import 'package:finamp/services/discord_rpc.dart';
@@ -381,6 +382,10 @@ Future<void> _setupPlaybackServices() async {
 
   GetIt.instance.registerSingleton<AndroidAutoHelper>(AndroidAutoHelper());
 
+  if (Platform.isIOS) {
+    GetIt.instance.registerSingleton<CarPlayHelper>(CarPlayHelper());
+  }
+
   final audioHandler = await AudioService.init(
     builder: () => MusicPlayerBackgroundTask(),
     config: AudioServiceConfig(
@@ -534,8 +539,6 @@ class _FinampState extends State<Finamp> with WindowListener {
   static final Logger windowManagerLogger = Logger("WindowManager");
   static final Logger linkHandlingLogger = Logger("LinkHandling");
 
-  ConnectionStatusTypes connectionStatus = ConnectionStatusTypes.unknown;
-  final FlutterCarplay flutterCarplay = FlutterCarplay();
 
   StreamSubscription<Uri>? _uriLinkSubscription;
 
@@ -565,7 +568,7 @@ class _FinampState extends State<Finamp> with WindowListener {
 
     // Carplay
     if (Platform.isIOS) { 
-      setupCarplay();
+      GetIt.instance<CarPlayHelper>().setupCarplay();
     }
   }
 
@@ -579,7 +582,7 @@ class _FinampState extends State<Finamp> with WindowListener {
     }
 
     if(Platform.isIOS) {
-      flutterCarplay.removeListenerOnConnectionChange();
+      GetIt.instance<CarPlayHelper>().disposeCarplay();
     }
     super.dispose();
   }
@@ -625,69 +628,6 @@ class _FinampState extends State<Finamp> with WindowListener {
     if (Platform.isWindows || Platform.isLinux) {
       await GetIt.instance<MusicPlayerBackgroundTask>().dispose();
       windowManagerLogger.info("Player disposed.");
-    }
-  }
-
-  void setupCarplay() {
-    flutterCarplay.addListenerOnConnectionChange(onConnectionChange);
-    setInitialCarplayRootTemplate();
-  }
-
-  void setInitialCarplayRootTemplate() {
-    FlutterCarplay.setRootTemplate(
-      rootTemplate: CPTabBarTemplate(
-        templates: [
-          CPListTemplate(
-            sections: [],
-            title: 'Home',
-            emptyViewTitleVariants: ['Home'],
-            emptyViewSubtitleVariants: [
-              'Home not yet implemented.'
-            ],
-            systemIcon: 'music.note.house',
-          ),
-          CPListTemplate(
-            sections: [],
-            title: 'Recent',
-            emptyViewTitleVariants: ['Recent'],
-            emptyViewSubtitleVariants: [
-              'Recent not yet implemented.'
-            ],
-            systemIcon: 'magnifyingglass',
-          ),
-          CPListTemplate(
-            sections: [],
-            title: 'Search',
-            emptyViewTitleVariants: ['Search'],
-            emptyViewSubtitleVariants: [
-              'Search not yet implemented.'
-            ],
-            systemIcon: 'clock',
-          ),
-          CPListTemplate(
-            sections: [],
-            title: 'Library',
-            emptyViewTitleVariants: ['Library'],
-            emptyViewSubtitleVariants: [
-              'Library not yet implemented.'
-            ],
-            systemIcon: 'play.square.stack',
-          ),
-        ],
-      ),
-    );
-
-    flutterCarplay.forceUpdateRootTemplate();
-  }
-
-  void onConnectionChange(ConnectionStatusTypes status) {
-    // Do things when carplay/android auto state is connected, background or disconnected
-    setState(() {
-      connectionStatus = status;
-    });
-
-    if(status == ConnectionStatusTypes.connected) { 
-      FlutterCarplay.showSharedNowPlaying(animated: true);
     }
   }
 }
