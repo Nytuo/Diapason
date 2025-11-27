@@ -552,7 +552,8 @@ class AndroidAutoHelper {
     return mediaItems;
   }
 
-  Future<void> playFromMediaId(MediaItemId itemId) async {
+  // optional startingIndex to for carply only: allows specifying starting track for album playback
+  Future<void> playFromMediaId(MediaItemId itemId, {int? index = 0, FinampPlaybackOrder? order = FinampPlaybackOrder.linear}) async {
     final audioServiceHelper = GetIt.instance<AudioServiceHelper>();
     final finampUserHelper = GetIt.instance<FinampUserHelper>();
     // queue service should be initialized by time we get here
@@ -640,6 +641,8 @@ class AndroidAutoHelper {
         id: parentItem?.id ?? itemId.parentId!,
         item: parentItem,
       ),
+      startingIndex: order == FinampPlaybackOrder.linear ? index : null,
+      order: order,
     );
   }
 
