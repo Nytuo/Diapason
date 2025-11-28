@@ -46,6 +46,34 @@ class CarPlayHelper {
     }
   }
 
+  Future<List<BaseItemDto>> getTabItems (TabContentType tabContentType) async { 
+    // limit amount so it doesn't crash / take forever on large libraries 
+    const onlineModeLimit = 250;
+    const offlineModeLimit = 1000;
+
+    final sortBy = FinampSettingsHelper.finampSettings.getTabSortBy(tabContentType);
+    final sortOrder = FinampSettingsHelper.finampSettings.getSortOrder(tabContentType);
+    
+    
+    
+    // Check for offline version first 
+
+    // Fetch the online version if we an't get the offline version 
+    
+    final items = await _jellyfinApiHelper.getItems(
+      parentItem: tabContentType.itemType == BaseItemDtoType.playlist ? null : _finampUserHelper.currentUser?.currentView,
+      includeItemTypes: tabContentType.itemType.idString, 
+      sortBy: 
+          sortBy?.jellyfinName(tabContentType) ?? 
+          (tabContentType == TabContentType.tracks ? "Album,Sortname" : "Sortname"),
+      sortOrder: tabContentType == TabContentType.tracks ? null : sortOrder.toString(),
+      limit: onlineModeLimit,
+    );
+    return items ?? [];
+  }
+
+  // CarPlay Control
+
   Future<void> setCarplayRootTemplate() async { 
     List<MediaItem> rootItems = await GetIt.instance<MusicPlayerBackgroundTask>().getChildren(AudioService.browsableRootId);
     CPListSection librarySection = CPListSection(
@@ -169,19 +197,17 @@ class CarPlayHelper {
 
   Future<void> showAlbumsTemplate(MediaItemId parent) async { 
     // Fetch child items of root navigation 
-    List<MediaItem> mediaItems = await _androidAutoHelper.getMediaItems(parent);
+    List<BaseItemDto> mediaItems = await getTabItems(TabContentType.albums);
     // List<MediaItem> childItems = await _androidAutoHelper.getMediaItems(parentId);
   
     CPListSection albumsSection = CPListSection(items: []);
 
     for (final item in mediaItems) { 
-      final itemId = MediaItemId.fromJson(jsonDecode(item.id) as Map<String, dynamic>);
-
       albumsSection.items.add(CPListItem(
-        text: item.title,
-        detailText: item.artist,
+        text: item.name ?? "Unknown Name", // Todo localization
+        detailText: "Artist TBD", // TODO generate subtitle
         onPress: (complete, self) async {
-          await showPlaylistTemplate(itemId);
+          // await showPlaylistTemplate(itemId);
           complete();
         }
         ));
@@ -195,7 +221,31 @@ class CarPlayHelper {
   
     await FlutterCarplay.push(template: albumsTemplate);
   }
-}
 
-Future<void> showArtistsTemplate(MediaItem parent) async { 
+  Future<void> showArtistsTemplate(MediaItem parent) async { 
+    // Fetch child items of this type 
+    List<BaseItemDto> mediaItems = await getTabItems(TabContentType.artists);
+
+    CPListSection artistsSection = CPListSection(items: []);
+
+    for (final item in mediaItems) { 
+
+      artistsSection.items.add(CPListItem(
+        text: item.name ?? "Unknown Name", // TODO localization for this
+        // detailText: item.albumArtists.toString(),
+        onPress: (complete, self) async {
+          // await showPlaylistTemplate(itemId);
+          complete();
+        }
+        ));
+    }
+
+    CPListTemplate albumsTemplate = CPListTemplate(
+      sections: [
+        artistsSection,
+      ], 
+      systemIcon: 'gear');
+  
+    await FlutterCarplay.push(template: albumsTemplate);
+  }
 }
