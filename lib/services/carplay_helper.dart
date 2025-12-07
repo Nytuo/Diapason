@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:finamp/services/album_screen_provider.dart';
+import 'package:finamp/services/album_image_provider.dart';
 import 'package:finamp/services/music_player_background_task.dart';
 import 'package:flutter_carplay/flutter_carplay.dart';
 import 'package:audio_service/audio_service.dart';
@@ -25,6 +26,8 @@ import 'android_auto_helper.dart';
 import 'item_helper.dart';
 import 'artist_content_provider.dart';
 
+final _carPlayLogger = Logger("CarPlay");
+
 class CarPlayHelper {
   // logger?
 
@@ -33,6 +36,7 @@ class CarPlayHelper {
 
   final _finampUserHelper = GetIt.instance<FinampUserHelper>();
   final _jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
+  final providerRef = GetIt.instance<ProviderContainer>();
 
   void setupCarplay() { 
     _flutterCarplay.addListenerOnConnectionChange(onConnectionChange);
@@ -190,19 +194,19 @@ class CarPlayHelper {
       },
     ));
 
-    if(mediaItems != null) {
-        mediaItems.asMap().forEach((index, item) { 
+    mediaItems.asMap().forEach((index, item) { 
+      final imageUri = providerRef.read(albumImageProvider(AlbumImageRequest(item: item, maxHeight: 200, maxWidth: 200))).uri;
 
-        playlistSection.items.add(CPListItem(
-          text: item.name ?? "Unknown Track", // Todo localization
-          detailText: item.artists?.join(", ") ?? item.albumArtist,
-          onPress: (complete, self) async {
-            await playItem(parent, index: index);
-            complete();
-          },
-          ));
-      });
-    }
+      playlistSection.items.add(CPListItem(
+        text: item.name ?? "Unknown Track", // Todo localization
+        detailText: item.artists?.join(", ") ?? item.albumArtist,
+        image: imageUri.toString(),
+        onPress: (complete, self) async {
+          await playItem(parent, index: index);
+          complete();
+        },
+      ));
+    });
 
     CPListTemplate playlistTemplate = CPListTemplate(
       sections: [
@@ -221,9 +225,12 @@ class CarPlayHelper {
     CPListSection albumsSection = CPListSection(items: []);
 
     for (final item in mediaItems) { 
+      final imageUri = providerRef.read(albumImageProvider(AlbumImageRequest(item: item, maxHeight: 200, maxWidth: 200))).uri;
+      
       albumsSection.items.add(CPListItem(
         text: item.name ?? "Unknown", // Todo localization
         detailText: item.artists?.join(", ") ?? item.albumArtist,
+        image: imageUri?.toString(),
         onPress: (complete, self) async {
           await showPlaylistTemplate(item);
           complete();
@@ -282,8 +289,11 @@ class CarPlayHelper {
 
     // Populate sections 
     for(final item in artistAlbumsList) { 
+      final imageUri = providerRef.read(albumImageProvider(AlbumImageRequest(item: item, maxHeight: 200, maxWidth: 200))).uri;
+
       artistAlbums.items.add(CPListItem(
         text: item.name ?? "Unknown Name", // TODO localization 
+        image: imageUri.toString(),
         onPress: (complete, self) async {
           await showPlaylistTemplate(item);
           complete();
@@ -292,8 +302,10 @@ class CarPlayHelper {
     artistTemplate.sections.add(artistAlbums);
 
     for(final item in mostPlayedList) {
+      final imageUri = providerRef.read(albumImageProvider(AlbumImageRequest(item: item, maxHeight: 200, maxWidth: 200))).uri;
       topTracks.items.add(CPListItem(
         text: item.name ?? "Unknown Name", // TODO localization
+        image: imageUri.toString(),
         onPress: (complete, self) async {
           complete();
         }));
@@ -301,10 +313,13 @@ class CarPlayHelper {
     artistTemplate.sections.add(topTracks);
 
     for(final item in recentlyPlayedList) {
-      recentlyPlayed.items.add(CPListItem(text: item.name ?? "Unknown Name", // TODO localization
-      onPress: (complete, self) async {
-        complete();
-      }));
+      final imageUri = providerRef.read(albumImageProvider(AlbumImageRequest(item: item, maxHeight: 200, maxWidth: 200))).uri;
+      recentlyPlayed.items.add(CPListItem(
+        text: item.name ?? "Unknown Name", // TODO localization
+        image: imageUri.toString(),
+        onPress: (complete, self) async {
+          complete();
+        }));
     }
     artistTemplate.sections.add(recentlyPlayed);
 
