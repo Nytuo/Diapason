@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ffi';
 
+import 'package:finamp/services/album_screen_provider.dart';
 import 'package:finamp/services/music_player_background_task.dart';
 import 'package:flutter_carplay/flutter_carplay.dart';
 import 'package:audio_service/audio_service.dart';
@@ -11,6 +12,7 @@ import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
 import 'package:finamp/services/downloads_service.dart';
 import 'package:finamp/l10n/app_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 
@@ -20,6 +22,8 @@ import 'finamp_user_helper.dart';
 import 'jellyfin_api_helper.dart';
 import 'queue_service.dart';
 import 'android_auto_helper.dart';
+import 'item_helper.dart';
+import 'artist_content_provider.dart';
 
 class CarPlayHelper {
   // logger?
@@ -27,10 +31,8 @@ class CarPlayHelper {
   ConnectionStatusTypes connectionStatus = ConnectionStatusTypes.unknown;
   final FlutterCarplay _flutterCarplay = FlutterCarplay();
 
-  final _androidAutoHelper = GetIt.instance<AndroidAutoHelper>();
   final _finampUserHelper = GetIt.instance<FinampUserHelper>();
   final _jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
-  final _downloadsService = GetIt.instance<DownloadsService>();
 
   void setupCarplay() { 
     _flutterCarplay.addListenerOnConnectionChange(onConnectionChange);
@@ -46,6 +48,8 @@ class CarPlayHelper {
     }
   }
 
+  // getTabItems is based on AndroidAutoHelper.getBaseItems() but using BaseItemDto 
+  // Incomplete! 
   Future<List<BaseItemDto>> getTabItems (TabContentType tabContentType) async { 
     // limit amount so it doesn't crash / take forever on large libraries 
     const onlineModeLimit = 250;
@@ -64,7 +68,7 @@ class CarPlayHelper {
       parentItem: tabContentType.itemType == BaseItemDtoType.playlist ? null : _finampUserHelper.currentUser?.currentView,
       includeItemTypes: tabContentType.itemType.idString, 
       sortBy: 
-          sortBy?.jellyfinName(tabContentType) ?? 
+          sortBy.jellyfinName(tabContentType) ?? 
           (tabContentType == TabContentType.tracks ? "Album,Sortname" : "Sortname"),
       sortOrder: tabContentType == TabContentType.tracks ? null : sortOrder.toString(),
       limit: onlineModeLimit,
@@ -72,8 +76,21 @@ class CarPlayHelper {
     return items ?? [];
   }
 
-  // CarPlay Control
+  // playFromBaseItem is based on AndroidAutoHelper.playFromMediaId but using BaseItemDto 
+  Future<void> playItem(BaseItemDto item, {int? index = 0, FinampPlaybackOrder? order = FinampPlaybackOrder.linear}) async {
+    final queueService = GetIt.instance<QueueService>();
 
+    final childItems = await loadChildTracksFromBaseItem(baseItem: item);
+
+    await queueService.startPlayback(
+      items: childItems, 
+      source: QueueItemSource.fromBaseItem(item),
+      order: order,
+      startingIndex: order == FinampPlaybackOrder.linear ? index : null, 
+    );
+  }
+
+  // CarPlay Control
   Future<void> setCarplayRootTemplate() async { 
     List<MediaItem> rootItems = await GetIt.instance<MusicPlayerBackgroundTask>().getChildren(AudioService.browsableRootId);
     CPListSection librarySection = CPListSection(
@@ -158,9 +175,9 @@ class CarPlayHelper {
     await _flutterCarplay.forceUpdateRootTemplate();
   }
 
-  Future<void> showPlaylistTemplate(MediaItemId parent) async { 
-    // List<MediaItem> mediaItems = await GetIt.instance<MusicPlayerBackgroundTask>().getChildren(parent.id);
-    List<MediaItem> mediaItems = await _androidAutoHelper.getMediaItems(parent);
+  Future<void> showPlaylistTemplate(BaseItemDto parent) async {
+    List<BaseItemDto> mediaItems = await loadChildTracksFromBaseItem(baseItem: parent);
+    // final (alltracks, mediaItems) = await GetIt.instance<ProviderContainer>().read(getAlbumOrPlaylistTracksProvider(parent).future);
 
     CPListSection playlistSection = CPListSection(items: []);
 
@@ -168,23 +185,24 @@ class CarPlayHelper {
     playlistSection.items.add(CPListItem(
       text: "Shuffle Play", 
       onPress: (complete, self) async { 
-        await _androidAutoHelper.playFromMediaId(parent, order: FinampPlaybackOrder.shuffled);
+        await playItem(parent, order: FinampPlaybackOrder.shuffled);
         complete();
       },
     ));
 
-    mediaItems.asMap().forEach((index, item) { 
-      final itemId = MediaItemId.fromJson(jsonDecode(item.id) as Map<String, dynamic>);
+    if(mediaItems != null) {
+        mediaItems.asMap().forEach((index, item) { 
 
-      playlistSection.items.add(CPListItem(
-        text: item.title,
-        detailText: item.artist,
-        onPress: (complete, self) async {
-          await _androidAutoHelper.playFromMediaId(parent, index: index);
-          complete();
-        },
-        ));
-    });
+        playlistSection.items.add(CPListItem(
+          text: item.name ?? "Unknown Track", // Todo localization
+          detailText: item.artists?.join(", ") ?? item.albumArtist,
+          onPress: (complete, self) async {
+            await playItem(parent, index: index);
+            complete();
+          },
+          ));
+      });
+    }
 
     CPListTemplate playlistTemplate = CPListTemplate(
       sections: [
@@ -204,10 +222,10 @@ class CarPlayHelper {
 
     for (final item in mediaItems) { 
       albumsSection.items.add(CPListItem(
-        text: item.name ?? "Unknown Name", // Todo localization
-        detailText: "Artist TBD", // TODO generate subtitle
+        text: item.name ?? "Unknown", // Todo localization
+        detailText: item.artists?.join(", ") ?? item.albumArtist,
         onPress: (complete, self) async {
-          // await showPlaylistTemplate(itemId);
+          await showPlaylistTemplate(item);
           complete();
         }
         ));
@@ -229,12 +247,10 @@ class CarPlayHelper {
     CPListSection artistsSection = CPListSection(items: []);
 
     for (final item in mediaItems) { 
-
       artistsSection.items.add(CPListItem(
         text: item.name ?? "Unknown Name", // TODO localization for this
-        // detailText: item.albumArtists.toString(),
         onPress: (complete, self) async {
-          // await showPlaylistTemplate(itemId);
+          await showArtistTemplate(item);
           complete();
         }
         ));
@@ -247,5 +263,51 @@ class CarPlayHelper {
       systemIcon: 'gear');
   
     await FlutterCarplay.push(template: albumsTemplate);
+  }
+  
+  Future<void> showArtistTemplate(BaseItemDto parent) async {
+    // Declare template and sections 
+    CPListTemplate artistTemplate = CPListTemplate(sections: [], systemIcon: 'gear');
+    CPListSection artistAlbums = CPListSection(header: "Albums", items: []);
+    CPListSection topTracks = CPListSection(header: "Top Tracks", items: []);
+    CPListSection recentlyPlayed = CPListSection(header: "Recently Played", items: []); 
+
+    // Fetch items for sections 
+    List<BaseItemDto> artistAlbumsList = await GetIt.instance<ProviderContainer>().read(getArtistAlbumsProvider(parent, _finampUserHelper.currentUser?.currentView, null).future);
+    List<BaseItemDto> artistTracks = await loadChildTracksFromBaseItem(baseItem: parent);
+    final mostPlayedList = artistTracks.where((s) => (s.userData?.playCount ?? 0) > 0).take(5).toList(); 
+    final recentlyPlayedList = artistTracks.where((s) => s.userData?.lastPlayedDate != null).take(5).toList();
+    // final (topTracksAsync, artistCuratedItemSelectionType, newDisabledTrackFilters) = await GetIt.instance<ProviderContainer>()
+    //   .read(getArtistTracksSectionProvider(parent, _finampUserHelper.currentUser?.currentView, null).future);
+
+    // Populate sections 
+    for(final item in artistAlbumsList) { 
+      artistAlbums.items.add(CPListItem(
+        text: item.name ?? "Unknown Name", // TODO localization 
+        onPress: (complete, self) async {
+          await showPlaylistTemplate(item);
+          complete();
+        }));
+    }
+    artistTemplate.sections.add(artistAlbums);
+
+    for(final item in mostPlayedList) {
+      topTracks.items.add(CPListItem(
+        text: item.name ?? "Unknown Name", // TODO localization
+        onPress: (complete, self) async {
+          complete();
+        }));
+    }
+    artistTemplate.sections.add(topTracks);
+
+    for(final item in recentlyPlayedList) {
+      recentlyPlayed.items.add(CPListItem(text: item.name ?? "Unknown Name", // TODO localization
+      onPress: (complete, self) async {
+        complete();
+      }));
+    }
+    artistTemplate.sections.add(recentlyPlayed);
+
+    await FlutterCarplay.push(template: artistTemplate);
   }
 }
