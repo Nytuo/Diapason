@@ -382,7 +382,7 @@
             }
         }
     },
-    "bufferDurationSubtitle": "Maximální doba trvání, která má být uložena do vyrovnávací paměti, v sekundách. Vyžaduje restart aplikace.",
+    "bufferDurationSubtitle": "Doba trvání, která má být uložena do vyrovnávací paměti, v sekundách. Vyžaduje restart aplikace.",
     "@bufferDurationSubtitle": {},
     "startMix": "Spustit mix",
     "@startMix": {},
@@ -1795,7 +1795,7 @@
     "@bufferDisableSizeConstraintsTitle": {},
     "bufferSizeTitle": "Velikost vyrovnávací paměti",
     "@bufferSizeTitle": {},
-    "bufferSizeSubtitle": "Maximální velikost vyrovnávací paměti v MB. Vyžaduje restart",
+    "bufferSizeSubtitle": "Velikost vyrovnávací paměti v MB. Vyžaduje restart",
     "@bufferSizeSubtitle": {},
     "bufferDisableSizeConstraintsSubtitle": "Zakáže omezení velikosti vyrovnávací paměti. Vyrovnávací paměť bude vždy načtena na nastavené trvání, i pro velmi velké soubory. Může způsobit pády. Vyžaduje restart.",
     "@bufferDisableSizeConstraintsSubtitle": {},
@@ -2720,7 +2720,7 @@
     "@addDownloadLocationsErrorPrompt": {
         "description": "Label shown on popup dialog when adding a download location when writing songs fails"
     },
-    "androidImageErrorPrompt": "VAROVÁNÍ: Z důvodu omezení systému Android nemáme možnost vytvářet obrázky ve složce Music.  Měli byste si vybrat jiné umístění.",
+    "androidImageErrorPrompt": "Z důvodu omezení systému Android nemáme možnost vytvářet obrázky ve složce Music.  Měli byste si vybrat jiné umístění.",
     "@androidImageErrorPrompt": {
         "description": "Label shown on popup dialog when adding a download location when writing songs succeeds but writing images fails, which can occur on android."
     },
@@ -3125,5 +3125,49 @@
     "loopingUnavailableWhileRadioActiveWarning": "Změna režimu opakování není dostupná během zapnutého rádia, jelikož fronta bude pokračovat do nekonečna.",
     "@loopingUnavailableWhileRadioActiveWarning": {
         "description": "Warning message when trying to change the loop mode while radio is active."
+    },
+    "lyricsEmptyStateLoading": "Načítání textů…",
+    "@lyricsEmptyStateLoading": {
+        "description": "Message shown while lyrics are being loaded"
+    },
+    "lyricsEmptyStateFailed": "Nepodařilo se načíst texty",
+    "@lyricsEmptyStateFailed": {
+        "description": "Message shown when lyrics failed to load"
+    },
+    "lyricsEmptyStateNoLyrics": "Nejsou dostupné žádné texty",
+    "@lyricsEmptyStateNoLyrics": {
+        "description": "Message shown when no lyrics are available for the current track"
+    },
+    "lyricsMissingLyricLinePlaceholder": "chybějící řádek textů",
+    "@lyricsMissingLyricLinePlaceholder": {
+        "description": "Placeholder text for missing lyric lines in synchronized lyrics"
+    },
+    "radioModeEnableButtonTitle": "Zapnout rádio",
+    "@radioModeEnableButtonTitle": {
+        "description": "Title for the option that enables radio mode."
+    },
+    "addDownloadLocationsErrorTitle": "Nepodařilo se zapsat do lokace pro stahování",
+    "@addDownloadLocationsErrorTitle": {
+        "description": "Title of popup dialog when adding a download location fails"
+    },
+    "duckOnAudioInterruptionTitle": "Snížit hlasitost při přerušeních",
+    "@duckOnAudioInterruptionTitle": {
+        "description": "Title for the setting that controls ducking."
+    },
+    "duckOnAudioInterruptionSubtitle": "Snížit hlasitost, když jiná aplikace krátce přehraje zvuk.",
+    "@duckOnAudioInterruptionSubtitle": {
+        "description": "Subtitle for the setting that controls ducking."
+    },
+    "forceAudioOffloadingOnAndroidTitle": "Vynutit přenos zpracování zvuku",
+    "@forceAudioOffloadingOnAndroidTitle": {
+        "description": "Title for the setting that controls audio offloading on Android."
+    },
+    "forceAudioOffloadingOnAndroidSubtitle": "Přenést zpracování zvuku na hardware, pokud je to podporováno zařízením.",
+    "@forceAudioOffloadingOnAndroidSubtitle": {
+        "description": "Subtitle for the setting that controls audio offloading on Android."
+    },
+    "explicit": "Explicitní",
+    "@explicit": {
+        "description": "Label for content that is considered explicit, usually marked by an 'E' in music apps"
     }
 }
