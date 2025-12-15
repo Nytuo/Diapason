@@ -1397,5 +1397,117 @@
     "sampleRate": "Taxa de mostreig",
     "@sampleRate": {
         "description": "Label for the feature chips showing the sample rate of a track"
-    }
+    },
+    "confirm": "Confirmar",
+    "@confirm": {},
+    "refresh": "Refrescar",
+    "@refresh": {},
+    "close": "Tancar",
+    "@close": {},
+    "volumeNormalizationModeHybrid": "Dinàmic",
+    "@volumeNormalizationModeHybrid": {
+        "description": "'Dynamic' option for the replay gain mode dropdown. In dynamic mode, the track gain is used for regular playback, but if an album is playing (either because it's the main playback queue source, or because it was added to the queue at some point), or successive tracks from a same album are in the queue, the album gain is used instead."
+    },
+    "volumeNormalizationModeTrackBased": "Basat en la cançó",
+    "@volumeNormalizationModeTrackBased": {
+        "description": "'Track-based' option for the replay gain mode dropdown. In track-based mode, the track gain is always used, regardless of whether an album is playing or not."
+    },
+    "volumeNormalizationModeAlbumBased": "Basat en àlbums",
+    "@volumeNormalizationModeAlbumBased": {
+        "description": "'Album-based' option for the replay gain mode dropdown. In album-based mode, the album gain is always used, regardless of whether an album is playing or not."
+    },
+    "downloadItem": "Descarregar",
+    "@downloadItem": {
+        "description": "Option to download item in long-press menu."
+    },
+    "activeDownloadSize": "Descarregant…",
+    "@activeDownloadSize": {
+        "description": "Message shown for download size while item is still being downloaded"
+    },
+    "missingDownloadSize": "Suprimint…",
+    "@missingDownloadSize": {
+        "description": "Message shown for download size while item is being deleted but is not fully removed"
+    },
+    "syncingDownloadSize": "Sincronitzant…",
+    "@syncingDownloadSize": {
+        "description": "Message shown for download size while item is still syncing."
+    },
+    "downloadSettings": "Descàrregues",
+    "@downloadSettings": {},
+    "transcodeHint": "Transcodificar?",
+    "@transcodeHint": {
+        "description": "Initial text in downloads dropdown when 'Enable Transcoded Downloads' is set to ask."
+    },
+    "removeFromPlaylistConfirm": "Eliminar",
+    "@removeFromPlaylistConfirm": {},
+    "alignmentOptionStart": "A l'esquerra",
+    "@alignmentOptionStart": {
+        "description": "Alignment option for things like the lyrics view. Start means left-aligned in LTR languages and right-aligned in RTL languages."
+    },
+    "alignmentOptionCenter": "Centrat",
+    "@alignmentOptionCenter": {
+        "description": "Alignment option for things like the lyrics view. Center means centered."
+    },
+    "alignmentOptionEnd": "A la dreta",
+    "@alignmentOptionEnd": {
+        "description": "Alignment option for things like the lyrics view. End means right-aligned in LTR languages and left-aligned in RTL languages."
+    },
+    "fontSizeOptionSmall": "Petit",
+    "@fontSizeOptionSmall": {
+        "description": "Font size option for things like the lyrics view. Small means a smaller font size."
+    },
+    "fontSizeOptionMedium": "Mitjà",
+    "@fontSizeOptionMedium": {
+        "description": "Font size option for things like the lyrics view. Medium means a medium font size."
+    },
+    "radio": "Ràdio",
+    "@radio": {
+        "description": "Title for the queue source when the user is playing a track added via radio"
+    },
+    "explicit": "Explícit",
+    "@explicit": {
+        "description": "Label for content that is considered explicit, usually marked by an 'E' in music apps"
+    },
+    "resetFiltersButton": "Restableix els filtres",
+    "@resetFiltersButton": {
+        "description": "Button to reset filters on a list of items"
+    },
+    "publiclyVisiblePlaylist": "Visible públicament:",
+    "@publiclyVisiblePlaylist": {
+        "description": "Toggle for playlist creation where true means the playlist is publicly visible, false means only the creator can see it."
+    },
+    "topTracks": "Millors cançons",
+    "@topTracks": {},
+    "releaseDateFormatISO": "ISO 8601",
+    "@releaseDateFormatISO": {
+        "description": "Date format option for the release date of an album, showing the full ISO 8601 date"
+    },
+    "autoOfflineOptionNetwork": "Xarxa local",
+    "@autoOfflineOptionNetwork": {
+        "description": "This is shown when the autoOffline feature is set to \"local Network\", this means offline mode will be automatically enabled when no wifi or ethernet connection is active"
+    },
+    "currentVolumeFeatureText": "Volum al {volume}%",
+    "@currentVolumeFeatureText": {
+        "description": "Label for the feature chip that is shown if the volume is not 100%",
+        "placeholders": {
+            "volume": {
+                "type": "int",
+                "description": "The current volume level, in percent"
+            }
+        }
+    },
+    "outputMenuDevicesSectionTitle": "Dispositius disponibles",
+    "@outputMenuDevicesSectionTitle": {
+        "description": "Title for the available devices section in the output menu"
+    },
+    "topAlbums": "Millors àlbums",
+    "@topAlbums": {},
+    "topArtists": "Millors artistes",
+    "@topArtists": {},
+    "latestTracks": "Cançons recents",
+    "@latestTracks": {},
+    "latestAlbums": "Àlbums recents",
+    "@latestAlbums": {},
+    "latestArtists": "Artistes recents",
+    "@latestArtists": {}
 }
