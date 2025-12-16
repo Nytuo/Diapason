@@ -1509,5 +1509,105 @@
     "latestAlbums": "Àlbums recents",
     "@latestAlbums": {},
     "latestArtists": "Artistes recents",
-    "@latestArtists": {}
+    "@latestArtists": {},
+    "showUncensoredLogMessage": "Aquest registre conté la vostra informació d'inici de sessió. Voleu mostrar-lo?",
+    "@showUncensoredLogMessage": {},
+    "noMusicLibrariesTitle": "Sense biblioteques de música",
+    "@noMusicLibrariesTitle": {
+        "description": "Title for message that shows on the views screen when no music libraries could be found."
+    },
+    "outputMenuTitle": "Canviar sortida",
+    "@outputMenuTitle": {
+        "description": "Title for the output menu that allows the user to change the audio output device and volume"
+    },
+    "favoriteTracks": "Cançons preferides",
+    "@favoriteTracks": {},
+    "favoriteAlbums": "Àlbums preferits",
+    "@favoriteAlbums": {},
+    "favoriteArtists": "Artistes preferits",
+    "@favoriteArtists": {},
+    "mostPlayed": "Més reproduïdes",
+    "@mostPlayed": {},
+    "recentlyAdded": "Afegit recentment",
+    "@recentlyAdded": {},
+    "genreFilterArtistScreens": "Filtrar artistes",
+    "@genreFilterArtistScreens": {
+        "description": "Label for the setting that controls if a genreFilter should get applied to ArtistScreens when accessing the ArtistScreens through a Genre."
+    },
+    "seeAll": "Mostrar tots",
+    "@seeAll": {
+        "description": ""
+    },
+    "recentlyPlayed": "Reproduït recentment",
+    "@recentlyPlayed": {},
+    "genreFilterPlaylistScreens": "Filtrar llistes de reproducció",
+    "@genreFilterPlaylistScreens": {
+        "description": "Label for the setting that controls if a genreFilter should get applied to PlaylistScreens when accessing the PlaylistScreens through a Genre."
+    },
+    "preferLocalNetworkActiveAddressInfoText": "Adreça activa",
+    "@preferLocalNetworkActiveAddressInfoText": {
+        "description": "Shows the active address inside the network settings screen so the user can see if this feature works"
+    },
+    "preferLocalNetworkPublicAddressSettingTitle": "Adreça pública",
+    "@preferLocalNetworkPublicAddressSettingTitle": {},
+    "menuButtonLabel": "Més accions",
+    "@menuButtonLabel": {
+        "description": "Generic label for menu buttons shown throughout the app. Used for the album, artist, playlist, etc. menus"
+    },
+    "sleepTimerStartTimer": "Començar temporitzador",
+    "@sleepTimerStartTimer": {
+        "description": "Label for the button that starts the sleep timer"
+    },
+    "serverSharingMenuButtonTitle": "Compartir servidor",
+    "@serverSharingMenuButtonTitle": {
+        "description": "Title for the button in the drawer that opens the server sharing menu"
+    },
+    "serverSharingMenuControlTitleSharingEnabled": "Compartint servidor",
+    "@serverSharingMenuControlTitleSharingEnabled": {
+        "description": "Title of the toggle control in the server sharing menu used to turn server sharing on or off, when it's currently turned on"
+    },
+    "serverSharingMenuControlTitleSharingDisabled": "No compartint",
+    "@serverSharingMenuControlTitleSharingDisabled": {
+        "description": "Title of the toggle control in the server sharing menu used to turn server sharing on or off, when it's currently turned off"
+    },
+    "discordRPCSettingTitle": "Discord RPC",
+    "@discordRPCSettingTitle": {
+        "description": "Title for the setting that controls if the Discord RPC (Rich Presence) feature is enabled"
+    },
+    "emptyAlbum": "Sense cançons.",
+    "@emptyAlbum": {
+        "description": "Message shown as a placeholder when an album or playlist is empty."
+    },
+    "addDownloadLocationsErrorButton": "Afegeix igualment",
+    "@addDownloadLocationsErrorButton": {
+        "description": "Label shown on button for adding a download location we suspect to be buggy"
+    },
+    "openDownloads": "Obrir descàrregues",
+    "@openDownloads": {
+        "description": "Label on a button to open the downloads screen after a sync fails."
+    },
+    "removedTracks": "Cançons eliminades",
+    "@removedTracks": {
+        "description": "Section header for the list of removed tracks on the playlist edit screen"
+    },
+    "restoreTrack": "Restableix cançó",
+    "@restoreTrack": {
+        "description": "Button title for restoring a track that was marked to be removed"
+    },
+    "discardChangesTitle": "Descartar canvis?",
+    "@discardChangesTitle": {
+        "description": "Title for the dialog shown when the user tries to leave the playlist edit screen with unsaved changes"
+    },
+    "discardChangesConfirmButton": "Descartar canvis",
+    "@discardChangesConfirmButton": {
+        "description": "Positive action button for the dialog shown when the user tries to leave the playlist edit screen with unsaved changes"
+    },
+    "snackbarOptionsMenuTitle": "Gestionar els missatges",
+    "@snackbarOptionsMenuTitle": {
+        "description": "Title for the snackbar options menu that allows the user to manage snackbar messages"
+    },
+    "snackbarOptionsMenuViewLogsButton": "Mostrar els registres",
+    "@snackbarOptionsMenuViewLogsButton": {
+        "description": "Button title for opening the logs screen from the snackbar options menu"
+    }
 }
