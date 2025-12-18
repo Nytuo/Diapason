@@ -388,7 +388,7 @@
     "@disableGestureSubtitle": {},
     "bufferDuration": "Длительность буфера",
     "@bufferDuration": {},
-    "bufferDurationSubtitle": "Максимальная длительность, которая должна быть буферизована, в секундах. Требует перезапуска.",
+    "bufferDurationSubtitle": "Длительность, которая должна быть буферизована, в секундах. Требует перезапуска.",
     "@bufferDurationSubtitle": {},
     "removedFromPlaylist": "Удалено из плейлиста.",
     "@removedFromPlaylist": {},
@@ -841,7 +841,7 @@
     "@playbackOrderLinearButtonTooltip": {
         "description": "Tooltip for the button that toggles the playback order between linear/in-order and shuffle, while the queue is in linear/in-order mode"
     },
-    "playingFromType": "Воспроизведение из {source, select, album{альбома} playlist{плейлиста} trackMix{микса композиций} artistMix{микса исполнителей} albumMix{микса альбомов} genreMix{микса жанров} favorites{избранного} allTracks{всех композиций} filteredList{композиций} genre{жанра} artist{исполнителя} track{композиции} nextUpAlbum{альбома в следующих} nextUpPlaylist{плейлиста в следующих} nextUpArtist{исполнителя в следующих} nextUpGenre{жанра в следующих} remoteClient{удаленного клиента} other{}}",
+    "playingFromType": "Воспроизведение из {source, select, album{альбома} playlist{плейлиста} trackMix{микса композиций} artistMix{микса исполнителей} albumMix{микса альбомов} genreMix{микса жанров} favorites{избранного} allTracks{всех композиций} filteredList{композиций} genre{жанра} artist{исполнителя} track{композиции} nextUpAlbum{альбома в следующих} nextUpPlaylist{плейлиста в следующих} nextUpArtist{исполнителя в следующих} nextUpGenre{жанра в следующих} remoteClient{удаленного клиента} radio{радио} other{}}",
     "@playingFromType": {
         "description": "Prefix shown before the type of the main queue source at the top of the player screen. Example: \"Playing From Album\"",
         "placeholders": {
@@ -1340,7 +1340,7 @@
     "@bufferDisableSizeConstraintsSubtitle": {},
     "bufferSizeTitle": "Размер буфера",
     "@bufferSizeTitle": {},
-    "bufferSizeSubtitle": "­Максимальный размер буфера в МБ. Требует перезапуска",
+    "bufferSizeSubtitle": "­Размер буфера в МБ. Требует перезапуска",
     "@bufferSizeSubtitle": {},
     "togglePlaybackButtonTooltip": "Начать/Остановить воспроизведение",
     "@togglePlaybackButtonTooltip": {
@@ -2865,5 +2865,129 @@
     "invalidColorCode": "Неверный код цвета",
     "@invalidColorCode": {
         "description": "Snackbar message shown when the user tries to save an invalid hex color code"
+    },
+    "playbackActionPageMoveWithinQueue": "Переместить внутри очереди",
+    "@playbackActionPageMoveWithinQueue": {
+        "description": "Label for the playback action page that contains all actions related to moving tracks within the queue"
+    },
+    "playbackActionPageRegularTrackOptions": "Воспроизвести",
+    "@playbackActionPageRegularTrackOptions": {
+        "description": "Label for the playback action page that contains all actions of the normal track menu, like starting a new queue or duplicating the track within the existing queue"
+    },
+    "systemAccentColorHasPriorityInfo": "Пользовательский Цвет Акцента отключен, потому что используется Системный Акцент",
+    "@systemAccentColorHasPriorityInfo": {
+        "description": "Text under the AccentColorTitle which is only visible when the system color is enabled since the system color will be prioritized over custom accent color"
+    },
+    "startRadio": "Начать Радио",
+    "@startRadio": {
+        "description": "Menu label for starting a radio from a playlist, album, etc."
+    },
+    "movePlayNext": "Воспроизвести следующим",
+    "@movePlayNext": {
+        "description": "Used for moving a track to the \"Next Up\" queue at the first position, to play right after the current track finishes playing"
+    },
+    "moveAddToNextUp": "Поставить в конец очереди",
+    "@moveAddToNextUp": {
+        "description": "Used for moving a track to the \"Next Up\" queue at the end, to play after all prior tracks from Next Up have played"
+    },
+    "moveAddToQueue": "Поставить в конец",
+    "@moveAddToQueue": {
+        "description": "Used for moving a track to the end of the queue, to play after all prior tracks from the queue have played"
+    },
+    "radio": "Радио",
+    "@radio": {
+        "description": "Title for the queue source when the user is playing a track added via radio"
+    },
+    "radioForItem": "{radioSource} - Радио",
+    "@radioForItem": {
+        "description": "Suffix added to a queue source when playing a radio track. Example: \"Never Gonna Give You Up - Radio\"",
+        "placeholders": {
+            "radioSource": {
+                "type": "String",
+                "example": "Never Gonna Give You Up"
+            }
+        }
+    },
+    "downloadAllPlaylistsSettingWarning": "Примечание: Это скачает все элементы во всех плейлистах, независимо от того, в какой они библиотеке",
+    "@downloadAllPlaylistsSettingWarning": {},
+    "lyricsEmptyStateLoading": "Загрузка текста...",
+    "@lyricsEmptyStateLoading": {
+        "description": "Message shown while lyrics are being loaded"
+    },
+    "lyricsEmptyStateFailed": "Не удалось загрузить текст",
+    "@lyricsEmptyStateFailed": {
+        "description": "Message shown when lyrics failed to load"
+    },
+    "lyricsEmptyStateNoLyrics": "Текст песни недоступен",
+    "@lyricsEmptyStateNoLyrics": {
+        "description": "Message shown when no lyrics are available for the current track"
+    },
+    "lyricsMissingLyricLinePlaceholder": "Пропущенная строка",
+    "@lyricsMissingLyricLinePlaceholder": {
+        "description": "Placeholder text for missing lyric lines in synchronized lyrics"
+    },
+    "radioModeSettingsTitle": "Режим Радио",
+    "@radioModeSettingsTitle": {
+        "description": "Title for the setting that controls the radio mode/algorithm."
+    },
+    "radioModeSettingsSubtitle": "Настраивает метод, по которому радио выбирает песни.",
+    "@radioModeSettingsSubtitle": {
+        "description": "Subtitle for the setting that controls the radio mode/algorithm."
+    },
+    "radioModeMenuTitle": "Выберите Режим Радио",
+    "@radioModeMenuTitle": {
+        "description": "Title for menu that allows users to choose the radio mode."
+    },
+    "loopingOverriddenByRadioSubtitle": "Повтор очереди отключен при работе радио",
+    "@loopingOverriddenByRadioSubtitle": {
+        "description": "Subtitle displayed in the radio menu to show that queue looping is disabled while radio mode is enabled."
+    },
+    "radioFailedSubtitle": "Больше не найдено песен для радио. Попробуйте сменить режим.",
+    "@radioFailedSubtitle": {
+        "description": "Subtitle displayed in the radio menu to show that no radio tracks could be generated."
+    },
+    "radioModeOptionName": "{option, select, reshuffle{Перемешка} random{Случайно} similar{Похожие} continuous{Продолжительный} albumMix{Микс Альбома} other{{option}}}",
+    "@radioModeOptionName": {
+        "placeholders": {
+            "option": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Radio mode names in radio mode/algorithm dropdown"
+    },
+    "radioModeOptionTitle": "{option, select, reshuffle{Режим Перемешки} random{Случайный Режим} similar{Режим Похожих} continuous{Продолжительный Режим} albumMix{Альбомный Микс} other{{option}}} Включён",
+    "@radioModeOptionTitle": {
+        "placeholders": {
+            "option": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Title displayed in the queue, showing which radio mode/algorithm is currently being used."
+    },
+    "radioModeActiveTitle": "Работает Радио",
+    "@radioModeActiveTitle": {
+        "description": "Title displayed in the queue to show that radio mode is enabled and active."
+    },
+    "radioModeDisabledTitle": "Радио Выключено",
+    "@radioModeDisabledTitle": {
+        "description": "Title displayed in the queue to show that radio mode is disabled."
+    },
+    "radioModeInactiveTitle": "Радио на Паузе",
+    "@radioModeInactiveTitle": {
+        "description": "Title displayed in the queue to show that the radio is enabled but not active."
+    },
+    "radioModeEnableButtonTitle": "Включить Радио",
+    "@radioModeEnableButtonTitle": {
+        "description": "Title for the option that enables radio mode."
+    },
+    "radioModeDisableButtonTitle": "Выключить Радио",
+    "@radioModeDisableButtonTitle": {
+        "description": "Title for the option that disables radio mode."
+    },
+    "radioModeDisableButtonSubtitle": "Переключается на последний использованный режим повтора",
+    "@radioModeDisableButtonSubtitle": {
+        "description": "Subtitle for the option that disables radio mode."
     }
 }
