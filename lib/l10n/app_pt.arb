@@ -3164,7 +3164,7 @@
     "@duckOnAudioInterruptionTitle": {
         "description": "Title for the setting that controls ducking."
     },
-    "duckOnAudioInterruptionSubtitle": "Reduz o volume (baixa) quando outra aplicação reproduz áudio brevemente.",
+    "duckOnAudioInterruptionSubtitle": "Reduz o volume (baixa) quando outra aplicação reproduz áudio brevemente. Requer reiniciar.",
     "@duckOnAudioInterruptionSubtitle": {
         "description": "Subtitle for the setting that controls ducking."
     },
