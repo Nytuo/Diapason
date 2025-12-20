@@ -960,7 +960,7 @@
     "@quickActions": {
         "description": "Title for the short menu that can be shown when long-pressing on the menu button on the player screen. Currently only used for adding to and removing from playlists."
     },
-    "volumeNormalizationIOSBaseGainEditorSubtitle": "Наразі нормалізація гучності на iOS вимагає змінення гучності відтворення щоб емулювати змінення посилення. Оскільки ми не можемо збільшити гучність більш ніж на 100%, ми маємо знизити гучність до типової щоб ми могли підвищувати гучність для тихих композицій. Значення у децибелах (дБ), де -10 дБ це ~30% гучності, -4.5 дБ - ~60%, а -2.0 дБ - ~80%.",
+    "volumeNormalizationIOSBaseGainEditorSubtitle": "Виберіть зміщення посилення гучності (у дБ)",
     "@volumeNormalizationIOSBaseGainEditorSubtitle": {
         "description": "Subtitle for the input that sets the replay gain base gain on iOS and other non-Android platforms"
     },
@@ -1949,7 +1949,7 @@
     "@autoOfflineOptionNetwork": {
         "description": "This is shown when the autoOffline feature is set to Network, this means offline mode will be automatically enabled when no wifi or ethernet connection is active"
     },
-    "autoOfflineSettingDescription": "Автоматично перемикатись у режим офлайн.\nДеактивовано: Не перемикатиме автоматично у режим офлайн. Може зберігати заряд батареї.\nЛокальні Мережа: Вмикати режим офлайн при відсутності зʼєднання до Інтернету.\nВідʼєднано: Вмикати режим офлайн при відсутності зʼєднання з будь-чим.\nНедоступний: Увімкніть автономний режим, коли сервер не вдається пропінгувати після зміни мережі.\nВи завжди можете вручну увімкнути режим офлайн, що призупинить автоматичне увімкнення до моменту поки ви не вийдете з режиму офлайн",
+    "autoOfflineSettingDescription": "{disabledModeName}:\nАвтоматично не вмикатиметься офлайн-режим. Може економити заряд батареї.\n\n{localNetworkModeName}:\nУвімкніть офлайн-режим, коли ви не підключені до Wi-Fi або Ethernet.\n\n{disconnectedModeName}:\nУвімкніть офлайн-режим, коли ви не підключені ні до чого.\n\n{unreachableModeName}:\nУвімкніть офлайн-режим, коли сервер не може бути ping-адаптований після зміни мережі.\n\nВи завжди можете вручну перемкнути офлайн-режим, що призупинить автоматизацію, доки ви не ввімкнете її знову.",
     "@autoOfflineSettingDescription": {
         "description": "Setting description. Make sure the Mode names match the translations."
     },
@@ -3171,5 +3171,13 @@
     "explicit": "Відвертий",
     "@explicit": {
         "description": "Label for content that is considered explicit, usually marked by an 'E' in music apps"
+    },
+    "volumeNormalizationIOSBaseGainEditorDescription": "Наразі, для нормалізації гучності на платформах, відмінних від Android, потрібна зміна гучності відтворення для емуляції зміни підсилення. Оскільки ми не можемо збільшити гучність вище 100%, нам потрібно зменшити гучність за замовчуванням, щоб ми могли підвищити гучність тихих треків.\n\nЗначення вказано в децибелах (дБ), де -10 дБ – це ~30% гучності, -4,5 дБ – ~60% гучності, а -2 дБ – ~80% гучності.\nДодатні значення означають, що зменшення гучності не застосовується до досягнення порогового значення (тобто підсилення -6,4 дБ (і більше позитивне) для зміщення +6,4 дБ), але запобігає підсиленню тихіших треків.\n\nВам слід встановити це значення на обернене значення найвищого (найбільш позитивного) підсилення у вашій бібліотеці, тобто встановити його на +3 дБ, якщо найвище підсилення у вашій бібліотеці становить -3 дБ (а всі інші треки мають підсилення, такі як -5 дБ, -8 дБ, -10 дБ тощо).",
+    "@volumeNormalizationIOSBaseGainEditorDescription": {
+        "description": "Description for the input that sets the replay gain base gain on iOS and other non-Android platforms"
+    },
+    "autoOfflineSettingSubtitle": "Автоматично вмикати автономний режим на основі підключення до мережі або доступності сервера.",
+    "@autoOfflineSettingSubtitle": {
+        "description": "Subtitle for the automated offline mode setting."
     }
 }
