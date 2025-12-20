@@ -1520,7 +1520,7 @@
     "@emptyFilteredListTitle": {
         "description": "Message shown when a list of items is filtered and no items match the filter"
     },
-    "volumeNormalizationIOSBaseGainEditorSubtitle": "Normalizace hlasitosti v systému iOS v současné době vyžaduje změnu hlasitosti přehrávání, aby se napodobila změna zesílení. Protože nemůžeme zvýšit hlasitost nad 100 %, musíme ve výchozím nastavení hlasitost snížit, abychom mohli zvýšit hlasitost tichých skladeb. Hodnota je v decibelech (dB), kde -10 dB je ~30% hlasitost, -4,5 dB je ~60% hlasitost a -2 dB je ~80% hlasitost.",
+    "volumeNormalizationIOSBaseGainEditorSubtitle": "Vyberte kompenzaci zesílení hlasitosti (v dB)",
     "@volumeNormalizationIOSBaseGainEditorSubtitle": {
         "description": "Subtitle for the input that sets the replay gain base gain on iOS and other non-Android platforms"
     },
@@ -3169,5 +3169,9 @@
     "explicit": "Explicitní",
     "@explicit": {
         "description": "Label for content that is considered explicit, usually marked by an 'E' in music apps"
+    },
+    "autoOfflineSettingSubtitle": "Automaticky povolit režim offline v závislosti na připojení k síti nebo dosažitelnosti serveru.",
+    "@autoOfflineSettingSubtitle": {
+        "description": "Subtitle for the automated offline mode setting."
     }
 }
