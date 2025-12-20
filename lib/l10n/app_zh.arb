@@ -388,7 +388,7 @@
             }
         }
     },
-    "bufferDurationSubtitle": "缓冲的最长时间（秒）。重启生效。",
+    "bufferDurationSubtitle": "缓冲的时间（秒）。重启生效。",
     "@bufferDurationSubtitle": {},
     "removedFromPlaylist": "已从播放列表删除。",
     "@removedFromPlaylist": {},
@@ -640,7 +640,7 @@
     "@playbackModeTranscoding": {
         "description": "Feature chip that is shown when tracks are being transcoded by the server"
     },
-    "playbackModeDirectPlaying": "直通",
+    "playbackModeDirectPlaying": "原码",
     "@playbackModeDirectPlaying": {
         "description": "Feature chip that is shown when tracks are being played directly from the server, without transcoding"
     },
@@ -905,7 +905,7 @@
             }
         }
     },
-    "addPlaylistSubheader": "将歌曲添加至播放列表",
+    "addPlaylistSubheader": "将歌曲添加到播放列表",
     "@addPlaylistSubheader": {
         "description": "Subheader for adding to a playlist in the add to/remove from playlist popup menu"
     },
@@ -1129,7 +1129,7 @@
     "@shuffleAlbumsNext": {
         "description": "Label for action that shuffles all albums of an artist or genre and adds them at the start of Next Up"
     },
-    "shuffleAlbumsToQueue": "随机选择所有专辑至队列",
+    "shuffleAlbumsToQueue": "将专辑乱序加入队列",
     "@shuffleAlbumsToQueue": {
         "description": "Label for action that shuffles all albums of an artist or genre and adds them at the end of the regular queue"
     },
@@ -1520,7 +1520,7 @@
             }
         }
     },
-    "bufferSizeSubtitle": "缓冲区的最大容量（MB）。重启生效",
+    "bufferSizeSubtitle": "缓冲区的容量（MB）。重启生效",
     "@bufferSizeSubtitle": {},
     "addToMorePlaylistsTitle": "添加至更多播放列表",
     "@addToMorePlaylistsTitle": {},
@@ -1755,7 +1755,7 @@
         },
         "description": "Subtitle for the type of a downloaded item, shown when syncing fails and in DownloadButton tooltip."
     },
-    "playingFromType": "播放自{source, select, album{专辑} playlist{播放列表} trackMix{歌曲合辑} artistMix{ 艺术家合辑} albumMix{专辑合辑} genreMix{流派合辑} favorites{收藏夹} allTracks{全部歌曲} filteredList{歌曲} genre{流派} artist{艺术家} track{歌曲} nextUpAlbum{接下来的专辑} nextUpPlaylist{接下来的播放列表} nextUpArtist{接下来的艺术家} nextUpGenre{接下来的流派} remoteClient{远程客户端} other{}}",
+    "playingFromType": "播放自{source, select, album{专辑} playlist{播放列表} trackMix{歌曲合辑} artistMix{ 艺术家合辑} albumMix{专辑合辑} genreMix{流派合辑} favorites{收藏夹} allTracks{全部歌曲} filteredList{歌曲} genre{流派} artist{艺术家} track{歌曲} nextUpAlbum{接下来的专辑} nextUpPlaylist{接下来的播放列表} nextUpArtist{接下来的艺术家} nextUpGenre{接下来的流派} remoteClient{远程客户端} radio{电台} other{}}",
     "@playingFromType": {
         "description": "Prefix shown before the type of the main queue source at the top of the player screen. Example: \"Playing From Album\"",
         "placeholders": {
@@ -2065,7 +2065,7 @@
     "@startupErrorTitle": {
         "description": "The title for the error screen that shows when startup fails."
     },
-    "showFavoriteButtonOnMediaNotificationSubtitle": "控制媒体通知是否包含收藏按钮。这样，您无需打开应用即可收藏/取消收藏当前歌曲。",
+    "showFavoriteButtonOnMediaNotificationSubtitle": "控制媒体通知是否包含收藏按钮。这样，您无需打开应用即可收藏/取消收藏当前歌曲。在离线模式中隐藏。",
     "@showFavoriteButtonOnMediaNotificationSubtitle": {
         "description": "Subtitle for the setting that controls if the media notification has a favorite button."
     },
@@ -2885,5 +2885,65 @@
                 "type": "String"
             }
         }
+    },
+    "lyricsEmptyStateLoading": "歌词加载中……",
+    "@lyricsEmptyStateLoading": {
+        "description": "Message shown while lyrics are being loaded"
+    },
+    "lyricsEmptyStateFailed": "歌词加载失败",
+    "@lyricsEmptyStateFailed": {
+        "description": "Message shown when lyrics failed to load"
+    },
+    "lyricsEmptyStateNoLyrics": "暂无歌词",
+    "@lyricsEmptyStateNoLyrics": {
+        "description": "Message shown when no lyrics are available for the current track"
+    },
+    "lyricsMissingLyricLinePlaceholder": "歌词缺失",
+    "@lyricsMissingLyricLinePlaceholder": {
+        "description": "Placeholder text for missing lyric lines in synchronized lyrics"
+    },
+    "radioModeEnableButtonTitle": "开启电台模式",
+    "@radioModeEnableButtonTitle": {
+        "description": "Title for the option that enables radio mode."
+    },
+    "discordRPCIconDark": "Finamp - Dark",
+    "@discordRPCIconDark": {
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with the Dark-Theme Background"
+    },
+    "discordRPCIconBlack": "Finamp - Black",
+    "@discordRPCIconBlack": {
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with a Black Background"
+    },
+    "discordRPCIconLight": "Finamp - White",
+    "@discordRPCIconLight": {
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with a White Background"
+    },
+    "discordRPCIconJFTransparent": "Jellyfin - Transparent",
+    "@discordRPCIconJFTransparent": {
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Jellyfin logo with a Transparent Background"
+    },
+    "discordRPCIconTransparent": "Finamp - Transparent",
+    "@discordRPCIconTransparent": {
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with a Transparent Background"
+    },
+    "discordRPCIconWhiteTransparent": "White Finamp - Transparent",
+    "@discordRPCIconWhiteTransparent": {
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the full white Finamp logo with a Transparent Background"
+    },
+    "preferAddingToFavoritesOverPlaylistsTitle": "点击心形图标时添加到收藏列表",
+    "@preferAddingToFavoritesOverPlaylistsTitle": {
+        "description": "Title for the setting that swaps the default behavior of short- vs. long-press on the heart/favorite icon"
+    },
+    "preferAddingToFavoritesOverPlaylistsSubtitle": "启用后，短按收藏，长按则打开“添加到播放列表”菜单。默认操作与此相反。",
+    "@preferAddingToFavoritesOverPlaylistsSubtitle": {
+        "description": "Subtitle for the setting that swaps the default behavior of short- vs. long-press on the heart/favorite icon"
+    },
+    "rememberLastUsedPlaybackActionRowPageTitle": "记住上次播放模式",
+    "@rememberLastUsedPlaybackActionRowPageTitle": {
+        "description": "Title for the setting to remember the last used playback mode."
+    },
+    "rememberLastUsedPlaybackActionRowPageSubtitle": "开启后，应用将记住您最后使用的播放模式（例如：下一个）。",
+    "@rememberLastUsedPlaybackActionRowPageSubtitle": {
+        "description": "Subtitle for the setting to remember the last used playback mode."
     }
 }
