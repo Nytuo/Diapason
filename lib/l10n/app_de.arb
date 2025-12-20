@@ -3130,7 +3130,7 @@
     "@duckOnAudioInterruptionTitle": {
         "description": "Title for the setting that controls ducking."
     },
-    "duckOnAudioInterruptionSubtitle": "Senke die Lautstärke (duck), wenn eine andere App temporär Audio abspielt.",
+    "duckOnAudioInterruptionSubtitle": "Senke die Lautstärke (duck), wenn eine andere App temporär Audio abspielt. Erfordert Neustrart.",
     "@duckOnAudioInterruptionSubtitle": {
         "description": "Subtitle for the setting that controls ducking."
     },
