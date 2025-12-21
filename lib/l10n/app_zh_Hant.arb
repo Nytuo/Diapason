@@ -1280,7 +1280,7 @@
         },
         "description": "Tooltip for the album artwork on the player screen"
     },
-    "volumeNormalizationIOSBaseGainEditorSubtitle": "目前在 iOS 上，音量標準化的實作方式是透過調整播放音量來模擬增益變化。由於系統無法將音量提升超過 100%，因此預設會先將整體音量降低一些，這樣在遇到音量較小的歌曲時，才有空間可以將其放大。這項設定的單位是分貝（dB），例如：設為 -10 dB，大約相當於 30% 的實際音量；設為 -4.5 dB，約為 60%；而 -2 dB 則接近 80% 音量。",
+    "volumeNormalizationIOSBaseGainEditorSubtitle": "調整音量增益（dB）",
     "@volumeNormalizationIOSBaseGainEditorSubtitle": {
         "description": "Subtitle for the input that sets the replay gain base gain on iOS and other non-Android platforms"
     },
@@ -1951,7 +1951,7 @@
     "@autoOfflineNotification": {
         "description": "The text for 'other' should never be seen anyway, so feel free to put in a little harmless easter egg :)"
     },
-    "autoOfflineSettingDescription": "自動啟用離線模式。\n停用：不會自動啟用離線模式。可能可以節省電力。\n區域網路：離開 Wifi 或乙太網路連線時啟用離線模式。\n離線：失去網路連線時啟用離線模式。\n無法連線：當切換網路後無法 Ping 到伺服器時，自動啟用離線模式。\n你可以手動啟用離線模式，這麼做將會暫停自動離線模式，直到離線模式被手動關閉",
+    "autoOfflineSettingDescription": "{disabledModeName}：\n不會自動啟用離線模式，可能有助於節省電力。\n\n{localNetworkModeName}：\n當未連接至 Wi-Fi 或乙太網路時，自動啟用離線模式。\n\n{disconnectedModeName}：\n當未連接至任何網路時，自動啟用離線模式。\n\n{unreachableModeName}：\n當切換網路後無法 Ping 到伺服器時，自動啟用離線模式。\n\n你仍可隨時手動切換離線模式，系統會暫停自動化行為，直到你再次啟用為止。",
     "@autoOfflineSettingDescription": {
         "description": "Setting description. Make sure the Mode names match the translations."
     },
@@ -3140,7 +3140,7 @@
     "@duckOnAudioInterruptionTitle": {
         "description": "Title for the setting that controls ducking."
     },
-    "duckOnAudioInterruptionSubtitle": "其他應用程式播放音訊時，暫時降低音樂音量。",
+    "duckOnAudioInterruptionSubtitle": "當其他應用程式播放音訊時，暫時降低音量。需要重新啟動才能生效。",
     "@duckOnAudioInterruptionSubtitle": {
         "description": "Subtitle for the setting that controls ducking."
     },
@@ -3171,5 +3171,13 @@
     "lyricsMissingLyricLinePlaceholder": "部分歌詞缺失",
     "@lyricsMissingLyricLinePlaceholder": {
         "description": "Placeholder text for missing lyric lines in synchronized lyrics"
+    },
+    "volumeNormalizationIOSBaseGainEditorDescription": "目前，在 Android 以外的平台 上，音量標準化必須透過「調整播放音量」來模擬增益變化。由於音量無法超過 100%，因此需要預設降低音量，才能在播放音量較小的歌曲時進行放大。\n\n此數值以分貝（dB）為單位，其中：-10 dB 約為 30% 音量、-4.5 dB 約為 60% 音量，-2 dB 約為 80% 音量。\n正值表示在達到門檻之前不會套用任何音量降低（例如：偏移值設為 +6.4 dB 時，增益為 -6.4 dB 以上的歌曲都不會被降低），但會防止音量較小的歌曲被放大。\n\n建議將此數值設定為你音樂庫中「最高（最接近 0 的）增益值的相反數」。例如：如果你音樂庫中最高的增益是 -3 dB（其他歌曲可能為 -5 dB、-8 dB、-10 dB 等），則應將此設定為 +3 dB。",
+    "@volumeNormalizationIOSBaseGainEditorDescription": {
+        "description": "Description for the input that sets the replay gain base gain on iOS and other non-Android platforms"
+    },
+    "autoOfflineSettingSubtitle": "根據網路連線或伺服器狀態自動切換為離線模式。",
+    "@autoOfflineSettingSubtitle": {
+        "description": "Subtitle for the automated offline mode setting."
     }
 }
