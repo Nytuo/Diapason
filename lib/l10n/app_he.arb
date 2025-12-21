@@ -523,7 +523,7 @@
     },
     "serverUrl": "כתובת שרת (URL)",
     "@serverUrl": {},
-    "internalExternalIpExplanation": "אם את/ה רוצה לגשת לשרת Jellyfin שלך מרחוק, תצטרך/י להשתמש בIP חיצוני.\n\nאם השרת שלך על פורט ברירת מחדל של HTTP (80 או 443) או הפורט ברירת מחדל של Jellyfin (8096), אין צורך לציין את הפורט.\n\nאם הכתובת URL נכונה, תוכל/י לראות מידע על השרת שלך מופיע מתחת לשורת ההקלדה.",
+    "internalExternalIpExplanation": "אם את/ה רוצה לגשת לשרת Jellyfin שלך מרחוק, תצטרך/י להשתמש בIP חיצוני.\n\nאם השרת שלך על פורט ברירת מחדל של HTTP (80 או 443) או ברירת המחדל של Jellyfin (פורט 8096), אין צורך לציין את הפורט.\n\nאם הכתובת URL נכונה, תוכל/י לראות מידע על השרת שלך מופיע מתחת לשורת ההקלדה.",
     "@internalExternalIpExplanation": {
         "description": "Extra info for which IP to use for remote access, and info on whether or not the user needs to specify a port."
     },
@@ -745,7 +745,7 @@
     "@transcoding": {},
     "audioService": "שירות קול",
     "@audioService": {},
-    "layoutAndTheme": "מראה",
+    "layoutAndTheme": "עיצוב וערכת נושא",
     "@layoutAndTheme": {},
     "notAvailableInOfflineMode": "לא זמין במצב לא מקוון",
     "@notAvailableInOfflineMode": {},
@@ -781,9 +781,9 @@
     "@hideTrackArtistsIfSameAsAlbumArtists": {},
     "hideTrackArtistsIfSameAsAlbumArtistsSubtitle": "האם להציג את אמני השיר במסך האלבום אם הם לא שונים מאמני האלבום.",
     "@hideTrackArtistsIfSameAsAlbumArtistsSubtitle": {},
-    "shuffleSome": "ערבב חלק",
+    "shuffleSome": "ערבוב חלק",
     "@shuffleSome": {},
-    "shuffleAll": "ערבב הכל",
+    "shuffleAll": "ערבוב הכל",
     "@shuffleAll": {},
     "shuffleButtonLabel": "ערבוב",
     "@shuffleButtonLabel": {},
@@ -1087,5 +1087,118 @@
     "reportQueueToServerSubtitle": "כאשר מופעל, Finamp יישלח את התור הנוכחי לשרת. זה יכול לשפר שליטה מרחוק ומאפשר שחזור של התור מצד השרת. תמיד מופעל אם האפשרות 'נגן על' מופעלת.",
     "@reportQueueToServerSubtitle": {
         "description": "Description of the setting that toggles reporting of the current queue to the Jellyfin server"
+    },
+    "downloadedMissingImages": "{count,plural, =0{לא נמצאו תמונות חסרות} =1{ירדה תמונה חסרה {count}} other{ירדו {count} תמונות חסרות}}",
+    "@downloadedMissingImages": {
+        "description": "Message that shows when the user downloads missing images",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "downloadCount": "{count,plural, =1{ירד {count}} other{{count} ירדו}}",
+    "@downloadCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "dlEnqueued": "{count} נוספו לתור",
+    "@dlEnqueued": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "deleteDownloadsPrompt": "האם למחוק את ה{itemType, select, album{אלבום} playlist{פלייליסט} artist{אמן} genre{ז'אנר} track{שיר} library{ספרייה} other{פריט}} '{itemName}' מהמכשיר הזה?",
+    "@deleteDownloadsPrompt": {
+        "placeholders": {
+            "itemName": {
+                "type": "String",
+                "example": "Abandon Ship"
+            },
+            "itemType": {
+                "type": "String",
+                "example": "album"
+            }
+        },
+        "description": "Confirmation prompt shown before deleting downloaded media from the local device, destructive action, doesn't affect the media on the server."
+    },
+    "trackCount": "{count,plural,=1{שיר {count}} other{{count} שירים}}",
+    "@trackCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "shuffleAllTrackCount": "כמות ערבוב כל השירים",
+    "@shuffleAllTrackCount": {},
+    "playbackSpeedControlSettingDescription": "אוטומטי:\nFinamp ינסה לזהות אם השיר שמנוגן הוא פודקאסט או (חלק מ…) ספר קולי. זה נחשב לכך אם השיר ארוך מ{trackDuration} דקות, אם האלבום של השיר ארוך מ{albumDuration} שעות, או אם לשיר יש את אחד מהז'אנרים האלו מוגדרים: {genreList}\nבמצב כזה השליטה במהירות הנגינה תופיעה בתפריט מסך הנגן.\n\nמוצג:\nהשליטה במהירות הנגינה תמיד תופיעה בתפריט מסך הנגן.\n\nמוסתר:\nהשליטה במהירות הנגינה אף פעם לא תופיעה בתפריט מסך הנגן.",
+    "@playbackSpeedControlSettingDescription": {
+        "description": "Description for the dropdown that selects the replay gain mode, shown in a dialog that opens when the user presses the info icon next to the dropdown",
+        "placeholders": {
+            "trackDuration": {
+                "type": "int",
+                "example": "30"
+            },
+            "albumDuration": {
+                "type": "int",
+                "example": "3"
+            },
+            "genreList": {
+                "type": "String",
+                "example": "Podcast, Audiobook"
+            }
+        }
+    },
+    "playerScreenMinimumCoverPaddingEditorTitle": "מרווח תמונת אלבום מינימלי",
+    "@playerScreenMinimumCoverPaddingEditorTitle": {
+        "description": "Title for the editor that allows the user to set the minimum padding around the album cover on the player screen."
+    },
+    "playerScreenMinimumCoverPaddingEditorSubtitle": "מינימום מרווח מסביב לתמונת האלבום במסך הנגן, לפי % מתוך רוחב המסך.",
+    "@playerScreenMinimumCoverPaddingEditorSubtitle": {
+        "description": "Subtitle for the editor that allows the user to set the minimum padding around the album cover on the player screen."
+    },
+    "showFastScroller": "הצג גלילה מהירה",
+    "@showFastScroller": {},
+    "sleepTimerRemainingTime": "ישן בעוד {time,plural,=1{פחות מדקה} other{{time} דקות}}",
+    "@sleepTimerRemainingTime": {
+        "description": "Button label for sleep timer. {time} is the amount of minutes left.",
+        "placeholders": {
+            "time": {
+                "type": "int"
+            }
+        }
+    },
+    "sleepTimerRemainingTracks": "ישן {time,plural,=1{אחרי השיר הנוכחי} other{בעוד {time} שירים}}",
+    "@sleepTimerRemainingTracks": {
+        "description": "Button label for sleep timer. {time} is the amount of minutes left.",
+        "placeholders": {
+            "time": {
+                "type": "int"
+            }
+        }
+    },
+    "removeFromPlaylistTooltip": "הסרה מהפלייליסט הנוכחי",
+    "@removeFromPlaylistTooltip": {},
+    "removeFromPlaylistTitle": "הסרה מהפלייליסט הנוכחי",
+    "@removeFromPlaylistTitle": {},
+    "startingInstantMix": "מתחיל מיקס מיידי.",
+    "@startingInstantMix": {},
+    "removeFromMix": "הסרה מהמיקס",
+    "@removeFromMix": {},
+    "addToMix": "הוספה למיקס",
+    "@addToMix": {},
+    "createPlaylistFromCurrentQueue": "שמירת תור לפלייליסט",
+    "@createPlaylistFromCurrentQueue": {
+        "description": "Label for a button that adds the current queue to an existing or new playlist."
+    },
+    "playNext": "נגן הבא",
+    "@playNext": {
+        "description": "Used for adding a track to the \"Next Up\" queue at the first position, to play right after the current track finishes playing"
     }
 }
