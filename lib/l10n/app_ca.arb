@@ -808,7 +808,7 @@
     "@tracksFormerNextUp": {
         "description": "Title for the queue source for tracks that were once added to the queue via the \"Next Up\" feature, but have since been played"
     },
-    "bufferDurationSubtitle": "La durada màxima que s'ha d'amortitzar, en segons. Requereix reiniciar.",
+    "bufferDurationSubtitle": "La durada que s'ha de precarregar, en segons. Requereix reiniciar.",
     "@bufferDurationSubtitle": {},
     "skipToNextTrackButtonTooltip": "Salta a la següent cançó",
     "@skipToNextTrackButtonTooltip": {
@@ -873,7 +873,7 @@
     "@yourLikes": {
         "description": "Title for the queue source when the user is playing their liked tracks"
     },
-    "playingFromType": "Reproduint des de {source, select, album{l'Àlbum} playlist{la Llista de reproducció} trackMix{la Barreja de pistes} artistMix{la Barreja d'artistes} albumMix{la Barreja d'àlbums} genreMix{la Barreja de gèneres} favorites{els Preferits} allTracks{Totes les pistes} filteredList{les Pistes} genre{el Gènere} artist{l'Artista} track{la Pista} nextUpAlbum{l'Àlbum a Pròxims} nextUpPlaylist{la Llista de reproducció a Pròxims} nextUpArtist{l'Artista a Pròxims} other{}}",
+    "playingFromType": "Reproduint des de {source, select, album{l'Àlbum} playlist{la Llista de reproducció} trackMix{la Barreja de pistes} artistMix{la Barreja d'artistes} albumMix{la Barreja d'àlbums} genreMix{la Barreja de gèneres} favorites{els Preferits} allTracks{Totes les pistes} filteredList{les Pistes} genre{el Gènere} artist{l'Artista} track{la Pista} nextUpAlbum{l'Àlbum a Pròxims} nextUpPlaylist{la Llista de reproducció a Pròxims} nextUpArtist{l'Artista a Pròxims} nextUpGenre{el Gènere a Pròxims} remoteClient{Client remot} radio{Ràdio} other{}}",
     "@playingFromType": {
         "description": "Prefix shown before the type of the main queue source at the top of the player screen. Example: \"Playing From Album\"",
         "placeholders": {
@@ -1018,7 +1018,7 @@
     "@bufferDisableSizeConstraintsSubtitle": {},
     "bufferSizeTitle": "Mida de la meòria intermèdia",
     "@bufferSizeTitle": {},
-    "bufferSizeSubtitle": "Mida màxima de la memòria intermèdia en MB. Requereix reiniciar",
+    "bufferSizeSubtitle": "Mida de la memòria de precàrrega en MB. Requereix reiniciar",
     "@bufferSizeSubtitle": {},
     "confirmAddToQueue": "Afegit {type, select, track{Cançó} album{Àlbum} artist{Artista} playlist{Llista de Reproducció} genre{Gènere} other{Element}} a la cua",
     "@confirmAddToQueue": {
@@ -1609,5 +1609,406 @@
     "snackbarOptionsMenuViewLogsButton": "Mostrar els registres",
     "@snackbarOptionsMenuViewLogsButton": {
         "description": "Button title for opening the logs screen from the snackbar options menu"
+    },
+    "albumScreen": "Pantalla de l'àlbum",
+    "@albumScreen": {
+        "description": "Name for the view/screen that shows albums"
+    },
+    "latestReleases": "Últims llançaments",
+    "@latestReleases": {},
+    "artistScreen": "Pantalla de l'artista",
+    "@artistScreen": {
+        "description": "Name for the view/screen that shows artists"
+    },
+    "genreScreen": "Pantalla de gènere",
+    "@genreScreen": {
+        "description": "Name for the view/screen that shows genres"
+    },
+    "applyFilterOnGenreChipTapPromptButton": "Obrir gènere",
+    "@applyFilterOnGenreChipTapPromptButton": {
+        "description": "The button for the snackbar that is shown to the user if a genre filter was applied due to their selected settings"
+    },
+    "startRadio": "Inicia la ràdio",
+    "@startRadio": {
+        "description": "Menu label for starting a radio from a playlist, album, etc."
+    },
+    "radioModeSettingsTitle": "Mode ràdio",
+    "@radioModeSettingsTitle": {
+        "description": "Title for the setting that controls the radio mode/algorithm."
+    },
+    "radioModeActiveTitle": "Ràdio activa",
+    "@radioModeActiveTitle": {
+        "description": "Title displayed in the queue to show that radio mode is enabled and active."
+    },
+    "radioModeDisabledTitle": "Ràdio desactivada",
+    "@radioModeDisabledTitle": {
+        "description": "Title displayed in the queue to show that radio mode is disabled."
+    },
+    "radioModeInactiveTitle": "Ràdio pausada",
+    "@radioModeInactiveTitle": {
+        "description": "Title displayed in the queue to show that the radio is enabled but not active."
+    },
+    "radioModeDisableButtonTitle": "Desactiva la ràdio",
+    "@radioModeDisableButtonTitle": {
+        "description": "Title for the option that disables radio mode."
+    },
+    "radioModeEnableButtonTitle": "Activar la ràdio",
+    "@radioModeEnableButtonTitle": {
+        "description": "Title for the option that enables radio mode."
+    },
+    "lyricsEmptyStateLoading": "Carregant la lletra...",
+    "@lyricsEmptyStateLoading": {
+        "description": "Message shown while lyrics are being loaded"
+    },
+    "autoloadLastQueueOnStartup": "Restaurar automàticament l'última cua",
+    "@autoloadLastQueueOnStartup": {
+        "description": "Setting to restore last queue on startup"
+    },
+    "resetToDefaults": "Restableix als valors predeterminats",
+    "@resetToDefaults": {},
+    "volumeNormalizationSwitchTitle": "Activa la normalització del volum",
+    "@volumeNormalizationSwitchTitle": {
+        "description": "Title for the switch that toggles replay gain"
+    },
+    "volumeNormalizationModeSelectorTitle": "Mode de normalització de volum",
+    "@volumeNormalizationModeSelectorTitle": {
+        "description": "Title for the dropdown that selects the replay gain mode"
+    },
+    "volumeNormalizationModeAlbumOnly": "Només per àlbums",
+    "@volumeNormalizationModeAlbumOnly": {
+        "description": "'Only for Albums' option for the replay gain mode dropdown. In albums-only mode, Volume Normalization is only applied while playing albums (using the album gain), but not for individual tracks."
+    },
+    "repairComplete": "Reparació de descàrregues completada.",
+    "@repairComplete": {
+        "description": "Message displayed after download repair completes."
+    },
+    "syncComplete": "Totes les descàrregues s'han resincronitzat.",
+    "@syncComplete": {
+        "description": "Message displayed after download sync completes."
+    },
+    "maxConcurrentDownloads": "Màxim nombre de descàrregues simultànies",
+    "@maxConcurrentDownloads": {
+        "description": "Title of setting controlling max concurrent downloads."
+    },
+    "maxConcurrentDownloadsLabel": "{count} descàrregues simultànies",
+    "@maxConcurrentDownloadsLabel": {
+        "description": "Label of values on max concurrent downloads slider",
+        "placeholders": {
+            "count": {
+                "type": "String"
+            }
+        }
+    },
+    "downloadsWorkersSetting": "Nombre de treballadors de descàrrega",
+    "@downloadsWorkersSetting": {
+        "description": "Title of setting controlling download worker count."
+    },
+    "downloadsWorkersSettingLabel": "{count} treballadors de descàrrega",
+    "@downloadsWorkersSettingLabel": {
+        "description": "Label of values on download worker count slider",
+        "placeholders": {
+            "count": {
+                "type": "String"
+            }
+        }
+    },
+    "preferQuickSyncSwitch": "Preferir les sincronitzacions ràpides",
+    "@preferQuickSyncSwitch": {
+        "description": "Title of setting that skips completed albums while syncing."
+    },
+    "downloadTranscodeEnableTitle": "Habilita les descàrregues transcodificades",
+    "@downloadTranscodeEnableTitle": {
+        "description": "Title for Enable Transcoded Downloads dropdown"
+    },
+    "downloadTranscodeCodecTitle": "Selecciona el còdec de descàrrega",
+    "@downloadTranscodeCodecTitle": {
+        "description": "Title for Select Download Codec dropdown"
+    },
+    "redownloadTitle": "Torna a descarregar automàticament les transcodificacions",
+    "@redownloadTitle": {
+        "description": "Title for download transcode setting which redownloads tracks with higher allowed qualities"
+    },
+    "fixedGridSizeTitle": "Mida de la quadrícula",
+    "@fixedGridSizeTitle": {},
+    "allowSplitScreenTitle": "Permet el mode de pantalla dividida",
+    "@allowSplitScreenTitle": {},
+    "hidePlayerBottomActions": "Amaga les accions inferiors",
+    "@hidePlayerBottomActions": {},
+    "prioritizePlayerCover": "Prioritza la portada de l'àlbum",
+    "@prioritizePlayerCover": {},
+    "allPlaylistsInfoSetting": "Descarrega les metadades de la llista de reproducció",
+    "@allPlaylistsInfoSetting": {},
+    "downloadFavoritesSetting": "Descarrega tots els preferits",
+    "@downloadFavoritesSetting": {},
+    "downloadAllPlaylistsSetting": "Descarrega totes les llistes de reproducció",
+    "@downloadAllPlaylistsSetting": {},
+    "lyricsFontSizeTitle": "Mida de la font de les lletres",
+    "@lyricsFontSizeTitle": {
+        "description": "Title for the setting that controls the font size of lyrics in the lyrics view"
+    },
+    "keepScreenOn": "Mantenir la pantalla encesa",
+    "@keepScreenOn": {
+        "description": "Option to keep the screen on while using the app"
+    },
+    "keepScreenOnWhilePlaying": "Mentre es reprodueixi música",
+    "@keepScreenOnWhilePlaying": {},
+    "keepScreenOnWhileLyrics": "Mentre es mostren les lletres",
+    "@keepScreenOnWhileLyrics": {},
+    "genericToggleButtonTooltip": "Toca per alternar.",
+    "@genericToggleButtonTooltip": {
+        "description": "Tooltip for toggle buttons that can be tapped to toggle their state"
+    },
+    "artworkTooltip": "Il·lustracions per a {title}",
+    "@artworkTooltip": {
+        "placeholders": {
+            "title": {
+                "type": "String",
+                "example": "Abbey Road"
+            }
+        },
+        "description": "Tooltip for album artwork on track and album tiles as well as the album screen"
+    },
+    "nowPlayingBarTooltip": "Obre la pantalla del reproductor",
+    "@nowPlayingBarTooltip": {
+        "description": "Tooltip for the now playing bar at the bottom of the screen"
+    },
+    "emptyFilteredListTitle": "No s'ha trobat cap element",
+    "@emptyFilteredListTitle": {
+        "description": "Message shown when a list of items is filtered and no items match the filter"
+    },
+    "resetSettingsPromptGlobalConfirm": "Restableix TOTA la configuració",
+    "@resetSettingsPromptGlobalConfirm": {
+        "description": "A differently worded Confirm button to prevent the user from instandly clicking confirm because they are about to reset all settings to their default value"
+    },
+    "hideQueueButton": "Amaga el botó de la cua",
+    "@hideQueueButton": {},
+    "oneLineMarqueeTextButton": "Desplaçar automàticament els títols llargs",
+    "@oneLineMarqueeTextButton": {},
+    "releaseDateFormatMonthYear": "Mes i any",
+    "@releaseDateFormatMonthYear": {
+        "description": "Date format option for the release date of an album, showing the year and month. Example: March 2022"
+    },
+    "releaseDateFormatTitle": "Format de la data de llançament",
+    "@releaseDateFormatTitle": {
+        "description": "Title for the setting that controls the format release dates throughout the app."
+    },
+    "outputMenuButtonTitle": "Sortida",
+    "@outputMenuButtonTitle": {
+        "description": "Button title for opening the output menu/panel"
+    },
+    "redownloadcomplete": "Redescàrrega de transcodificació en cua.",
+    "@redownloadcomplete": {
+        "description": "Mesage when Automatically Redownload Transcodes transcode setting completes operations."
+    },
+    "audioFadeOutDurationSettingTitle": "Duració de la fosa d'àudio",
+    "@audioFadeOutDurationSettingTitle": {
+        "description": "Title for the audio fade-out duration setting."
+    },
+    "audioFadeInDurationSettingTitle": "Duració de la fosa d'entrada d'àudio",
+    "@audioFadeInDurationSettingTitle": {
+        "description": "Title for the audio fade-in duration setting."
+    },
+    "transcodingStreamingFormatTitle": "Selecciona el format de transcodificació",
+    "@transcodingStreamingFormatTitle": {
+        "description": "Title for the dropdown that selects the format for transcoded streams"
+    },
+    "autoOfflineSettingTitle": "Mode \"sense connexió\" automatitzat",
+    "@autoOfflineSettingTitle": {},
+    "testConnectionButtonLabel": "Prova les dues connexions",
+    "@testConnectionButtonLabel": {
+        "description": "Button to test the public and local url inside the network settings tab"
+    },
+    "autoReloadQueueTitle": "Recarregar la cua automàticament",
+    "@autoReloadQueueTitle": {
+        "description": "Title for the setting that controls if the queue is automatically reloaded when the source changes"
+    },
+    "randomTracks": "Cançons (seleccionades a l'atzar)",
+    "@randomTracks": {},
+    "randomAlbums": "Àlbums (seleccionats a l'atzar)",
+    "@randomAlbums": {},
+    "randomArtists": "Artistes (seleccionats a l'atzar)",
+    "@randomArtists": {},
+    "randomFavoritesFirst": "Aleatori (preferits primer)",
+    "@randomFavoritesFirst": {},
+    "itemSectionsOrder": "Ordre de les seccions dels elements",
+    "@itemSectionsOrder": {
+        "description": "Label for the setting that controls the order of item sections on the screens."
+    },
+    "noReleaseDate": "Sense data de llançament",
+    "@noReleaseDate": {
+        "description": "Placeholder text if an item has no release date set."
+    },
+    "recentlyAddedTracks": "Cançons afegides recentment",
+    "@recentlyAddedTracks": {
+        "description": "Label for the artist section that shows tracks that were recently added to the library, sorted by the date they were added."
+    },
+    "recentlyAddedAlbums": "Àlbums afegits recentment",
+    "@recentlyAddedAlbums": {
+        "description": "Label for the genre section that shows albums that were recently added to the library, sorted by the date they were added."
+    },
+    "recentlyAddedArtists": "Artistes afegits recentment",
+    "@recentlyAddedArtists": {
+        "description": "Label for the genre section that shows artists that were recently added to the library, sorted by the date they were added."
+    },
+    "recentlyPlayedTracks": "Cançons reproduïdes recentment",
+    "@recentlyPlayedTracks": {},
+    "recentlyPlayedAlbums": "Àlbums reproduïts recentment",
+    "@recentlyPlayedAlbums": {},
+    "recentlyPlayedArtists": "Artistes reproduïts recentment",
+    "@recentlyPlayedArtists": {},
+    "applyFilterOnGenreChipTapPrompt": "Filtre de gènere aplicat",
+    "@applyFilterOnGenreChipTapPrompt": {
+        "description": "A snackbar that is shown to the user if a genre filter was applied due to their selected settings"
+    },
+    "noDateAdded": "Sense data d'addició",
+    "@noDateAdded": {
+        "description": "Placeholder text if an item has no dateAdded set."
+    },
+    "noDateLastPlayed": "Encara no s'ha reproduït",
+    "@noDateLastPlayed": {
+        "description": "Placeholder text if an item has no lastPlayedDate set."
+    },
+    "itemCountCalculating": "Calculant el nombre d'elements",
+    "@itemCountCalculating": {
+        "description": "Shown to screen readers while the item count is being calculated."
+    },
+    "preferLocalNetworkTargetAddressLocalSettingTitle": "Adreça de la xarxa local",
+    "@preferLocalNetworkTargetAddressLocalSettingTitle": {},
+    "preferLocalNetworkEnableSwitchTitle": "Preferir la xarxa local",
+    "@preferLocalNetworkEnableSwitchTitle": {},
+    "notImplementedYet": "Encara no s'ha implementat.",
+    "@notImplementedYet": {
+        "description": "Message shown when a feature is not implemented yet"
+    },
+    "automaticOfflineModeOverrideActiveTitle": "Canvi automàtic en pausa",
+    "@automaticOfflineModeOverrideActiveTitle": {
+        "description": "Title for the label shown below the offline mode toggle when automatic offline mode switching is paused"
+    },
+    "sleepTimerFinishLastTrack": "Vols acabar l'última cançó?",
+    "@sleepTimerFinishLastTrack": {
+        "description": "Option for the sleep timer that will finish the last track before stopping playback."
+    },
+    "sleepTimerAfterCurrentTrack": "Després de la cançó actual",
+    "@sleepTimerAfterCurrentTrack": {
+        "description": "Option for the sleep timer that will stop playback after the current track finishes."
+    },
+    "serverSharingMenuConfirmationDialogConfirmationButtonLabel": "Confirma i activa",
+    "@serverSharingMenuConfirmationDialogConfirmationButtonLabel": {
+        "description": "Positive action label for the dialog shown when enabling server sharing while offline mode is enabled"
+    },
+    "serverSharingMenuControlSubtitleSharingDisabled": "Toca per compartir",
+    "@serverSharingMenuControlSubtitleSharingDisabled": {
+        "description": "Subtitle of the toggle control in the server sharing menu used to turn server sharing on or off, when it's currently turned off"
+    },
+    "serverSharingMenuControlSubtitleSharingEnabled": "Toca per aturar",
+    "@serverSharingMenuControlSubtitleSharingEnabled": {
+        "description": "Subtitle of the toggle control in the server sharing menu used to turn server sharing on or off, when it's currently turned on"
+    },
+    "quickConnectAuthorizationMenuButtonTitle": "Autoritzar la connexió ràpida",
+    "@quickConnectAuthorizationMenuButtonTitle": {
+        "description": "Title for the button in the drawer that opens the quick connect authorization menu"
+    },
+    "quickConnectAuthorizationMenuInputLabel": "Codi de la connexió ràpida",
+    "@quickConnectAuthorizationMenuInputLabel": {
+        "description": "Label for the quick connect code input, shown below the input field"
+    },
+    "quickConnectAuthorizationMenuStateTitleSuccess": "Sol·licitud autoritzada correctament",
+    "@quickConnectAuthorizationMenuStateTitleSuccess": {
+        "description": "Title for the quick connect authorization menu state info (above the input field) when the authorization was successful"
+    },
+    "additionalBaseItemInfoTitle": "Informació addicional de l'element",
+    "@additionalBaseItemInfoTitle": {
+        "description": "Title for the setting that controls the displayed additional item info."
+    },
+    "discordRPCIconSettingTitle": "Icona de RPC de reserva",
+    "@discordRPCIconSettingTitle": {
+        "description": "Title for the setting that controls which icon gets shown in the Discord RPC (Rich Presence) in case the local address is in use"
+    },
+    "discordRPCIconDark": "Finamp - Fosc",
+    "@discordRPCIconDark": {
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with the Dark-Theme Background"
+    },
+    "discordRPCIconBlack": "Finamp - Negre",
+    "@discordRPCIconBlack": {
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with a Black Background"
+    },
+    "discordRPCIconLight": "Finamp - Blanc",
+    "@discordRPCIconLight": {
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with a White Background"
+    },
+    "discordRPCIconJFTransparent": "Jellyfin - Transparent",
+    "@discordRPCIconJFTransparent": {
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Jellyfin logo with a Transparent Background"
+    },
+    "discordRPCIconTransparent": "Finamp - Transparent",
+    "@discordRPCIconTransparent": {
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with a Transparent Background"
+    },
+    "discOfAlbum": "[Disc {number}] {albumName}",
+    "@discOfAlbum": {
+        "description": "Used when a single disc of album is opened, then album name is replaced with this string",
+        "placeholders": {
+            "number": {
+                "type": "int",
+                "example": "1"
+            },
+            "albumName": {
+                "type": "String"
+            }
+        }
+    },
+    "dragToReorder": "Arrossega per reordenar",
+    "@dragToReorder": {
+        "description": "Label shown on drag handles of track list  tiles in the queue list"
+    },
+    "shuffleSomeAlbums": "Reordena alguns àlbums aleatòriament",
+    "@shuffleSomeAlbums": {
+        "description": "Label for action that shuffles some albums of a genre"
+    },
+    "snackbarOptionsMenuClearAllButton": "Esborra tots els missatges",
+    "@snackbarOptionsMenuClearAllButton": {
+        "description": "Button title for clearing all snackbar messages"
+    },
+    "moveAddToQueue": "Moure al final",
+    "@moveAddToQueue": {
+        "description": "Used for moving a track to the end of the queue, to play after all prior tracks from the queue have played"
+    },
+    "radioForItem": "{radioSource} - Ràdio",
+    "@radioForItem": {
+        "description": "Suffix added to a queue source when playing a radio track. Example: \"Never Gonna Give You Up - Radio\"",
+        "placeholders": {
+            "radioSource": {
+                "type": "String",
+                "example": "Never Gonna Give You Up"
+            }
+        }
+    },
+    "radioModeMenuTitle": "Tria el mode de ràdio",
+    "@radioModeMenuTitle": {
+        "description": "Title for menu that allows users to choose the radio mode."
+    },
+    "radioModeEnabledSubtitle": "Toca per configurar",
+    "@radioModeEnabledSubtitle": {
+        "description": "Subtitle displayed in the queue to show when radio mode is enabled."
+    },
+    "radioModeDisabledSubtitle": "Toca per activar",
+    "@radioModeDisabledSubtitle": {
+        "description": "Subtitle displayed in the queue to show that radio mode is disabled."
+    },
+    "radioModeUnavailableWhileOfflineDescription": "No disponible sense connexió",
+    "@radioModeUnavailableWhileOfflineDescription": {
+        "description": "Shown as the subtitle for radio modes when the user is offline and the radio mode requires the user to be online to function."
+    },
+    "forceAudioOffloadingOnAndroidTitle": "Forçar la descàrrega d’àudio",
+    "@forceAudioOffloadingOnAndroidTitle": {
+        "description": "Title for the setting that controls audio offloading on Android."
+    },
+    "lyricsEmptyStateFailed": "No s'ha pogut carregar la lletra",
+    "@lyricsEmptyStateFailed": {
+        "description": "Message shown when lyrics failed to load"
+    },
+    "lyricsEmptyStateNoLyrics": "No hi ha lletra disponible",
+    "@lyricsEmptyStateNoLyrics": {
+        "description": "Message shown when no lyrics are available for the current track"
     }
 }
