@@ -1754,7 +1754,7 @@
     "@keepScreenOnWhilePlaying": {},
     "keepScreenOnWhileLyrics": "Mentre es mostren les lletres",
     "@keepScreenOnWhileLyrics": {},
-    "genericToggleButtonTooltip": "Toca per alternar.",
+    "genericToggleButtonTooltip": "Prem per alternar.",
     "@genericToggleButtonTooltip": {
         "description": "Tooltip for toggle buttons that can be tapped to toggle their state"
     },
@@ -2840,5 +2840,379 @@
                 "type": "int"
             }
         }
+    },
+    "downloadSizeWarningCutoffSubtitle": "Es mostrarà un missatge d'advertència quan es descarreguin més d'aquest nombre de cançons alhora.",
+    "@downloadSizeWarningCutoffSubtitle": {
+        "description": "Subtitle for the setting controlling when to warn about a large download"
+    },
+    "confirmAddCollectionItemToPlaylist": "Estàs segur que vols afegir totes les cançons {itemType, select, album{de l'àlbum} playlist{de la llista de reproducció} artist{de l'artista} genre{del gènere} other{de l'element}} '{itemName}' a aquesta llista de reproducció? Només es poden eliminar individualment.",
+    "@confirmAddCollectionItemToPlaylist": {
+        "description": "Warning dialog for adding an album, artist, etc. or multiple tracks to a playlist, clarifying that this cannot be undone without removing all tracks individually and manually.",
+        "placeholders": {
+            "itemType": {
+                "type": "String",
+                "example": "album"
+            },
+            "itemName": {
+                "type": "String"
+            }
+        }
+    },
+    "confirmAddMultipleTracksToPlaylist": "Segur que vols afegir {trackCount} cançons a aquesta llista de reproducció? Només es poden eliminar individualment.",
+    "@confirmAddMultipleTracksToPlaylist": {
+        "description": "Warning dialog for adding multiple tracks to a playlist, clarifying that this cannot be undone without removing all tracks individually and manually.",
+        "placeholders": {
+            "trackCount": {
+                "type": "int"
+            }
+        }
+    },
+    "showAlbumReleaseDateOnPlayerScreenTitle": "Mostra la data de llançament de l'àlbum a la pantalla del reproductor",
+    "@showAlbumReleaseDateOnPlayerScreenTitle": {
+        "description": "Title for the setting that controls if the release date of an album is shown on the player screen"
+    },
+    "showAlbumReleaseDateOnPlayerScreenSubtitle": "Mostra la data de llançament de l'àlbum a la pantalla del reproductor, darrere del nom de l'àlbum.",
+    "@showAlbumReleaseDateOnPlayerScreenSubtitle": {
+        "description": "Subtitle for the setting that controls if the release date of an album is shown on the player screen"
+    },
+    "releaseDateFormatSubtitle": "Controla el format de totes les dates de llançament que es mostren a l'aplicació.",
+    "@releaseDateFormatSubtitle": {
+        "description": "Subtitle for the setting that controls the format release dates throughout the app."
+    },
+    "additionalBaseItemInfoSubtitle": "Controla quin tipus d'informació addicional es mostra a les llistes d'elements per a cada tipus d'element. Quan s'estableix com a \"Adaptable\", la informació es tria automàticament en funció de la classificació o el context actual.",
+    "@additionalBaseItemInfoSubtitle": {
+        "description": "Subtitle for the setting that controls the displayed additional item info."
+    },
+    "librarySelectError": "Error en carregar les biblioteques disponibles per a l'usuari",
+    "@librarySelectError": {
+        "description": "Error shown when the library select screen fails to load."
+    },
+    "autoOfflineSettingSubtitle": "Habilita automàticament el mode sense connexió en funció de la connectivitat de xarxa o de l'accessibilitat del servidor.",
+    "@autoOfflineSettingSubtitle": {
+        "description": "Subtitle for the automated offline mode setting."
+    },
+    "autoOfflineSettingDescription": "{disabledModeName}:\nNo activarà automàticament el mode sense connexió. Pot estalviar bateria.\n\n{localNetworkModeName}:\nActiva el mode sense connexió quan no estiguis connectat a Wi-Fi o Ethernet.\n\n{disconnectedModeName}:\nActiva el mode sense connexió quan no estiguis connectat a res.\n\n{unreachableModeName}:\nActiva el mode sense connexió quan no es pugui fer ping al servidor després de canviar de xarxa.\n\nSempre pots activar manualment el mode sense connexió, cosa que pausa l'automatització fins que el tornis a activar.",
+    "@autoOfflineSettingDescription": {
+        "description": "Setting description. Make sure the Mode names match the translations.",
+        "placeholders": {
+            "disabledModeName": {
+                "type": "String"
+            },
+            "localNetworkModeName": {
+                "type": "String"
+            },
+            "disconnectedModeName": {
+                "type": "String"
+            },
+            "unreachableModeName": {
+                "type": "String"
+            }
+        }
+    },
+    "autoOfflineNotification": "Automàticament {state, select, enabled{habilita} disabled{deshabilita} other{estableix una posició quàntica}} el mode sense connexió",
+    "@autoOfflineNotification": {
+        "description": "The text for 'other' should never be seen anyway, so feel free to put in a little harmless easter egg :)"
+    },
+    "audioFadeOutDurationSettingSubtitle": "La durada de la fosa d'àudio en mil·lisegons.",
+    "@audioFadeOutDurationSettingSubtitle": {
+        "description": "Subtitle for the audio fade-out duration setting. Set to 0 to disable fade-out."
+    },
+    "audioFadeInDurationSettingSubtitle": "La durada de la fosa d'entrada d'àudio en mil·lisegons. Establiu-la a 0 per desactivar la fosa d'entrada.",
+    "@audioFadeInDurationSettingSubtitle": {
+        "description": "Subtitle for the audio fade-in duration setting. Set to 0 to disable fade-in."
+    },
+    "deviceType": "{type, select, speaker{Altaveus del dispositiu} tv{TV} bluetooth{Bluetooth} other{Desconegut}}",
+    "@deviceType": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        },
+        "description": "Label for the type of device in the output menu"
+    },
+    "itemCount": "{childType, select, track{{amount, plural, =1{1 cançó} other{{amount} cançons}}} album{{amount, plural, =1{1 àlbum} other{{amount} àlbums}}} other{{amount, plural, =1{1 element} other{{amount} elements}}}}",
+    "@itemCount": {
+        "description": "Amount of various child item, like artist albums, performing artist tracks, or genre albums. Shown for example in the menu headers.",
+        "placeholders": {
+            "childType": {
+                "type": "String",
+                "example": "album",
+                "description": "Options match BaseItemDtoType.name"
+            },
+            "amount": {
+                "type": "int"
+            }
+        }
+    },
+    "preferLocalNetworkTargetAddressLocalSettingDescription": "Direcció del servidor Jellyfin dins de la teva xarxa local",
+    "@preferLocalNetworkTargetAddressLocalSettingDescription": {},
+    "preferLocalNetworkEnableSwitchDescription": "Utilitzar o no una adreça diferent quan estàs a la xarxa local del teu servidor Jellyfin",
+    "@preferLocalNetworkEnableSwitchDescription": {},
+    "preferLocalNetworkPublicAddressSettingDescription": "L'adreça principal utilitzada per connectar-se al teu servidor Jellyfin",
+    "@preferLocalNetworkPublicAddressSettingDescription": {},
+    "preferLocalNetworkInfoBox": "Aquesta funció requereix permisos d'ubicació (i la ubicació ha d'estar activada) per llegir el nom de la xarxa.",
+    "@preferLocalNetworkInfoBox": {
+        "description": "This is only shown on ios and android since desktop doesnt require location permissions"
+    },
+    "downloadPaused": "Descàrregues pausades perquè el dispositiu no està connectat a la xarxa Wi-Fi",
+    "@downloadPaused": {
+        "description": "Gets shown in the snackbar if loosing wifi connection while downloads are running and the 'requireWifiForDownloads' is enabled"
+    },
+    "missingSchemaError": "L'URL ha de començar per http(s)://",
+    "@missingSchemaError": {
+        "description": "Snackbar message when the user changes their home/public address but it doesn't start with http"
+    },
+    "genreListsInheritSorting": "Heretar opcions de classificació en llistes completes",
+    "@genreListsInheritSorting": {
+        "description": "Label for the setting that controls if a See All Genre Lists should inherit the Genre Sorting and Filtering."
+    },
+    "ping": "{status, select, true_true{Ambdós accessibles} true_false{NO s'ha pogut accedir a l'adreça local} false_true{NO s'ha pogut accedir a l'adreça pública} false_false{NO s'ha pogut accedir a cap dels dos} other{desconegut}}",
+    "@ping": {
+        "description": "Gets shown in the Snackbar when using the Test Connection Button inside the Network Settings. true means reachable, false means unreachable. the first value is for the public address, the second value is fot the home address."
+    },
+    "autoReloadQueueSubtitle": "Torna a carregar la cua automàticament quan l'origen canviï (és a dir, quan s'habilita el mode sense connexió o l'adreça del servidor canvia). Si està desactivat, Finamp t'ho preguntarà.",
+    "@autoReloadQueueSubtitle": {
+        "description": "Subtitle for the setting that controls if the queue is automatically reloaded when the source changes"
+    },
+    "clearQueueOnStopEventSubtitle": "Esborra la cua i tanca el reproductor si es rep una ordre d'aturada des del sistema operatiu. Les accions d'aturada dins de l'aplicació sempre tancaran el reproductor i esborraran la cua.",
+    "@clearQueueOnStopEventSubtitle": {
+        "description": "Subtitle for the setting that controls if OS stop commands clear the queue."
+    },
+    "radioModeSettingsSubtitle": "Defineix el mètode que utilitza la ràdio per triar les cançons que s'afegeixen.",
+    "@radioModeSettingsSubtitle": {
+        "description": "Subtitle for the setting that controls the radio mode/algorithm."
+    },
+    "loopingOverriddenByRadioSubtitle": "El bucle de cua està desactivat mentre la ràdio està activada",
+    "@loopingOverriddenByRadioSubtitle": {
+        "description": "Subtitle displayed in the radio menu to show that queue looping is disabled while radio mode is enabled."
+    },
+    "radioFailedSubtitle": "No s'han trobat més cançons de ràdio. Prova de canviar el mode.",
+    "@radioFailedSubtitle": {
+        "description": "Subtitle displayed in the radio menu to show that no radio tracks could be generated."
+    },
+    "radioModeOptionName": "{option, select, reshuffle{Barreja} random{Aleatori} similar{Similar} continuous{Continuo} albumMix{Mix d'àlbums} other{{option}}}",
+    "@radioModeOptionName": {
+        "placeholders": {
+            "option": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Radio mode names in radio mode/algorithm dropdown"
+    },
+    "radioModeOptionTitle": "{option, select, reshuffle{Mode de barreja} random{Mode aleatori} similar{Mode similar} continuous{Mode continuo} albumMix{Mix d'àlbums} other{{option}}} habilitat",
+    "@radioModeOptionTitle": {
+        "placeholders": {
+            "option": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Title displayed in the queue, showing which radio mode/algorithm is currently being used."
+    },
+    "radioModeDisableButtonSubtitle": "Torna al mode de bucle anterior",
+    "@radioModeDisableButtonSubtitle": {
+        "description": "Subtitle for the option that disables radio mode."
+    },
+    "radioModeOptionConfirmation": "S'ha canviat {option, select, reshuffle{al mode de barreja} random{al mode aleatori} similar{al mode similar} continuous{al mode continuo} albumMix{al mix d'àlbums} other{{option}}}",
+    "@radioModeOptionConfirmation": {
+        "placeholders": {
+            "option": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Confirmation displayed when the radio mode is changed."
+    },
+    "radioModeDescription": "{mode, select, reshuffle{Barrejar contínuament la cua} random{Afegeix cançons aleatòriament de la selecció inicial} similar{Afegeix segons la cua original} continuous{Afegeix segons la cançó actual} albumMix{Afegeix àlbums similars} other{}}",
+    "@radioModeDescription": {
+        "placeholders": {
+            "mode": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Subtitle displayed in the queue to describe what the radio is doing if enabled"
+    },
+    "radioModeUnavailableForSourceItemSubtitle": "{modeName} no disponible per a aquest origen de cua",
+    "@radioModeUnavailableForSourceItemSubtitle": {
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            }
+        },
+        "description": "Shown as the subtitle for radio modes when the queue source item type is not supported."
+    },
+    "radioModeUnavailableQueueEmptyDescription": "No disponible perquè la cua és buida",
+    "@radioModeUnavailableQueueEmptyDescription": {
+        "description": "Shown as the subtitle for radio modes when the queue is empty."
+    },
+    "radioModeUnavailableQueueEmptySubtitle": "{modeName} no disponible perquè la cua és buida",
+    "@radioModeUnavailableQueueEmptySubtitle": {
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            }
+        },
+        "description": "Shown as the subtitle for radio modes when the queue is empty."
+    },
+    "radioModeRandomUnavailableNotDownloadedSubtitle": "{modeName} no disponible perquè '{sourceName}' no està descarregat",
+    "@radioModeRandomUnavailableNotDownloadedSubtitle": {
+        "description": "Shown as the subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded.",
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            },
+            "sourceName": {
+                "type": "String"
+            }
+        }
+    },
+    "radioModeRandomUnavailableNotDownloadedGenericDescription": "No disponible perquè no s'ha descarregat l'origen",
+    "@radioModeRandomUnavailableNotDownloadedGenericDescription": {
+        "description": "Shown as the generic subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded, when the queue source has no name."
+    },
+    "radioModeRandomUnavailableNotDownloadedGenericSubtitle": "{modeName} no disponible perquè l'origen no està descarregat",
+    "@radioModeRandomUnavailableNotDownloadedGenericSubtitle": {
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            }
+        },
+        "description": "Shown as the generic subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded, when the queue source has no name."
+    },
+    "radioNoTracksFound": "No s'ha pogut iniciar la ràdio perquè no s'han trobat cançons adequades.",
+    "@radioNoTracksFound": {
+        "description": "Shown when the user tries to start radio mode but no suitable tracks were found to start the radio with."
+    },
+    "loopingUnavailableWhileRadioActiveWarning": "No es pot canviar el mode de bucle mentre la ràdio està activa, ja que la cua continuarà sense parar.",
+    "@loopingUnavailableWhileRadioActiveWarning": {
+        "description": "Warning message when trying to change the loop mode while radio is active."
+    },
+    "autoReloadPrompt": "Torna a carregar la cua per aplicar la nova {type, select, network{configuració de xarxa} transcoding{configuració de transcodificació} other{configuració}}",
+    "@autoReloadPrompt": {
+        "description": "Prompt shown when the queue needs to be reloaded after changing network settings",
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "autoReloadPromptMissingTracks": "{amountUndownloadedTracks, plural, =1{1 cançó} other{{amountUndownloadedTracks} cançons}} s'eliminaran de la cua perquè no estan descarregades.",
+    "@autoReloadPromptMissingTracks": {
+        "description": "Additional prompt text shown when the queue needs to be reloaded after changing network settings and some undownloaded tracks are in the queue",
+        "placeholders": {
+            "amountUndownloadedTracks": {
+                "type": "int"
+            }
+        }
+    },
+    "serverSharingMenuConfirmationDialogText": "Estàs segur que vols habilitar la compartició del servidor tot i que estàs en mode sense connexió? Això farà que Finamp enviï dades a través de la xarxa local.",
+    "@serverSharingMenuConfirmationDialogText": {
+        "description": "Dialog text shown when enabling server sharing while offline mode is enabled"
+    },
+    "serverSharingMenuDescription": "Compartir l'adreça del teu servidor pot ser útil per configurar nous clients que no es troben a la mateixa xarxa local que el teu servidor Jellyfin, com ara televisors d'hotel, el teu ordinador de la feina, o un client nou al teu telèfon mentre ets fora de casa.",
+    "@serverSharingMenuDescription": {
+        "description": "Description text shown in the server sharing menu, right below the controls"
+    },
+    "serverSharingMenuDetails": "Funciona escoltant les sol·licituds de descobriment del servidor d'altres clients a la xarxa local i responent a aquestes sol·licituds amb l'adreça configurada del teu servidor Jellyfin.\nSi teniu configurada una adreça local i una pública, Finamp proporcionarà les dues al client sol·licitant.",
+    "@serverSharingMenuDetails": {
+        "description": "Description text shown in the server sharing menu, below the description"
+    },
+    "quickConnectAuthorizationMenuStateSubtitleIdle": "Si us plau, introduïu o enganxeu el codi a sota",
+    "@quickConnectAuthorizationMenuStateSubtitleIdle": {
+        "description": "Subtitle for the quick connect authorization menu state info (above the input field) while the code hasn't been submitted yet"
+    },
+    "quickConnectAuthorizationMenuStateSubtitleFailed": "Si us plau, reviseu el codi i torneu-ho a intentar",
+    "@quickConnectAuthorizationMenuStateSubtitleFailed": {
+        "description": "Subtitle for the quick connect authorization menu state info (above the input field) when the authorization was unsuccessful"
+    },
+    "quickConnectAuthorizationMenuDescription": "Si estàs intentant iniciar sessió a un altre client de Jellyfin mitjançant \"Connexió ràpida\", pots introduir o enganxar el codi de 6 dígits al camp superior. Això autoritzarà la sol·licitud d'inici de sessió de l'altre client i et permetrà iniciar sessió al mateix compte que estàs utilitzant per a Finamp.",
+    "@quickConnectAuthorizationMenuDescription": {
+        "description": "Description for the quick connect authorization menu, shown at the bottom"
+    },
+    "useHighContrastColorsSubtitle": "Utilitzeu colors dinàmics d'alt contrast per a una millor visibilitat.",
+    "@useHighContrastColorsSubtitle": {
+        "description": "Subtitle for the setting that controls if high contrast colors are used throughout the app"
+    },
+    "autoExpandPlayerScreenTitle": "Obre la pantalla del reproductor en iniciar la reproducció",
+    "@autoExpandPlayerScreenTitle": {
+        "description": "Title for the setting that controls if the player screen is opened directly after starting a new queue"
+    },
+    "autoExpandPlayerScreenSubtitle": "Això obrirà la pantalla de reproducció actual quan s'iniciï la reproducció d'una nova cua",
+    "@autoExpandPlayerScreenSubtitle": {
+        "description": "Subtitle for the setting that controls if the player screen is opened directly after starting a new queue"
+    },
+    "discordRPCSettingDescription": "Habilita la funció \"Rich Presence\" de Discord per mostrar què estàs reproduint en el teu estat de Discord. No es connectarà a Discord si el mode sense connexió està activat.",
+    "@discordRPCSettingDescription": {
+        "description": "Description for the setting that controls if the Discord RPC (Rich Presence) feature is enabled"
+    },
+    "discordRPCIconSettingDescription": "Icona de reserva que es mostra quan no es detecta cap adreça pública. (Ja que Discord no pot carregar imatges des de l'adreça local i utilitzaria la seva de reserva)",
+    "@discordRPCIconSettingDescription": {
+        "description": "Description for the setting that controls which Icon the discord RPC displays as a Fallback in case no public address is detected (it doenst matter what connection is active)."
+    },
+    "preferNextUpPrependingTitle": "Preferir anteposar a \"A continuació\"",
+    "@preferNextUpPrependingTitle": {
+        "description": "Title for the setting to prefer prepending to Next Up over appending"
+    },
+    "preferNextUpPrependingSubtitle": "Quan està activat, els botons \"Reprodueix a continuació\" es mostraran quan \"Següent\" estigui buit. En cas contrari, \"Afegeix a continuació\" serà l'opció per defecte.",
+    "@preferNextUpPrependingSubtitle": {
+        "description": "Subtitle for the setting that swaps the default behavior of short- vs. long-press on the heart/favorite icon"
+    },
+    "rememberLastUsedPlaybackActionRowPageSubtitle": "Quan està activat, es recordarà el teu últim mode de reproducció (per exemple, \"Següent\").",
+    "@rememberLastUsedPlaybackActionRowPageSubtitle": {
+        "description": "Subtitle for the setting to remember the last used playback mode."
+    },
+    "addDownloadLocationsErrorTitle": "No s'ha pogut escriure a la ubicació de descàrrega",
+    "@addDownloadLocationsErrorTitle": {
+        "description": "Title of popup dialog when adding a download location fails"
+    },
+    "addDownloadLocationsErrorPrompt": "No s'ha pogut escriure al directori seleccionat.  Hauries de modificar els permisos o triar una altra ubicació.",
+    "@addDownloadLocationsErrorPrompt": {
+        "description": "Label shown on popup dialog when adding a download location when writing songs fails"
+    },
+    "androidImageErrorPrompt": "No podem escriure imatges a la carpeta Música d'Android a causa de restriccions del sistema operatiu.  Hauries de triar una altra ubicació.",
+    "@androidImageErrorPrompt": {
+        "description": "Label shown on popup dialog when adding a download location when writing songs succeeds but writing images fails, which can occur on android."
+    },
+    "syncFailedWarningShort": "Avís: No s'han pogut sincronitzar algunes descàrregues amb el servidor.",
+    "@syncFailedWarningShort": {
+        "description": "Simple warning message for when download sync fails due to items being deleted from the server."
+    },
+    "syncFailedWarningLong": "Algunes descàrregues no s'han pogut sincronitzar amb el servidor.  Probablement s'ha suprimit l'element corresponent del servidor.  Cal suprimir la descàrrega fallida per netejar els fitxers obsolets.",
+    "@syncFailedWarningLong": {
+        "description": "Expanded warning message for when download sync fails due to items being deleted from the server."
+    },
+    "syncingFailed": "La sincronització ha fallat.  Probablement aquesta descàrrega s'ha eliminat del servidor i s'hauria de suprimir.",
+    "@syncingFailed": {
+        "description": "Message shown for downloads with the sync failed status, which is generally caused by the server-side item being removed."
+    },
+    "autoplayRestoredQueueSubtitle": "Les cues restaurades automàticament a l'inici o a través de la pantalla de restauració de cues començaran a reproduir-se automàticament.  Les cues que no aconsegueixin restaurar totes les cançons no es reproduiran mai automàticament, independentment d'aquesta configuració.",
+    "@autoplayRestoredQueueSubtitle": {
+        "description": "Subtitle for the setting that controls if restored queues automatically play."
+    },
+    "missingBlurhashWarning": "Avís: Sembla que el servidor Jellyfin està mal configurat i no calcula els desenfocaments.  Això impedeix que Finamp de-dupliqui les descàrregues d'imatges.  Si us plau, corregeix el servidor i executa una reparació de les descàrregues.",
+    "@missingBlurhashWarning": {
+        "description": "A warning message displayed on the downloads screen if the jellyfin server is missing blurhashes."
+    },
+    "noPermissionToEditMetadata": "Cal ser administrador per editar imatges de metadades.",
+    "@noPermissionToEditMetadata": {
+        "description": "Error message shown when the user tries to edit metadata but doesn't have permission to do so, i.e. because they are not an admin"
+    },
+    "discardChangesDescription": "Tens canvis sense desar. Vols descartar-los i tornar enrere?",
+    "@discardChangesDescription": {
+        "description": "Description for the dialog shown when the user tries to leave the playlist edit screen with unsaved changes"
+    },
+    "duckOnAudioInterruptionSubtitle": "Baixa el volum quan una altra aplicació reprodueix breument àudio. Cal reiniciar.",
+    "@duckOnAudioInterruptionSubtitle": {
+        "description": "Subtitle for the setting that controls ducking."
+    },
+    "forceAudioOffloadingOnAndroidSubtitle": "Transfereix el processament d'àudio al maquinari, si el dispositiu ho admet.",
+    "@forceAudioOffloadingOnAndroidSubtitle": {
+        "description": "Subtitle for the setting that controls audio offloading on Android."
     }
 }
