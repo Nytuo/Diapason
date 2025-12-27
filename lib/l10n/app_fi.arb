@@ -1997,7 +1997,7 @@
     "@playbackReportingSettingsTitle": {
         "description": "Title for the playback reporting settings screen"
     },
-    "lyricsScreenButtonTitle": "Lyriikat",
+    "lyricsScreenButtonTitle": "Sanat",
     "@lyricsScreenButtonTitle": {
         "description": "Label for the button for opening the lyrics screen"
     },
@@ -2966,7 +2966,7 @@
     "@radioModeMenuTitle": {
         "description": "Title for menu that allows users to choose the radio mode."
     },
-    "loopingOverriddenByRadioSubtitle": "Jonon looppaaminen kytkeytyy pois päältä, kun radiotilaa käytetään",
+    "loopingOverriddenByRadioSubtitle": "Jonon uudelleentoisto kytkeytyy pois päältä, kun radiotilaa käytetään",
     "@loopingOverriddenByRadioSubtitle": {
         "description": "Subtitle displayed in the radio menu to show that queue looping is disabled while radio mode is enabled."
     },
@@ -3132,19 +3132,19 @@
     "@loopingUnavailableWhileRadioActiveWarning": {
         "description": "Warning message when trying to change the loop mode while radio is active."
     },
-    "lyricsEmptyStateLoading": "Ladataan lyriikoita...",
+    "lyricsEmptyStateLoading": "Ladataan sanoituksia...",
     "@lyricsEmptyStateLoading": {
         "description": "Message shown while lyrics are being loaded"
     },
-    "lyricsEmptyStateFailed": "Lyriikoita ei voitu ladata",
+    "lyricsEmptyStateFailed": "Sanoituksia ei voitu ladata",
     "@lyricsEmptyStateFailed": {
         "description": "Message shown when lyrics failed to load"
     },
-    "lyricsEmptyStateNoLyrics": "Ei lyriikoita saatavilla",
+    "lyricsEmptyStateNoLyrics": "Ei sanoituksia saatavilla",
     "@lyricsEmptyStateNoLyrics": {
         "description": "Message shown when no lyrics are available for the current track"
     },
-    "lyricsMissingLyricLinePlaceholder": "lyriikkarivi puuttuu",
+    "lyricsMissingLyricLinePlaceholder": "sanoitusrivi puuttuu",
     "@lyricsMissingLyricLinePlaceholder": {
         "description": "Placeholder text for missing lyric lines in synchronized lyrics"
     },
