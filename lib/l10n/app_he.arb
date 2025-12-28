@@ -1293,5 +1293,71 @@
                 "type": "String"
             }
         }
+    },
+    "recentlyAddedAlbums": "אלבומים שנוספו לאחרונה",
+    "@recentlyAddedAlbums": {
+        "description": "Label for the genre section that shows albums that were recently added to the library, sorted by the date they were added."
+    },
+    "recentlyAddedArtists": "אמנים שנוספו לאחרונה",
+    "@recentlyAddedArtists": {
+        "description": "Label for the genre section that shows artists that were recently added to the library, sorted by the date they were added."
+    },
+    "latestTracks": "שירים אחרונים",
+    "@latestTracks": {},
+    "latestAlbums": "אלבומים אחרונים",
+    "@latestAlbums": {},
+    "latestArtists": "אמנים אחרונים",
+    "@latestArtists": {},
+    "recentlyPlayedTracks": "שירים שנוגנו לאחרונה",
+    "@recentlyPlayedTracks": {},
+    "recentlyPlayedAlbums": "אלבומים שנוגנו לאחרונה",
+    "@recentlyPlayedAlbums": {},
+    "recentlyPlayedArtists": "אמנים שנוגנו לאחרונה",
+    "@recentlyPlayedArtists": {},
+    "favoriteTracks": "שירים מועדפים",
+    "@favoriteTracks": {},
+    "favoriteAlbums": "אלבומים מועדפים",
+    "@favoriteAlbums": {},
+    "favoriteArtists": "אמנים מועדפים",
+    "@favoriteArtists": {},
+    "randomTracks": "שירים (בחירות אקראיות)",
+    "@randomTracks": {},
+    "randomAlbums": "אלבומים (בחירות אקראיות)",
+    "@randomAlbums": {},
+    "randomArtists": "אמנים (בחירות אקראיות)",
+    "@randomArtists": {},
+    "mostPlayed": "הכי מנוגן",
+    "@mostPlayed": {},
+    "randomFavoritesFirst": "אקראי (מועדפים קודם)",
+    "@randomFavoritesFirst": {},
+    "recentlyAdded": "נוספו לאחרונה",
+    "@recentlyAdded": {},
+    "recentlyPlayed": "נוגנו לאחרונה",
+    "@recentlyPlayed": {},
+    "latestReleases": "יצאו לאחרונה",
+    "@latestReleases": {},
+    "unknown": "לא ידוע",
+    "@unknown": {},
+    "mix": "{mixSource} - מיקס",
+    "@mix": {
+        "description": "Suffix added to a queue source when playing a mix. Example: \"Never Gonna Give You Up - Mix\"",
+        "placeholders": {
+            "mixSource": {
+                "type": "String",
+                "example": "Never Gonna Give You Up"
+            }
+        }
+    },
+    "playbackOrderLinearButtonTooltip": "מנגן לפי הסדר. לחץ כדי לערבב.",
+    "@playbackOrderLinearButtonTooltip": {
+        "description": "Tooltip for the button that toggles the playback order between linear/in-order and shuffle, while the queue is in linear/in-order mode"
+    },
+    "playbackOrderShuffledButtonLabel": "מערבב שירים",
+    "@playbackOrderShuffledButtonLabel": {
+        "description": "Label for the button that toggles the playback order between linear/in-order and shuffle, while the queue is in shuffle mode"
+    },
+    "playbackOrderShuffledButtonTooltip": "מערבב שירים. לחץ כדי לנגן לפי הסדר.",
+    "@playbackOrderShuffledButtonTooltip": {
+        "description": "Tooltip for the button that toggles the playback order between linear/in-order and shuffle, while the queue is in shuffle mode"
     }
 }
