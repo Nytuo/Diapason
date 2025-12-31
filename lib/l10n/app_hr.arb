@@ -21,7 +21,7 @@
     "@music": {},
     "name": "Ime",
     "@name": {},
-    "random": "Slučajno",
+    "random": "Nasumice",
     "@random": {},
     "revenue": "Prihod",
     "@revenue": {},
@@ -1277,7 +1277,7 @@
             }
         }
     },
-    "shuffleAlbums": "Promiješaj albume",
+    "shuffleAlbums": "Promiješaj albume izvođača",
     "@shuffleAlbums": {
         "description": "Label for action that shuffles all albums of an artist or genre"
     },
@@ -1342,11 +1342,11 @@
     "@reportQueueToServer": {
         "description": "Label for the setting that toggles reporting of the current queue to the Jellyfin server"
     },
-    "shuffleAlbumsToQueue": "Promiješaj albume u red čekanja",
+    "shuffleAlbumsToQueue": "Promiješaj albume izvođača i dodaj ih na kraj popisa u redu čekanja",
     "@shuffleAlbumsToQueue": {
         "description": "Label for action that shuffles all albums of an artist and adds them at the end of the regular queue"
     },
-    "shuffleSomeAlbumsToQueue": "Promiješaj neke albume u red čekanja",
+    "shuffleSomeAlbumsToQueue": "Promiješaj albume žanra i dodaj ih na kraj popisa u redu čekanja",
     "@shuffleSomeAlbumsToQueue": {
         "description": "Label for action that shuffles all albums of a genre and adds them at the end of the regular queue"
     },
@@ -1441,7 +1441,7 @@
     "@shuffleSomeToNextUp": {
         "description": "Used for shuffling some tracks to the end of the \"Next Up\" queue, to play after all prior tracks from Next Up have played"
     },
-    "confirmShuffleNext": "Nasumično će se reproducirati kao sljedeće",
+    "confirmShuffleNext": "Nasumice će se reproducirati kao sljedeće",
     "@confirmShuffleNext": {
         "description": "A confirmation message that is shown after successfully shuffling a list (album, playlist, etc.) to the front of the \"Next Up\" queue"
     },
@@ -1517,7 +1517,7 @@
     "@updatePlaylistButtonLabel": {
         "description": "Label for the button that updates the playlist on the edit playlist screen"
     },
-    "showArtistsTracksSectionSubtitle": "Da li prikazati odjeljak s do pet pjesama. Kada je uključeno, možeš birati između „Najčešće reproducirano”, „Favorit”, „Nasumično”, „Najnovija izdanja”, „Nedavno dodano” i „Nedavno reproducirane pjesme”.",
+    "showArtistsTracksSectionSubtitle": "Da li prikazati odjeljak s do pet pjesama. Kada je uključeno, možeš birati između „Najčešće reproducirano”, „Favorit”, „Nasumice”, „Najnovija izdanja”, „Nedavno dodano” i „Nedavno reproducirane pjesme”.",
     "@showArtistsTracksSectionSubtitle": {},
     "confirmPlayNext": "Kao sljedeće će se reproducirati {type, select, track{pjesma} album{album} artist{izvođač} playlist{playlista} genre{žanr} other{stavka}}",
     "@confirmPlayNext": {
@@ -1528,7 +1528,7 @@
             }
         }
     },
-    "playbackOrderShuffledButtonTooltip": "Nasumično reproduciranje pjesama. Dodirni za reprodukciju redom.",
+    "playbackOrderShuffledButtonTooltip": "Nasumice reproduciranje pjesama. Dodirni za reprodukciju redom.",
     "@playbackOrderShuffledButtonTooltip": {
         "description": "Tooltip for the button that toggles the playback order between linear/in-order and shuffle, while the queue is in shuffle mode"
     },
@@ -1763,15 +1763,15 @@
     "@favoriteAlbums": {},
     "favoriteArtists": "Favoriti – izvođači",
     "@favoriteArtists": {},
-    "randomTracks": "Pjesme (slučajno odabrane)",
+    "randomTracks": "Pjesme (nasumice odabrane)",
     "@randomTracks": {},
-    "randomAlbums": "Albumi (slučajno odabrani)",
+    "randomAlbums": "Albumi (nasumice odabrani)",
     "@randomAlbums": {},
-    "randomArtists": "Izvođači (slučajno odabrani)",
+    "randomArtists": "Izvođači (nasumice odabrani)",
     "@randomArtists": {},
     "mostPlayed": "Najslušanije",
     "@mostPlayed": {},
-    "randomFavoritesFirst": "Slučajno (najprije favoriti)",
+    "randomFavoritesFirst": "Nasumice (najprije favoriti)",
     "@randomFavoritesFirst": {},
     "recentlyPlayed": "Nedavno svirano",
     "@recentlyPlayed": {},
@@ -1824,7 +1824,7 @@
             }
         }
     },
-    "shuffleSomeAlbums": "Promiješaj neke albume",
+    "shuffleSomeAlbums": "Promiješaj albume žanra",
     "@shuffleSomeAlbums": {
         "description": "Label for action that shuffles some albums of a genre"
     },
@@ -2074,7 +2074,7 @@
     "@radioModeDisabledBecauseNotAvailableOfflineSubtitle": {
         "description": "Subtitle displayed in the queue to show that radio mode is disabled because the current mode is not available offline."
     },
-    "radioModeUnavailableQueueEmptyDescription": "Nedostupan jer je red prazan",
+    "radioModeUnavailableQueueEmptyDescription": "Nedostupan jer je red čekanja prazan",
     "@radioModeUnavailableQueueEmptyDescription": {
         "description": "Shown as the subtitle for radio modes when the queue is empty."
     },
@@ -2267,5 +2267,110 @@
     "duckOnAudioInterruptionSubtitle": "Smanji glasnoću kada jedna druga aplikacija nakratko odsvira zvuk. Zahtijeva ponovno pokretanje.",
     "@duckOnAudioInterruptionSubtitle": {
         "description": "Subtitle for the setting that controls ducking."
+    },
+    "radioModeRandomUnavailableNotDownloadedSubtitle": "{modeName} nije dostupan jer izvor '{sourceName}' nije preuzet",
+    "@radioModeRandomUnavailableNotDownloadedSubtitle": {
+        "description": "Shown as the subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded.",
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            },
+            "sourceName": {
+                "type": "String"
+            }
+        }
+    },
+    "radioModeRandomUnavailableNotDownloadedGenericSubtitle": "{modeName} nije dostupan jer izvor nije preuzet",
+    "@radioModeRandomUnavailableNotDownloadedGenericSubtitle": {
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            }
+        },
+        "description": "Shown as the generic subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded, when the queue source has no name."
+    },
+    "radioModeDescription": "{mode, select, reshuffle{Neprekidno promiješaj red čekanja} random{Nasumice dodaj pjesme iz početnog odabira} similar{Dodaj na temelju izvornog reda čekanja} continuous{Dodaj na temelju trenutačne pjesme} albumMix{Dodaj slične albume} other{}}",
+    "@radioModeDescription": {
+        "placeholders": {
+            "mode": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Subtitle displayed in the queue to describe what the radio is doing if enabled"
+    },
+    "radioModeOptionConfirmation": "Prebačeno je na {option, select, reshuffle{modus neprekidnog miješanja} random{modus dodavanja nasumice} similar{modus sličnosti} continuous{kontinuirani modus} albumMix{modus dodavanja sličnih albuma} other{{option}}}",
+    "@radioModeOptionConfirmation": {
+        "placeholders": {
+            "option": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Confirmation displayed when the radio mode is changed."
+    },
+    "radioModeOptionTitle": "Aktiviran je {option, select, reshuffle{modus neprekidnog miješanja} random{modus dodavanja nasumice} similar{modus sličnosti} continuous{kontinuirani modus} albumMix{modus dodavanja sličnih albuma} other{{option}}}",
+    "@radioModeOptionTitle": {
+        "placeholders": {
+            "option": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Title displayed in the queue, showing which radio mode/algorithm is currently being used."
+    },
+    "radioModeOptionName": "{option, select, reshuffle{Neprekidno miješanje} random{Nasumice} similar{Slično} continuous{Kontinuirano} albumMix{Dodavanje sličnih albuma} other{{option}}}",
+    "@radioModeOptionName": {
+        "placeholders": {
+            "option": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Radio mode names in radio mode/algorithm dropdown"
+    },
+    "shuffleAlbumsNext": "Promiješaj albume izvođača i dodaj ih na vrh popisa sljedećih na redu",
+    "@shuffleAlbumsNext": {
+        "description": "Label for action that shuffles all albums of an artist and adds them at the start of Next Up"
+    },
+    "shuffleSomeAlbumsToNextUp": "Promiješaj albume žanra i dodaj ih na kraj popisa sljedećih na redu",
+    "@shuffleSomeAlbumsToNextUp": {
+        "description": "Label for action that shuffles all albums of a genre and adds them at the end of Next Up"
+    },
+    "shuffleSomeAlbumsNext": "Promiješaj albume žanra i dodaj ih na vrh popisa sljedećih na redu",
+    "@shuffleSomeAlbumsNext": {
+        "description": "Label for action that shuffles some albums of a genre and adds them at the start of Next Up"
+    },
+    "shuffleAlbumsToNextUp": "Promiješaj albume izvođača i dodaj ih na kraj popisa sljedećih na redu",
+    "@shuffleAlbumsToNextUp": {
+        "description": "Label for action that shuffles all albums of an artist and adds them at the end of Next Up"
+    },
+    "couldNotLoad": "Nije bilo moguće učitati {source, select, album{album} playlist{playlistu} trackMix{miks pjesama} artistMix{miks izvođača} albumMix{miks albuma} genreMix{miks žanrova} favorites{favorite} allTracks{sve pjesme} filteredList{pjesme} genre{žanr} artist{izvođača} track{pjesmu} nextUpAlbum{album u popisu sljedećih} nextUpPlaylist{playlistu u popisu sljedećih} nextUpArtist{izvođača u popisu sljedećih} nextUpGenre{žanr u popisu sljedećih} other{}}",
+    "@couldNotLoad": {
+        "placeholders": {
+            "source": {
+                "type": "String"
+            }
+        }
+    },
+    "radioModeUnavailableQueueEmptySubtitle": "Modus „{modeName}” je nedostupan jer je red čekanja prazan",
+    "@radioModeUnavailableQueueEmptySubtitle": {
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            }
+        },
+        "description": "Shown as the subtitle for radio modes when the queue is empty."
+    },
+    "radioNoTracksFound": "Nije moguće pokrenuti radio jer nisu pronađene odgovarajuće pjesme.",
+    "@radioNoTracksFound": {
+        "description": "Shown when the user tries to start radio mode but no suitable tracks were found to start the radio with."
+    },
+    "loopingUnavailableWhileRadioActiveWarning": "Mijenjanje modusa petlje nije dostupno dok je radio aktivan, jer će red čekanja beskonačno nastavljati.",
+    "@loopingUnavailableWhileRadioActiveWarning": {
+        "description": "Warning message when trying to change the loop mode while radio is active."
     }
 }
