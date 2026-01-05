@@ -59,7 +59,7 @@
     "@communityRating": {},
     "dateAdded": "Dato tilføjet",
     "@dateAdded": {},
-    "datePlayed": "Afspillet den",
+    "datePlayed": "Sidst Afspillet den",
     "@datePlayed": {},
     "playCount": "Antal afspilninger",
     "@playCount": {},
@@ -149,7 +149,7 @@
     "@enableTranscoding": {},
     "enableTranscodingSubtitle": "Omkoder musik under afspilning på serveren.",
     "@enableTranscodingSubtitle": {},
-    "bitrateSubtitle": "En højere bithastighed giver højere lydkvalitet men bruger mere båndbredde.",
+    "bitrateSubtitle": "En højere bithastighed giver højere lydkvalitet men bruger mere båndbredde. Gælder ikke på lossless codecs, f.eks FLAC",
     "@bitrateSubtitle": {},
     "customLocation": "Vælg placering",
     "@customLocation": {},
@@ -213,7 +213,7 @@
     "@tabs": {},
     "cancelSleepTimer": "Vil du annullere sove timeren?",
     "@cancelSleepTimer": {},
-    "yesButtonLabel": "JA",
+    "yesButtonLabel": "Ja",
     "@yesButtonLabel": {},
     "minutes": "Minutter",
     "@minutes": {},
@@ -223,13 +223,13 @@
     "@addToPlaylistTooltip": {},
     "addToPlaylistTitle": "Tilføj til afspilningsliste",
     "@addToPlaylistTitle": {},
-    "removeFromPlaylistTooltip": "Fjern fra afspilningsliste",
+    "removeFromPlaylistTooltip": "Fjern fra denne afspilningsliste",
     "@removeFromPlaylistTooltip": {},
-    "removeFromPlaylistTitle": "Fjern fra afspilningsliste",
+    "removeFromPlaylistTitle": "Fjern Fra Denne Afspilningsliste",
     "@removeFromPlaylistTitle": {},
     "newPlaylist": "Ny afspilningsliste",
     "@newPlaylist": {},
-    "createButtonLabel": "OPRET",
+    "createButtonLabel": "Opret",
     "@createButtonLabel": {},
     "playlistCreated": "Afspilningsliste er oprettet.",
     "@playlistCreated": {},
@@ -277,9 +277,9 @@
     },
     "bufferDuration": "Buffer varighed",
     "@bufferDuration": {},
-    "bufferDurationSubtitle": "Hvor meget afspilleren skal forudindlæse i sekunder. En genstart er nødvendig.",
+    "bufferDurationSubtitle": "Hvor længden der skal forudindlæses, i sekunder. En genstart er nødvendig.",
     "@bufferDurationSubtitle": {},
-    "internalExternalIpExplanation": "Hvis du vil være i stand til at tilgå din Jellyfin server udefra, skal du bruge din eksterne IP.\n\nHvis din server er på HTTP porten (80/443), behøver du ikke angive en port. Dette er som regel tilfældet, hvis din server er bag en reverse proxy.",
+    "internalExternalIpExplanation": "Hvis du vil være i stand til at tilgå din Jellyfin server udefra, skal du bruge din eksterne IP.\n\nHvis din server er på HTTP standard porten (80/443) eller Jellyfin's standard port (8096), behøver du ikke angive en port.\n\nHvis URL 'et er korrekt, vil du se noget information om din server poppe op, under indtastnings feltet.",
     "@internalExternalIpExplanation": {
         "description": "Extra info for which IP to use for remote access, and info on whether or not the user needs to specify a port."
     },
@@ -340,7 +340,7 @@
     "@applicationLegalese": {},
     "pathReturnSlashErrorMessage": "Stier, der returnerer \"/\", kan ikke anvendes",
     "@pathReturnSlashErrorMessage": {},
-    "customLocationsBuggy": "Valgfrie placeringer er ekstremt fejlramte grundet manglende rettigheder. Jeg prøver at finde måder at løse dette, men for nu anbefaler jeg ikke, at de anvendes.",
+    "customLocationsBuggy": "Tilpassede lokationer kan være ekstremt fejlramte og er ikke anbefalet i de fleste senarier. Lokationer under system 'Music' folderen forhindre gemningen af album covers grundet OS begrænsninger.",
     "@customLocationsBuggy": {},
     "noArtist": "Ingen kunstner",
     "@noArtist": {},
@@ -364,7 +364,7 @@
     "@useCoverAsBackgroundSubtitle": {},
     "system": "System",
     "@system": {},
-    "noButtonLabel": "NEJ",
+    "noButtonLabel": "Nej",
     "@noButtonLabel": {},
     "goToAlbum": "Gå til album",
     "@goToAlbum": {},
@@ -514,7 +514,7 @@
     "@noGenres": {
         "description": "Gets shown when there are no genres available for an album or artist"
     },
-    "startMixNoTracksGenre": "Hold-inde på en genre for at tilføje eller fjerne den fra dit mix før du starter det",
+    "startMixNoTracksGenre": "Langt-tryk på en genre for at tilføje eller fjerne den fra din mix bygger før du starter det",
     "@startMixNoTracksGenre": {
         "description": "Snackbar message that shows when the user presses the instant mix button with no genres selected"
     },
@@ -650,5 +650,726 @@
         "description": "A confirmation message that is shown after successfully adding an item to the download queue, before it starts being processed and enqueued for download"
     },
     "exportLogs": "Gem logs",
-    "@exportLogs": {}
+    "@exportLogs": {},
+    "bufferDisableSizeConstraintsTitle": "Ikke begræns buffer størrelse",
+    "@bufferDisableSizeConstraintsTitle": {},
+    "viewLogs": "Vis Logfiler",
+    "@viewLogs": {
+        "description": "Label for button shown during the login process that allows the user to view the app logs"
+    },
+    "changeLanguage": "Skift Sprog",
+    "@changeLanguage": {
+        "description": "Label for button shown during the login process that allows the user to change the app language"
+    },
+    "loginFlowServerSelectionHeading": "Forbind til Jellyfin",
+    "@loginFlowServerSelectionHeading": {
+        "description": "Heading for the server selection step during the login flow."
+    },
+    "back": "Tilbage",
+    "@back": {
+        "description": "Label for the back button."
+    },
+    "serverUrlHint": "f.eks. demo.jellyfin.org/stable",
+    "@serverUrlHint": {
+        "description": "Hint text for the server URL input field. Should be the address to an actual, public Jellyfin server."
+    },
+    "serverUrlInfoButtonTooltip": "Server URL Hjælp",
+    "@serverUrlInfoButtonTooltip": {
+        "description": "Tooltip for the button that shows the extra info dialog for which IP to use for remote access, and info on whether or not the user needs to specify a port."
+    },
+    "connectingToServer": "Forbinder til server…",
+    "@connectingToServer": {
+        "description": "Text shown while the connection to the specified server is attempted"
+    },
+    "loginFlowLocalNetworkServers": "Servere på dit lokale netværk:",
+    "@loginFlowLocalNetworkServers": {
+        "description": "Heading for the list of servers on the local network, shown during the login flow. Should ideally have a colon at the end."
+    },
+    "loginFlowLocalNetworkServersScanningForServers": "Scanner efter servere…",
+    "@loginFlowLocalNetworkServersScanningForServers": {
+        "description": "Text shown while servers are being discovered via UDP broadcasts"
+    },
+    "loginFlowAccountSelectionHeading": "Vælg din konto",
+    "@loginFlowAccountSelectionHeading": {
+        "description": "Heading for the account selection step during the login flow."
+    },
+    "backToServerSelection": "Tilbage til Server Vælger",
+    "@backToServerSelection": {
+        "description": "Label for the button that takes the user back to the server selection step during the login flow."
+    },
+    "loginFlowNamelessUser": "Unavngiven Bruger",
+    "@loginFlowNamelessUser": {
+        "description": "Name for a user that doesn't have a name set on the server."
+    },
+    "playbackActionPageMoveWithinQueue": "Flyt i Køen",
+    "@playbackActionPageMoveWithinQueue": {
+        "description": "Label for the playback action page that contains all actions related to moving tracks within the queue"
+    },
+    "playbackActionPageRegularTrackOptions": "Spil",
+    "@playbackActionPageRegularTrackOptions": {
+        "description": "Label for the playback action page that contains all actions of the normal track menu, like starting a new queue or duplicating the track within the existing queue"
+    },
+    "playbackActionPageNewQueue": "Ny Kø",
+    "@playbackActionPageNewQueue": {
+        "description": "Label for the playback action page that contains all actions related to starting a new queue"
+    },
+    "playbackActionPageNext": "Spil Næste",
+    "@playbackActionPageNext": {
+        "description": "Label for the playback action page that contains all actions related to playing tracks directly after the current one"
+    },
+    "playbackActionPageNextUp": "Tilføj Næste",
+    "@playbackActionPageNextUp": {
+        "description": "Label for the playback action page that contains all actions related to appending tracks to Next Up"
+    },
+    "playbackActionPageAppendToQueue": "Spil Sidste",
+    "@playbackActionPageAppendToQueue": {
+        "description": "Label for the playback action page that contains all actions related to appending tracks at the end of the queue"
+    },
+    "updatePlaylistButtonLabel": "Opdater Spilleliste",
+    "@updatePlaylistButtonLabel": {
+        "description": "Label for the button that updates the playlist on the edit playlist screen"
+    },
+    "savingChanges": "Gemmer Ændringer…",
+    "@savingChanges": {
+        "description": "Text shown while the changes to a playlist are being saved"
+    },
+    "interactions": "Interaktioner",
+    "@interactions": {},
+    "logoutButtonSubtitle": "Log in i en anden server vil slette eksisterende overførsler",
+    "@logoutButtonSubtitle": {},
+    "none": "Ingen",
+    "@none": {},
+    "playbackSpeedControlSetting": "Afspilnings Hastighed Synlighed",
+    "@playbackSpeedControlSetting": {
+        "description": "Title of the visibility setting of the playback speed controls"
+    },
+    "automatic": "Automatisk",
+    "@automatic": {
+        "description": "Used as an option in the playback speed visibility settings"
+    },
+    "shown": "Vist",
+    "@shown": {
+        "description": "Used as an option in the playback speed visibility settings"
+    },
+    "hidden": "Skjult",
+    "@hidden": {
+        "description": "Used as an option in the playback speed visibility settings"
+    },
+    "speed": "Hastighed",
+    "@speed": {
+        "description": "Used as a placeholder in the input of the playback speed menu"
+    },
+    "reset": "Nulstil",
+    "@reset": {
+        "description": "Used for buttons in the playback speed menu and the settings"
+    },
+    "apply": "Anvend",
+    "@apply": {
+        "description": "Used for a button in the playback speed menu"
+    },
+    "playerScreenMinimumCoverPaddingEditorTitle": "Minimum album cover polstring",
+    "@playerScreenMinimumCoverPaddingEditorTitle": {
+        "description": "Title for the editor that allows the user to set the minimum padding around the album cover on the player screen."
+    },
+    "playerScreenMinimumCoverPaddingEditorSubtitle": "Minimum polstring rundt om album cover på Spilskærmen, i % af skærmens bredde.",
+    "@playerScreenMinimumCoverPaddingEditorSubtitle": {
+        "description": "Subtitle for the editor that allows the user to set the minimum padding around the album cover on the player screen."
+    },
+    "showArtistsTracksSection": "Vis Valgte Sange",
+    "@showArtistsTracksSection": {},
+    "showFastScroller": "Vis hurtig rulning",
+    "@showFastScroller": {},
+    "accentColor": "Accent Farve",
+    "@accentColor": {
+        "description": "Title of the accent color setting"
+    },
+    "accentColorTitle": "Vælg en Accent Farve",
+    "@accentColorTitle": {
+        "description": "Title for the accent color picker sheet"
+    },
+    "systemAccentColor": "Brug System Accent",
+    "@systemAccentColor": {
+        "description": "Title of the System Accent Color setting."
+    },
+    "systemAccentColorHasPriorityInfo": "Tilpasset Accent Farve deaktiveret fordi System Accent er i brug",
+    "@systemAccentColorHasPriorityInfo": {
+        "description": "Text under the AccentColorTitle which is only visible when the system color is enabled since the system color will be prioritized over custom accent color"
+    },
+    "useMonochromeIcon": "Brug Monokrom Logo",
+    "@useMonochromeIcon": {
+        "description": "Toggles the Finamp icon between classic and it being monochromic. This does not change the outside-app-icon"
+    },
+    "useMonochromeIconSubtitle": "Dette påvirker kun ikonet inde i appen, ikke launcher ikonet.",
+    "@useMonochromeIconSubtitle": {
+        "description": "Subtitle for the toggle that switches the Finamp icon between classic and it being monochromic."
+    },
+    "defaultWord": "Standard",
+    "@defaultWord": {},
+    "useDefaultButton": "Nulstil til Standard Accent Farve",
+    "@useDefaultButton": {},
+    "colorCode": "Farve Kode (Hex)",
+    "@colorCode": {
+        "description": "Label for a text field where the user can manually enter a color in hexadecimal format"
+    },
+    "colorCodeHint": "f.eks. #FFFFFF eller #coffee",
+    "@colorCodeHint": {
+        "description": "Hint text for the color code input field. Don't translate 'coffee', unless the translation is also a valid hex color code."
+    },
+    "save": "Gem",
+    "@save": {},
+    "invalidColorCode": "Forkert farvekode",
+    "@invalidColorCode": {
+        "description": "Snackbar message shown when the user tries to save an invalid hex color code"
+    },
+    "hours": "Timer",
+    "@hours": {},
+    "seconds": "Sekunder",
+    "@seconds": {},
+    "trackCountTooltip": "Track {currentTrackIndex} af {totalTrackCount}",
+    "@trackCountTooltip": {
+        "description": "Tooltip and accessibility label for the queue progress. {currentTrackIndex} and {totalTrackCount} are both numbers",
+        "placeholders": {
+            "currentTrackIndex": {
+                "type": "int",
+                "example": "10"
+            },
+            "totalTrackCount": {
+                "type": "int",
+                "example": "13"
+            }
+        }
+    },
+    "addToMorePlaylistsTooltip": "Tilføj til flere playlister",
+    "@addToMorePlaylistsTooltip": {},
+    "addToMorePlaylistsTitle": "Tilføj til Flere Playlister",
+    "@addToMorePlaylistsTitle": {},
+    "removeFromPlaylistNamedTooltip": "Fjern fra afspilningsliste'{playlistName}'",
+    "@removeFromPlaylistNamedTooltip": {
+        "description": "Tooltip for the action that removes a track from a specific playlist. The playlist name is a placeholder.",
+        "placeholders": {
+            "playlistName": {
+                "type": "String",
+                "example": "My Favorite Tracks"
+            }
+        }
+    },
+    "removeFromPlaylistNamedTitle": "Fjern fra Afspilningsliste '{playlistName}'",
+    "@removeFromPlaylistNamedTitle": {
+        "description": "Tooltip for the action that removes a track from a specific playlist. The playlist name is a placeholder.",
+        "placeholders": {
+            "playlistName": {
+                "type": "String",
+                "example": "My Favorite Tracks"
+            }
+        }
+    },
+    "playlistActionsMenuButtonTooltip": "Tryk for at tilføje til playliste. Langt tryk for at skifte favorit.",
+    "@playlistActionsMenuButtonTooltip": {
+        "description": "Tooltip for the (currently heart) button that opens the playlist actions menu / playlist picker by default and can toggle the favorite status on long press"
+    },
+    "browsePlaylists": "Gennemse Playlister",
+    "@browsePlaylists": {
+        "description": "Label for a button on the genre screen that brings you to a list of genre-filtered playlists."
+    },
+    "unknownAlbum": "Ukendt Album",
+    "@unknownAlbum": {},
+    "playbackModeDirectPlaying": "Direkte Afspilning",
+    "@playbackModeDirectPlaying": {
+        "description": "Feature chip that is shown when tracks are being played directly from the server, without transcoding"
+    },
+    "playbackModeTranscoding": "omkodning",
+    "@playbackModeTranscoding": {
+        "description": "Feature chip that is shown when tracks are being transcoded by the server"
+    },
+    "kiloBitsPerSecondLabel": "{bitrate} kbps",
+    "@kiloBitsPerSecondLabel": {
+        "description": "Label for the bitrate of a track or for transcoding. The value will be the bitrate in kilobits per second.",
+        "placeholders": {
+            "bitrate": {
+                "type": "int",
+                "example": "320"
+            }
+        }
+    },
+    "playbackModeLocal": "Spiller Lokalt",
+    "@playbackModeLocal": {
+        "description": "Feature chip that is shown when tracks are being played from local downloads, without using the server"
+    },
+    "goToArtist": "Gå til Kunstner",
+    "@goToArtist": {},
+    "goToGenre": "Gå til Genre",
+    "@goToGenre": {},
+    "removeFavorite": "Fjern Favorit",
+    "@removeFavorite": {},
+    "addFavorite": "Tilføj Favorit",
+    "@addFavorite": {},
+    "confirmFavoriteAdded": "Tilføjet Favorit",
+    "@confirmFavoriteAdded": {},
+    "confirmFavoriteRemoved": "Fjernet Favorit",
+    "@confirmFavoriteRemoved": {},
+    "insertedIntoQueue": "Indsat i køen.",
+    "@insertedIntoQueue": {
+        "description": "Snackbar message that shows when the user successfully inserts items into the play queue at a location that is not necessarily the end."
+    },
+    "confirmAddedToPlaylist": "Tilføjet til playliste.",
+    "@confirmAddedToPlaylist": {
+        "description": "Snackbar message that shows when the user successfully adds items to a playlist."
+    },
+    "startRadio": "Start Radio",
+    "@startRadio": {
+        "description": "Menu label for starting a radio from a playlist, album, etc."
+    },
+    "bufferSizeTitle": "Buffer Størrelse",
+    "@bufferSizeTitle": {},
+    "bufferSizeSubtitle": "Størrelse af bufferen i MB. Kræver en genstart",
+    "@bufferSizeSubtitle": {},
+    "skipToPreviousTrackButtonTooltip": "Spring til begyndelsen af sidste track",
+    "@skipToPreviousTrackButtonTooltip": {
+        "description": "Tooltip for the button that skips to the beginning of the current track or to the previous track"
+    },
+    "skipToNextTrackButtonTooltip": "Skip til neste track",
+    "@skipToNextTrackButtonTooltip": {
+        "description": "Tooltip for the button that skips to the next track"
+    },
+    "previousTracks": "Forrige Tracks",
+    "@previousTracks": {
+        "description": "Description in the queue panel for the list of tracks that come before the current track in the queue. The tracks might not actually have been played (e.g. if the user skipped ahead to a specific track)."
+    },
+    "nextUp": "Neste",
+    "@nextUp": {
+        "description": "Description in the queue panel for the list of tracks were manually added to be played after the current track. This should be capitalized (if applicable) to be more recognizable throughout the UI"
+    },
+    "stopAndClearQueue": "Stop afspilning og ryd kø",
+    "@stopAndClearQueue": {
+        "description": "Label for a button that stops playback and removes all tracks from the queue."
+    },
+    "createPlaylistFromCurrentQueue": "Gem Kø til Playliste",
+    "@createPlaylistFromCurrentQueue": {
+        "description": "Label for a button that adds the current queue to an existing or new playlist."
+    },
+    "playingFrom": "Spiller fra",
+    "@playingFrom": {
+        "description": "Prefix shown before the name of the main queue source, like the album or playlist that was used to start playback. Example: \"Playing from {My Nice Playlist}\""
+    },
+    "playNext": "Spil næste",
+    "@playNext": {
+        "description": "Used for adding a track to the \"Next Up\" queue at the first position, to play right after the current track finishes playing"
+    },
+    "movePlayNext": "Spil næste",
+    "@movePlayNext": {
+        "description": "Used for moving a track to the \"Next Up\" queue at the first position, to play right after the current track finishes playing"
+    },
+    "moveAddToQueue": "Flyttet til enden",
+    "@moveAddToQueue": {
+        "description": "Used for moving a track to the end of the queue, to play after all prior tracks from the queue have played"
+    },
+    "yourLikes": "Dine Likes",
+    "@yourLikes": {
+        "description": "Title for the queue source when the user is playing their liked tracks"
+    },
+    "radio": "Radio",
+    "@radio": {
+        "description": "Title for the queue source when the user is playing a track added via radio"
+    },
+    "radioForItem": "{radioSource} - Radio",
+    "@radioForItem": {
+        "description": "Suffix added to a queue source when playing a radio track. Example: \"Never Gonna Give You Up - Radio\"",
+        "placeholders": {
+            "radioSource": {
+                "type": "String",
+                "example": "Never Gonna Give You Up"
+            }
+        }
+    },
+    "savedQueue": "Gemt Kø",
+    "@savedQueue": {
+        "description": "Title for the queue source for tracks were previously in the queue before an app restart and have been reloaded"
+    },
+    "playbackOrderLinearButtonLabel": "Spiller i order",
+    "@playbackOrderLinearButtonLabel": {
+        "description": "Label for the button that toggles the playback order between linear/in-order and shuffle, while the queue is in linear/in-order mode"
+    },
+    "playbackSpeedButtonLabel": "Afspiller i x{speed} hastighed",
+    "@playbackSpeedButtonLabel": {
+        "description": "Label for the button that toggles visibility. of the playback speed menu, {speed} is the current playback speed.",
+        "placeholders": {
+            "speed": {
+                "type": "double"
+            }
+        }
+    },
+    "playbackSpeedFeatureText": "x{speed} hastighed",
+    "@playbackSpeedFeatureText": {
+        "description": "Label for the feature chip that is shown if the playback speed is different from x1, {speed} is the current playback speed.",
+        "placeholders": {
+            "speed": {
+                "type": "double"
+            }
+        }
+    },
+    "currentVolumeFeatureText": "{volume}% lyd",
+    "@currentVolumeFeatureText": {
+        "description": "Label for the feature chip that is shown if the volume is not 100%",
+        "placeholders": {
+            "volume": {
+                "type": "int",
+                "description": "The current volume level, in percent"
+            }
+        }
+    },
+    "loopModeNoneButtonLabel": "Gentager ikke",
+    "@loopModeNoneButtonLabel": {
+        "description": "Label for the button that toggles the loop mode between off, loop one, and loop all, while the queue is in loop off mode"
+    },
+    "loopModeOneButtonLabel": "Gentager dette track",
+    "@loopModeOneButtonLabel": {
+        "description": "Label for the button that toggles the loop mode between off, loop one, and loop all, while the queue is in loop one mode"
+    },
+    "loopModeAllButtonLabel": "Gentager alle",
+    "@loopModeAllButtonLabel": {
+        "description": "Label for the button that toggles the loop mode between off, loop one, and loop all, while the queue is in loop all mode"
+    },
+    "queueRestoreButtonLabel": "Gendan Denne Kø",
+    "@queueRestoreButtonLabel": {
+        "description": "Button to restore archived now playing queue, overwriting current queue"
+    },
+    "queueRestoreTitle": "Gemte {date}",
+    "@queueRestoreTitle": {
+        "description": "Description of when a saved queue was saved",
+        "placeholders": {
+            "date": {
+                "type": "DateTime",
+                "format": "yyy-MM-dd hh:mm",
+                "isCustomDateFormat": "true"
+            }
+        }
+    },
+    "queueRestoreSubtitle1": "Spiller: {track}",
+    "@queueRestoreSubtitle1": {
+        "description": "Description of playing track in a saved queue",
+        "placeholders": {
+            "track": {
+                "type": "String"
+            }
+        }
+    },
+    "queueLoadingMessage": "Gendanner kø…",
+    "@queueLoadingMessage": {
+        "description": "Message displayed on now-playing bar when a saved queue is loading."
+    },
+    "queueRetryMessage": "Fejlede med at gendanne kø. Prøv igen?",
+    "@queueRetryMessage": {
+        "description": "Message displayed on now-playing bar when all items in a saved queue fail to load."
+    },
+    "autoloadLastQueueOnStartup": "Auto-Gendan Sidste Kø",
+    "@autoloadLastQueueOnStartup": {
+        "description": "Setting to restore last queue on startup"
+    },
+    "autoloadLastQueueOnStartupSubtitle": "Når appen starter, prøv at gendanne til sidste spillede kø.",
+    "@autoloadLastQueueOnStartupSubtitle": {
+        "description": "Description of the setting to restore last queue on startup"
+    },
+    "reportQueueToServer": "Rapporter nuværende kø til server?",
+    "@reportQueueToServer": {
+        "description": "Label for the setting that toggles reporting of the current queue to the Jellyfin server"
+    },
+    "reportQueueToServerSubtitle": "Når slået til, vil Finamp sende nuværende kø til server. Dette kan forbedre fjernstyring og tillade serveren at gendanne kø. Altid til hvis 'Play On' funktionen er aktiveret.",
+    "@reportQueueToServerSubtitle": {
+        "description": "Description of the setting that toggles reporting of the current queue to the Jellyfin server"
+    },
+    "periodicPlaybackSessionUpdateFrequencySubtitle": "Hvor ofte skal der sendes nuværende afspilningsstatus til serveren, i sekunder. Dette burde være mindre end 5 minutter (300 sekunder), for ikke at sessionen timer ud.",
+    "@periodicPlaybackSessionUpdateFrequencySubtitle": {
+        "description": "Description of the setting that controls how frequently (in seconds) the current playback session is reported to the Jellyfin server"
+    },
+    "notAvailable": "Ikke tilgængelig",
+    "@notAvailable": {},
+    "customizationSettingsTitle": "Tilpasning",
+    "@customizationSettingsTitle": {
+        "description": "Title for the customization settings screen"
+    },
+    "playbackSpeedControlSettingSubtitle": "Om afspilnings hastighedens kontrol vises i afspilnings menuen",
+    "@playbackSpeedControlSettingSubtitle": {
+        "description": "Subtitle for the playback speed visibility setting"
+    },
+    "hidePlayerBottomActions": "Skjul bund funktioner",
+    "@hidePlayerBottomActions": {},
+    "showArtistChipImage": "Vis kunstner billede med kunstner navn",
+    "@showArtistChipImage": {},
+    "showArtistChipImageSubtitle": "Dette påvirker små kunstnerbillede fårhåndsvisninger, så som den på afspilningsskærmen.",
+    "@showArtistChipImageSubtitle": {},
+    "scrollToCurrentTrack": "Rul til nuværende sang",
+    "@scrollToCurrentTrack": {
+        "description": "Tooltip for button that scrolls the queue list back to the current track"
+    },
+    "enableAutoScroll": "Aktiver auto-rul",
+    "@enableAutoScroll": {
+        "description": "Tooltip for button that can be used to re-enable auto scroll on the lyrics view after the user manually scrolled"
+    },
+    "numberAsKiloHertz": "{kiloHertz} kHz",
+    "@numberAsKiloHertz": {
+        "description": "Value for the sample rate of a track, in kilohertz",
+        "placeholders": {
+            "kiloHertz": {
+                "type": "double"
+            }
+        }
+    },
+    "numberAsBit": "{bit} bit",
+    "@numberAsBit": {
+        "description": "Value for the bit depth of a track, as amount of bit used",
+        "placeholders": {
+            "bit": {
+                "type": "int"
+            }
+        }
+    },
+    "remainingDuration": "{duration} tilbage",
+    "@remainingDuration": {
+        "description": "Displays duration of unplayed tracks. {duration} is a pre-formatted string.",
+        "placeholders": {
+            "duration": {
+                "type": "String",
+                "example": "36:23"
+            }
+        }
+    },
+    "sleepTimerProjectedDuration": "Afspilning vil pause om ~{duration}",
+    "@sleepTimerProjectedDuration": {
+        "description": "Displays duration until playback is expected to be ended by the sleep timer (unless the queue is modified before). {duration} is a pre-formatted string.",
+        "placeholders": {
+            "duration": {
+                "type": "String",
+                "example": "36:23"
+            }
+        }
+    },
+    "removeFromPlaylistConfirm": "Fjern",
+    "@removeFromPlaylistConfirm": {},
+    "removeFromPlaylistPrompt": "Fjern '{itemName}' fra afspilningsliste '{playlistName}'?",
+    "@removeFromPlaylistPrompt": {
+        "placeholders": {
+            "itemName": {
+                "type": "String"
+            },
+            "playlistName": {
+                "type": "String"
+            }
+        },
+        "description": "Prompt on dialog to confirm a removal from playlist"
+    },
+    "trackMenuButtonTooltip": "Sang Menu",
+    "@trackMenuButtonTooltip": {
+        "description": "Tooltip for the button that opens the track menu"
+    },
+    "quickActions": "Hurtige Funktioner",
+    "@quickActions": {
+        "description": "Title for the short menu that can be shown when long-pressing on the menu button on the player screen. Currently only used for adding to and removing from playlists."
+    },
+    "addRemoveFromPlaylist": "Tilføj Til/Fjern Fra Afspilningsliste",
+    "@addRemoveFromPlaylist": {
+        "description": "Header for add to/remove from playlist popup menu"
+    },
+    "trackOfflineFavorites": "Synkroniser alle favorit statusser",
+    "@trackOfflineFavorites": {},
+    "trackOfflineFavoritesSubtitle": "Dette tillader flere up-to-date favorit statusser mens offline.  Dette downloader ikke yderligere filer.",
+    "@trackOfflineFavoritesSubtitle": {},
+    "allPlaylistsInfoSetting": "Download Afspilningsliste Metadata",
+    "@allPlaylistsInfoSetting": {},
+    "allPlaylistsInfoSettingSubtitle": "Synkroniser metadata for alle afspilningslister for at forbedre dine afspilningsliste oplevelse",
+    "@allPlaylistsInfoSettingSubtitle": {},
+    "downloadFavoritesSetting": "Download alle favoritter",
+    "@downloadFavoritesSetting": {},
+    "downloadAllPlaylistsSetting": "Download alle afspilningslister",
+    "@downloadAllPlaylistsSetting": {},
+    "downloadAllPlaylistsSettingWarning": "Note: Dette vil downloade alle sange i alle playlister, lige meget hvilket bibliotek de er fra.",
+    "@downloadAllPlaylistsSettingWarning": {},
+    "fiveLatestAlbumsSetting": "Download de sidste 5 albummer",
+    "@fiveLatestAlbumsSetting": {},
+    "fiveLatestAlbumsSettingSubtitle": "Downloads vil blive fjernet som de bliver forældet.  Lås downloaden for at forebygge et album bliver fjernet.",
+    "@fiveLatestAlbumsSettingSubtitle": {},
+    "cacheLibraryImagesSettings": "Cache nuværende bibliotek billeder",
+    "@cacheLibraryImagesSettings": {},
+    "cacheLibraryImagesSettingsSubtitle": "Alle album, kunstnere, genre og afspilningsliste covers i det nuværende aktive bibliotek vil blive downloadede.",
+    "@cacheLibraryImagesSettingsSubtitle": {},
+    "lyricsScreenButtonTitle": "Sangtekst",
+    "@lyricsScreenButtonTitle": {
+        "description": "Label for the button for opening the lyrics screen"
+    },
+    "showLyricsTimestampsTitle": "Vis tidsstempler for synkroniserede sangtekster",
+    "@showLyricsTimestampsTitle": {
+        "description": "Title for the setting that controls if timestamps are shown for lyrics"
+    },
+    "confirm": "Godkend",
+    "@confirm": {},
+    "close": "Luk",
+    "@close": {},
+    "showUncensoredLogMessage": "Denne log indeholder dine logininformationer. Vis?",
+    "@showUncensoredLogMessage": {},
+    "resetTabs": "Nulstil faner",
+    "@resetTabs": {},
+    "resetToDefaults": "Nulstil til standard",
+    "@resetToDefaults": {},
+    "noMusicLibrariesTitle": "Ingen Musik Biblioteker",
+    "@noMusicLibrariesTitle": {
+        "description": "Title for message that shows on the views screen when no music libraries could be found."
+    },
+    "refresh": "Genopfrisk",
+    "@refresh": {},
+    "moreInfo": "Mere info",
+    "@moreInfo": {},
+    "volumeNormalizationModeHybrid": "Dynamisk",
+    "@volumeNormalizationModeHybrid": {
+        "description": "'Dynamic' option for the replay gain mode dropdown. In dynamic mode, the track gain is used for regular playback, but if an album is playing (either because it's the main playback queue source, or because it was added to the queue at some point), or successive tracks from a same album are in the queue, the album gain is used instead."
+    },
+    "volumeNormalizationModeTrackBased": "Sang-baseret",
+    "@volumeNormalizationModeTrackBased": {
+        "description": "'Track-based' option for the replay gain mode dropdown. In track-based mode, the track gain is always used, regardless of whether an album is playing or not."
+    },
+    "volumeNormalizationModeAlbumBased": "Album-baseret",
+    "@volumeNormalizationModeAlbumBased": {
+        "description": "'Album-based' option for the replay gain mode dropdown. In album-based mode, the album gain is always used, regardless of whether an album is playing or not."
+    },
+    "volumeNormalizationModeAlbumOnly": "Kun for Albummer",
+    "@volumeNormalizationModeAlbumOnly": {
+        "description": "'Only for Albums' option for the replay gain mode dropdown. In albums-only mode, Volume Normalization is only applied while playing albums (using the album gain), but not for individual tracks."
+    },
+    "numberAsDecibel": "{value} dB",
+    "@numberAsDecibel": {
+        "description": "Label for a number that represents a decibel value. The value will be the decibel value.",
+        "placeholders": {
+            "value": {
+                "type": "double",
+                "example": "-9.6"
+            }
+        }
+    },
+    "downloadItem": "Overfør",
+    "@downloadItem": {
+        "description": "Option to download item in long-press menu."
+    },
+    "repairComplete": "Overførsel Reparation færdig.",
+    "@repairComplete": {
+        "description": "Message displayed after download repair completes."
+    },
+    "syncComplete": "Alle overførsler gen-synkroniseret.",
+    "@syncComplete": {
+        "description": "Message displayed after download sync completes."
+    },
+    "syncDownloads": "Synkroniser og overfør manglende ting.",
+    "@syncDownloads": {
+        "description": "Tooltip for downloads sync button."
+    },
+    "repairDownloads": "Reparer fejl med overførte filer eller metadata.",
+    "@repairDownloads": {
+        "description": "Tooltip for downloads repair button."
+    },
+    "requireWifiForDownloads": "Kræv Wi-Fi under overførsler.",
+    "@requireWifiForDownloads": {
+        "description": "Description of setting for only performing downloads while on wifi"
+    },
+    "downloadLibraryPrompt": "Er du sikker på at du vil overføre al indhold af biblioteket ''{libraryName}''?",
+    "@downloadLibraryPrompt": {
+        "description": "Confirmation prompt before downloading entire library, which may be large.",
+        "placeholders": {
+            "libraryName": {
+                "type": "String"
+            }
+        }
+    },
+    "onlyShowFullyDownloaded": "Vis kun fuldt overførte albummer",
+    "@onlyShowFullyDownloaded": {
+        "description": "Tooltip for button that hides all partially downloaded albums"
+    },
+    "filesystemFull": "Resterende overførsler kan ikke blive færdiggjort. Filsystemet er fuldt.",
+    "@filesystemFull": {
+        "description": "Message shown when a download cannot complete due to the filesystem being full."
+    },
+    "connectionInterrupted": "Forbindelse afbrudt, pauser overførsler.",
+    "@connectionInterrupted": {
+        "description": "Message shown when the connection is interrupted during a download."
+    },
+    "connectionInterruptedBackground": "Forbindelse var afbrudt mens en overførsel var i gang i baggrunden. Dette kan skyldes OS indstillinger.",
+    "@connectionInterruptedBackground": {
+        "description": "Message shown when the connection is interrupted during a download while in the background. It advises checking OS settings, as they may cause background downloads to be blocked."
+    },
+    "activeDownloadSize": "Downloader…",
+    "@activeDownloadSize": {
+        "description": "Message shown for download size while item is still being downloaded"
+    },
+    "missingDownloadSize": "Sletter…",
+    "@missingDownloadSize": {
+        "description": "Message shown for download size while item is being deleted but is not fully removed"
+    },
+    "syncingDownloadSize": "Synkroniserer…",
+    "@syncingDownloadSize": {
+        "description": "Message shown for download size while item is still syncing."
+    },
+    "downloadSettings": "Overførsler",
+    "@downloadSettings": {},
+    "downloadsWorkersSetting": "Overførsel Arbejder antal",
+    "@downloadsWorkersSetting": {
+        "description": "Title of setting controlling download worker count."
+    },
+    "downloadsWorkersSettingLabel": "{count} Overførsel Arbejdere",
+    "@downloadsWorkersSettingLabel": {
+        "description": "Label of values on download worker count slider",
+        "placeholders": {
+            "count": {
+                "type": "String"
+            }
+        }
+    },
+    "syncOnStartupSwitch": "Automatisk Synkroniser Overførsler ved Opstart",
+    "@syncOnStartupSwitch": {
+        "description": "Title of setting for automatically triggering a throttled resync on app startup."
+    },
+    "preferQuickSyncSwitch": "Foretræk Hurtige Synkroniseringer",
+    "@preferQuickSyncSwitch": {
+        "description": "Title of setting that skips completed albums while syncing."
+    },
+    "preferQuickSyncSwitchSubtitle": "Under synkroniseringer, nogle typisk statiske ting (som sange og album) vil ikke blive opdateret. Overfør reparer vil altid udføre en fuld synkronisering.",
+    "@preferQuickSyncSwitchSubtitle": {
+        "description": "Description of setting that skips completed albums while syncing."
+    },
+    "downloadButtonDisabledGenreFilterTooltip": "Du bedes fjerne genre filteret for at aktivere download handlinger.",
+    "@downloadButtonDisabledGenreFilterTooltip": {
+        "description": "Tooltip shown when a download button is disabled because of an active genre filter."
+    },
+    "genreFilterNotAvailableForAlbums": "Genre Filtre er ikke tilgængelige for Albummer.",
+    "@genreFilterNotAvailableForAlbums": {
+        "description": "Message shown when the user tries to apply a genre filter to an album."
+    },
+    "genreNotFound": "Genren kunne ikke findes.",
+    "@genreNotFound": {
+        "placeholders": {
+            "additionalInfo": {
+                "type": "String"
+            }
+        },
+        "description": "Message shown when a genre filter or open-genre action fails because the genre item could not be found."
+    },
+    "transcodingStreamingFormatTitle": "Vælg Omkodnings Format",
+    "@transcodingStreamingFormatTitle": {
+        "description": "Title for the dropdown that selects the format for transcoded streams"
+    },
+    "transcodingStreamingFormatSubtitle": "Vælg formatet der skal bruges til streaming af omkodet lyd. Sange allerede i kø vil ikke blive påvirket.",
+    "@transcodingStreamingFormatSubtitle": {},
+    "downloadTranscodeEnableTitle": "Aktiver Omkodede Overførsler",
+    "@downloadTranscodeEnableTitle": {
+        "description": "Title for Enable Transcoded Downloads dropdown"
+    },
+    "timeFractionTooltip": "{currentTime} af {totalTime}",
+    "@timeFractionTooltip": {
+        "placeholders": {
+            "currentTime": {
+                "type": "String",
+                "example": "2 minutes 40 seconds"
+            },
+            "totalTime": {
+                "type": "String",
+                "example": "3 minutes 20 seconds"
+            }
+        },
+        "description": "Tooltip and accessibility label for the track progress. {currentTime} is the current position within the track, as a translated string like '2 minutes 40 seconds', and {totalTime} is the total duration of the track, also a translated string."
+    }
 }
