@@ -775,7 +775,7 @@
     "@playerScreenMinimumCoverPaddingEditorSubtitle": {
         "description": "Subtitle for the editor that allows the user to set the minimum padding around the album cover on the player screen."
     },
-    "showArtistsTracksSection": "Vis Valgte Sange",
+    "showArtistsTracksSection": "Vis Valgte Spor",
     "@showArtistsTracksSection": {},
     "showFastScroller": "Vis hurtig rulning",
     "@showFastScroller": {},
@@ -1371,5 +1371,177 @@
             }
         },
         "description": "Tooltip and accessibility label for the track progress. {currentTime} is the current position within the track, as a translated string like '2 minutes 40 seconds', and {totalTime} is the total duration of the track, also a translated string."
+    },
+    "playbackSpeedControlSettingDescription": "Automatisk\nFinamp prøver at identificere om det spor du spiller er en podcast eller (del af) en lydbog. Dette er hvis sporet er længere end {trackDuration} minutter, hvis sporets album er længere end {albumDuration} timer, eller hvis sporet har mindst en af disse genre tildelt: {genreList\nAfspilningshastighed vil derefter blive vist i afspilnings skærm menuen.\n\nVist:\nAfspilningshastighedens kontrol vil altid blive vist i afspilnings skærm menuen.\n\nSkjult:\nAfspilningshastighedens kontrol vil altid blive skjult i afspilnings skærm menuen.",
+    "@playbackSpeedControlSettingDescription": {
+        "description": "Description for the dropdown that selects the replay gain mode, shown in a dialog that opens when the user presses the info icon next to the dropdown",
+        "placeholders": {
+            "trackDuration": {
+                "type": "int",
+                "example": "30"
+            },
+            "albumDuration": {
+                "type": "int",
+                "example": "3"
+            },
+            "genreList": {
+                "type": "String",
+                "example": "Podcast, Audiobook"
+            }
+        }
+    },
+    "genreFilterArtistScreens": "Filtrer Kunstnere",
+    "@genreFilterArtistScreens": {
+        "description": "Label for the setting that controls if a genreFilter should get applied to ArtistScreens when accessing the ArtistScreens through a Genre."
+    },
+    "genreFilterPlaylistScreens": "Filtrer Afspilningslister",
+    "@genreFilterPlaylistScreens": {
+        "description": "Label for the setting that controls if a genreFilter should get applied to PlaylistScreens when accessing the PlaylistScreens through a Genre."
+    },
+    "curatedItemsMostPlayedOfflineTooltip": "Ikke tilgængelig i Offline Tilstand.",
+    "@curatedItemsMostPlayedOfflineTooltip": {
+        "description": "Tooltip for Most Played on Curated Items in Offline Mode."
+    },
+    "noMusicLibrariesBody": "Finamp kunne ikke finde flere musik biblioteker. Du bedes sikre dig at din Jellyfin server indeholder mindst et bibliotek med indholds typen sat til \"Music\".",
+    "@noMusicLibrariesBody": {},
+    "volumeNormalizationSettingsTitle": "Lyd Normalisering",
+    "@volumeNormalizationSettingsTitle": {
+        "description": "Title for the replay gain settings screen"
+    },
+    "volumeNormalizationSwitchTitle": "Aktiver Lyd Normalisering",
+    "@volumeNormalizationSwitchTitle": {
+        "description": "Title for the switch that toggles replay gain"
+    },
+    "radioModeSettingsSubtitle": "Sætter metoden radio funktionen bruger til at vælge sange at tilføje.",
+    "@radioModeSettingsSubtitle": {
+        "description": "Subtitle for the setting that controls the radio mode/algorithm."
+    },
+    "radioModeMenuTitle": "Vælg Radiotilstand",
+    "@radioModeMenuTitle": {
+        "description": "Title for menu that allows users to choose the radio mode."
+    },
+    "radioFailedSubtitle": "Ikke flere radio spor fundet. Prøv at ændre tilstanden.",
+    "@radioFailedSubtitle": {
+        "description": "Subtitle displayed in the radio menu to show that no radio tracks could be generated."
+    },
+    "radioModeActiveTitle": "Radio Aktiv",
+    "@radioModeActiveTitle": {
+        "description": "Title displayed in the queue to show that radio mode is enabled and active."
+    },
+    "radioModeDisabledTitle": "Radio Deaktiveret",
+    "@radioModeDisabledTitle": {
+        "description": "Title displayed in the queue to show that radio mode is disabled."
+    },
+    "radioModeEnableButtonTitle": "Aktiver Radio",
+    "@radioModeEnableButtonTitle": {
+        "description": "Title for the option that enables radio mode."
+    },
+    "radioModeDisableButtonTitle": "Deaktiver Radio",
+    "@radioModeDisableButtonTitle": {
+        "description": "Title for the option that disables radio mode."
+    },
+    "radioModeEnabledSubtitle": "Tryk for at konfigurere",
+    "@radioModeEnabledSubtitle": {
+        "description": "Subtitle displayed in the queue to show when radio mode is enabled."
+    },
+    "radioModeDisabledSubtitle": "Tryk for at aktivere",
+    "@radioModeDisabledSubtitle": {
+        "description": "Subtitle displayed in the queue to show that radio mode is disabled."
+    },
+    "radioModeDisabledBecauseNotAvailableOfflineSubtitle": "Nuværende tilstand er ikke tilgængeligt offline.",
+    "@radioModeDisabledBecauseNotAvailableOfflineSubtitle": {
+        "description": "Subtitle displayed in the queue to show that radio mode is disabled because the current mode is not available offline."
+    },
+    "radioModeUnavailableWhileOfflineSubtitle": "{modeName} utilgængelig mens offline",
+    "@radioModeUnavailableWhileOfflineSubtitle": {
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            }
+        },
+        "description": "Shown as the subtitle for radio modes when the user is offline and the radio mode requires the user to be online to function."
+    },
+    "radioModeUnavailableQueueEmptyDescription": "Ikke tilgængelig da køen er tom",
+    "@radioModeUnavailableQueueEmptyDescription": {
+        "description": "Shown as the subtitle for radio modes when the queue is empty."
+    },
+    "radioModeUnavailableQueueEmptySubtitle": "{modeName} ikke tilgængelig da køen er tom",
+    "@radioModeUnavailableQueueEmptySubtitle": {
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            }
+        },
+        "description": "Shown as the subtitle for radio modes when the queue is empty."
+    },
+    "radioModeRandomUnavailableNotDownloadedDescription": "Ikke tilgængelig da '{sourceName}' ikke er hentet",
+    "@radioModeRandomUnavailableNotDownloadedDescription": {
+        "description": "Shown as the subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded.",
+        "placeholders": {
+            "sourceName": {
+                "type": "String"
+            }
+        }
+    },
+    "radioModeRandomUnavailableNotDownloadedSubtitle": "{modeName} Ikke tilgængelig da '{sourceName}' ikke er hentet",
+    "@radioModeRandomUnavailableNotDownloadedSubtitle": {
+        "description": "Shown as the subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded.",
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            },
+            "sourceName": {
+                "type": "String"
+            }
+        }
+    },
+    "radioModeRandomUnavailableNotDownloadedGenericDescription": "Ikke tilgængelig da kilde ikke er hentet",
+    "@radioModeRandomUnavailableNotDownloadedGenericDescription": {
+        "description": "Shown as the generic subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded, when the queue source has no name."
+    },
+    "radioModeRandomUnavailableNotDownloadedGenericSubtitle": "{modeName} Ikke tilgængelig da kilde ikke er hentet",
+    "@radioModeRandomUnavailableNotDownloadedGenericSubtitle": {
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            }
+        },
+        "description": "Shown as the generic subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded, when the queue source has no name."
+    },
+    "radioNoTracksFound": "Kunne ikke starte radio da ingen egnede spor blev fundet.",
+    "@radioNoTracksFound": {
+        "description": "Shown when the user tries to start radio mode but no suitable tracks were found to start the radio with."
+    },
+    "notImplementedYet": "Ikke implementeret endnu.",
+    "@notImplementedYet": {
+        "description": "Message shown when a feature is not implemented yet"
+    },
+    "automaticOfflineModeOverrideActiveSubtitle": "Klik her for at genoptage",
+    "@automaticOfflineModeOverrideActiveSubtitle": {
+        "description": "Subtitle for the label shown below the offline mode toggle when automatic offline mode switching is paused"
+    },
+    "sleepTimerFinishLastTrack": "Færdiggør sidste spor?",
+    "@sleepTimerFinishLastTrack": {
+        "description": "Option for the sleep timer that will finish the last track before stopping playback."
+    },
+    "sleepTimerAfterCurrentTrack": "Efter Nuværende Spor",
+    "@sleepTimerAfterCurrentTrack": {
+        "description": "Option for the sleep timer that will stop playback after the current track finishes."
+    },
+    "serverSharingMenuTitle": "Lokalt Netværk Server Deling",
+    "@serverSharingMenuTitle": {
+        "description": "Title for the server sharing menu that allows the user to share their server address with other devices on the local network"
+    },
+    "serverSharingMenuButtonTitle": "Del Server",
+    "@serverSharingMenuButtonTitle": {
+        "description": "Title for the button in the drawer that opens the server sharing menu"
+    },
+    "serverSharingMenuConfirmationDialogText": "Er du sikker på at du vil aktivere server deling selvom du er i offline tilstand? Dette vil få Finamp til at sende data over det lokale netværk.",
+    "@serverSharingMenuConfirmationDialogText": {
+        "description": "Dialog text shown when enabling server sharing while offline mode is enabled"
     }
 }
