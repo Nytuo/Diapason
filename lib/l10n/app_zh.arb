@@ -654,7 +654,7 @@
             }
         }
     },
-    "playbackModeLocal": "本地播放",
+    "playbackModeLocal": "本地",
     "@playbackModeLocal": {
         "description": "Feature chip that is shown when tracks are being played from local downloads, without using the server"
     },
@@ -2732,7 +2732,7 @@
     "@invalidColorCode": {
         "description": "Snackbar message shown when the user tries to save an invalid hex color code"
     },
-    "startRadio": "启动电台",
+    "startRadio": "开启电台",
     "@startRadio": {
         "description": "Menu label for starting a radio from a playlist, album, etc."
     },
@@ -2795,7 +2795,7 @@
     "@radioModeMenuTitle": {
         "description": "Title for menu that allows users to choose the radio mode."
     },
-    "loopingOverriddenByRadioSubtitle": "启动电台时，队列循环已被禁用",
+    "loopingOverriddenByRadioSubtitle": "开启电台时，队列循环已被禁用",
     "@loopingOverriddenByRadioSubtitle": {
         "description": "Subtitle displayed in the radio menu to show that queue looping is disabled while radio mode is enabled."
     },
@@ -3013,7 +3013,7 @@
         },
         "description": "Shown as the generic subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded, when the queue source has no name."
     },
-    "radioNoTracksFound": "无法启动电台，因为找不到合适的歌曲。",
+    "radioNoTracksFound": "无法开启电台，因为找不到合适的歌曲。",
     "@radioNoTracksFound": {
         "description": "Shown when the user tries to start radio mode but no suitable tracks were found to start the radio with."
     },
