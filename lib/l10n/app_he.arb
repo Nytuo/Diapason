@@ -1753,7 +1753,7 @@
     "@marqueeOrTruncateButtonSubtitle": {},
     "hidePlayerBottomActions": "הסתרת פעולות בתחתית",
     "@hidePlayerBottomActions": {},
-    "hidePlayerBottomActionsSubtitle": "הסתרת כפתורי התור והמילים במסך הנגן. החלקה למעלה ת",
+    "hidePlayerBottomActionsSubtitle": "הסתרת כפתורי התור והמילים במסך הנגן. החלקה למעלה כדי להיכנס לתור, החלקה שמאלה (מתחת לתמונת האלבום) כדי לצפות במילים אם קיימות.",
     "@hidePlayerBottomActionsSubtitle": {},
     "lyricsFontSizeTitle": "גודל גופן מילים",
     "@lyricsFontSizeTitle": {
@@ -2500,5 +2500,460 @@
     "autoOfflineSettingSubtitle": "הפעלה אוטומטית של מצב לא מקוון לפי החיבור לרשת או זמינות השרת.",
     "@autoOfflineSettingSubtitle": {
         "description": "Subtitle for the automated offline mode setting."
+    },
+    "swipeInsertQueueNext": "החלקה לנגינת רצועת השמע אחרי",
+    "@swipeInsertQueueNext": {},
+    "swipeInsertQueueNextSubtitle": "מאפשר להכניס רצועת שמע כהפריט הבא בתור בהחלקה ברשימת רצועות השמע במקום להעביר אותה לסוף התור.",
+    "@swipeInsertQueueNextSubtitle": {},
+    "connectionInterruptedBackgroundAndroid": "החיבור נותק בזמן ההורדה ברקע. זה יכול לקרות בהפעלת 'היכנס למצב עדיפות-נמוכה בעצירה' או בגלל הגדרות מערכת ההפעלה.",
+    "@connectionInterruptedBackgroundAndroid": {
+        "description": "Message shown when the connection is interrupted during a download while in the background on android. It advises checking OS settings, as they may cause background downloads to be blocked, or checking the  'Enter Low-Priority State on Pause' setting."
+    },
+    "runRepairWarning": "אין תקשורת עם השרת כדי לסיים את העברת ההורדות. נא להריץ 'תיקון הורדות' ממסך ההורדות ברגע שיש חיבור לשרת.",
+    "@runRepairWarning": {
+        "description": "Message shown when an error occurs during the downloads repair step of the Isar downloads migration, which requires a server connection."
+    },
+    "downloadsWorkersSetting": "כמות עובדי הורדה",
+    "@downloadsWorkersSetting": {
+        "description": "Title of setting controlling download worker count."
+    },
+    "downloadsWorkersSettingSubtitle": "כמות העובדית לסנכרון מטא-נתונים ולמחיקת הורדות. הגדלת עובדי ההורדה יכולה להאיץ את מהירות סנכרון ומחיקת הורדה, במיוחד כשלשרת לוקח זמן להגיב, אבל יכול ליצור איטיות.",
+    "@downloadsWorkersSettingSubtitle": {
+        "description": "Description of setting controlling download worker count."
+    },
+    "downloadsWorkersSettingLabel": "{count} עובדי הורדה",
+    "@downloadsWorkersSettingLabel": {
+        "description": "Label of values on download worker count slider",
+        "placeholders": {
+            "count": {
+                "type": "String"
+            }
+        }
+    },
+    "cacheLibraryImagesName": "מטמון תמונות עבור '{libraryName}'",
+    "@cacheLibraryImagesName": {
+        "placeholders": {
+            "libraryName": {
+                "type": "String"
+            }
+        },
+        "description": "Localized names of special downloadable collection representing cached images for a certain library."
+    },
+    "downloadInfo": "{size} {codec}{bitrate, select, null{} other{ @ {bitrate} קודד}}{location, select, null{} other{ ({location})}}",
+    "@downloadInfo": {
+        "placeholders": {
+            "bitrate": {
+                "type": "String",
+                "example": "234kbps"
+            },
+            "codec": {
+                "type": "String",
+                "example": "FLAC"
+            },
+            "size": {
+                "type": "String",
+                "example": "456"
+            },
+            "location": {
+                "type": "String",
+                "example": "Internal Storage"
+            }
+        },
+        "description": "Track info line in downloads screen lists"
+    },
+    "collectionDownloadInfo": "{size}{codec, select, ORIGINAL{} other{ בתור {codec} @ {bitrate}}}{location, select, null{} other{ ({location})}}",
+    "@collectionDownloadInfo": {
+        "placeholders": {
+            "bitrate": {
+                "type": "String",
+                "example": "234kbps"
+            },
+            "codec": {
+                "type": "String",
+                "example": "FLAC"
+            },
+            "size": {
+                "type": "String",
+                "example": "456"
+            },
+            "location": {
+                "type": "String",
+                "example": "Internal Storage"
+            }
+        },
+        "description": "Collection info line in downloads screen lists"
+    },
+    "fixedGridSizeSwitchTitle": "שימוש בגודל אריחי רשת קבוע",
+    "@fixedGridSizeSwitchTitle": {},
+    "fixedGridSizeSwitchSubtitle": "גדלי אריחי הרשת לא יותאמו לגודל החלון/מסך.",
+    "@fixedGridSizeSwitchSubtitle": {},
+    "fixedGridSizeTitle": "גודל אריח רשת",
+    "@fixedGridSizeTitle": {},
+    "cacheLibraryImagesSettings": "שמירת תמונות של הספריה הנוכחית במטמון",
+    "@cacheLibraryImagesSettings": {},
+    "sampleRate": "קצב דגימה",
+    "@sampleRate": {
+        "description": "Label for the feature chips showing the sample rate of a track"
+    },
+    "applyFilterOnGenreChipTapPrompt": "הסינון ג׳אנר הפעיל",
+    "@applyFilterOnGenreChipTapPrompt": {
+        "description": "A snackbar that is shown to the user if a genre filter was applied due to their selected settings"
+    },
+    "itemDeletedSnackbar": "{itemType, select, album{אלבום} playlist{פלייליסט} artist{אמן} genre{ג׳אנר} track{רצועת שמע} library{ספריה} other{פריט}} נמחק מ{deviceType, select, device{מכשיר} server{שרת} other{לא ידוע}}",
+    "@itemDeletedSnackbar": {
+        "description": "Used whenever item gets deleted from the device or server, message in snackbar"
+    },
+    "suppressPlayerPaddingSubtitle": "צמצום מלא של המרווח בין כפתורי השליטה במסך הנגן כשתמונת האלבום לא בגדול המלא.",
+    "@suppressPlayerPaddingSubtitle": {},
+    "deleteFromTargetConfirmButton": "מחיקה {target, select, device{מהמכשיר} server{מהשרת} other{}}",
+    "@deleteFromTargetConfirmButton": {
+        "description": "(Important: Note the space in front of some cases) The button the user needs to press to execute the delete action. If no target is set, the text should just be a generic 'delete' text. This button is both visible before and after the delete confirm prompt."
+    },
+    "downloadSizeWarningCutoff": "גבול אזהרת גודל הורדה",
+    "@downloadSizeWarningCutoff": {
+        "description": "Title for the setting controlling when to warn about a large download"
+    },
+    "autoOfflineSettingDescription": "{disabledModeName}:\nלא מופעל מצב לא מקוון באופן אוטומטי. יכול לחסוך סוללה.\n\n{localNetworkModeName}:\nהפעלת מצב לא מקוון כאשר אין חיבור לWiFi או לכבל רשת.\n\n{disconnectedModeName}:\nהפעלת מצב לא מקוון כאשר אין חיבור לכלום.\n\n{unreachableModeName}:\nהפעלת מצב לא מקוון כאשר אין תשובה מהשרת אחרי שינוי רשתות.\n\nתמיד ניתן לכבות ידנית את מצב לא מקוון שיעצור את ההפעלה האוטומטית עד שתופעל מחדש.",
+    "@autoOfflineSettingDescription": {
+        "description": "Setting description. Make sure the Mode names match the translations.",
+        "placeholders": {
+            "disabledModeName": {
+                "type": "String"
+            },
+            "localNetworkModeName": {
+                "type": "String"
+            },
+            "disconnectedModeName": {
+                "type": "String"
+            },
+            "unreachableModeName": {
+                "type": "String"
+            }
+        }
+    },
+    "autoOfflineSettingTitle": "מצב לא מקוון אוטומטי",
+    "@autoOfflineSettingTitle": {},
+    "autoOfflineNotification": "מצב לא מקוון {state, select, enabled{הופעל} disabled{בוטל} other{שרף את הטוסט}} אוטומטית",
+    "@autoOfflineNotification": {
+        "description": "The text for 'other' should never be seen anyway, so feel free to put in a little harmless easter egg :)"
+    },
+    "audioFadeOutDurationSettingTitle": "משך דהיית שמע החוצה",
+    "@audioFadeOutDurationSettingTitle": {
+        "description": "Title for the audio fade-out duration setting."
+    },
+    "audioFadeOutDurationSettingSubtitle": "המשך במילישניות של דהיית השמע החוצה. הערך 0 יבטל את הדהייה החוצה.",
+    "@audioFadeOutDurationSettingSubtitle": {
+        "description": "Subtitle for the audio fade-out duration setting. Set to 0 to disable fade-out."
+    },
+    "audioFadeInDurationSettingTitle": "משך דהיית שמע פנימה",
+    "@audioFadeInDurationSettingTitle": {
+        "description": "Title for the audio fade-in duration setting."
+    },
+    "audioFadeInDurationSettingSubtitle": "המשך במילישניות של דהיית השמע פנימה. הערך 0 יבטל את הדהייה פנימה.",
+    "@audioFadeInDurationSettingSubtitle": {
+        "description": "Subtitle for the audio fade-in duration setting. Set to 0 to disable fade-in."
+    },
+    "outputMenuButtonTitle": "פלט",
+    "@outputMenuButtonTitle": {
+        "description": "Button title for opening the output menu/panel"
+    },
+    "outputMenuTitle": "שינוי פלט",
+    "@outputMenuTitle": {
+        "description": "Title for the output menu that allows the user to change the audio output device and volume"
+    },
+    "outputMenuVolumeSectionTitle": "עוצמת שמע",
+    "@outputMenuVolumeSectionTitle": {
+        "description": "Title for the volume section in the output menu"
+    },
+    "outputMenuDevicesSectionTitle": "מכשירים זמינים",
+    "@outputMenuDevicesSectionTitle": {
+        "description": "Title for the available devices section in the output menu"
+    },
+    "outputMenuOpenConnectionSettingsButtonTitle": "התחברות למכשיר",
+    "@outputMenuOpenConnectionSettingsButtonTitle": {
+        "description": "Button title for connecting to a device from the output menu"
+    },
+    "deviceType": "{type, select, speaker{רמקול מכשיר} tv{טלוויזיה} bluetooth{Bluetooth} other{לא ידוע}}",
+    "@deviceType": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        },
+        "description": "Label for the type of device in the output menu"
+    },
+    "itemCountCalculating": "מחשב כמות פריטים",
+    "@itemCountCalculating": {
+        "description": "Shown to screen readers while the item count is being calculated."
+    },
+    "preferLocalNetworkActiveAddressInfoText": "כתובת פעילה",
+    "@preferLocalNetworkActiveAddressInfoText": {
+        "description": "Shows the active address inside the network settings screen so the user can see if this feature works"
+    },
+    "preferLocalNetworkTargetAddressLocalSettingTitle": "כתובת רשת מקומית",
+    "@preferLocalNetworkTargetAddressLocalSettingTitle": {},
+    "preferLocalNetworkTargetAddressLocalSettingDescription": "כתובת היעד של השרת Jellyfin בתוך הרשת המקומית",
+    "@preferLocalNetworkTargetAddressLocalSettingDescription": {},
+    "preferLocalNetworkEnableSwitchTitle": "העדפת רשת מקומית",
+    "@preferLocalNetworkEnableSwitchTitle": {},
+    "preferLocalNetworkEnableSwitchDescription": "האם להשתמש בכתובת שונה כאשר המכשיר מחובר לרשת המקומית של השרת Jellyfin",
+    "@preferLocalNetworkEnableSwitchDescription": {},
+    "preferLocalNetworkPublicAddressSettingTitle": "כתובת ציבורית",
+    "@preferLocalNetworkPublicAddressSettingTitle": {},
+    "preferLocalNetworkPublicAddressSettingDescription": "הכתובת הראשית לשימוש כדי להתחבר לשרת Jellyfin",
+    "@preferLocalNetworkPublicAddressSettingDescription": {},
+    "preferLocalNetworkInfoBox": "האפשרות הזאת דורשת הרשאות מיקום (והמיקום צריך להיות מופעל) כדי לקרוא את שם הרשת.",
+    "@preferLocalNetworkInfoBox": {
+        "description": "This is only shown on ios and android since desktop doesnt require location permissions"
+    },
+    "networkSettingsTitle": "רשת",
+    "@networkSettingsTitle": {
+        "description": "Title for the network settings screen"
+    },
+    "downloadPaused": "ההורדה הופסקה כי המכשיר לא מחובר לWiFi",
+    "@downloadPaused": {
+        "description": "Gets shown in the snackbar if loosing wifi connection while downloads are running and the 'requireWifiForDownloads' is enabled"
+    },
+    "missingSchemaError": "כתובת Url צריכה להתחיל עם //:http(s)",
+    "@missingSchemaError": {
+        "description": "Snackbar message when the user changes their home/public address but it doesn't start with http"
+    },
+    "testConnectionButtonLabel": "בדיקת כל החיבורים",
+    "@testConnectionButtonLabel": {
+        "description": "Button to test the public and local url inside the network settings tab"
+    },
+    "autoReloadQueueTitle": "טעינת תור מחדש אוטומטית",
+    "@autoReloadQueueTitle": {
+        "description": "Title for the setting that controls if the queue is automatically reloaded when the source changes"
+    },
+    "autoReloadQueueSubtitle": "טוען מחדש את התור אוטומטים כשהמקור משתנה (למשל בהפעלת מצב לא מקוון או בשינוי כתובת שרת). אם מבוטל, Finamp יודיע על כך במקום.",
+    "@autoReloadQueueSubtitle": {
+        "description": "Subtitle for the setting that controls if the queue is automatically reloaded when the source changes"
+    },
+    "clearQueueOnStopEventTitle": "ניקוי התור בעצירה חיצונית",
+    "@clearQueueOnStopEventTitle": {
+        "description": "Title for the setting that controls if OS stop commands clear the queue."
+    },
+    "clearQueueOnStopEventSubtitle": "מנקה את התור וסוגר את הנגן אם פקודת 'stop' מתקבלת ממערכת ההפעלה. פעולות עצירה בתוך האפליקציה תמיד יסגרו את הנגן וינקו את התור.",
+    "@clearQueueOnStopEventSubtitle": {
+        "description": "Subtitle for the setting that controls if OS stop commands clear the queue."
+    },
+    "radioModeSettingsTitle": "מצב רדיו",
+    "@radioModeSettingsTitle": {
+        "description": "Title for the setting that controls the radio mode/algorithm."
+    },
+    "radioModeSettingsSubtitle": "קובע את השיטה שבה אפשרות הרדיו משתמשת כדי לבחור שירים להוספה.",
+    "@radioModeSettingsSubtitle": {
+        "description": "Subtitle for the setting that controls the radio mode/algorithm."
+    },
+    "radioModeMenuTitle": "בחירת מצב רדיו",
+    "@radioModeMenuTitle": {
+        "description": "Title for menu that allows users to choose the radio mode."
+    },
+    "loopingOverriddenByRadioSubtitle": "נגינת תור בלולאה מבוטלת כשמצב רדיו מופעל",
+    "@loopingOverriddenByRadioSubtitle": {
+        "description": "Subtitle displayed in the radio menu to show that queue looping is disabled while radio mode is enabled."
+    },
+    "radioFailedSubtitle": "לא נמצאו עוד רצועות שמע רדיו. נסו לשנות את המצב.",
+    "@radioFailedSubtitle": {
+        "description": "Subtitle displayed in the radio menu to show that no radio tracks could be generated."
+    },
+    "radioModeActiveTitle": "רדיו מופעל",
+    "@radioModeActiveTitle": {
+        "description": "Title displayed in the queue to show that radio mode is enabled and active."
+    },
+    "radioModeDisabledTitle": "רדיו מופסק",
+    "@radioModeDisabledTitle": {
+        "description": "Title displayed in the queue to show that radio mode is disabled."
+    },
+    "radioModeInactiveTitle": "רדיו נעצר",
+    "@radioModeInactiveTitle": {
+        "description": "Title displayed in the queue to show that the radio is enabled but not active."
+    },
+    "radioModeEnableButtonTitle": "הפעלת רדיו",
+    "@radioModeEnableButtonTitle": {
+        "description": "Title for the option that enables radio mode."
+    },
+    "radioModeDisableButtonTitle": "ביטול רדיו",
+    "@radioModeDisableButtonTitle": {
+        "description": "Title for the option that disables radio mode."
+    },
+    "radioModeDisableButtonSubtitle": "משנה חזרה למצב הלולאה הקודם",
+    "@radioModeDisableButtonSubtitle": {
+        "description": "Subtitle for the option that disables radio mode."
+    },
+    "radioModeEnabledSubtitle": "לחצו להגדרה",
+    "@radioModeEnabledSubtitle": {
+        "description": "Subtitle displayed in the queue to show when radio mode is enabled."
+    },
+    "radioModeDisabledSubtitle": "לחצו להפעלה",
+    "@radioModeDisabledSubtitle": {
+        "description": "Subtitle displayed in the queue to show that radio mode is disabled."
+    },
+    "radioModeDisabledBecauseNotAvailableOfflineSubtitle": "המצב הנוכחי לא קיים במצב לא מקוון.",
+    "@radioModeDisabledBecauseNotAvailableOfflineSubtitle": {
+        "description": "Subtitle displayed in the queue to show that radio mode is disabled because the current mode is not available offline."
+    },
+    "radioModeUnavailableWhileOfflineDescription": "לא זמין במצב לא מקוון",
+    "@radioModeUnavailableWhileOfflineDescription": {
+        "description": "Shown as the subtitle for radio modes when the user is offline and the radio mode requires the user to be online to function."
+    },
+    "radioModeUnavailableWhileOfflineSubtitle": "{modeName} לא זמין במצב לא מקוון",
+    "@radioModeUnavailableWhileOfflineSubtitle": {
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            }
+        },
+        "description": "Shown as the subtitle for radio modes when the user is offline and the radio mode requires the user to be online to function."
+    },
+    "radioModeUnavailableForSourceItemDescription": "לא זמין למקור התור הזה",
+    "@radioModeUnavailableForSourceItemDescription": {
+        "description": "Shown as the subtitle for radio modes when the queue source item type is not supported."
+    },
+    "radioModeUnavailableForSourceItemSubtitle": "{modeName} לא זמין למצב התור הזה",
+    "@radioModeUnavailableForSourceItemSubtitle": {
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            }
+        },
+        "description": "Shown as the subtitle for radio modes when the queue source item type is not supported."
+    },
+    "radioModeUnavailableQueueEmptyDescription": "לא זמין כי התור ריק",
+    "@radioModeUnavailableQueueEmptyDescription": {
+        "description": "Shown as the subtitle for radio modes when the queue is empty."
+    },
+    "radioModeUnavailableQueueEmptySubtitle": "{modeName} לא זמין כי התור ריק",
+    "@radioModeUnavailableQueueEmptySubtitle": {
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            }
+        },
+        "description": "Shown as the subtitle for radio modes when the queue is empty."
+    },
+    "radioModeRandomUnavailableNotDownloadedDescription": "לא זמין כי '{sourceName}' לא הורד",
+    "@radioModeRandomUnavailableNotDownloadedDescription": {
+        "description": "Shown as the subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded.",
+        "placeholders": {
+            "sourceName": {
+                "type": "String"
+            }
+        }
+    },
+    "radioModeRandomUnavailableNotDownloadedSubtitle": "{modeName} לא זמין כי '{sourceName}' לא הורד",
+    "@radioModeRandomUnavailableNotDownloadedSubtitle": {
+        "description": "Shown as the subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded.",
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            },
+            "sourceName": {
+                "type": "String"
+            }
+        }
+    },
+    "radioModeRandomUnavailableNotDownloadedGenericDescription": "לא זמין כי המקור לא הורד",
+    "@radioModeRandomUnavailableNotDownloadedGenericDescription": {
+        "description": "Shown as the generic subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded, when the queue source has no name."
+    },
+    "radioModeRandomUnavailableNotDownloadedGenericSubtitle": "{modeName} לא זמין כי המקור לא הורד",
+    "@radioModeRandomUnavailableNotDownloadedGenericSubtitle": {
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            }
+        },
+        "description": "Shown as the generic subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded, when the queue source has no name."
+    },
+    "volumeNormalizationSwitchSubtitle": "שימוש במידע על עוצמה כדי לנרמל את רמת העוצמה של רצועות השמע (\"Replay Gain\")",
+    "@volumeNormalizationSwitchSubtitle": {
+        "description": "Subtitle for the switch that toggles replay gain"
+    },
+    "volumeNormalizationIOSBaseGainEditorTitle": "בסיס עוצמה",
+    "@volumeNormalizationIOSBaseGainEditorTitle": {
+        "description": "Title for the input that sets the replay gain base gain on iOS and other non-Android platforms"
+    },
+    "volumeNormalizationIOSBaseGainEditorSubtitle": "בחירת קצה עוצמת ווליום (בדציבלים)",
+    "@volumeNormalizationIOSBaseGainEditorSubtitle": {
+        "description": "Subtitle for the input that sets the replay gain base gain on iOS and other non-Android platforms"
+    },
+    "volumeNormalizationIOSBaseGainEditorDescription": "כרגע, נירמול ווליום בפלטפורמות כמו אנדרויד דורשות לשנות את ווליום הנגינה כדי לדמות את השינוי בעוצמה. מכיוון שאין אפשרות להגביר את הווליום מעל 100%, אנחנו צריכים להנמיך את הווליום כברירת מחדל כדי שנוכל להגביר את הווליום לרצועות שמע שקטות.\n\nהערך הוא בדציבלים (dB), כאשר 10- dB זה 30%~, 4.5- dB זה 60%~ ו2- dB זה 80%~.\nערכים חיוביים אומרים שלא מבוצעת הורדה בווליום עד הגבול (למשל 6.4- dB עוצמה (ויותר חיובי) על קצה 6.4+ dB), אבל מונעים מרצועות שמע שקטות יותר להיות מוגברות.\n\nמומלץ להגדיר את ערך זה לערך ההפוך מערך העוצמה הכי גבוה (הכי חיובי) בספריה שלך, למשל, להגדיר את ערך זה ל3+ dB אם העוצמה הכי גבוה בספריה שלך זה 3- dB (ולכל שאר רצועות השמע יש עוצמות כמו 5- , 8-, 10- dB וכו׳).",
+    "@volumeNormalizationIOSBaseGainEditorDescription": {
+        "description": "Description for the input that sets the replay gain base gain on iOS and other non-Android platforms"
+    },
+    "suppressPlayerPadding": "צמצום מרווח כפתורי הנגן",
+    "@suppressPlayerPadding": {},
+    "genericToggleButtonTooltip": "לחצו לשינוי.",
+    "@genericToggleButtonTooltip": {
+        "description": "Tooltip for toggle buttons that can be tapped to toggle their state"
+    },
+    "normalizationGain": "עוצמה",
+    "@normalizationGain": {
+        "description": "Label for the feature chips showing the normalization gain / LUFS offset of a track"
+    },
+    "itemCountLoading": "{childType, select, track{רצועות שמע} album{אלבומים} other{פריטים}}",
+    "@itemCountLoading": {
+        "description": "Shown while the item count is being calculated.",
+        "placeholders": {
+            "childType": {
+                "type": "String",
+                "example": "album",
+                "description": "Options match BaseItemDtoType.name"
+            }
+        }
+    },
+    "radioModeOptionName": "{option, select, reshuffle{ערבוב מחדש} random{אקראי} similar{דומה} continuous{מתמשך} albumMix{מיקס אלבום} other{{option}}}",
+    "@radioModeOptionName": {
+        "placeholders": {
+            "option": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Radio mode names in radio mode/algorithm dropdown"
+    },
+    "radioModeOptionTitle": "{option, select, reshuffle{מצב ערבוב מחדש} random{מצב אקראי} similar{מצב דומה} continuous{מצב מתמשך} albumMix{מיקס אלבום} other{{option}}} מופעל",
+    "@radioModeOptionTitle": {
+        "placeholders": {
+            "option": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Title displayed in the queue, showing which radio mode/algorithm is currently being used."
+    },
+    "radioModeOptionConfirmation": "הוחלף ל{option, select, reshuffle{מצב ערבוב מחדש} random{מצב אקראי} similar{מצב דומה} continuous{מצב מתמשך} albumMix{מיקס אלבום} other{{option}}}",
+    "@radioModeOptionConfirmation": {
+        "placeholders": {
+            "option": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Confirmation displayed when the radio mode is changed."
+    },
+    "radioNoTracksFound": "אין אפשרות להתחיל רדיו כי לא נמצאו רצועות שמע מתאימות.",
+    "@radioNoTracksFound": {
+        "description": "Shown when the user tries to start radio mode but no suitable tracks were found to start the radio with."
+    },
+    "loopingUnavailableWhileRadioActiveWarning": "שינוי מצב לולאה לא זמין בזמן שרדיו פעיל, כיוון שהתור ימשיך לנצח.",
+    "@loopingUnavailableWhileRadioActiveWarning": {
+        "description": "Warning message when trying to change the loop mode while radio is active."
+    },
+    "autoReloadPrompt": "יש לטעון מחדש את התור כדי להחיל {type, select, network{הגדרות רשת} transcoding{הגדרות קידוד} other{הגדרות}}",
+    "@autoReloadPrompt": {
+        "description": "Prompt shown when the queue needs to be reloaded after changing network settings",
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
     }
 }
