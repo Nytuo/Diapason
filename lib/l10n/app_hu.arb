@@ -384,7 +384,7 @@
     },
     "bufferDuration": "Puffer időtartama",
     "@bufferDuration": {},
-    "bufferDurationSubtitle": "A pufferelés maximális időtartama másodpercben. Újraindítást igényel.",
+    "bufferDurationSubtitle": "A pufferelés időtartama másodpercben. Újraindítást igényel.",
     "@bufferDurationSubtitle": {},
     "disableGesture": "Gesztusok letiltása",
     "@disableGesture": {},
@@ -1181,7 +1181,7 @@
     "@bufferDisableSizeConstraintsSubtitle": {},
     "bufferSizeTitle": "Pufferméret",
     "@bufferSizeTitle": {},
-    "bufferSizeSubtitle": "A puffer maximális mérete MB-ban. Újraindítást igényel",
+    "bufferSizeSubtitle": "A puffer mérete MB-ban. Újraindítást igényel",
     "@bufferSizeSubtitle": {},
     "language": "Nyelv",
     "@language": {},
@@ -1348,11 +1348,11 @@
     "@shuffleAlbumsNext": {
         "description": "Label for action that shuffles all albums of an artist or genre and adds them at the start of Next Up"
     },
-    "shuffleAlbumsToNextUp": "Albumok keverése a következő lista végére",
+    "shuffleAlbumsToNextUp": "Albumok keverése a következő listához",
     "@shuffleAlbumsToNextUp": {
         "description": "Label for action that shuffles all albums of an artist or genre and adds them at the end of Next Up"
     },
-    "shuffleAlbumsToQueue": "Albumok keverése a lejátszási lista végére",
+    "shuffleAlbumsToQueue": "Albumok keverése a lejátszási listához",
     "@shuffleAlbumsToQueue": {
         "description": "Label for action that shuffles all albums of an artist or genre and adds them at the end of the regular queue"
     },
@@ -1441,7 +1441,7 @@
     "@volumeNormalizationIOSBaseGainEditorTitle": {
         "description": "Title for the input that sets the replay gain base gain on iOS and other non-Android platforms"
     },
-    "volumeNormalizationIOSBaseGainEditorSubtitle": "Jelenleg a hangerő normalizálás iOS-en a lejátszási hangerő megváltoztatását igényli az erősítés változásának emulálásához. Mivel a hangerőt nem tudjuk 100% fölé emelni, alapértelmezés szerint csökkenteni kell a hangerőt, hogy a csendes dalok hangerejét növelni tudjuk. Az érték decibelben (dB) van megadva, ahol -10 dB ~30%-os hangerő, -4,5 dB ~60%-os hangerő és -2 dB ~80%-os hangerő.",
+    "volumeNormalizationIOSBaseGainEditorSubtitle": "Válaszon egy hangerő erősítési eltolást decibelben (dB)",
     "@volumeNormalizationIOSBaseGainEditorSubtitle": {
         "description": "Subtitle for the input that sets the replay gain base gain on iOS and other non-Android platforms"
     },
@@ -2157,7 +2157,7 @@
     "@autoOfflineOptionUnreachable": {
         "description": "This is shown when the autoOffline feature is set to Unreachable, this means offline mode will be automatically enabled when - after a network change - the server cant be pinged"
     },
-    "autoOfflineSettingDescription": "Automatikusan engedélyezi az offline módot.\nLetiltva: Nem kapcsolja be automatikusan az offline módot. Akkumulátor-kímélő lehet.\nHelyi hálózat: Offline mód bekapcsolása, ha nem csatlakozik wifi vagy vezetékes hálózathoz.\nNincs kapcsolat: Offline mód bekapcsolása, ha egyáltalán nincs kapcsolat.\nElérhetetlen: Kapcsolja be az offline módot, ha a kiszolgálót hálózatváltás után nem lehet megpingelni.\nManuálisan bármikor bekapcsolhatja az offline módot, amely szünetelteti az automatizálást, amíg újra ki nem kapcsolja az offline módot.",
+    "autoOfflineSettingDescription": "{disabledModeName}:\nNem kapcsolja be automatikusan az offline módot. Akkumulátor-kímélő lehet.\n{localNetworkModeName}:\nOffline mód bekapcsolása, ha nem csatlakozik wifi vagy vezetékes hálózathoz.\n{disconnectedModeName}:\nOffline mód bekapcsolása, ha egyáltalán nincs kapcsolat.\n{unreachableModeName}:\n Kapcsolja be az offline módot, ha a kiszolgálót hálózatváltás után nem lehet megpingelni.\n\nManuálisan bármikor bekapcsolhatja az offline módot, amely szünetelteti az automatizálást, amíg újra ki nem kapcsolja az offline módot.",
     "@autoOfflineSettingDescription": {
         "description": "Setting description. Make sure the Mode names match the translations."
     },
@@ -2203,7 +2203,7 @@
     "@outputMenuOpenConnectionSettingsButtonTitle": {
         "description": "Button title for connecting to a device from the output menu"
     },
-    "shuffleToQueue": "Keverés a sorba",
+    "shuffleToQueue": "Keverés a Listához",
     "@shuffleToQueue": {
         "description": "Used for shuffling a list (album, playlist, etc.) to the end of the regular queue, to play after all prior tracks from the queue have played"
     },
@@ -2216,7 +2216,7 @@
             }
         }
     },
-    "confirmAddToNextUp": "{type, select, track{Dal} album{Album} artist{Előadó} playlist{Lejátszási sor} genre{Műfaj} other{Elem}} hozzáadva a következőkhöz",
+    "confirmAddToNextUp": "{type, select, track{Dal} album{Album} artist{Előadó} playlist{Lejátszási sor} genre{Műfaj} disc{Lemez} other{Elem}} hozzáadva a következőkhöz",
     "@confirmAddToNextUp": {
         "description": "A confirmation message that is shown after successfully adding a track to the end of the \"Next Up\" queue",
         "placeholders": {
@@ -2225,7 +2225,7 @@
             }
         }
     },
-    "confirmAddToQueue": "{type, select, track{Dal} album{Album} artist{Előadó} playlist{Lejátszási lista} genre{Műfaj} other{Elem}} hozzáadva a lejátszási sorhoz",
+    "confirmAddToQueue": "{type, select, track{Dal} album{Album} artist{Előadó} playlist{Lejátszási lista} genre{Műfaj} disc{Lemez} other{Elem}} hozzáadva a lejátszási sorhoz",
     "@confirmAddToQueue": {
         "description": "A confirmation message that is shown after successfully adding a track to the end of the regular queue",
         "placeholders": {
@@ -2523,7 +2523,7 @@
     "@addRemoveFromPlaylist": {
         "description": "Header for add to/remove from playlist popup menu"
     },
-    "addPlaylistSubheader": "Dal hozzáadása lejátszási listához",
+    "addPlaylistSubheader": "Tárgy hozzáadása lejátszási listához",
     "@addPlaylistSubheader": {
         "description": "Subheader for adding to a playlist in the add to/remove from playlist popup menu"
     },
@@ -2690,5 +2690,264 @@
     "itemDeletedSnackbar": "{itemType, select, album{Album} playlist{Lejátszási lista} artist{Előadó} genre{Műfaj} track{Dal} library{Könyvtár} other{Elem}} törölve {deviceType, select, device{az eszközről} server{a szerverről} other{ismeretlen}}",
     "@itemDeletedSnackbar": {
         "description": "Used whenever item gets deleted from the device or server, message in snackbar"
+    },
+    "shuffleSome": "Néhány keverése",
+    "@shuffleSome": {},
+    "accentColor": "Kiemelési szín",
+    "@accentColor": {
+        "description": "Title of the accent color setting"
+    },
+    "accentColorTitle": "Válasz egy Kiemelési színt",
+    "@accentColorTitle": {
+        "description": "Title for the accent color picker sheet"
+    },
+    "systemAccentColorHasPriorityInfo": "Egyedi kiemelési szín nem elérhető mert a Rendszer kiemelési szín van használatban",
+    "@systemAccentColorHasPriorityInfo": {
+        "description": "Text under the AccentColorTitle which is only visible when the system color is enabled since the system color will be prioritized over custom accent color"
+    },
+    "defaultWord": "Alapértelmezett",
+    "@defaultWord": {},
+    "useDefaultButton": "Visszaállítás az Alapértelmezett Kiemelési színre",
+    "@useDefaultButton": {},
+    "colorCode": "Szín Kód (Hex)",
+    "@colorCode": {
+        "description": "Label for a text field where the user can manually enter a color in hexadecimal format"
+    },
+    "colorCodeHint": "pl. #FFFFFF vagy #coffee",
+    "@colorCodeHint": {
+        "description": "Hint text for the color code input field. Don't translate 'coffee', unless the translation is also a valid hex color code."
+    },
+    "save": "Mentés",
+    "@save": {},
+    "invalidColorCode": "Hibás szín kód",
+    "@invalidColorCode": {
+        "description": "Snackbar message shown when the user tries to save an invalid hex color code"
+    },
+    "startRadio": "Rádió elindítása",
+    "@startRadio": {
+        "description": "Menu label for starting a radio from a playlist, album, etc."
+    },
+    "movePlayNext": "Lejátszás következőnek",
+    "@movePlayNext": {
+        "description": "Used for moving a track to the \"Next Up\" queue at the first position, to play right after the current track finishes playing"
+    },
+    "radio": "Rádió",
+    "@radio": {
+        "description": "Title for the queue source when the user is playing a track added via radio"
+    },
+    "radioForItem": "{radioSource} - Rádió",
+    "@radioForItem": {
+        "description": "Suffix added to a queue source when playing a radio track. Example: \"Never Gonna Give You Up - Radio\"",
+        "placeholders": {
+            "radioSource": {
+                "type": "String",
+                "example": "Never Gonna Give You Up"
+            }
+        }
+    },
+    "shuffleSomeAlbums": "Pár Album keverése",
+    "@shuffleSomeAlbums": {
+        "description": "Label for action that shuffles some albums of a genre"
+    },
+    "shuffleSomeAlbumsNext": "Pár Album keverése következőnek",
+    "@shuffleSomeAlbumsNext": {
+        "description": "Label for action that shuffles some albums of a genre and adds them at the start of Next Up"
+    },
+    "shuffleSomeAlbumsToNextUp": "Pár Album keverése a következő listához",
+    "@shuffleSomeAlbumsToNextUp": {
+        "description": "Label for action that shuffles all albums of a genre and adds them at the end of Next Up"
+    },
+    "shuffleSomeAlbumsToQueue": "Pár Album keverése a lejátszási listához",
+    "@shuffleSomeAlbumsToQueue": {
+        "description": "Label for action that shuffles all albums of a genre and adds them at the end of the regular queue"
+    },
+    "downloadAllPlaylistsSettingWarning": "Megjegyzés: Ez minden tárgyat le fog tölteni a lejátszási listáról, függetlenül attól hogy melyik könyvtárból származik.",
+    "@downloadAllPlaylistsSettingWarning": {},
+    "lyricsEmptyStateLoading": "Dalszöveg betöltése...",
+    "@lyricsEmptyStateLoading": {
+        "description": "Message shown while lyrics are being loaded"
+    },
+    "lyricsEmptyStateFailed": "Dalszöveget nem lehetett betölteni",
+    "@lyricsEmptyStateFailed": {
+        "description": "Message shown when lyrics failed to load"
+    },
+    "lyricsEmptyStateNoLyrics": "Dalszöveg nem elérhető",
+    "@lyricsEmptyStateNoLyrics": {
+        "description": "Message shown when no lyrics are available for the current track"
+    },
+    "lyricsMissingLyricLinePlaceholder": "hiányzó dalszöveg sor",
+    "@lyricsMissingLyricLinePlaceholder": {
+        "description": "Placeholder text for missing lyric lines in synchronized lyrics"
+    },
+    "emptyAlbum": "Nincs Dal.",
+    "@emptyAlbum": {
+        "description": "Message shown as a placeholder when an album or playlist is empty."
+    },
+    "confirmAddCollectionItemToPlaylist": "Biztos hogy hozzá akarod adni az összes dalt {itemType, select, album{Album} playlist{Lejátszási lista} artist{Előadó} genre{Műfaj} track{Dal} other{Elem}} {ElemNév}' ehhez a lejátszási listához? Csak egyesével lehet őket eltávolítani.",
+    "@confirmAddCollectionItemToPlaylist": {
+        "description": "Warning dialog for adding an album, artist, etc. or multiple tracks to a playlist, clarifying that this cannot be undone without removing all tracks individually and manually.",
+        "placeholders": {
+            "itemType": {
+                "type": "String",
+                "example": "album"
+            },
+            "itemName": {
+                "type": "String"
+            }
+        }
+    },
+    "confirmAddMultipleTracksToPlaylist": "Biztos hogy hozzá akarsz {trackCount} dalt adni ehhez a lejátszási listához? Csak egyesével lehet őket eltávolítani.",
+    "@confirmAddMultipleTracksToPlaylist": {
+        "description": "Warning dialog for adding multiple tracks to a playlist, clarifying that this cannot be undone without removing all tracks individually and manually.",
+        "placeholders": {
+            "trackCount": {
+                "type": "int"
+            }
+        }
+    },
+    "autoOfflineSettingSubtitle": "Automatikusan Offline mód bekapcsolása hálózati kapcsolat vagy szerver elérhetőséget tekintve.",
+    "@autoOfflineSettingSubtitle": {
+        "description": "Subtitle for the automated offline mode setting."
+    },
+    "radioModeSettingsTitle": "Rádió mód",
+    "@radioModeSettingsTitle": {
+        "description": "Title for the setting that controls the radio mode/algorithm."
+    },
+    "radioModeMenuTitle": "Rádió mód kiválasztása",
+    "@radioModeMenuTitle": {
+        "description": "Title for menu that allows users to choose the radio mode."
+    },
+    "radioModeOptionName": "{option, select, reshuffle{Újrakeverés} random{Random} similar{Hasonló} continuous{Folyamatos} albumMix{Album Mix} other{{option}}}",
+    "@radioModeOptionName": {
+        "placeholders": {
+            "option": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Radio mode names in radio mode/algorithm dropdown"
+    },
+    "radioModeActiveTitle": "Rádió Aktív",
+    "@radioModeActiveTitle": {
+        "description": "Title displayed in the queue to show that radio mode is enabled and active."
+    },
+    "radioModeDisabledTitle": "Rádió kikapcsolva",
+    "@radioModeDisabledTitle": {
+        "description": "Title displayed in the queue to show that radio mode is disabled."
+    },
+    "radioModeInactiveTitle": "Rádió Megállítva",
+    "@radioModeInactiveTitle": {
+        "description": "Title displayed in the queue to show that the radio is enabled but not active."
+    },
+    "radioModeEnableButtonTitle": "Rádió bekapcsolása",
+    "@radioModeEnableButtonTitle": {
+        "description": "Title for the option that enables radio mode."
+    },
+    "radioModeDisableButtonTitle": "Rádió kikapcsolása",
+    "@radioModeDisableButtonTitle": {
+        "description": "Title for the option that disables radio mode."
+    },
+    "radioModeDisabledBecauseNotAvailableOfflineSubtitle": "Jelenlegi mód nem elérhető (Offline).",
+    "@radioModeDisabledBecauseNotAvailableOfflineSubtitle": {
+        "description": "Subtitle displayed in the queue to show that radio mode is disabled because the current mode is not available offline."
+    },
+    "radioModeUnavailableWhileOfflineDescription": "Nem elérhető Offline módban",
+    "@radioModeUnavailableWhileOfflineDescription": {
+        "description": "Shown as the subtitle for radio modes when the user is offline and the radio mode requires the user to be online to function."
+    },
+    "radioModeUnavailableWhileOfflineSubtitle": "{modeName} nem elérhető Offline módban",
+    "@radioModeUnavailableWhileOfflineSubtitle": {
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            }
+        },
+        "description": "Shown as the subtitle for radio modes when the user is offline and the radio mode requires the user to be online to function."
+    },
+    "radioModeUnavailableForSourceItemDescription": "Nem elérhető ehhez a forrás listához",
+    "@radioModeUnavailableForSourceItemDescription": {
+        "description": "Shown as the subtitle for radio modes when the queue source item type is not supported."
+    },
+    "radioModeUnavailableForSourceItemSubtitle": "{modeName} nem elérhető ehhez a forrás listához",
+    "@radioModeUnavailableForSourceItemSubtitle": {
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            }
+        },
+        "description": "Shown as the subtitle for radio modes when the queue source item type is not supported."
+    },
+    "radioModeUnavailableQueueEmptyDescription": "Nem elérhető mert a lista üres",
+    "@radioModeUnavailableQueueEmptyDescription": {
+        "description": "Shown as the subtitle for radio modes when the queue is empty."
+    },
+    "radioModeUnavailableQueueEmptySubtitle": "{modeName} nem elérhető mert a lista üres",
+    "@radioModeUnavailableQueueEmptySubtitle": {
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            }
+        },
+        "description": "Shown as the subtitle for radio modes when the queue is empty."
+    },
+    "radioModeRandomUnavailableNotDownloadedDescription": "Nem elérhető mert '{sourceName}' nincs letöltve",
+    "@radioModeRandomUnavailableNotDownloadedDescription": {
+        "description": "Shown as the subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded.",
+        "placeholders": {
+            "sourceName": {
+                "type": "String"
+            }
+        }
+    },
+    "radioModeRandomUnavailableNotDownloadedSubtitle": "{modeName} Nem elérhető mert '{sourceName}' nincs letöltve",
+    "@radioModeRandomUnavailableNotDownloadedSubtitle": {
+        "description": "Shown as the subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded.",
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            },
+            "sourceName": {
+                "type": "String"
+            }
+        }
+    },
+    "radioModeRandomUnavailableNotDownloadedGenericDescription": "Nem elérhető mert a forrás nincs letöltve",
+    "@radioModeRandomUnavailableNotDownloadedGenericDescription": {
+        "description": "Shown as the generic subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded, when the queue source has no name."
+    },
+    "radioModeRandomUnavailableNotDownloadedGenericSubtitle": "{modeName} nem elérhető mert a forrás nincs letöltve",
+    "@radioModeRandomUnavailableNotDownloadedGenericSubtitle": {
+        "placeholders": {
+            "modeName": {
+                "type": "String",
+                "description": "The pre-translated radio mode name"
+            }
+        },
+        "description": "Shown as the generic subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded, when the queue source has no name."
+    },
+    "radioNoTracksFound": "A rádiót nem lehetett elindítani, mert egyetlen dal sem volt megfelelő.",
+    "@radioNoTracksFound": {
+        "description": "Shown when the user tries to start radio mode but no suitable tracks were found to start the radio with."
+    },
+    "preferAddingToFavoritesOverPlaylistsTitle": "Ad a Kedvenchez amikor a Szívre ikonra koppintasz",
+    "@preferAddingToFavoritesOverPlaylistsTitle": {
+        "description": "Title for the setting that swaps the default behavior of short- vs. long-press on the heart/favorite icon"
+    },
+    "discOfAlbum": "[Lemez {number}] {albumName}",
+    "@discOfAlbum": {
+        "description": "Used when a single disc of album is opened, then album name is replaced with this string",
+        "placeholders": {
+            "number": {
+                "type": "int",
+                "example": "1"
+            },
+            "albumName": {
+                "type": "String"
+            }
+        }
     }
 }
