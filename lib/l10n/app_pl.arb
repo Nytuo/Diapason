@@ -1,5 +1,5 @@
 {
-    "premiereDate": "Data premiery",
+    "premiereDate": "Data wydania",
     "@premiereDate": {},
     "password": "Hasło",
     "@password": {},
@@ -33,7 +33,7 @@
     "@playCount": {},
     "dateAdded": "Data dodania",
     "@dateAdded": {},
-    "datePlayed": "Data odtwarzania",
+    "datePlayed": "Data ostatniego odtwarzania",
     "@datePlayed": {},
     "name": "Nazwa",
     "@name": {},
@@ -223,7 +223,7 @@
             }
         }
     },
-    "downloadsQueued": "Dodano do pobierania.",
+    "downloadsQueued": "Pobiranie plików",
     "@downloadsQueued": {},
     "addDownloads": "Wszystkie pobrania",
     "@addDownloads": {},
@@ -290,11 +290,11 @@
     },
     "appDirectory": "Folder aplikacji",
     "@appDirectory": {},
-    "bitrateSubtitle": "Wyższy bitrate dostarcza lepszą jakość, ale kosztem większego zużycia transferu danych.",
+    "bitrateSubtitle": "Wyższy bitrate dostarcza lepszą jakość, ale kosztem większego zużycia transferu danych. Nie dotyczy bezstratnych kodeków, tj. FLAC",
     "@bitrateSubtitle": {},
     "hideTrackArtistsIfSameAsAlbumArtists": "Ukryj wykonawców utworu jeśli odpowiadają wykonawcom albumu",
     "@hideTrackArtistsIfSameAsAlbumArtists": {},
-    "customLocationsBuggy": "Niestandardowe lokalizacje są bardzo kłopotliwe ze względu na problemy z uprawnieniami. W chwili obecnej ich używanie nie jest zalecane.",
+    "customLocationsBuggy": "Niestandardowe lokalizacje mogą być bardzo kłopotliwe oraz nie są rekomendowane w większości przypadków. Lokalizacje w folderach systemowym np. 'Muzyka' zabraniają zapisywania okładek albumów przez limitacje systemu operacyjnego.",
     "@customLocationsBuggy": {},
     "gridCrossAxisCountSubtitle": "Ilość elementów w wierszu - {value}.",
     "@gridCrossAxisCountSubtitle": {
@@ -306,7 +306,7 @@
             }
         }
     },
-    "shuffleAllTrackCountSubtitle": "Ilość utworów do załadowania kiedy użyto przycisku \"Losowo\" na wszystkich utworach.",
+    "shuffleAllTrackCountSubtitle": "Ilość utworów do załadowania, kiedy użyto przycisku \"Losowo\" na zakładce utwory lub gatunki.",
     "@shuffleAllTrackCountSubtitle": {},
     "downloadedMissingImages": "{count,plural, =0{Nie brakuje żadnych obrazów} =1{Pobrano {count} brakujący obraz} other{Pobrano {count} brakujących obrazów}}",
     "@downloadedMissingImages": {
@@ -434,7 +434,7 @@
     "@serverUrlHint": {
         "description": "Hint text for the server URL input field. Should be the address to an actual, public Jellyfin server."
     },
-    "connectingToServer": "Łączenie z serwerem...",
+    "connectingToServer": "Łączenie z serwerem…",
     "@connectingToServer": {
         "description": "Text shown while the connection to the specified server is attempted"
     },
@@ -442,7 +442,7 @@
     "@loginFlowLocalNetworkServers": {
         "description": "Heading for the list of servers on the local network, shown during the login flow. Should ideally have a colon at the end."
     },
-    "loginFlowLocalNetworkServersScanningForServers": "Wyszukiwanie serwerów...",
+    "loginFlowLocalNetworkServersScanningForServers": "Wyszukiwanie serwerów…",
     "@loginFlowLocalNetworkServersScanningForServers": {
         "description": "Text shown while servers are being discovered via UDP broadcasts"
     },
@@ -590,7 +590,7 @@
     "@addToMorePlaylistsTooltip": {},
     "addToMorePlaylistsTitle": "Dodaj do więcej list odtwarzania",
     "@addToMorePlaylistsTitle": {},
-    "sleepTimerRemainingTime": "Usypiam za {time} minut",
+    "sleepTimerRemainingTime": "Uśpienie za {time,plural,=1{<1 minute} other{{time} minut}}",
     "@sleepTimerRemainingTime": {
         "description": "Button label for sleep timer. {time} is the amount of minutes left.",
         "placeholders": {
@@ -737,7 +737,7 @@
     "@bufferDisableSizeConstraintsTitle": {},
     "bufferSizeTitle": "Rozmiar bufora",
     "@bufferSizeTitle": {},
-    "bufferSizeSubtitle": "Maksymalny rozmiar bufora w MB. Wymaga ponownego uruchomienia",
+    "bufferSizeSubtitle": "Rozmiar bufora w MB. Wymaga ponownego uruchomienia",
     "@bufferSizeSubtitle": {},
     "nextUp": "Następne",
     "@nextUp": {
@@ -751,7 +751,7 @@
     "@changeLanguage": {
         "description": "Label for button shown during the login process that allows the user to change the app language"
     },
-    "loginFlowWelcomeHeading": "Witamy w",
+    "loginFlowWelcomeHeading": "Witamy w {styledName}",
     "@loginFlowWelcomeHeading": {
         "description": "Greeting shown on the login screen. The full message will be 'Welcome to Finamp'."
     },
@@ -899,7 +899,7 @@
             }
         }
     },
-    "queueLoadingMessage": "Przywracanie kolejki...",
+    "queueLoadingMessage": "Przywracanie kolejki…",
     "@queueLoadingMessage": {
         "description": "Message displayed on now-playing bar when a saved queue is loading."
     },
@@ -1057,11 +1057,11 @@
     "@volumeNormalizationSwitchSubtitle": {
         "description": "Subtitle for the switch that toggles replay gain"
     },
-    "volumeNormalizationModeSelectorDescription": "Hybrydowe (Utwór + Album):\nWzmocnienie utworu jest używane do zwykłego odtwarzania, ale jeśli odtwarzany jest album (ponieważ jest to główne źródło kolejki odtwarzania lub ponieważ został dodany do kolejki w pewnym momencie), zamiast tego używane jest wzmocnienie albumu.\n\nOparte na utworze:\nWzmocnienie utworu jest zawsze używane, niezależnie od tego, czy odtwarzany jest album.\n\nTylko albumy:\nNormalizacja głośności jest stosowana tylko podczas odtwarzania albumów (przy użyciu wzmocnienia albumu), ale nie dla poszczególnych utworów.",
+    "volumeNormalizationModeSelectorDescription": "Dynamiczne:\nPodczas odtwarzania wielu utworów z tego samego albumu jeden po drugim stosowane jest wzmocnienie albumu (tj. podczas odtwarzania albumu lub utworów z tego samego albumu na liście odtwarzania). W przeciwnym razie stosowane jest wzmocnienie utworu.\n\nNa podstawie utworu:\nZawsze stosowana jest regulacja głośności utworu, niezależnie od tego, czy odtwarzany jest album, czy nie.\n\nNa podstawie albumu:\nZawsze stosowana jest regulacja głośności albumu, ale jeśli nie jest ona dostępna (np. w przypadku singli), stosowana jest regulacja głośności utworu.\n\nTylko albumy:\nNormalizacja głośności jest stosowana tylko podczas odtwarzania albumów (przy użyciu wzmocnienia albumu), ale nie dla poszczególnych utworów.",
     "@volumeNormalizationModeSelectorDescription": {
         "description": "Description for the dropdown that selects the replay gain mode, shown in a dialog that opens when the user presses the info icon next to the dropdown"
     },
-    "volumeNormalizationIOSBaseGainEditorSubtitle": "Obecnie normalizacja dźwięku w systemie iOS wymaga zmiany głośności odtwarzania w celu emulacji zmiany wzmocnienia. Ponieważ nie możemy zwiększyć głośności powyżej 100%, musimy domyślnie zmniejszyć głośność, abyśmy mogli zwiększyć głośność cichych utworów. Wartość jest wyrażona w decybelach (dB), gdzie -10 dB to ~30% głośności, -4,5 dB to ~60% głośności, a -2 dB to ~80% głośności.",
+    "volumeNormalizationIOSBaseGainEditorSubtitle": "Wybierz przesunięcie wzmocnienia głośności (w dB)",
     "@volumeNormalizationIOSBaseGainEditorSubtitle": {
         "description": "Subtitle for the input that sets the replay gain base gain on iOS and other non-Android platforms"
     },
@@ -1114,11 +1114,11 @@
     "@onlyShowFullyDownloaded": {
         "description": "Tooltip for button that hides all partially downloaded albums"
     },
-    "activeDownloadSize": "Pobieranie...",
+    "activeDownloadSize": "Pobieranie…",
     "@activeDownloadSize": {
         "description": "Message shown for download size while item is still being downloaded"
     },
-    "confirmAddToNextUp": "Dodano {type, select, track{Track} album{album} artist{artist} playlist{playlist} genre{genre} other{item}} do Następne",
+    "confirmAddToNextUp": "Dodano {type, select, track{Track} album{album} artist{artist} playlist{playlist} genre{genre} disc{disc} other{item}} do Następne",
     "@confirmAddToNextUp": {
         "description": "A confirmation message that is shown after successfully adding a track to the end of the \"Next Up\" queue",
         "placeholders": {
@@ -1400,7 +1400,7 @@
     "@genericCancel": {
         "description": "Used when the user stops an action from taking place inside a popup dialog window"
     },
-    "confirmAddToQueue": "Dodano {type, select, track{track} album{album} artist{artist} playlist{playlist} genre{genre} other{item}} do kolejki",
+    "confirmAddToQueue": "Dodano {type, select, track{track} album{album} artist{artist} playlist{playlist} genre{genre} disc{disc} other{item}} do kolejki",
     "@confirmAddToQueue": {
         "description": "A confirmation message that is shown after successfully adding a track to the end of the regular queue",
         "placeholders": {
@@ -1442,11 +1442,11 @@
     "@connectionInterruptedBackgroundAndroid": {
         "description": "Message shown when the connection is interrupted during a download while in the background on android. It advises checking OS settings, as they may cause background downloads to be blocked, or checking the  'Enter Low-Priority State on Pause' setting."
     },
-    "missingDownloadSize": "Usuwam...",
+    "missingDownloadSize": "Usuwanie…",
     "@missingDownloadSize": {
         "description": "Message shown for download size while item is being deleted but is not fully removed"
     },
-    "syncingDownloadSize": "Synchronizuję...",
+    "syncingDownloadSize": "Synchronizacja…",
     "@syncingDownloadSize": {
         "description": "Message shown for download size while item is still syncing."
     },
@@ -1718,5 +1718,63 @@
     "startupErrorTitle": "Coś poszło nie tak podczas startu aplikacji!",
     "@startupErrorTitle": {
         "description": "The title for the error screen that shows when startup fails."
-    }
+    },
+    "shuffleCountButton": "Losuj ({count,plural,=1{{count} Utwór} other{{count} Utwory}})",
+    "@shuffleCountButton": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "playbackActionPageMoveWithinQueue": "Przesuń w kolejce",
+    "@playbackActionPageMoveWithinQueue": {
+        "description": "Label for the playback action page that contains all actions related to moving tracks within the queue"
+    },
+    "playbackActionPageRegularTrackOptions": "Odtwórz",
+    "@playbackActionPageRegularTrackOptions": {
+        "description": "Label for the playback action page that contains all actions of the normal track menu, like starting a new queue or duplicating the track within the existing queue"
+    },
+    "playbackActionPageNewQueue": "Nowa kolejka",
+    "@playbackActionPageNewQueue": {
+        "description": "Label for the playback action page that contains all actions related to starting a new queue"
+    },
+    "playbackActionPageNext": "Odtwórz następny",
+    "@playbackActionPageNext": {
+        "description": "Label for the playback action page that contains all actions related to playing tracks directly after the current one"
+    },
+    "playbackActionPageNextUp": "Dodaj kolejny",
+    "@playbackActionPageNextUp": {
+        "description": "Label for the playback action page that contains all actions related to appending tracks to Next Up"
+    },
+    "playbackActionPageAppendToQueue": "Odtwórz jako ostatnii",
+    "@playbackActionPageAppendToQueue": {
+        "description": "Label for the playback action page that contains all actions related to appending tracks at the end of the queue"
+    },
+    "editItemTitle": "Edytuj {itemType, select, playlist{Listę otwarzania} other{}}",
+    "@editItemTitle": {
+        "placeholders": {
+            "itemType": {
+                "type": "String"
+            }
+        }
+    },
+    "updatePlaylistButtonLabel": "Aktualizuj Listę odtwarzania",
+    "@updatePlaylistButtonLabel": {
+        "description": "Label for the button that updates the playlist on the edit playlist screen"
+    },
+    "savingChanges": "Zapisywanie zmian…",
+    "@savingChanges": {
+        "description": "Text shown while the changes to a playlist are being saved"
+    },
+    "exportLogs": "Zapisz logi",
+    "@exportLogs": {},
+    "notAvailable": "Niedostępne",
+    "@notAvailable": {},
+    "logoutButtonSubtitle": "Logowanie na inny serwer usunie pobrane pliki",
+    "@logoutButtonSubtitle": {},
+    "none": "Żaden",
+    "@none": {},
+    "autoSwitchItemCurationTypeTitle": "Automatyczne przełączanie typu selekcji elementów",
+    "@autoSwitchItemCurationTypeTitle": {}
 }
