@@ -91,9 +91,9 @@ class CarPlayHelper {
     // Fetch the online version if we can't get the offline versions
     final items = await _jellyfinApiHelper.getItems(
       parentItem: tabContentType.itemType == BaseItemDtoType.playlist ? null : _finampUserHelper.currentUser?.currentView,
-      includeItemTypes: tabContentType.itemType.idString, 
-      sortBy: 
-          sortBy.jellyfinName(tabContentType) ?? 
+      includeItemTypes: tabContentType.itemType.jellyfinName,
+      sortBy:
+          sortBy.jellyfinName(tabContentType) ??
           (tabContentType == TabContentType.tracks ? "Album,Sortname" : "Sortname"),
       sortOrder: tabContentType == TabContentType.tracks ? null : sortOrder.toString(),
       limit: onlineModeLimit,
@@ -393,60 +393,45 @@ class CarPlayHelper {
   }
   
   Future<void> showArtistTemplate(BaseItemDto parent) async {
-    // Declare template and sections 
+    _carPlayLogger.info("Loading artist template for ${parent.name}");
+
+    // Declare template and sections
     CPListTemplate artistTemplate = CPListTemplate(sections: [], systemIcon: 'gear');
     CPListSection artistAlbums = CPListSection(header: "Albums", items: []);
-    CPListSection topTracks = CPListSection(header: "Top Tracks", items: []);
-    CPListSection recentlyPlayed = CPListSection(header: "Recently Played", items: []); 
 
-    // Fetch items for sections 
-    List<BaseItemDto> artistAlbumsList = await GetIt.instance<ProviderContainer>().read(getArtistAlbumsProvider(parent, _finampUserHelper.currentUser?.currentView, null).future);
-    List<BaseItemDto> artistTracks = await getArtistTracks(parent);
-    final mostPlayedList = artistTracks.where((s) => (s.userData?.playCount ?? 0) > 0).take(5).toList(); 
-    final recentlyPlayedList = artistTracks.where((s) => s.userData?.lastPlayedDate != null).take(5).toList();
-    // final (topTracksAsync, artistCuratedItemSelectionType, newDisabledTrackFilters) = await GetIt.instance<ProviderContainer>()
-    //   .read(getArtistTracksSectionProvider(parent, _finampUserHelper.currentUser?.currentView, null).future);
+    // Fetch only albums - this is fast
+    _carPlayLogger.fine("Fetching albums for artist ${parent.name}");
+    List<BaseItemDto> artistAlbumsList = await GetIt.instance<ProviderContainer>()
+        .read(getArtistAlbumsProvider(artist: parent, libraryFilter: _finampUserHelper.currentUser?.currentView).future);
+    _carPlayLogger.fine("Got ${artistAlbumsList.length} albums");
 
-    // Populate sections 
-    for(final item in artistAlbumsList) { 
+    // Add shuffle all option at top
+    artistAlbums.items.add(CPListItem(
+      text: "Shuffle All",
+      onPress: (complete, self) async {
+        // Fetch tracks only when user wants to play
+        final tracks = await getArtistTracks(parent);
+        await playTracksAsQueue(tracks, order: FinampPlaybackOrder.shuffled, sourceName: parent.name ?? "Artist");
+        complete();
+      },
+    ));
+
+    // Populate albums section
+    for (final item in artistAlbumsList) {
       final imageUri = providerRef.read(albumImageProvider(AlbumImageRequest(item: item, maxHeight: 200, maxWidth: 200))).uri;
 
       artistAlbums.items.add(CPListItem(
-        text: item.name ?? "Unknown Name", // TODO localization
+        text: item.name ?? "Unknown Name",
         image: imageUri?.toString(),
         onPress: (complete, self) async {
           await showPlaylistTemplate(item);
           complete();
-        }));
+        },
+      ));
     }
     artistTemplate.sections.add(artistAlbums);
 
-    for (var i = 0; i < mostPlayedList.length; i++) {
-      final item = mostPlayedList[i];
-      final imageUri = providerRef.read(albumImageProvider(AlbumImageRequest(item: item, maxHeight: 200, maxWidth: 200))).uri;
-      topTracks.items.add(CPListItem(
-        text: item.name ?? "Unknown Name",
-        image: imageUri?.toString(),
-        onPress: (complete, self) async {
-          await playTracksAsQueue(mostPlayedList, index: i, sourceName: "${parent.name} - Top Tracks");
-          complete();
-        }));
-    }
-    artistTemplate.sections.add(topTracks);
-
-    for (var i = 0; i < recentlyPlayedList.length; i++) {
-      final item = recentlyPlayedList[i];
-      final imageUri = providerRef.read(albumImageProvider(AlbumImageRequest(item: item, maxHeight: 200, maxWidth: 200))).uri;
-      recentlyPlayed.items.add(CPListItem(
-        text: item.name ?? "Unknown Name",
-        image: imageUri?.toString(),
-        onPress: (complete, self) async {
-          await playTracksAsQueue(recentlyPlayedList, index: i, sourceName: "${parent.name} - Recently Played");
-          complete();
-        }));
-    }
-    artistTemplate.sections.add(recentlyPlayed);
-
+    _carPlayLogger.info("Pushing artist template with ${artistAlbumsList.length} albums");
     await FlutterCarplay.push(template: artistTemplate);
   }
 }
