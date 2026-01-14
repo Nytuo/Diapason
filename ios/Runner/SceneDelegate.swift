@@ -1,4 +1,15 @@
-@available(iOS 14.0, *)
+//
+//  SceneDelegate.swift
+//  Runner
+//
+//  Required by flutter_carplay plugin
+//
+
+import UIKit
+import Flutter
+
+@available(iOS 13.0, *)
+@objc(SceneDelegate)
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
 

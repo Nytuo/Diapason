@@ -2,6 +2,7 @@ import app_links
 import UIKit
 import Flutter
 
+// Shared engine for CarPlay - the flutter_carplay plugin requires this
 let flutterEngine = FlutterEngine(name: "SharedEngine", project: nil, allowHeadlessExecution: true)
 
 @main
@@ -32,9 +33,42 @@ let flutterEngine = FlutterEngine(name: "SharedEngine", project: nil, allowHeadl
             
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
-    
+
     func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
         GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    }
+
+    // Required for scene-based lifecycle to properly configure CarPlay scene
+    @available(iOS 13.0, *)
+    override func application(
+        _ application: UIApplication,
+        configurationForConnecting connectingSceneSession: UISceneSession,
+        options: UIScene.ConnectionOptions
+    ) -> UISceneConfiguration {
+        NSLog("[FINAMP] Scene configuration requested for role: \(connectingSceneSession.role.rawValue)")
+
+        // Check if this is a CarPlay scene (CPTemplateApplicationSceneSessionRoleApplication)
+        if connectingSceneSession.role.rawValue == "CPTemplateApplicationSceneSessionRoleApplication" {
+            NSLog("[FINAMP] Configuring CarPlay scene")
+            let sceneConfig = UISceneConfiguration(
+                name: "CarPlay Configuration",
+                sessionRole: connectingSceneSession.role
+            )
+            let delegateClass = NSClassFromString("Runner.CarPlaySceneDelegate")
+            NSLog("[FINAMP] CarPlay delegate class: \(String(describing: delegateClass))")
+            sceneConfig.delegateClass = delegateClass
+            return sceneConfig
+        }
+
+        NSLog("[FINAMP] Configuring default window scene")
+        // For the main app window scene, return configuration with SceneDelegate
+        let sceneConfig = UISceneConfiguration(
+            name: "Default Configuration",
+            sessionRole: connectingSceneSession.role
+        )
+        sceneConfig.delegateClass = SceneDelegate.self
+        sceneConfig.storyboard = UIStoryboard(name: "Main", bundle: nil)
+        return sceneConfig
     }
 }
 
