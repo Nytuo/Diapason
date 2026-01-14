@@ -1,6 +1,7 @@
 import app_links
 import UIKit
 import Flutter
+import MediaPlayer
 
 // Shared engine for CarPlay - the flutter_carplay plugin requires this
 let flutterEngine = FlutterEngine(name: "SharedEngine", project: nil, allowHeadlessExecution: true)
@@ -14,6 +15,11 @@ let flutterEngine = FlutterEngine(name: "SharedEngine", project: nil, allowHeadl
         // Start the shared engine and register plugins with it for CarPlay
         flutterEngine.run()
         GeneratedPluginRegistrant.register(with: flutterEngine)
+
+        // Set up method channel for playback state sync to MPNowPlayingInfoCenter
+        // TODO: This is a workaround because audio_service doesn't set playbackState on iOS.
+        // Consider contributing a fix to audio_service to set MPNowPlayingInfoCenter.playbackState on iOS.
+        setupPlaybackStateChannel()
 
         // Exclude the documents and support folders from iCloud backup since we keep songs there.
         if let documentsDir = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true) {
@@ -76,8 +82,44 @@ let flutterEngine = FlutterEngine(name: "SharedEngine", project: nil, allowHeadl
 private func setExcludeFromiCloudBackup(_ dir: URL, isExcluded: Bool) throws {
 //    Awkwardly make a mutable copy of the dir
     var mutableDir = dir
-    
+
     var values = URLResourceValues()
     values.isExcludedFromBackup = isExcluded
     try mutableDir.setResourceValues(values)
+}
+
+// MARK: - Playback State Sync for CarPlay
+// TODO: This is a workaround because audio_service doesn't set MPNowPlayingInfoCenter.playbackState on iOS.
+// The audio_service plugin only sets playbackState on macOS (see AudioServicePlugin.m line 293-295).
+// This causes CarPlay's Now Playing screen to not reflect the correct play/pause state when
+// playback is started from the phone. Consider contributing a fix upstream to audio_service.
+
+extension AppDelegate {
+    func setupPlaybackStateChannel() {
+        let channel = FlutterMethodChannel(
+            name: "com.unicornsonlsd.finamp/playback_state",
+            binaryMessenger: flutterEngine.binaryMessenger
+        )
+
+        channel.setMethodCallHandler { [weak self] (call, result) in
+            switch call.method {
+            case "setPlaybackState":
+                guard let args = call.arguments as? [String: Any],
+                      let isPlaying = args["isPlaying"] as? Bool else {
+                    result(FlutterError(code: "INVALID_ARGS", message: "Missing isPlaying argument", details: nil))
+                    return
+                }
+
+                if #available(iOS 13.0, *) {
+                    let center = MPNowPlayingInfoCenter.default()
+                    center.playbackState = isPlaying ? .playing : .paused
+                    NSLog("[FINAMP] Set MPNowPlayingInfoCenter.playbackState to \(isPlaying ? "playing" : "paused")")
+                }
+                result(nil)
+
+            default:
+                result(FlutterMethodNotImplemented)
+            }
+        }
+    }
 }
