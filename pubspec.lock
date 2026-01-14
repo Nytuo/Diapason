@@ -578,11 +578,12 @@ packages:
   flutter_carplay:
     dependency: "direct main"
     description:
-      name: flutter_carplay
-      sha256: "750c5a44123382125454bd732944d3836cb7e7ac549e8f608e457be7ec64cd81"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.2.1"
+      path: "."
+      ref: bbb0b5e3a29028f0d5cbdf6a4f9932e76baa0507
+      resolved-ref: bbb0b5e3a29028f0d5cbdf6a4f9932e76baa0507
+      url: "https://github.com/APIUM/flutter_carplay.git"
+    source: git
+    version: "1.2.3"
   flutter_discord_rpc:
     dependency: "direct main"
     description:
