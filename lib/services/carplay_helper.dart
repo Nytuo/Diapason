@@ -42,6 +42,9 @@ class CarPlayHelper {
   /// Check if a user is currently logged in
   bool get isUserLoggedIn => _finampUserHelper.currentUser != null;
 
+  final _audioServiceHelper = GetIt.instance<AudioServiceHelper>();
+  final _queueService = GetIt.instance<QueueService>();
+
   void setupCarplay() {
     _flutterCarplay.addListenerOnConnectionChange(onConnectionChange);
 
@@ -168,7 +171,151 @@ class CarPlayHelper {
     );
   }
 
-  // CarPlay Control
+  Future<void> shuffleAllTracks() async {
+    _carPlayLogger.info("Starting shuffle all tracks");
+    await _audioServiceHelper.shuffleAll(onlyShowFavorites: false);
+  }
+
+  Future<void> startInstantMix() async {
+    _carPlayLogger.info("Starting instant mix");
+
+    if (FinampSettingsHelper.finampSettings.isOffline) {
+      // Offline: instant mix not available, fallback to shuffle
+      await shuffleAllTracks();
+      return;
+    }
+
+    List<BaseItemDto>? recentAlbums = await _jellyfinApiHelper.getLatestItems(
+      parentItem: _finampUserHelper.currentUser?.currentView,
+      includeItemTypes: "MusicAlbum",
+      limit: 10,
+    );
+
+    if (recentAlbums != null && recentAlbums.isNotEmpty) {
+      final randomAlbum = recentAlbums[DateTime.now().millisecondsSinceEpoch % recentAlbums.length];
+      await _audioServiceHelper.startInstantMixForItem(randomAlbum);
+    } else {
+      // Fallback to shuffle all if we can't get recent items
+      await shuffleAllTracks();
+    }
+  }
+
+  Future<List<BaseItemDto>> getRecentlyAddedAlbums({int limit = 10}) async {
+    if (FinampSettingsHelper.finampSettings.isOffline) {
+      // Offline: get downloaded albums
+      final allAlbums = await _downloadsService.getAllCollections();
+      final albums = allAlbums
+          .where((d) => d.baseItemType == BaseItemDtoType.album && d.baseItem != null)
+          .map((d) => d.baseItem!)
+          .take(limit)
+          .toList();
+      return albums;
+    }
+
+    final albums = await _jellyfinApiHelper.getItems(
+      parentItem: _finampUserHelper.currentUser?.currentView,
+      includeItemTypes: "MusicAlbum",
+      sortBy: "DateCreated",
+      sortOrder: "Descending",
+      limit: limit,
+    );
+    return albums ?? [];
+  }
+
+  List<FinampQueueItem> getRecentPlays({int limit = 5}) {
+    return _queueService.peekQueue(previous: limit);
+  }
+
+  Future<List<CPListSection>> _buildHomeSections() async {
+    List<CPListSection> sections = [];
+
+    CPListSection quickActionsSection = CPListSection(
+      items: [
+        CPListItem(
+          text: "Shuffle All",
+          onPress: (complete, self) async {
+            await shuffleAllTracks();
+            complete();
+          },
+        ),
+        CPListItem(
+          text: "Start a Mix",
+          onPress: (complete, self) async {
+            await startInstantMix();
+            complete();
+          },
+        ),
+      ],
+    );
+    sections.add(quickActionsSection);
+
+    final recentPlays = getRecentPlays(limit: 5);
+    if (recentPlays.isNotEmpty) {
+      CPListSection recentPlaysSection = CPListSection(
+        header: "Recent Plays",
+        items: [],
+      );
+
+      for (final queueItem in recentPlays) {
+        final baseItem = queueItem.baseItem;
+        final imageUri = providerRef.read(albumImageProvider(AlbumImageRequest(item: baseItem, maxHeight: 200, maxWidth: 200))).uri;
+
+        recentPlaysSection.items.add(CPListItem(
+          text: baseItem.name ?? "Unknown",
+          detailText: baseItem.artists?.join(", ") ?? baseItem.albumArtist,
+          image: imageUri?.toString(),
+          onPress: (complete, self) async {
+            await _queueService.startPlayback(
+              items: [baseItem],
+              source: QueueItemSource(
+                type: QueueItemSourceType.nextUp,
+                name: QueueItemSourceName(
+                  type: QueueItemSourceNameType.preTranslated,
+                  pretranslatedName: baseItem.name ?? "Track",
+                ),
+                id: baseItem.id,
+                item: baseItem,
+              ),
+              order: FinampPlaybackOrder.linear,
+            );
+            complete();
+          },
+        ));
+      }
+
+      if (recentPlaysSection.items.isNotEmpty) {
+        sections.add(recentPlaysSection);
+      }
+    }
+
+    final recentlyAdded = await getRecentlyAddedAlbums(limit: 3);
+    _carPlayLogger.info("Got ${recentlyAdded.length} recently added albums");
+    if (recentlyAdded.isNotEmpty) {
+      CPListSection recentlyAddedSection = CPListSection(
+        header: "Recently Added",
+        items: [],
+      );
+
+      for (final album in recentlyAdded) {
+        final imageUri = providerRef.read(albumImageProvider(AlbumImageRequest(item: album, maxHeight: 200, maxWidth: 200))).uri;
+
+        recentlyAddedSection.items.add(CPListItem(
+          text: album.name ?? "Unknown Album",
+          detailText: album.albumArtist,
+          image: imageUri?.toString(),
+          onPress: (complete, self) async {
+            await showPlaylistTemplate(album);
+            complete();
+          },
+        ));
+      }
+
+      sections.add(recentlyAddedSection);
+    }
+
+    return sections;
+  }
+
   Future<void> setCarplayRootTemplate() async {
     // Check if user is logged in first
     if (!isUserLoggedIn) {
@@ -176,6 +323,8 @@ class CarPlayHelper {
       await _showLoginRequiredTemplate();
       return;
     }
+
+    final homeSections = await _buildHomeSections();
 
     List<MediaItem> rootItems = await GetIt.instance<MusicPlayerBackgroundTask>().getChildren(AudioService.browsableRootId);
     CPListSection librarySection = CPListSection(
@@ -203,11 +352,11 @@ class CarPlayHelper {
       rootTemplate: CPTabBarTemplate(
         templates: [
           CPListTemplate(
-            sections: [],
+            sections: homeSections,
             title: 'Home',
             emptyViewTitleVariants: ['Home'],
             emptyViewSubtitleVariants: [
-              'Home not yet implemented.'
+              'No content available'
             ],
             systemIcon: 'music.note.house',
           ),
