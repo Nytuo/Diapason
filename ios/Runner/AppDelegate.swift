@@ -2,6 +2,7 @@ import app_links
 import UIKit
 import Flutter
 import MediaPlayer
+import Intents
 
 // Shared engine for CarPlay - the flutter_carplay plugin requires this
 let flutterEngine = FlutterEngine(name: "SharedEngine", project: nil, allowHeadlessExecution: true)
@@ -20,6 +21,9 @@ let flutterEngine = FlutterEngine(name: "SharedEngine", project: nil, allowHeadl
         // TODO: This is a workaround because audio_service doesn't set playbackState on iOS.
         // Consider contributing a fix to audio_service to set MPNowPlayingInfoCenter.playbackState on iOS.
         setupPlaybackStateChannel()
+
+        // Set up method channel for Siri media intent handling
+        setupSiriIntentChannel()
 
         // Exclude the documents and support folders from iCloud backup since we keep songs there.
         if let documentsDir = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true) {
@@ -121,5 +125,108 @@ extension AppDelegate {
                 result(FlutterMethodNotImplemented)
             }
         }
+    }
+}
+
+// MARK: - Siri Media Intent Handling
+// Handles voice commands like "Hey Siri, play [song/artist] on Finamp"
+
+private var siriIntentChannel: FlutterMethodChannel?
+
+extension AppDelegate {
+    func setupSiriIntentChannel() {
+        siriIntentChannel = FlutterMethodChannel(
+            name: "com.unicornsonlsd.finamp/siri_intent",
+            binaryMessenger: flutterEngine.binaryMessenger
+        )
+        NSLog("[FINAMP] Siri intent channel set up")
+    }
+
+    // Handle Siri media intents via NSUserActivity
+    override func application(
+        _ application: UIApplication,
+        continue userActivity: NSUserActivity,
+        restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
+    ) -> Bool {
+        NSLog("[FINAMP] Received user activity: \(userActivity.activityType)")
+
+        // Check if this is a Siri media intent
+        if userActivity.activityType == NSStringFromClass(INPlayMediaIntent.self) ||
+           userActivity.activityType == "INPlayMediaIntent" {
+            return handlePlayMediaIntent(userActivity: userActivity)
+        }
+
+        if userActivity.activityType == NSStringFromClass(INSearchForMediaIntent.self) ||
+           userActivity.activityType == "INSearchForMediaIntent" {
+            return handleSearchForMediaIntent(userActivity: userActivity)
+        }
+
+        // Fall back to default handling (e.g., app links)
+        return super.application(application, continue: userActivity, restorationHandler: restorationHandler)
+    }
+
+    private func handlePlayMediaIntent(userActivity: NSUserActivity) -> Bool {
+        guard let interaction = userActivity.interaction,
+              let intent = interaction.intent as? INPlayMediaIntent else {
+            NSLog("[FINAMP] Could not extract INPlayMediaIntent from user activity")
+            return false
+        }
+
+        let mediaSearch = intent.mediaSearch
+        var searchData: [String: Any] = [:]
+
+        if let mediaName = mediaSearch?.mediaName {
+            searchData["query"] = mediaName
+        }
+        if let artistName = mediaSearch?.artistName {
+            searchData["artist"] = artistName
+        }
+        if let albumName = mediaSearch?.albumName {
+            searchData["album"] = albumName
+        }
+        if let genreNames = mediaSearch?.genreNames, !genreNames.isEmpty {
+            searchData["genre"] = genreNames.first
+        }
+
+        // Check for shuffle mode
+        if intent.playShuffled == true {
+            searchData["shuffle"] = true
+        }
+
+        NSLog("[FINAMP] Play media intent - query: \(searchData["query"] ?? "nil"), artist: \(searchData["artist"] ?? "nil"), album: \(searchData["album"] ?? "nil")")
+
+        // Send to Flutter via method channel
+        siriIntentChannel?.invokeMethod("playFromSearch", arguments: searchData)
+
+        return true
+    }
+
+    private func handleSearchForMediaIntent(userActivity: NSUserActivity) -> Bool {
+        guard let interaction = userActivity.interaction,
+              let intent = interaction.intent as? INSearchForMediaIntent else {
+            NSLog("[FINAMP] Could not extract INSearchForMediaIntent from user activity")
+            return false
+        }
+
+        let mediaSearch = intent.mediaSearch
+        var searchData: [String: Any] = [:]
+
+        if let mediaName = mediaSearch?.mediaName {
+            searchData["query"] = mediaName
+        }
+        if let artistName = mediaSearch?.artistName {
+            searchData["artist"] = artistName
+        }
+        if let albumName = mediaSearch?.albumName {
+            searchData["album"] = albumName
+        }
+        searchData["searchOnly"] = true
+
+        NSLog("[FINAMP] Search media intent - query: \(searchData["query"] ?? "nil")")
+
+        // Send to Flutter via method channel
+        siriIntentChannel?.invokeMethod("searchMedia", arguments: searchData)
+
+        return true
     }
 }
