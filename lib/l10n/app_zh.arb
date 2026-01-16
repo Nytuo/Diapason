@@ -3024,5 +3024,13 @@
     "discordRPCSettingTitle": "Discord RPC",
     "@discordRPCSettingTitle": {
         "description": "Title for the setting that controls if the Discord RPC (Rich Presence) feature is enabled"
+    },
+    "forceAudioOffloadingOnAndroidSubtitle": "如果设备支持，则将音频处理分流到硬件执行。",
+    "@forceAudioOffloadingOnAndroidSubtitle": {
+        "description": "Subtitle for the setting that controls audio offloading on Android."
+    },
+    "forceAudioOffloadingOnAndroidTitle": "强制音频分流",
+    "@forceAudioOffloadingOnAndroidTitle": {
+        "description": "Title for the setting that controls audio offloading on Android."
     }
 }
