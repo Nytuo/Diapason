@@ -28,7 +28,7 @@ import 'package:rxdart/rxdart.dart';
 
 import 'android_auto_helper.dart';
 import 'finamp_settings_helper.dart';
-import 'ios_playback_state_sync.dart';
+import 'ios_helpers.dart';
 import 'metadata_provider.dart';
 
 enum FadeDirection { fadeIn, fadeOut, none }

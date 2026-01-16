@@ -32,6 +32,7 @@ import 'package:finamp/services/album_image_provider.dart';
 import 'package:finamp/services/android_auto_helper.dart';
 import 'package:finamp/services/audio_service_smtc.dart';
 import 'package:finamp/services/carplay_helper.dart';
+import 'package:finamp/services/ios_helpers.dart';
 import 'package:finamp/services/data_source_service.dart';
 import 'package:finamp/services/dbus_manager.dart';
 import 'package:finamp/services/discord_rpc.dart';
@@ -566,9 +567,10 @@ class _FinampState extends State<Finamp> with WindowListener {
       // windowManager.setPreventClose(true); //!!! destroying the window manager instance doesn't seem to work on Windows release builds, the app just freezes instead
     }
 
-    // Carplay
-    if (Platform.isIOS) { 
+    // iOS-specific setup (CarPlay, Siri)
+    if (Platform.isIOS) {
       GetIt.instance<CarPlayHelper>().setupCarplay();
+      IosSiriHandler.setup();
     }
   }
 

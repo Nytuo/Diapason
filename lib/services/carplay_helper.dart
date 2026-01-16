@@ -1,18 +1,13 @@
 import 'dart:convert';
 
-import 'package:finamp/services/album_screen_provider.dart';
 import 'package:finamp/services/album_image_provider.dart';
 import 'package:finamp/services/music_player_background_task.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_carplay/flutter_carplay.dart';
 import 'package:audio_service/audio_service.dart';
-import 'package:collection/collection.dart';
 import 'package:finamp/components/MusicScreen/music_screen_tab_view.dart';
-import 'package:finamp/components/global_snackbar.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
 import 'package:finamp/services/downloads_service.dart';
-import 'package:finamp/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -22,12 +17,8 @@ import 'finamp_settings_helper.dart';
 import 'finamp_user_helper.dart';
 import 'jellyfin_api_helper.dart';
 import 'queue_service.dart';
-import 'android_auto_helper.dart';
 import 'item_helper.dart';
 import 'artist_content_provider.dart';
-
-/// Method channel for receiving Siri media intent commands from iOS
-const _siriIntentChannel = MethodChannel('com.unicornsonlsd.finamp/siri_intent');
 
 final _carPlayLogger = Logger("CarPlay");
 
@@ -61,82 +52,7 @@ class CarPlayHelper {
       },
     );
 
-    // Set up Siri intent handler for voice commands
-    _setupSiriIntentHandler();
-
     setCarplayRootTemplate();
-  }
-
-  /// Sets up the method channel handler for Siri media intents
-  void _setupSiriIntentHandler() {
-    _siriIntentChannel.setMethodCallHandler((call) async {
-      _carPlayLogger.info("Received Siri intent: ${call.method}");
-
-      switch (call.method) {
-        case 'playFromSearch':
-          await _handleSiriPlayFromSearch(call.arguments as Map<dynamic, dynamic>?);
-          break;
-        case 'searchMedia':
-          await _handleSiriSearchMedia(call.arguments as Map<dynamic, dynamic>?);
-          break;
-        default:
-          _carPlayLogger.warning("Unknown Siri intent method: ${call.method}");
-      }
-    });
-  }
-
-  /// Handles Siri "Play X on Finamp" voice commands
-  Future<void> _handleSiriPlayFromSearch(Map<dynamic, dynamic>? arguments) async {
-    if (arguments == null) {
-      _carPlayLogger.warning("Siri playFromSearch called with null arguments");
-      return;
-    }
-
-    final query = arguments['query'] as String?;
-    final artist = arguments['artist'] as String?;
-    final album = arguments['album'] as String?;
-    final genre = arguments['genre'] as String?;
-    final shuffle = arguments['shuffle'] as bool? ?? false;
-
-    _carPlayLogger.info("Siri playFromSearch - query: $query, artist: $artist, album: $album, genre: $genre, shuffle: $shuffle");
-
-    // Build extras map similar to Android Auto
-    final Map<String, dynamic> extras = {};
-    if (artist != null) extras['android.intent.extra.artist'] = artist;
-    if (album != null) extras['android.intent.extra.album'] = album;
-    if (query != null) extras['android.intent.extra.title'] = query;
-
-    // Use the existing Android Auto search logic
-    final androidAutoHelper = GetIt.instance<AndroidAutoHelper>();
-    final searchQuery = AndroidAutoSearchQuery(
-      query ?? artist ?? album ?? genre ?? '',
-      extras.isNotEmpty ? extras : null,
-    );
-
-    if (shuffle) {
-      // If shuffle requested with no specific query, shuffle all
-      if (query == null && artist == null && album == null) {
-        await shuffleAllTracks();
-        return;
-      }
-    }
-
-    await androidAutoHelper.playFromSearch(searchQuery);
-  }
-
-  /// Handles Siri "Search for X on Finamp" voice commands
-  Future<void> _handleSiriSearchMedia(Map<dynamic, dynamic>? arguments) async {
-    if (arguments == null) {
-      _carPlayLogger.warning("Siri searchMedia called with null arguments");
-      return;
-    }
-
-    final query = arguments['query'] as String?;
-    _carPlayLogger.info("Siri searchMedia - query: $query");
-
-    // For now, just play the search result (same as playFromSearch)
-    // In the future, this could navigate to a search results screen
-    await _handleSiriPlayFromSearch(arguments);
   }
 
   void disposeCarplay() {
