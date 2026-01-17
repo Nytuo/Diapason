@@ -22,10 +22,18 @@ import 'artist_content_provider.dart';
 
 final _carPlayLogger = Logger("CarPlay");
 
+/// Maximum items to fetch from server for CarPlay lists.
+/// Keeps UI responsive and avoids memory issues on car displays.
+const _carPlayOnlineLimit = 250;
+
+/// Maximum items to show in offline mode for CarPlay lists.
+/// Higher than online since no network latency, but still limited for performance.
+const _carPlayOfflineLimit = 1000;
+
 class CarPlayHelper {
   ConnectionStatusTypes connectionStatus = ConnectionStatusTypes.unknown;
   final FlutterCarplay _flutterCarplay = FlutterCarplay();
-  bool _isPushing = false;
+  bool _isPushingPageUpdate = false;
 
   final _finampUserHelper = GetIt.instance<FinampUserHelper>();
   final _jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
@@ -34,7 +42,6 @@ class CarPlayHelper {
 
   ProviderSubscription? _userSubscription;
 
-  /// Check if a user is currently logged in
   bool get isUserLoggedIn => _finampUserHelper.currentUser != null;
 
   final _audioServiceHelper = GetIt.instance<AudioServiceHelper>();
@@ -96,9 +103,6 @@ class CarPlayHelper {
   }
 
   Future<List<BaseItemDto>> getTabItems ({required TabContentType tabContentType}) async {
-    const onlineModeLimit = 5000;
-    const offlineModeLimit = 5000;
-
     final sortBy = FinampSettingsHelper.finampSettings.getTabSortBy(tabContentType);
     final sortOrder = FinampSettingsHelper.finampSettings.getSortOrder(tabContentType);
     
@@ -106,7 +110,7 @@ class CarPlayHelper {
     if (FinampSettingsHelper.finampSettings.isOffline) {
       List<BaseItemDto> baseItems = [];
       for (final downloadedParent in await _downloadsService.getAllCollections()) {
-        if (baseItems.length >= offlineModeLimit) break;
+        if (baseItems.length >= _carPlayOfflineLimit) break;
         if (downloadedParent.baseItem != null && downloadedParent.baseItemType == tabContentType.itemType) {
           baseItems.add(downloadedParent.baseItem!);
         }
@@ -118,11 +122,9 @@ class CarPlayHelper {
     final items = await _jellyfinApiHelper.getItems(
       parentItem: tabContentType.itemType == BaseItemDtoType.playlist ? null : _finampUserHelper.currentUser?.currentView,
       includeItemTypes: tabContentType.itemType.jellyfinName,
-      sortBy:
-          sortBy.jellyfinName(tabContentType) ??
-          (tabContentType == TabContentType.tracks ? "Album,Sortname" : "Sortname"),
+      sortBy: sortBy.jellyfinName(tabContentType),
       sortOrder: tabContentType == TabContentType.tracks ? null : sortOrder.toString(),
-      limit: onlineModeLimit,
+      limit: _carPlayOnlineLimit,
     );
     return items ?? [];
   }
@@ -139,7 +141,7 @@ class CarPlayHelper {
           final album = downloadedParent.baseItem!;
           // Check if album belongs to this artist
           if (album.albumArtist == artist.name ||
-              album.albumArtists?.any((aa) => aa.id == artist.id) == true) {
+              (album.albumArtists?.any((aa) => aa.id == artist.id) ?? false)) {
             tracks.addAll(await _downloadsService.getCollectionTracks(album, playable: true));
           }
         }
@@ -152,7 +154,7 @@ class CarPlayHelper {
       parentItem: artist,
       includeItemTypes: "Audio",
       sortBy: "Album,ParentIndexNumber,IndexNumber,SortName",
-      limit: 250,
+      limit: _carPlayOnlineLimit,
     );
     return tracks ?? [];
   }
@@ -199,6 +201,10 @@ class CarPlayHelper {
   }
 
   Future<void> startInstantMix() async {
+    // Build a pool of albums from two sources for variety:
+    // - Frequently played albums
+    // - Random albums
+    // Then pick a random album to seed the instant mix.
     _carPlayLogger.info("Starting instant mix");
 
     if (FinampSettingsHelper.finampSettings.isOffline) {
@@ -207,17 +213,42 @@ class CarPlayHelper {
       return;
     }
 
-    List<BaseItemDto>? recentAlbums = await _jellyfinApiHelper.getLatestItems(
+    final List<BaseItemDto> albumPool = [];
+
+    // Get 5 most frequently played albums
+    final frequentAlbums = await _jellyfinApiHelper.getItems(
       parentItem: _finampUserHelper.currentUser?.currentView,
       includeItemTypes: "MusicAlbum",
-      limit: 10,
+      sortBy: "PlayCount",
+      sortOrder: "Descending",
+      limit: 5,
     );
+    if (frequentAlbums != null) {
+      albumPool.addAll(frequentAlbums);
+    }
 
-    if (recentAlbums != null && recentAlbums.isNotEmpty) {
-      final randomAlbum = recentAlbums[DateTime.now().millisecondsSinceEpoch % recentAlbums.length];
+    // Get 5 random albums for discovery
+    final randomAlbums = await _jellyfinApiHelper.getItems(
+      parentItem: _finampUserHelper.currentUser?.currentView,
+      includeItemTypes: "MusicAlbum",
+      sortBy: "Random",
+      limit: 5,
+    );
+    if (randomAlbums != null) {
+      // Avoid duplicates
+      for (final album in randomAlbums) {
+        if (!albumPool.any((a) => a.id == album.id)) {
+          albumPool.add(album);
+        }
+      }
+    }
+
+    if (albumPool.isNotEmpty) {
+      final randomAlbum = albumPool[DateTime.now().millisecondsSinceEpoch % albumPool.length];
+      _carPlayLogger.info("Starting instant mix from: ${randomAlbum.name}");
       await _audioServiceHelper.startInstantMixForItem(randomAlbum);
     } else {
-      // Fallback to shuffle all if we can't get recent items
+      // Fallback to shuffle all if we can't get any albums
       await shuffleAllTracks();
     }
   }
@@ -427,8 +458,8 @@ class CarPlayHelper {
   }
 
   Future<void> showPlaylistTemplate(BaseItemDto parent) async {
-    if (_isPushing) return;
-    _isPushing = true;
+    if (_isPushingPageUpdate) return;
+    _isPushingPageUpdate = true;
     try {
       List<BaseItemDto> mediaItems = await loadChildTracksFromBaseItem(baseItem: parent);
 
@@ -463,13 +494,13 @@ class CarPlayHelper {
 
       await FlutterCarplay.push(template: playlistTemplate);
     } finally {
-      _isPushing = false;
+      _isPushingPageUpdate = false;
     }
   }
 
   Future<void> showAlbumsTemplate({required TabContentType tabType}) async {
-    if (_isPushing) return;
-    _isPushing = true;
+    if (_isPushingPageUpdate) return;
+    _isPushingPageUpdate = true;
     try {
       List<BaseItemDto> mediaItems = await getTabItems(tabContentType: tabType);
 
@@ -494,27 +525,26 @@ class CarPlayHelper {
 
       await FlutterCarplay.push(template: albumsTemplate);
     } finally {
-      _isPushing = false;
+      _isPushingPageUpdate = false;
     }
   }
 
   Future<void> showTracksTemplate() async {
-    if (_isPushing) return;
-    _isPushing = true;
+    if (_isPushingPageUpdate) return;
+    _isPushingPageUpdate = true;
     try {
-      // Fetch tracks with a limit of 250 (CarPlay limitation for large libraries)
       List<BaseItemDto> tracks;
       if (FinampSettingsHelper.finampSettings.isOffline) {
         tracks = await getTabItems(tabContentType: TabContentType.tracks);
-        if (tracks.length > 250) {
-          tracks = tracks.sublist(0, 250);
+        if (tracks.length > _carPlayOnlineLimit) {
+          tracks = tracks.sublist(0, _carPlayOnlineLimit);
         }
       } else {
         tracks = await _jellyfinApiHelper.getItems(
           parentItem: _finampUserHelper.currentUser?.currentView,
           includeItemTypes: "Audio",
           sortBy: "SortName",
-          limit: 250,
+          limit: _carPlayOnlineLimit,
         ) ?? [];
       }
 
@@ -550,27 +580,26 @@ class CarPlayHelper {
 
       await FlutterCarplay.push(template: tracksTemplate);
     } finally {
-      _isPushing = false;
+      _isPushingPageUpdate = false;
     }
   }
 
   Future<void> showArtistsTemplate() async {
-    if (_isPushing) return;
-    _isPushing = true;
+    if (_isPushingPageUpdate) return;
+    _isPushingPageUpdate = true;
     try {
-      // Fetch artists with a limit of 250 (CarPlay limitation for large libraries)
       List<BaseItemDto> artists;
       if (FinampSettingsHelper.finampSettings.isOffline) {
         artists = await getTabItems(tabContentType: TabContentType.artists);
-        if (artists.length > 250) {
-          artists = artists.sublist(0, 250);
+        if (artists.length > _carPlayOnlineLimit) {
+          artists = artists.sublist(0, _carPlayOnlineLimit);
         }
       } else {
         artists = await _jellyfinApiHelper.getItems(
           parentItem: _finampUserHelper.currentUser?.currentView,
           includeItemTypes: "MusicArtist",
           sortBy: "SortName",
-          limit: 250,
+          limit: _carPlayOnlineLimit,
         ) ?? [];
       }
 
@@ -593,13 +622,13 @@ class CarPlayHelper {
 
       await FlutterCarplay.push(template: artistsTemplate);
     } finally {
-      _isPushing = false;
+      _isPushingPageUpdate = false;
     }
   }
   
   Future<void> showArtistTemplate(BaseItemDto parent) async {
-    if (_isPushing) return;
-    _isPushing = true;
+    if (_isPushingPageUpdate) return;
+    _isPushingPageUpdate = true;
     try {
       _carPlayLogger.info("Loading artist template for ${parent.name}");
 
@@ -637,7 +666,7 @@ class CarPlayHelper {
       _carPlayLogger.info("Pushing artist template with ${artistAlbumsList.length} albums");
       await FlutterCarplay.push(template: artistTemplate);
     } finally {
-      _isPushing = false;
+      _isPushingPageUpdate = false;
     }
   }
 }

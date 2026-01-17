@@ -55,23 +55,17 @@ let flutterEngine = FlutterEngine(name: "SharedEngine", project: nil, allowHeadl
         configurationForConnecting connectingSceneSession: UISceneSession,
         options: UIScene.ConnectionOptions
     ) -> UISceneConfiguration {
-        NSLog("[FINAMP] Scene configuration requested for role: \(connectingSceneSession.role.rawValue)")
-
         // Check if this is a CarPlay scene (CPTemplateApplicationSceneSessionRoleApplication)
         if connectingSceneSession.role.rawValue == "CPTemplateApplicationSceneSessionRoleApplication" {
-            NSLog("[FINAMP] Configuring CarPlay scene")
             let sceneConfig = UISceneConfiguration(
                 name: "CarPlay Configuration",
                 sessionRole: connectingSceneSession.role
             )
             // Use the flutter_carplay plugin's delegate directly (now that it's @objc accessible)
-            let delegateClass = NSClassFromString("flutter_carplay.FlutterCarPlaySceneDelegate")
-            NSLog("[FINAMP] CarPlay delegate class: \(String(describing: delegateClass))")
-            sceneConfig.delegateClass = delegateClass
+            sceneConfig.delegateClass = NSClassFromString("flutter_carplay.FlutterCarPlaySceneDelegate")
             return sceneConfig
         }
 
-        NSLog("[FINAMP] Configuring default window scene")
         // For the main app window scene, return configuration with SceneDelegate
         let sceneConfig = UISceneConfiguration(
             name: "Default Configuration",
@@ -117,7 +111,6 @@ extension AppDelegate {
                 if #available(iOS 13.0, *) {
                     let center = MPNowPlayingInfoCenter.default()
                     center.playbackState = isPlaying ? .playing : .paused
-                    NSLog("[FINAMP] Set MPNowPlayingInfoCenter.playbackState to \(isPlaying ? "playing" : "paused")")
                 }
                 result(nil)
 
@@ -139,7 +132,6 @@ extension AppDelegate {
             name: "com.unicornsonlsd.finamp/siri_intent",
             binaryMessenger: flutterEngine.binaryMessenger
         )
-        NSLog("[FINAMP] Siri intent channel set up")
     }
 
     // Handle Siri media intents via NSUserActivity
@@ -148,8 +140,6 @@ extension AppDelegate {
         continue userActivity: NSUserActivity,
         restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
     ) -> Bool {
-        NSLog("[FINAMP] Received user activity: \(userActivity.activityType)")
-
         // Check if this is a Siri media intent
         if userActivity.activityType == NSStringFromClass(INPlayMediaIntent.self) ||
            userActivity.activityType == "INPlayMediaIntent" {
