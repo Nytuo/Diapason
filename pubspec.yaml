@@ -151,7 +151,7 @@ dependencies:
   flutter_carplay:
     git:
       url: https://github.com/APIUM/flutter_carplay.git
-      ref: f7e15319ee0e3b0f3a3c64b95bb910b5ad952b0f
+      ref: 3631f86
 
 dev_dependencies:
   flutter_test:

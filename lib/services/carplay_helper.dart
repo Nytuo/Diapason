@@ -422,6 +422,7 @@ class CarPlayHelper {
             emptyViewTitleVariants: [_l10n.home],
             emptyViewSubtitleVariants: [_l10n.notAvailable],
             systemIcon: 'music.note.house',
+            sectionIndexEnabled: false,
           ),
           CPListTemplate(
             sections: [],
@@ -550,33 +551,33 @@ class CarPlayHelper {
         ) ?? [];
       }
 
-      CPListSection trackSection = CPListSection(items: [
-        CPListItem(
-          text: _l10n.shuffleAll,
-          onPress: (complete, self) async {
-            await shuffleAllTracks();
-            complete();
-          },
-        ),
-      ]);
-
-      for (int i = 0; i < tracks.length; i++) {
-        final item = tracks[i];
+      final sections = _groupItemsIntoSections(tracks, (item, index) {
         final imageUri = providerRef.read(albumImageProvider(AlbumImageRequest(item: item, maxHeight: 200, maxWidth: 200))).uri;
 
-        trackSection.items.add(CPListItem(
+        return CPListItem(
           text: item.name ?? _l10n.unknownName,
           detailText: item.artists?.join(", ") ?? item.albumArtist,
           image: imageUri?.toString(),
           onPress: (complete, self) async {
-            await playTracksAsQueue(tracks, index: i, sourceName: _l10n.tracks);
+            await playTracksAsQueue(tracks, index: index, sourceName: _l10n.tracks);
+            complete();
+          },
+        );
+      });
+
+      // Add shuffle button at the beginning
+      if (sections.isNotEmpty) {
+        sections.first.items.insert(0, CPListItem(
+          text: _l10n.shuffleAll,
+          onPress: (complete, self) async {
+            await shuffleAllTracks();
             complete();
           },
         ));
       }
 
       CPListTemplate tracksTemplate = CPListTemplate(
-        sections: [trackSection],
+        sections: sections,
         systemIcon: 'music.note',
       );
 
@@ -605,20 +606,18 @@ class CarPlayHelper {
         ) ?? [];
       }
 
-      CPListSection artistSection = CPListSection(items: []);
-
-      for (final item in artists) {
-        artistSection.items.add(CPListItem(
+      final sections = _groupItemsIntoSections(artists, (item, index) {
+        return CPListItem(
           text: item.name ?? _l10n.unknownName,
           onPress: (complete, self) async {
             await showArtistTemplate(item);
             complete();
           },
-        ));
-      }
+        );
+      });
 
       CPListTemplate artistsTemplate = CPListTemplate(
-        sections: [artistSection],
+        sections: sections,
         systemIcon: 'person.2',
       );
 
