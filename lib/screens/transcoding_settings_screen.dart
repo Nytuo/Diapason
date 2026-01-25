@@ -39,6 +39,8 @@ class _TranscodingSettingsScreenState extends State<TranscodingSettingsScreen> {
           const DownloadTranscodeEnableDropdownListTile(),
           const DownloadTranscodeCodecDropdownListTile(),
           const DownloadBitrateSelector(),
+          Divider(),
+          const MultichannelHandlingSelector(),
         ],
       ),
     );
@@ -148,6 +150,29 @@ class StreamingTranscodingFormatDropdownListTile extends ConsumerWidget {
             onSelected: FinampSetters.setTranscodingStreamingFormat.ifNonNull,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class MultichannelHandlingSelector extends ConsumerWidget {
+  const MultichannelHandlingSelector({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ListTile(
+      title: Text(AppLocalizations.of(context)!.multichannelHandlingTitle),
+      subtitle: FinampSettingsDropdown<MultichannelHandlingSetting>(
+        dropdownItems: MultichannelHandlingSetting.values
+            .map(
+              (e) => DropdownMenuEntry<MultichannelHandlingSetting>(
+                value: e,
+                label: AppLocalizations.of(context)!.multichannelHandlingOption(e.name),
+              ),
+            )
+            .toList(),
+        selectedValue: ref.watch(finampSettingsProvider.multichannelHandlingSetting),
+        onSelected: FinampSetters.setMultichannelHandlingSetting.ifNonNull,
       ),
     );
   }
