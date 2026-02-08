@@ -340,7 +340,7 @@
     "@orDivider": {
         "description": "Text that separates two different ways to log in. For example, after selecting a server during the login flow, the other can either use Quick Connect, *or* select an account from a list. The text is stylized by wrapping it in dashes: '- or -'."
     },
-    "finampTagline": "一个开源Jellyfin音乐播放器",
+    "finampTagline": "开源 Jellyfin 音乐播放器",
     "@finampTagline": {
         "description": "Tagline / short description for the app"
     },
@@ -1892,7 +1892,7 @@
     "@autoReloadPromptReloadButton": {
         "description": "Button title for reloading the queue after network settings change"
     },
-    "autoReloadPromptMissingTracks": "{amountUndownloadedTracks} 将从队列中删除，因为它们尚未下载。",
+    "autoReloadPromptMissingTracks": "{amountUndownloadedTracks, plural, =1{1 首歌曲} other{{amountUndownloadedTracks} 首歌曲}}将从队列中移除，因为其尚未下载。",
     "@autoReloadPromptMissingTracks": {
         "description": "Additional prompt text shown when the queue needs to be reloaded after changing network settings and some undownloaded tracks are in the queue",
         "placeholders": {
@@ -2186,7 +2186,7 @@
     "@genreScreen": {
         "description": "Name for the view/screen that shows genres"
     },
-    "emptyAlbum": "暂无曲目",
+    "emptyAlbum": "暂无歌曲。",
     "@emptyAlbum": {
         "description": "Message shown as a placeholder when an album or playlist is empty."
     },
@@ -2645,27 +2645,27 @@
     "@radioModeEnableButtonTitle": {
         "description": "Title for the option that enables radio mode."
     },
-    "discordRPCIconDark": "Finamp - Dark",
+    "discordRPCIconDark": "Finamp - 深色",
     "@discordRPCIconDark": {
         "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with the Dark-Theme Background"
     },
-    "discordRPCIconBlack": "Finamp - Black",
+    "discordRPCIconBlack": "Finamp - 黑色",
     "@discordRPCIconBlack": {
         "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with a Black Background"
     },
-    "discordRPCIconLight": "Finamp - White",
+    "discordRPCIconLight": "Finamp - 白色",
     "@discordRPCIconLight": {
         "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with a White Background"
     },
-    "discordRPCIconJFTransparent": "Jellyfin - Transparent",
+    "discordRPCIconJFTransparent": "Jellyfin - 透明",
     "@discordRPCIconJFTransparent": {
         "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Jellyfin logo with a Transparent Background"
     },
-    "discordRPCIconTransparent": "Finamp - Transparent",
+    "discordRPCIconTransparent": "Finamp - 透明",
     "@discordRPCIconTransparent": {
         "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with a Transparent Background"
     },
-    "discordRPCIconWhiteTransparent": "White Finamp - Transparent",
+    "discordRPCIconWhiteTransparent": "白色 Finamp - 透明",
     "@discordRPCIconWhiteTransparent": {
         "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the full white Finamp logo with a Transparent Background"
     },
@@ -2779,5 +2779,97 @@
     "autoOfflineSettingSubtitle": "根据网络连接或服务器可达性自动启用离线模式。",
     "@autoOfflineSettingSubtitle": {
         "description": "Subtitle for the automated offline mode setting."
+    },
+    "discordRPCSettingDescription": "启用 Discord Rich Presence 即可在您的 Discord 状态中显示当前播放内容。如果已启用离线模式，则无法连接到 Discord。",
+    "@discordRPCSettingDescription": {
+        "description": "Description for the setting that controls if the Discord RPC (Rich Presence) feature is enabled"
+    },
+    "discordRPCIconSettingTitle": "RPC 备用图标",
+    "@discordRPCIconSettingTitle": {
+        "description": "Title for the setting that controls which icon gets shown in the Discord RPC (Rich Presence) in case the local address is in use"
+    },
+    "discordRPCIconSettingDescription": "当未检测到公共地址时显示的备用图标。（因为 Discord 无法从本地地址加载图片，将会使用备用图标）",
+    "@discordRPCIconSettingDescription": {
+        "description": "Description for the setting that controls which Icon the discord RPC displays as a Fallback in case no public address is detected (it doenst matter what connection is active)."
+    },
+    "dragToReorder": "拖动以重新排序",
+    "@dragToReorder": {
+        "description": "Label shown on drag handles of track list  tiles in the queue list"
+    },
+    "addDownloadLocationsErrorTitle": "无法写入下载位置",
+    "@addDownloadLocationsErrorTitle": {
+        "description": "Title of popup dialog when adding a download location fails"
+    },
+    "addDownloadLocationsErrorPrompt": "写入所选目录失败。您应该修改权限或选择其他位置。",
+    "@addDownloadLocationsErrorPrompt": {
+        "description": "Label shown on popup dialog when adding a download location when writing songs fails"
+    },
+    "androidImageErrorPrompt": "由于操作系统限制，无法将图片写入 Android 的 Music 文件夹。请选择其他位置。",
+    "@androidImageErrorPrompt": {
+        "description": "Label shown on popup dialog when adding a download location when writing songs succeeds but writing images fails, which can occur on android."
+    },
+    "addDownloadLocationsErrorButton": "仍要添加",
+    "@addDownloadLocationsErrorButton": {
+        "description": "Label shown on button for adding a download location we suspect to be buggy"
+    },
+    "syncFailedWarningShort": "警告：部分下载内容无法与服务器同步。",
+    "@syncFailedWarningShort": {
+        "description": "Simple warning message for when download sync fails due to items being deleted from the server."
+    },
+    "syncFailedWarningLong": "部分下载内容无法与服务器同步。匹配的服务器项可能已被删除。请删除失败的下载以清理过时文件。",
+    "@syncFailedWarningLong": {
+        "description": "Expanded warning message for when download sync fails due to items being deleted from the server."
+    },
+    "openDownloads": "打开下载",
+    "@openDownloads": {
+        "description": "Label on a button to open the downloads screen after a sync fails."
+    },
+    "syncingFailed": "同步失败。此下载可能已从服务器移除，应将其删除。",
+    "@syncingFailed": {
+        "description": "Message shown for downloads with the sync failed status, which is generally caused by the server-side item being removed."
+    },
+    "noPermissionToEditMetadata": "编辑元数据图片需要管理员权限。",
+    "@noPermissionToEditMetadata": {
+        "description": "Error message shown when the user tries to edit metadata but doesn't have permission to do so, i.e. because they are not an admin"
+    },
+    "removedTracks": "已移除歌曲",
+    "@removedTracks": {
+        "description": "Section header for the list of removed tracks on the playlist edit screen"
+    },
+    "removedTracksEmptyListPlaceholder": "已移除的歌曲将显示在此处",
+    "@removedTracksEmptyListPlaceholder": {
+        "description": "Placeholder text shown when there are no removed tracks"
+    },
+    "restoreTrack": "恢复歌曲",
+    "@restoreTrack": {
+        "description": "Button title for restoring a track that was marked to be removed"
+    },
+    "discardChangesTitle": "要舍弃更改吗？",
+    "@discardChangesTitle": {
+        "description": "Title for the dialog shown when the user tries to leave the playlist edit screen with unsaved changes"
+    },
+    "discardChangesDescription": "您有未保存的更改。是否舍弃更改并返回？",
+    "@discardChangesDescription": {
+        "description": "Description for the dialog shown when the user tries to leave the playlist edit screen with unsaved changes"
+    },
+    "discardChangesConfirmButton": "舍弃更改",
+    "@discardChangesConfirmButton": {
+        "description": "Positive action button for the dialog shown when the user tries to leave the playlist edit screen with unsaved changes"
+    },
+    "snackbarOptionsMenuTitle": "管理消息",
+    "@snackbarOptionsMenuTitle": {
+        "description": "Title for the snackbar options menu that allows the user to manage snackbar messages"
+    },
+    "snackbarOptionsMenuClearAllButton": "清除所有消息",
+    "@snackbarOptionsMenuClearAllButton": {
+        "description": "Button title for clearing all snackbar messages"
+    },
+    "snackbarOptionsMenuViewLogsButton": "查看日志",
+    "@snackbarOptionsMenuViewLogsButton": {
+        "description": "Button title for opening the logs screen from the snackbar options menu"
+    },
+    "explicit": "露骨内容",
+    "@explicit": {
+        "description": "Label for content that is considered explicit, usually marked by an 'E' in music apps"
     }
 }
