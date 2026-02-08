@@ -1,5 +1,4 @@
 import 'package:finamp/components/album_image.dart';
-import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:finamp/services/generate_subtitle.dart';
@@ -7,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 
-const double _itemCollectionCardCoverSize = 120;
+const double _itemCollectionCardCoverSize = 110;
 const double _itemCollectionCardSpacing = 6;
 
 /// Card content for items. You probably shouldn't use this widget directly,

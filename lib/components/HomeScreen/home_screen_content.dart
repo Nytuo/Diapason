@@ -124,13 +124,6 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
               ),
             ),
             const SliverPadding(padding: EdgeInsets.only(top: 8)),
-            // SliverList.separated(
-            //   itemCount: ref.watch(finampSettingsProvider.homeScreenConfiguration).sections.length,
-            //   itemBuilder: (context, index) => HomeScreenSection(
-            //     sectionInfo: ref.watch(finampSettingsProvider.homeScreenConfiguration).sections[index],
-            //   ),
-            //   separatorBuilder: (context, index) => const SliverPadding(padding: EdgeInsets.only(top: 8)),
-            // ),
             SliverMainAxisGroup(
               slivers: ref
                   .watch(finampSettingsProvider.homeScreenConfiguration)
@@ -138,14 +131,6 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
                   .map((sectionInfo) => HomeScreenSection(sectionInfo: sectionInfo))
                   .toList(),
             ),
-            // ...ref
-            //     .watch(finampSettingsProvider.homeScreenConfiguration)
-            //     .sections
-            //     .map((sectionInfo) => HomeScreenSection(sectionInfo: sectionInfo)),
-            // ...ref
-            //     .watch(finampSettingsProvider.homeScreenConfiguration)
-            //     .sections
-            //     .map((sectionInfo) => const SizedBox(height: 8)),
             const SliverPadding(padding: EdgeInsets.only(top: 60)),
             ...[
               // monochrome icon
@@ -188,7 +173,7 @@ class HomeScreenSection extends ConsumerWidget {
         title: sectionInfo.itemId != null
             ? ref.watch(itemByIdProvider(sectionInfo.itemId!)).valueOrNull?.name ?? sectionInfo.getTitle(context)
             : sectionInfo.getTitle(context),
-        headerPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+        headerPadding: const EdgeInsets.only(left: 14.0, right: 8.0),
         contentPadding: EdgeInsets.zero,
         actions: [
           if (sectionInfo.type == HomeScreenSectionType.tabView && sectionInfo.contentType == TabContentType.tracks)
@@ -336,7 +321,7 @@ class HomeScreenSectionContent extends ConsumerWidget {
             itemCount: value.length + 1,
             itemBuilder: (context, rawIndex) {
               if (rawIndex == 0) {
-                return SizedBox(width: 8); // initial padding
+                return SizedBox(width: 4.0); // initial padding, + separator
               }
               final index = rawIndex - 1;
               final BaseItemDto item = value[index];
@@ -372,7 +357,7 @@ class HomeScreenSectionContent extends ConsumerWidget {
         itemCount: 5 + 1, // Show 5 skeleton items
         itemBuilder: (context, index) {
           if (index == 0) {
-            return SizedBox(width: 8); // initial padding
+            return SizedBox(width: 4.0); // initial padding, + separator
           }
           final cardWidth = calculateItemCollectionCardWidth(context);
           return Column(
