@@ -1321,9 +1321,8 @@ sealed class PlayableItem {}
 class AlbumDisc implements PlayableItem {
   AlbumDisc({required this.parent, required this.tracks}) {
     assert(
-      // there's no "all" in dart (at least IDE doesn't see it). De Morgan's law is here to save the day!
-      !tracks.any((e) {
-        return e.parentIndexNumber != tracks.first.parentIndexNumber;
+      tracks.every((e) {
+        return e.parentIndexNumber == tracks.first.parentIndexNumber;
       }),
     );
   }

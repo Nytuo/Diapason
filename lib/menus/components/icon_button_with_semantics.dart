@@ -9,6 +9,7 @@ class IconButtonWithSemantics extends ConsumerWidget {
   final Color? color;
   final String label;
   final double? iconSize;
+  final EdgeInsetsGeometry? padding;
   final VisualDensity? visualDensity;
 
   const IconButtonWithSemantics({
@@ -19,6 +20,7 @@ class IconButtonWithSemantics extends ConsumerWidget {
     this.color,
     this.iconSize,
     this.visualDensity,
+    this.padding,
     this.onLongPress,
   });
 
@@ -56,6 +58,7 @@ class IconButtonWithSemantics extends ConsumerWidget {
                 FeedbackHelper.feedback(FeedbackType.selection);
               }
             },
+            padding: padding,
           ),
         ),
       ),

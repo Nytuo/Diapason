@@ -1,19 +1,16 @@
+import 'package:finamp/menus/components/icon_button_with_semantics.dart';
 import 'package:flutter/material.dart';
-import 'package:finamp/components/Buttons/simple_button.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 
-class ShowAllButton extends StatelessWidget {
-  const ShowAllButton({super.key, required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return SimpleButton(
-      onPressed: onPressed,
-      icon: TablerIcons.chevron_right,
-      text: "Show All*",
-      iconPosition: IconPosition.end,
-    );
-  }
+class ShowAllButton extends IconButtonWithSemantics {
+  const ShowAllButton({
+    super.key,
+    required super.onPressed,
+    required super.label,
+    super.icon = TablerIcons.chevron_right,
+    super.color,
+  }) : super(
+         visualDensity: const VisualDensity(horizontal: -4.0, vertical: -4.0),
+         padding: const EdgeInsets.only(left: 8.0, right: 0, top: 8.0, bottom: 8.0),
+       );
 }

@@ -6,9 +6,8 @@ import 'package:finamp/components/AlbumScreen/playlist_edit_button.dart';
 import 'package:finamp/components/AlbumScreen/track_list_tile.dart';
 import 'package:finamp/components/MusicScreen/item_wrapper.dart';
 import 'package:finamp/components/MusicScreen/music_screen_tab_view.dart';
-import 'package:finamp/components/MusicScreen/sort_menu_button.dart';
-import 'package:finamp/components/MusicScreen/sort_order_button.dart';
 import 'package:finamp/components/favorite_button.dart';
+import 'package:finamp/components/finamp_section_header.dart';
 import 'package:finamp/components/padded_custom_scrollview.dart';
 import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/menus/album_menu.dart';
@@ -22,7 +21,6 @@ import 'package:finamp/services/permission_providers.dart';
 import 'package:finamp/services/queue_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 
@@ -165,93 +163,46 @@ class _AlbumScreenContentState extends ConsumerState<AlbumScreenContent> {
             displayChildren.length > 1 &&
             childrenPerDisc.length > 1) // show headers only for multi disc albums
           for (var childrenOfThisDisc in childrenPerDisc) ...[
-            SliverStickyHeader(
-              header: Material(
-                color: Theme.of(context).colorScheme.surface,
-                child: InkWell(
-                  onLongPress: () => showModalAlbumMenu(
-                    context: context,
-                    item: AlbumDisc(parent: widget.parent, tracks: childrenOfThisDisc),
+            FinampSectionHeader(
+              key: Key("${childrenOfThisDisc[0].id}-${childrenOfThisDisc[0].parentIndexNumber}"),
+              title: AppLocalizations.of(context)!.discNumber(childrenOfThisDisc[0].parentIndexNumber!),
+              actions: [
+                IconButtonWithSemantics(
+                  onPressed: () async => await GetIt.instance<QueueService>().startPlayback(
+                    items: childrenOfThisDisc,
+                    source: QueueItemSource.fromBaseItem(widget.parent),
+                    order: FinampPlaybackOrder.linear,
                   ),
-                  onSecondaryTap: () => showModalAlbumMenu(
-                    context: context,
-                    item: AlbumDisc(parent: widget.parent, tracks: childrenOfThisDisc),
-                  ),
-                  onTap: () => showModalAlbumMenu(
-                    context: context,
-                    item: AlbumDisc(parent: widget.parent, tracks: childrenOfThisDisc),
-                  ),
-                  child: Dismissible(
-                    key: Key("${childrenOfThisDisc[0].id}-${childrenOfThisDisc[0].parentIndexNumber}"),
-                    direction: ref.watch(finampSettingsProvider.disableGesture)
-                        ? DismissDirection.none
-                        : getAllowedDismissDirection(
-                            swipeLeftEnabled:
-                                ref.watch(finampSettingsProvider.itemSwipeActionLeftToRight) !=
-                                ItemSwipeActions.nothing,
-                            swipeRightEnabled:
-                                ref.watch(finampSettingsProvider.itemSwipeActionRightToLeft) !=
-                                ItemSwipeActions.nothing,
-                          ),
-                    dismissThresholds: const {DismissDirection.startToEnd: 0.65, DismissDirection.endToStart: 0.65},
-                    confirmDismiss: (direction) => onConfirmPlayableDismiss(
-                      context: context,
-                      direction: direction,
-                      sourceItem: AlbumDisc(parent: widget.parent, tracks: childrenOfThisDisc),
-                      tracks: childrenOfThisDisc,
-                    ),
-                    background: buildSwipeActionBackground(
-                      context: context,
-                      direction: DismissDirection.startToEnd,
-                      action: ref.watch(finampSettingsProvider.itemSwipeActionLeftToRight),
-                    ),
-                    secondaryBackground: buildSwipeActionBackground(
-                      context: context,
-                      direction: DismissDirection.endToStart,
-                      action: ref.watch(finampSettingsProvider.itemSwipeActionRightToLeft),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)!.discNumber(childrenOfThisDisc[0].parentIndexNumber!),
-                            style: TextTheme.of(context).titleMedium,
-                          ),
-                          Spacer(),
-                          IconButtonWithSemantics(
-                            onPressed: () async => await GetIt.instance<QueueService>().startPlayback(
-                              items: childrenOfThisDisc,
-                              source: QueueItemSource.fromBaseItem(widget.parent),
-                              order: FinampPlaybackOrder.linear,
-                            ),
-                            label: AppLocalizations.of(context)!.playButtonLabel,
-                            icon: TablerIcons.player_play,
-                          ),
-                          IconButtonWithSemantics(
-                            onPressed: () async => await GetIt.instance<QueueService>().startPlayback(
-                              items: childrenOfThisDisc,
-                              source: QueueItemSource.fromBaseItem(widget.parent),
-                              order: FinampPlaybackOrder.shuffled,
-                            ),
-                            label: AppLocalizations.of(context)!.shuffleButtonLabel,
-                            icon: TablerIcons.arrows_shuffle,
-                          ),
-                          OverflowMenuButton(
-                            onPressed: () => showModalAlbumMenu(
-                              context: context,
-                              item: AlbumDisc(parent: widget.parent, tracks: childrenOfThisDisc),
-                            ),
-                            label: AppLocalizations.of(context)!.moreActionsOnAlbumDisc,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  label: AppLocalizations.of(context)!.playButtonLabel,
+                  icon: TablerIcons.player_play,
                 ),
+                IconButtonWithSemantics(
+                  onPressed: () async => await GetIt.instance<QueueService>().startPlayback(
+                    items: childrenOfThisDisc,
+                    source: QueueItemSource.fromBaseItem(widget.parent),
+                    order: FinampPlaybackOrder.shuffled,
+                  ),
+                  label: AppLocalizations.of(context)!.shuffleButtonLabel,
+                  icon: TablerIcons.arrows_shuffle,
+                ),
+                OverflowMenuButton(
+                  onPressed: () => showModalAlbumMenu(
+                    context: context,
+                    item: AlbumDisc(parent: widget.parent, tracks: childrenOfThisDisc),
+                  ),
+                  label: AppLocalizations.of(context)!.moreActionsOnAlbumDisc,
+                ),
+              ],
+              onTap: () => showModalAlbumMenu(
+                context: context,
+                item: AlbumDisc(parent: widget.parent, tracks: childrenOfThisDisc),
               ),
-              sliver: TracksSliverList(
+              onDismiss: (followUpAction) => onConfirmPlayableDismiss(
+                followUpAction: followUpAction,
+                sourceItem: AlbumDisc(parent: widget.parent, tracks: childrenOfThisDisc),
+                tracks: childrenOfThisDisc,
+              ),
+              sectionContentSliver: TracksSliverList(
                 childrenForList: childrenOfThisDisc,
                 childrenForQueue: queueChildren,
                 parent: widget.parent,

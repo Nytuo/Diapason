@@ -243,12 +243,16 @@ class TrackListTile extends ConsumerWidget {
       highlightCurrentTrack: highlightCurrentTrack,
       onRemoveFromList: onRemoveFromList,
       onTap: trackListTileOnTap,
-      confirmDismiss: (direction) => onConfirmPlayableDismiss(
-        context: context,
-        direction: direction,
-        sourceItem: parentItem ?? item,
-        tracks: [item],
-      ),
+      confirmDismiss: (direction) async {
+        var followUpAction = (direction == DismissDirection.startToEnd)
+            ? FinampSettingsHelper.finampSettings.itemSwipeActionLeftToRight
+            : FinampSettingsHelper.finampSettings.itemSwipeActionRightToLeft;
+        return await onConfirmPlayableDismiss(
+          followUpAction: followUpAction,
+          sourceItem: parentItem ?? item,
+          tracks: [item],
+        );
+      },
       leftSwipeBackground: buildSwipeActionBackground(
         context: context,
         direction: DismissDirection.startToEnd,
@@ -286,20 +290,22 @@ IconData getSwipeActionIcon(ItemSwipeActions action) {
 }
 
 Future<bool> onConfirmPlayableDismiss({
-  required BuildContext context,
-  required DismissDirection direction,
-  required PlayableItem sourceItem,
+  required ItemSwipeActions followUpAction,
+  PlayableItem? sourceItem,
+  QueueItemSource? source,
   required List<BaseItemDto> tracks,
 }) async {
-  var followUpAction = (direction == DismissDirection.startToEnd)
-      ? FinampSettingsHelper.finampSettings.itemSwipeActionLeftToRight
-      : FinampSettingsHelper.finampSettings.itemSwipeActionRightToLeft;
-
+  assert(
+    (sourceItem != null || source != null) && !(sourceItem != null && source != null),
+    "Exactly one of sourceItem or source must be provided.",
+  );
   final queueService = GetIt.instance<QueueService>();
+  final context = GlobalSnackbar.materialAppScaffoldKey.currentContext!;
 
   final sourceItemType = switch (sourceItem) {
     AlbumDisc() => "disc",
     BaseItemDto() => BaseItemDtoType.fromPlayableItem(sourceItem).name,
+    null => source!.type.name,
   };
 
   switch (followUpAction) {
@@ -307,15 +313,17 @@ Future<bool> onConfirmPlayableDismiss({
       unawaited(
         queueService.addToNextUp(
           items: tracks,
-          source: QueueItemSource.rawId(
-            type: QueueItemSourceType.nextUp,
-            name: QueueItemSourceName(
-              type: QueueItemSourceNameType.preTranslated,
-              pretranslatedName: AppLocalizations.of(context)!.queue,
-            ),
-            id: BaseItemDto.fromPlayableItem(sourceItem).id.raw,
-            item: BaseItemDto.fromPlayableItem(sourceItem),
-          ),
+          source:
+              source ??
+              QueueItemSource.rawId(
+                type: QueueItemSourceType.nextUp,
+                name: QueueItemSourceName(
+                  type: QueueItemSourceNameType.preTranslated,
+                  pretranslatedName: AppLocalizations.of(context)!.queue,
+                ),
+                id: BaseItemDto.fromPlayableItem(sourceItem!).id.raw,
+                item: BaseItemDto.fromPlayableItem(sourceItem),
+              ),
         ),
       );
       GlobalSnackbar.message(
@@ -327,15 +335,17 @@ Future<bool> onConfirmPlayableDismiss({
       unawaited(
         queueService.addNext(
           items: tracks,
-          source: QueueItemSource.rawId(
-            type: QueueItemSourceType.nextUp,
-            name: QueueItemSourceName(
-              type: QueueItemSourceNameType.preTranslated,
-              pretranslatedName: AppLocalizations.of(context)!.queue,
-            ),
-            id: BaseItemDto.fromPlayableItem(sourceItem).id.raw,
-            item: BaseItemDto.fromPlayableItem(sourceItem),
-          ),
+          source:
+              source ??
+              QueueItemSource.rawId(
+                type: QueueItemSourceType.nextUp,
+                name: QueueItemSourceName(
+                  type: QueueItemSourceNameType.preTranslated,
+                  pretranslatedName: AppLocalizations.of(context)!.queue,
+                ),
+                id: BaseItemDto.fromPlayableItem(sourceItem!).id.raw,
+                item: BaseItemDto.fromPlayableItem(sourceItem),
+              ),
         ),
       );
       GlobalSnackbar.message(
@@ -347,15 +357,17 @@ Future<bool> onConfirmPlayableDismiss({
       unawaited(
         queueService.addToQueue(
           items: tracks,
-          source: QueueItemSource.rawId(
-            type: QueueItemSourceType.queue,
-            name: QueueItemSourceName(
-              type: QueueItemSourceNameType.preTranslated,
-              pretranslatedName: AppLocalizations.of(context)!.queue,
-            ),
-            id: BaseItemDto.fromPlayableItem(sourceItem).id.raw,
-            item: BaseItemDto.fromPlayableItem(sourceItem),
-          ),
+          source:
+              source ??
+              QueueItemSource.rawId(
+                type: QueueItemSourceType.queue,
+                name: QueueItemSourceName(
+                  type: QueueItemSourceNameType.preTranslated,
+                  pretranslatedName: AppLocalizations.of(context)!.queue,
+                ),
+                id: BaseItemDto.fromPlayableItem(sourceItem!).id.raw,
+                item: BaseItemDto.fromPlayableItem(sourceItem),
+              ),
         ),
       );
       GlobalSnackbar.message(

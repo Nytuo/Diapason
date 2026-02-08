@@ -1,13 +1,18 @@
 import 'dart:math';
 
 import 'package:balanced_text/balanced_text.dart';
+import 'package:finamp/components/AlbumScreen/track_list_tile.dart';
 import 'package:finamp/components/HomeScreen/show_all_button.dart';
 import 'package:finamp/components/HomeScreen/show_all_screen.dart';
 import 'package:finamp/components/MusicScreen/item_card.dart';
 import 'package:finamp/components/MusicScreen/item_wrapper.dart';
 import 'package:finamp/components/MusicScreen/music_screen_tab_view.dart';
 import 'package:finamp/components/finamp_icon.dart';
+import 'package:finamp/components/finamp_section_header.dart';
 import 'package:finamp/components/global_snackbar.dart';
+import 'package:finamp/components/padded_custom_scrollview.dart';
+import 'package:finamp/l10n/app_localizations.dart';
+import 'package:finamp/menus/components/icon_button_with_semantics.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
 import 'package:finamp/screens/music_screen.dart';
@@ -64,68 +69,92 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
       bottom: false,
       child: RefreshIndicator(
         onRefresh: () async => ref.invalidate(loadHomeSectionItemsProvider),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 100.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Wrap(
-                spacing: 0,
-                runSpacing: 8,
-                direction: Axis.horizontal,
-                alignment: WrapAlignment.spaceBetween,
-                runAlignment: WrapAlignment.center,
-                children: ref.watch(finampSettingsProvider.homeScreenConfiguration).actions.map((action) {
-                  return CTALarge(
-                    text: action.toLocalisedString(context),
-                    icon: switch (action) {
-                      FinampQuickAction.trackMix => TablerIcons.arrows_shuffle,
-                      FinampQuickAction.recents => TablerIcons.calendar,
-                      FinampQuickAction.surpriseMe => TablerIcons.radio,
-                    },
-                    vertical: true,
-                    minWidth: 110,
-                    onPressed: switch (action) {
-                      FinampQuickAction.trackMix => () {
-                        _audioServiceHelper.shuffleAll(onlyShowFavorites: finampSettings?.onlyShowFavorites ?? false);
+        child: CustomScrollView(
+          slivers: [
+            SliverPadding(padding: const EdgeInsets.only(top: 16.0)),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Wrap(
+                  spacing: 0,
+                  runSpacing: 8,
+                  direction: Axis.horizontal,
+                  alignment: WrapAlignment.spaceBetween,
+                  runAlignment: WrapAlignment.center,
+                  children: ref.watch(finampSettingsProvider.homeScreenConfiguration).actions.map((action) {
+                    return CTALarge(
+                      text: action.toLocalisedString(context),
+                      icon: switch (action) {
+                        FinampQuickAction.trackMix => TablerIcons.arrows_shuffle,
+                        FinampQuickAction.recents => TablerIcons.calendar,
+                        FinampQuickAction.surpriseMe => TablerIcons.radio,
                       },
-                      FinampQuickAction.recents => () {
-                        Navigator.pushNamed(context, QueueRestoreScreen.routeName);
-                      },
-                      FinampQuickAction.surpriseMe => () async {
-                        //TODO handle offline mode (continuous radio not available, and offline request needed) - maybe just hide this?
-                        // start continuous radio with a random track?
-                        final randomTracks = await _jellyfinApiHelper.getItems(
-                          parentItem: _finampUserHelper.currentUser?.currentView,
-                          includeItemTypes: [BaseItemDtoType.track.jellyfinName].join(","),
-                          limit: 1,
-                          sortBy: "Random",
-                        );
-                        if (randomTracks != null && randomTracks.isNotEmpty) {
-                          await GetIt.instance<QueueService>().startPlayback(
-                            items: randomTracks,
-                            source: QueueItemSource.fromBaseItem(randomTracks.first),
-                            skipRadioCacheInvalidation: false,
+                      vertical: true,
+                      minWidth: 110,
+                      onPressed: switch (action) {
+                        FinampQuickAction.trackMix => () {
+                          _audioServiceHelper.shuffleAll(onlyShowFavorites: finampSettings?.onlyShowFavorites ?? false);
+                        },
+                        FinampQuickAction.recents => () {
+                          Navigator.pushNamed(context, QueueRestoreScreen.routeName);
+                        },
+                        FinampQuickAction.surpriseMe => () async {
+                          //TODO handle offline mode (continuous radio not available, and offline request needed) - maybe just hide this?
+                          // start continuous radio with a random track?
+                          final randomTracks = await _jellyfinApiHelper.getItems(
+                            parentItem: _finampUserHelper.currentUser?.currentView,
+                            includeItemTypes: [BaseItemDtoType.track.jellyfinName].join(","),
+                            limit: 1,
+                            sortBy: "Random",
                           );
-                          FinampSetters.setRadioMode(RadioMode.continuous);
-                          toggleRadio(true);
-                        }
+                          if (randomTracks != null && randomTracks.isNotEmpty) {
+                            await GetIt.instance<QueueService>().startPlayback(
+                              items: randomTracks,
+                              source: QueueItemSource.fromBaseItem(randomTracks.first),
+                              skipRadioCacheInvalidation: false,
+                            );
+                            FinampSetters.setRadioMode(RadioMode.continuous);
+                            toggleRadio(true);
+                          }
+                        },
                       },
-                    },
-                  );
-                }).toList(),
+                    );
+                  }).toList(),
+                ),
               ),
-              const SizedBox(height: 8),
-              ...ref
+            ),
+            const SliverPadding(padding: EdgeInsets.only(top: 8)),
+            // SliverList.separated(
+            //   itemCount: ref.watch(finampSettingsProvider.homeScreenConfiguration).sections.length,
+            //   itemBuilder: (context, index) => HomeScreenSection(
+            //     sectionInfo: ref.watch(finampSettingsProvider.homeScreenConfiguration).sections[index],
+            //   ),
+            //   separatorBuilder: (context, index) => const SliverPadding(padding: EdgeInsets.only(top: 8)),
+            // ),
+            SliverMainAxisGroup(
+              slivers: ref
                   .watch(finampSettingsProvider.homeScreenConfiguration)
                   .sections
-                  .map((sectionInfo) => HomeScreenSection(sectionInfo: sectionInfo)),
-              SizedBox(height: 60),
-              ...[
-                // monochrome icon
-                FinampIcon(56, 56, overrideColor: TextTheme.of(context).bodySmall?.color?.withOpacity(0.4)),
-                SizedBox(height: 16),
-                Center(
+                  .map((sectionInfo) => HomeScreenSection(sectionInfo: sectionInfo))
+                  .toList(),
+            ),
+            // ...ref
+            //     .watch(finampSettingsProvider.homeScreenConfiguration)
+            //     .sections
+            //     .map((sectionInfo) => HomeScreenSection(sectionInfo: sectionInfo)),
+            // ...ref
+            //     .watch(finampSettingsProvider.homeScreenConfiguration)
+            //     .sections
+            //     .map((sectionInfo) => const SizedBox(height: 8)),
+            const SliverPadding(padding: EdgeInsets.only(top: 60)),
+            ...[
+              // monochrome icon
+              SliverToBoxAdapter(
+                child: FinampIcon(56, 56, overrideColor: TextTheme.of(context).bodySmall?.color?.withOpacity(0.4)),
+              ),
+              const SliverPadding(padding: EdgeInsets.only(top: 16)),
+              SliverToBoxAdapter(
+                child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: 200),
                     child: BalancedText(
@@ -135,9 +164,10 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
                     ),
                   ),
                 ),
-              ],
+              ),
             ],
-          ),
+            SliverPadding(padding: const EdgeInsets.only(bottom: 100.0)),
+          ],
         ),
       ),
     );
@@ -151,62 +181,127 @@ class HomeScreenSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Consumer(
-      builder: (context, ref, child) {
-        return Padding(
-          // if we show text, it won't fill up all four lines (on average), so we have enough white space already
-          padding: EdgeInsets.only(top: ref.watch(finampSettingsProvider.showTextOnGridView) ? 4.0 : 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SimpleGestureDetector(
-                onTap: () {
-                  //TODO Handle the tap event?
-                  GlobalSnackbar.message((buildContext) {
-                    return "This feature is not available yet.";
-                  });
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      sectionInfo.itemId != null
-                          ? ref.watch(itemByIdProvider(sectionInfo.itemId!)).valueOrNull?.name ??
-                                sectionInfo.getTitle(context)
-                          : sectionInfo.getTitle(context),
-                      style: TextTheme.of(context).titleSmall?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 18,
-                        color: Theme.of(context).brightness == Brightness.light ? Colors.black : Colors.white,
-                      ),
+    return SliverPadding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      sliver: FinampSectionHeader(
+        key: Key(sectionInfo.toString()),
+        title: sectionInfo.itemId != null
+            ? ref.watch(itemByIdProvider(sectionInfo.itemId!)).valueOrNull?.name ?? sectionInfo.getTitle(context)
+            : sectionInfo.getTitle(context),
+        headerPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+        contentPadding: EdgeInsets.zero,
+        actions: [
+          if (sectionInfo.type == HomeScreenSectionType.tabView && sectionInfo.contentType == TabContentType.tracks)
+          //TODO use similar logic to [loadChildTracksFromShuffledGenreAlbums] for loading tracks from other tab types
+          //TODO for collections, try to recursively load tracks directly, Jellyfin can do that
+          ...[
+            IconButtonWithSemantics(
+              onPressed: () async {
+                final source = QueueItemSource.rawId(
+                  type: QueueItemSourceType.homeScreenSection,
+                  name: QueueItemSourceName(
+                    type: QueueItemSourceNameType.homeScreenSection,
+                    localizationParameter: sectionInfo.presetType?.name,
+                    pretranslatedName: sectionInfo.getTitle(context),
+                  ),
+                  id: sectionInfo.toLocalisedString(context),
+                );
+                final items = await ref.read(
+                  loadHomeSectionItemsProvider(
+                    sectionInfo: sectionInfo,
+                    limit: FinampSettingsHelper.finampSettings.trackShuffleItemCount,
+                  ).future,
+                );
+                await GetIt.instance<QueueService>().startPlayback(
+                  items: items ?? [],
+                  source: source,
+                  order: FinampPlaybackOrder.linear,
+                );
+              },
+              label: AppLocalizations.of(context)!.playButtonLabel,
+              icon: TablerIcons.player_play,
+            ),
+            IconButtonWithSemantics(
+              onPressed: () async {
+                final source = QueueItemSource.rawId(
+                  type: QueueItemSourceType.homeScreenSection,
+                  name: QueueItemSourceName(
+                    type: QueueItemSourceNameType.homeScreenSection,
+                    localizationParameter: sectionInfo.presetType?.name,
+                    pretranslatedName: sectionInfo.getTitle(context),
+                  ),
+                  id: sectionInfo.toLocalisedString(context),
+                );
+                final items = await ref.read(
+                  loadHomeSectionItemsProvider(
+                    sectionInfo: sectionInfo,
+                    limit: FinampSettingsHelper.finampSettings.trackShuffleItemCount,
+                  ).future,
+                );
+                await GetIt.instance<QueueService>().startPlayback(
+                  items: items ?? [],
+                  source: source,
+                  order: FinampPlaybackOrder.shuffled,
+                );
+              },
+              label: AppLocalizations.of(context)!.shuffleButtonLabel,
+              icon: TablerIcons.arrows_shuffle,
+            ),
+          ],
+          ShowAllButton(
+            label: "Show All*",
+            onPressed: () {
+              if (sectionInfo.type == HomeScreenSectionType.tabView) {
+                Navigator.of(context).push(
+                  MaterialPageRoute<MusicScreen>(
+                    builder: (context) => MusicScreen(
+                      showHeader: false,
+                      tabTypeFilter: sectionInfo.contentType,
+                      sortAndFilterConfigurationOverrideInit: sectionInfo.sortAndFilterConfiguration,
                     ),
-                    ShowAllButton(
-                      onPressed: () {
-                        if (sectionInfo.type == HomeScreenSectionType.tabView) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute<MusicScreen>(
-                              builder: (context) => MusicScreen(
-                                showHeader: false,
-                                tabTypeFilter: sectionInfo.contentType,
-                                sortAndFilterConfigurationOverrideInit: sectionInfo.sortAndFilterConfiguration,
-                              ),
-                            ),
-                          );
-                        } else {
-                          Navigator.pushNamed(context, ShowAllScreen.routeName, arguments: sectionInfo);
-                        }
-                      },
-                    ),
-                  ],
+                  ),
+                );
+              } else {
+                Navigator.pushNamed(context, ShowAllScreen.routeName, arguments: sectionInfo);
+              }
+            },
+          ),
+        ],
+        onTap: () {
+          if (sectionInfo.type == HomeScreenSectionType.tabView) {
+            Navigator.of(context).push(
+              MaterialPageRoute<MusicScreen>(
+                builder: (context) => MusicScreen(
+                  showHeader: false,
+                  tabTypeFilter: sectionInfo.contentType,
+                  sortAndFilterConfigurationOverrideInit: sectionInfo.sortAndFilterConfiguration,
                 ),
               ),
-              const SizedBox(height: 8),
-              Flexible(flex: 0, child: HomeScreenSectionContent(sectionInfo: sectionInfo)),
-            ],
-          ),
-        );
-      },
+            );
+          } else {
+            Navigator.pushNamed(context, ShowAllScreen.routeName, arguments: sectionInfo);
+          }
+        },
+        onDismiss: (followUpAction) async {
+          final source = QueueItemSource.rawId(
+            type: QueueItemSourceType.homeScreenSection,
+            name: QueueItemSourceName(
+              type: QueueItemSourceNameType.homeScreenSection,
+              localizationParameter: sectionInfo.presetType?.name,
+              pretranslatedName: sectionInfo.getTitle(context),
+            ),
+            id: sectionInfo.toLocalisedString(context),
+          );
+          final items = await ref.read(
+            loadHomeSectionItemsProvider(
+              sectionInfo: sectionInfo,
+              limit: FinampSettingsHelper.finampSettings.trackShuffleItemCount,
+            ).future,
+          );
+          return await onConfirmPlayableDismiss(followUpAction: followUpAction, source: source, tracks: items ?? []);
+        },
+        sectionContentSliver: SliverToBoxAdapter(child: HomeScreenSectionContent(sectionInfo: sectionInfo)),
+      ),
     );
   }
 }
@@ -238,8 +333,12 @@ class HomeScreenSectionContent extends ConsumerWidget {
           height: calculateItemCollectionCardHeight(context),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            itemCount: value.length,
-            itemBuilder: (context, index) {
+            itemCount: value.length + 1,
+            itemBuilder: (context, rawIndex) {
+              if (rawIndex == 0) {
+                return SizedBox(width: 8); // initial padding
+              }
+              final index = rawIndex - 1;
               final BaseItemDto item = value[index];
               return ItemWrapper(
                 key: ValueKey(item.id),
@@ -270,8 +369,11 @@ class HomeScreenSectionContent extends ConsumerWidget {
       height: calculateItemCollectionCardHeight(context),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: 5, // Show 5 skeleton items
+        itemCount: 5 + 1, // Show 5 skeleton items
         itemBuilder: (context, index) {
+          if (index == 0) {
+            return SizedBox(width: 8); // initial padding
+          }
           final cardWidth = calculateItemCollectionCardWidth(context);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
