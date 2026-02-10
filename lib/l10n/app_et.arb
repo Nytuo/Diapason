@@ -1,23 +1,18 @@
 {
     "serverUrl": "Serveri URL",
-    "@serverUrl": {},
     "emptyServerUrl": "Serveri URL ei tohi olla tühi",
     "@emptyServerUrl": {
         "description": "Error message that shows when the user submits a login without a server URL"
     },
     "username": "Kasutajanimi",
-    "@username": {},
     "password": "Parool",
-    "@password": {},
-    "internalExternalIpExplanation": "Kui soovid oma Jellyfini serverile kaugjuurdepääsu saada, pead kasutama oma välist IP-d.\n\nKui server kasutab HTTP standart porti (80 või 443) või Jellyfini standart porti (8096) ei pea porti määrama.\n\nKui URL on korrektne, peaksid sisendvälja all nägema oma serveri kohta informatsiooni.",
+    "internalExternalIpExplanation": "Kui soovid oma Jellyfini serverile kaugjuurdepääsu, pead kasutama oma välist IP-aadressi.\n\nKui server kasutab HTTP vaikeporti (80 või 443) või Jellyfini vaikeporti (8096), ei pea porti eraldi määrama.\n\nKui URL on õige, peaks sisestusvälja alla ilmuma info sinu serveri kohta.",
     "@internalExternalIpExplanation": {
         "description": "Extra info for which IP to use for remote access, and info on whether or not the user needs to specify a port."
     },
     "logs": "Logid",
-    "@logs": {},
     "next": "Järgmine",
-    "@next": {},
-    "selectMusicLibraries": "Vali muusikakogu",
+    "selectMusicLibraries": "Vali muusikakogud",
     "@selectMusicLibraries": {
         "description": "App bar title for library select screen"
     },
@@ -26,71 +21,42 @@
         "description": "Error message when the user does not have any libraries"
     },
     "unknownName": "Tundmatu nimi",
-    "@unknownName": {},
     "tracks": "Lood",
-    "@tracks": {},
     "albums": "Albumid",
-    "@albums": {},
     "artists": "Esitajad",
-    "@artists": {},
     "genres": "Žanrid",
-    "@genres": {},
     "playlists": "Esitusloendid",
-    "@playlists": {},
-    "startMix": "Käivita miks",
-    "@startMix": {},
-    "startMixNoTracksArtist": "Vajuta pikalt esitajale, et lisada või eemaldada ta enne miksi koostamise alustamist koostajast",
+    "startMix": "Alusta juhuesitust",
+    "startMixNoTracksArtist": "Esitaja juhuesitusloendisse lisamiseks või eemaldamiseks vajuta ja hoia esitaja nime",
     "@startMixNoTracksArtist": {
         "description": "Snackbar message that shows when the user presses the instant mix button with no artists selected"
     },
-    "startMixNoTracksAlbum": "Vajuta pikalt albumile, et lisada või eemaldada ta enne miksi koostamise alustamist koostajast",
+    "startMixNoTracksAlbum": "Albumi juhuesitusloendisse lisamiseks või eemaldamiseks vajuta ja hoia albumi nime",
     "@startMixNoTracksAlbum": {
         "description": "Snackbar message that shows when the user presses the instant mix button with no albums selected"
     },
     "sortOrder": "Sortimisjärjestus",
-    "@sortOrder": {},
     "clear": "Puhasta",
-    "@clear": {},
     "finamp": "Finamp",
-    "@finamp": {},
     "downloads": "Allalaadimised",
-    "@downloads": {},
     "settings": "Seaded",
-    "@settings": {},
     "offlineMode": "Võrguühenduseta režiim",
-    "@offlineMode": {},
     "album": "Album",
-    "@album": {},
     "artist": "Esitaja",
-    "@artist": {},
     "sortBy": "Sordi",
-    "@sortBy": {},
     "albumArtist": "Albumi esitaja",
-    "@albumArtist": {},
     "communityRating": "Kogukonna hinnang",
-    "@communityRating": {},
     "criticRating": "Kriitikute hinnang",
-    "@criticRating": {},
     "dateAdded": "Lisamise kuupäev",
-    "@dateAdded": {},
-    "datePlayed": "Viimane esituse kuupäev",
-    "@datePlayed": {},
+    "datePlayed": "Viimati esitatud",
     "playCount": "Esituste arv",
-    "@playCount": {},
     "productionYear": "Tootmisaasta",
-    "@productionYear": {},
     "name": "Nimi",
-    "@name": {},
     "random": "Juhuslik",
-    "@random": {},
     "revenue": "Tulud",
-    "@revenue": {},
-    "downloadMissingImages": "Laadi alla puuduvad pildid",
-    "@downloadMissingImages": {},
+    "downloadMissingImages": "Hangi puuduvad pildid",
     "budget": "Eelarve",
-    "@budget": {},
-    "premiereDate": "Avaldamise kuupäev",
-    "@premiereDate": {},
+    "premiereDate": "Avaldatud",
     "downloadedMissingImages": "{count,plural, =0{Puuduvaid pilte ei leitud} =1{Allalaetud {count} puuduv pilt} other{Allalaetud {count} puuduvat pilti}}",
     "@downloadedMissingImages": {
         "description": "Message that shows when the user downloads missing images",
@@ -141,11 +107,8 @@
         }
     },
     "errorScreenError": "Vigade loendi saamisel tekkis viga! Siinkohal peaksid ilmselt lihtsalt looma veateate GitHubis ja kustutama rakenduse andmed",
-    "@errorScreenError": {},
-    "failedToGetTrackFromDownloadId": "Allalaadimise ID-st laulu hankimine nurjus",
-    "@failedToGetTrackFromDownloadId": {},
+    "failedToGetTrackFromDownloadId": "Laulu hankimine allalaadimise ID põhjal nurjus",
     "error": "Viga",
-    "@error": {},
     "discNumber": "Plaat {number}",
     "@discNumber": {
         "placeholders": {
@@ -154,10 +117,8 @@
             }
         }
     },
-    "playButtonLabel": "Mängi",
-    "@playButtonLabel": {},
+    "playButtonLabel": "Esita",
     "shuffleButtonLabel": "Sega",
-    "@shuffleButtonLabel": {},
     "trackCount": "{count,plural,=1{{count} lugu} other{{count} lugu}}",
     "@trackCount": {
         "placeholders": {
@@ -167,135 +128,70 @@
         }
     },
     "required": "Nõutav",
-    "@required": {},
     "updateButtonLabel": "Uuenda",
-    "@updateButtonLabel": {},
-    "playlistUpdated": "Esitusloendi nimi uuendatud.",
-    "@playlistUpdated": {},
+    "playlistUpdated": "Esitusloend uuendatud.",
     "downloadsDeleted": "Allalaadimised kustutati.",
-    "@downloadsDeleted": {},
     "addDownloads": "Lisa allalaadimised",
-    "@addDownloads": {},
     "location": "Asukoht",
-    "@location": {},
     "downloadsQueued": "Failide allalaadimine",
-    "@downloadsQueued": {},
     "addButtonLabel": "Lisa",
-    "@addButtonLabel": {},
     "shareLogs": "Jaga logisid",
-    "@shareLogs": {},
     "logsCopied": "Logid kopeeriti.",
-    "@logsCopied": {},
     "message": "Sõnum",
-    "@message": {},
     "applicationLegalese": "Litsentsitud Mozilla avaliku litsentsiga 2.0.\nLähtekood on saadaval aadressil {sourceCodeLink}.",
-    "@applicationLegalese": {},
     "transcoding": "Transkoodimine",
-    "@transcoding": {},
     "downloadLocations": "Allalaadimiste asukohad",
-    "@downloadLocations": {},
     "audioService": "Heliteenus",
-    "@audioService": {},
     "layoutAndTheme": "Paigutus ja teema",
-    "@layoutAndTheme": {},
-    "notAvailableInOfflineMode": "Pole võrguühenduseta režiimis saadaval",
-    "@notAvailableInOfflineMode": {},
+    "notAvailableInOfflineMode": "Võrguühenduseta režiimis pole saadaval",
     "logOut": "Logi välja",
-    "@logOut": {},
     "areYouSure": "Kas oled kindel?",
-    "@areYouSure": {},
     "enableTranscoding": "Luba transkoodimine",
-    "@enableTranscoding": {},
     "enableTranscodingSubtitle": "Transkoodib muusikavooge serveri poolel.",
-    "@enableTranscodingSubtitle": {},
     "customLocation": "Kohandatud asukoht",
-    "@customLocation": {},
     "appDirectory": "Rakenduse kataloog",
-    "@appDirectory": {},
     "addDownloadLocation": "Lisa allalaadimise asukoht",
-    "@addDownloadLocation": {},
     "selectDirectory": "Vali kataloog",
-    "@selectDirectory": {},
     "unknownError": "Tundmatu viga",
-    "@unknownError": {},
     "enterLowPriorityStateOnPause": "Lülitu pausil madala prioriteediga olekule",
-    "@enterLowPriorityStateOnPause": {},
-    "enterLowPriorityStateOnPauseSubtitle": "Laseb pausi ajal märguande ära pühkida. Võimaldab Androidil ka teenuse pausi ajal lõpetada.",
-    "@enterLowPriorityStateOnPauseSubtitle": {},
+    "enterLowPriorityStateOnPauseSubtitle": "Võimaldab teavituse ekraanilt ära pühkida, kui esitus on peatatud. Samuti lubab see Androidil rakenduse taustaprotsessi sulgeda.",
     "shuffleAllTrackCountSubtitle": "Laaditavate lugude hulk, kui kasutada nuppu 'Sega kõik'.",
-    "@shuffleAllTrackCountSubtitle": {},
     "viewType": "Vaate tüüp",
-    "@viewType": {},
-    "viewTypeSubtitle": "Muusikaekraani vaate tüüp",
-    "@viewTypeSubtitle": {},
-    "landscape": "Horisontaalne",
-    "@landscape": {},
+    "viewTypeSubtitle": "Muusikavaate kuvamisviis",
+    "landscape": "Rõhtvaade",
     "pathReturnSlashErrorMessage": "Radu, mis tagastavad \"/\", ei saa kasutada",
-    "@pathReturnSlashErrorMessage": {},
-    "showTextOnGridView": "Kuva teksti ruudustikuvaates",
-    "@showTextOnGridView": {},
-    "showTextOnGridViewSubtitle": "Kas kuvada teksti (pealkiri, esitaja jne) muusikaekraani ruudustikul või mitte.",
-    "@showTextOnGridViewSubtitle": {},
-    "useCoverAsBackground": "Kuva hägustatud kaanepilt mängija taustana",
-    "@useCoverAsBackground": {},
-    "useCoverAsBackgroundSubtitle": "Kas kasutada mängija ekraanil taustaks hägustatud kaanekujundust või mitte.",
-    "@useCoverAsBackgroundSubtitle": {},
-    "hideTrackArtistsIfSameAsAlbumArtistsSubtitle": "Kas lugude esitajaid kuvada albumiekraanil, kui need ei erine albumi esitajatest.",
-    "@hideTrackArtistsIfSameAsAlbumArtistsSubtitle": {},
+    "showTextOnGridView": "Kuva ruudustikuvaates tekst",
+    "showTextOnGridViewSubtitle": "Määrab, kas muusika ruudustikvaates näidatakse teksti (pealkiri, esitaja jne).",
+    "useCoverAsBackground": "Kasuta taustana hägustatud kaanepilti",
+    "useCoverAsBackgroundSubtitle": "Määrab, kas rakenduse erinevates osades kasutatakse taustana hägustatud albumi kaanepilti.",
+    "hideTrackArtistsIfSameAsAlbumArtistsSubtitle": "Määrab, kas albumivaates kuvada loo esitajaid, kui need ühtivad albumi esitajaga.",
     "theme": "Teema",
-    "@theme": {},
     "system": "Süsteem",
-    "@system": {},
     "dark": "Tume",
-    "@dark": {},
-    "tabs": "Vahekaardid",
-    "@tabs": {},
+    "tabs": "Vahelehed",
     "cancelSleepTimer": "Kas tühistada unetaimer?",
-    "@cancelSleepTimer": {},
     "yesButtonLabel": "Jah",
-    "@yesButtonLabel": {},
     "noButtonLabel": "Ei",
-    "@noButtonLabel": {},
     "minutes": "minutit",
-    "@minutes": {},
     "invalidNumber": "Sobimatu number",
-    "@invalidNumber": {},
     "sleepTimerTooltip": "Unetaimer",
-    "@sleepTimerTooltip": {},
     "addToPlaylistTooltip": "Lisa esitusloendisse",
-    "@addToPlaylistTooltip": {},
     "addToPlaylistTitle": "Lisa esitusloendisse",
-    "@addToPlaylistTitle": {},
     "newPlaylist": "Uus esitusloend",
-    "@newPlaylist": {},
     "createButtonLabel": "Loo",
-    "@createButtonLabel": {},
     "playlistCreated": "Esitusloend on loodud.",
-    "@playlistCreated": {},
     "noAlbum": "Albumit pole",
-    "@noAlbum": {},
     "noItem": "Üksust pole",
-    "@noItem": {},
     "noArtist": "Esitajat pole",
-    "@noArtist": {},
     "unknownArtist": "Tundmatu esitaja",
-    "@unknownArtist": {},
     "queue": "Järjekord",
-    "@queue": {},
     "addToQueue": "Lisa järjekorda",
-    "@addToQueue": {},
     "replaceQueue": "Asenda järjekord",
-    "@replaceQueue": {},
     "addedToQueue": "Lisatud järjekorda.",
-    "@addedToQueue": {},
     "queueReplaced": "Järjekord asendatud.",
-    "@queueReplaced": {},
     "startingInstantMix": "Kiirmiksi käivitamine.",
-    "@startingInstantMix": {},
     "instantMix": "Kiirmiks",
-    "@instantMix": {},
     "anErrorHasOccured": "Ilmnes tõrge.",
-    "@anErrorHasOccured": {},
     "responseError": "{error} Olekukood {statusCode}.",
     "@responseError": {
         "placeholders": {
@@ -309,7 +205,7 @@
             }
         }
     },
-    "responseError401": "{error} Olekukood {statusCode}. Tõenäoliselt tähendab see, et kasutasid vale kasutajanime/parooli või klient pole enam autenditud.",
+    "responseError401": "{error} Olekukood {statusCode}. Tõenäoliselt tähendab see, et kasutasid vale kasutajanime/parooli või klient pole enam sisse logitud.",
     "@responseError401": {
         "placeholders": {
             "error": {
@@ -323,9 +219,7 @@
         }
     },
     "removeFromMix": "Eemalda miksist",
-    "@removeFromMix": {},
     "addToMix": "Lisa miksi",
-    "@addToMix": {},
     "redownloadedItems": "{count,plural, =0{Allalaadimine pole vajalik.} =1{Uuesti laeti alla {count} üksus} other{Uuesti laeti alla {count} üksust}}",
     "@redownloadedItems": {
         "placeholders": {
@@ -334,28 +228,17 @@
             }
         }
     },
-    "goToAlbum": "Ava album",
-    "@goToAlbum": {},
+    "goToAlbum": "Mine albumi juurde",
     "music": "Muusika",
-    "@music": {},
     "shuffleAll": "Sega kõik",
-    "@shuffleAll": {},
     "directoryMustBeEmpty": "Kataloog peab olema tühi",
-    "@directoryMustBeEmpty": {},
     "bitrate": "Bitikiirus",
-    "@bitrate": {},
     "bitrateSubtitle": "Suurem bitikiirus annab kvaliteetsema heli, kuid see nõuab suuremat ribalaiust. Ei kehti kadudeta koodekite kohta, nt FLAC",
-    "@bitrateSubtitle": {},
-    "customLocationsBuggy": "Kohandatud asukohad on äärmiselt vigased ja ei ole enamikel juhtudel soovitatud. Asukohad süsteemi \"Muusika\" kaustas ei võimalda albumi kaanefotode salvestamist operatsioonisüsteemi limitsioonide tõttu.",
-    "@customLocationsBuggy": {},
+    "customLocationsBuggy": "Kohandatud asukohad võivad põhjustada ootamatuid vigu ja neid üldjuhul ei soovitata. Süsteemses muusikakaustas asuvad asukohad ei võimalda operatsioonisüsteemi piirangute tõttu albumikaante salvestamist.",
     "list": "Loend",
-    "@list": {},
-    "shuffleAllTrackCount": "'Sega kõik lood' arv",
-    "@shuffleAllTrackCount": {},
-    "portrait": "Vertikaalne",
-    "@portrait": {},
+    "shuffleAllTrackCount": "Juhuesituse lugude arv",
+    "portrait": "Püstvaade",
     "grid": "Ruudustik",
-    "@grid": {},
     "gridCrossAxisCount": "{value} Ruudustiku risttelgede arv",
     "@gridCrossAxisCount": {
         "description": "List tile title for grid cross axis count. Value will either be the portrait or landscape key.",
@@ -366,7 +249,7 @@
             }
         }
     },
-    "gridCrossAxisCountSubtitle": "Rea kohta kasutatavate ruudustiku klotside arv, kui kasutuses on {value}.",
+    "gridCrossAxisCountSubtitle": "Ruudustiku elementide arv reas, kui kasutusel on {value}.",
     "@gridCrossAxisCountSubtitle": {
         "description": "List tile subtitle for grid cross axis count. Value will either be the portrait or landscape key.",
         "placeholders": {
@@ -376,19 +259,13 @@
             }
         }
     },
-    "hideTrackArtistsIfSameAsAlbumArtists": "Peida loo esitajad, kui need on samad kui albumi esitajad",
-    "@hideTrackArtistsIfSameAsAlbumArtists": {},
+    "hideTrackArtistsIfSameAsAlbumArtists": "Peida loo esitaja, kui see on sama mis albumi esitaja",
     "light": "Hele",
-    "@light": {},
     "disableGesture": "Keela viiped",
-    "@disableGesture": {},
     "bufferDuration": "Puhvri kestus",
-    "@bufferDuration": {},
-    "disableGestureSubtitle": "Kas viiped tuleks keelata.",
-    "@disableGestureSubtitle": {},
-    "bufferDurationSubtitle": "Maksimaalne puhverdusaeg sekundites. Nõuab taaskäivitamist.",
-    "@bufferDurationSubtitle": {},
-    "about": "Finampi kohta",
+    "disableGestureSubtitle": "Määrab, kas puuteviiped on keelatud.",
+    "bufferDurationSubtitle": "Puhverdamise kestus sekundites. Vajab taaskäivitamist.",
+    "about": "Finampi teave",
     "@about": {
         "description": "Label for the about/info button on the settings screen"
     },
@@ -396,19 +273,19 @@
     "@finampTagline": {
         "description": "Tagline / short description for the app"
     },
-    "aboutContributionPrompt": "Tehtud ägedate inimeste poolt nende vabast ajast\nSina võid olla üks neist!",
+    "aboutContributionPrompt": "Loodud ägedate inimeste poolt nende vabal ajal\nSina võid olla üks neist!",
     "@aboutContributionPrompt": {
         "description": "Text shown in the about screen, explaining that the app is made by volunteers and that the user could be one of them."
     },
-    "aboutContributionLink": "Panusta Finampi GitHubis:",
+    "aboutContributionLink": "Panusta Finampi arendusse GitHubis:",
     "@aboutContributionLink": {
         "description": "Link to the Finamp GitHub repository, shown in the about screen."
     },
-    "aboutReleaseNotes": "Loe uusimaid väljalaskemärkmeid:",
+    "aboutReleaseNotes": "Loe viimaseid versioonimärkmeid:",
     "@aboutReleaseNotes": {
         "description": "Link to the release notes, shown in the about screen."
     },
-    "aboutTranslations": "Aita Finampi oma keelde tõlkida:",
+    "aboutTranslations": "Aita tõlkida Finampi oma keelde:",
     "@aboutTranslations": {
         "description": "Link to the translation project, shown in the about screen."
     },
@@ -448,7 +325,7 @@
     "@serverUrlInfoButtonTooltip": {
         "description": "Tooltip for the button that shows the extra info dialog for which IP to use for remote access, and info on whether or not the user needs to specify a port."
     },
-    "connectingToServer": "Ühendamine serveriga…",
+    "connectingToServer": "Serveriga ühendumine…",
     "@connectingToServer": {
         "description": "Text shown while the connection to the specified server is attempted"
     },
@@ -520,33 +397,26 @@
     "@login": {
         "description": "Label for the login button."
     },
-    "defaultOrder": "Vaike järjekord",
+    "defaultOrder": "Vaikejärjekord",
     "@defaultOrder": {
         "description": "Default sorting order for playlists (server order)"
     },
     "favorite": "Lemmik",
-    "@favorite": {},
     "favorites": "Lemmikud",
-    "@favorites": {},
-    "albumArtists": "Albumi artist",
-    "@albumArtists": {},
-    "performingArtist": "Esinev artist",
-    "@performingArtist": {},
-    "duration": "Kestvus",
-    "@duration": {},
+    "albumArtists": "Albumi esitajad",
+    "performingArtist": "Osalev esitaja",
+    "duration": "Kestus",
     "activeDownloadsTitle": "Aktiivsed allalaadimised",
-    "@activeDownloadsTitle": {},
     "notAvailable": "Pole saadaval",
-    "@notAvailable": {},
     "customizationSettingsTitle": "Kohandused",
     "@customizationSettingsTitle": {
         "description": "Title for the customization settings screen"
     },
-    "reset": "Taasta",
+    "reset": "Lähtesta",
     "@reset": {
         "description": "Used for buttons in the playback speed menu and the settings"
     },
-    "playerScreenMinimumCoverPaddingEditorTitle": "Minimaalne albumi kaanefoto polster",
+    "playerScreenMinimumCoverPaddingEditorTitle": "Kaanepildi minimaalne veeris",
     "@playerScreenMinimumCoverPaddingEditorTitle": {
         "description": "Title for the editor that allows the user to set the minimum padding around the album cover on the player screen."
     },
@@ -558,15 +428,15 @@
     "@specialDownloads": {
         "description": "Title for the special downloads section on the downloads screen."
     },
-    "noItemsDownloaded": "Allalaetud asju pole.",
+    "noItemsDownloaded": "Allalaetud üksusi pole.",
     "@noItemsDownloaded": {
         "description": "Shown on the downloads screen for sections without any downloaded items."
     },
-    "playbackSpeedControlSetting": "Taasesituse kiiruse kuvamine",
+    "playbackSpeedControlSetting": "Taasesituse kiiruse nähtavus",
     "@playbackSpeedControlSetting": {
         "description": "Title of the visibility setting of the playback speed controls"
     },
-    "playbackSpeedControlSettingSubtitle": "Kas taasesituse kiiruse juhtnupud kuvatakse pleieri menüüs",
+    "playbackSpeedControlSettingSubtitle": "Määrab, kas taasesituse kiiruse nupud on pleieri menüüs nähtavad",
     "@playbackSpeedControlSettingSubtitle": {
         "description": "Subtitle for the playback speed visibility setting"
     },
@@ -582,18 +452,16 @@
     "@speed": {
         "description": "Used as a placeholder in the input of the playback speed menu"
     },
-    "appearsOnAlbums": "Ilmub veel",
-    "@appearsOnAlbums": {},
+    "appearsOnAlbums": "Kaastegev",
     "startupErrorWorkaround": "Lahenduseks võid proovida rakenduse andmete kustutamist. Arvesta, et kõik su sätted ja allalaadimised kustutatakse.",
     "@startupErrorWorkaround": {
         "description": "The subtitle for how to manually recover from a startup error"
     },
-    "playerScreenMinimumCoverPaddingEditorSubtitle": "Minimaalne polster albumi kaanefoto ümber mängija vaates, määratud % ekraani laiusest.",
+    "playerScreenMinimumCoverPaddingEditorSubtitle": "Minimaalne vaba ruum ümber albumi kaanepildi, protsendina ekraani laiusest.",
     "@playerScreenMinimumCoverPaddingEditorSubtitle": {
         "description": "Subtitle for the editor that allows the user to set the minimum padding around the album cover on the player screen."
     },
-    "syncDownloadedPlaylists": "Sünkroniseeri allalaetud esitusloendid",
-    "@syncDownloadedPlaylists": {},
+    "syncDownloadedPlaylists": "Sünkrooni allalaetud esitusloendid",
     "playbackSpeedControlSettingDescription": "Automaatne\nFinamp proovib automaatselt tuvastada, kas mängitav klipp on podcast või audioraamat. Tuvastus toimub, kui klipp on pikem kui {trackDuration} minutit, kui klipi album on pikem kui {albumDuration} tundi või kui klipile on määratud üks neist žanritest: {genreList}\nTaasesitus kiiruse nuppe näidatakse sel juhul mängija vaate menüüs.\n\nNäidatud:\nTaasesitus kiiruse nuppe näidatakse alati mängija vaate menüüs.\n\nPeidetud:\nTaasesitus kiiruse nuppe ei näidata kunagi mängija vaate menüüs.",
     "@playbackSpeedControlSettingDescription": {
         "description": "Description for the dropdown that selects the replay gain mode, shown in a dialog that opens when the user presses the info icon next to the dropdown",
@@ -613,9 +481,7 @@
         }
     },
     "activeDownloads": "Aktiivsed allalaadimised",
-    "@activeDownloads": {},
     "noActiveDownloads": "Aktiivseid allalaadimisi pole.",
-    "@noActiveDownloads": {},
     "allLibraries": "Kõik kogud",
     "@allLibraries": {
         "description": "All Libraries"
@@ -624,35 +490,29 @@
     "@noGenres": {
         "description": "Gets shown when there are no genres available for an album or artist"
     },
-    "startMixNoTracksGenre": "Hoia žanri all et see lisada või eemaldada miksi ehitajasse enne kui miksi kuulamist alustad",
+    "startMixNoTracksGenre": "Žanri juhuesitusloendisse lisamiseks või eemaldamiseks vajuta ja hoia žanri nime",
     "@startMixNoTracksGenre": {
         "description": "Snackbar message that shows when the user presses the instant mix button with no genres selected"
     },
-    "onlineMode": "Online režiim",
-    "@onlineMode": {},
+    "onlineMode": "Võrgurežiim",
     "title": "Pealkiri",
-    "@title": {},
-    "performingArtists": "Esinevad artistid",
-    "@performingArtists": {},
+    "performingArtists": "Osalevad esitajad",
     "deleteDownloadsConfirmButtonText": "Kustuta",
     "@deleteDownloadsConfirmButtonText": {
         "description": "Shown in the confirmation dialog for deleting downloaded media from the local device."
     },
     "exportLogs": "Salvesta logid",
-    "@exportLogs": {},
     "interactions": "Koostoimed",
-    "@interactions": {},
-    "playbackReporting": "Taasesituse raporteerimine",
-    "@playbackReporting": {},
-    "apply": "Salvesta",
+    "playbackReporting": "Esituse raportid",
+    "apply": "Rakenda",
     "@apply": {
         "description": "Used for a button in the playback speed menu"
     },
-    "confirmDownloadStarted": "Allalaadimine alustatud",
+    "confirmDownloadStarted": "Allalaadimine algas",
     "@confirmDownloadStarted": {
         "description": "A confirmation message that is shown after successfully adding an item to the download queue, before it starts being processed and enqueued for download"
     },
-    "shown": "Näidatud",
+    "shown": "Nähtav",
     "@shown": {
         "description": "Used as an option in the playback speed visibility settings"
     },
@@ -670,7 +530,7 @@
             }
         }
     },
-    "deleteDownloadsPrompt": "Olete kindel, et soovite {itemType, select, album{album} playlist{playlist} artist{artist} genre{genre} track{track} library{library} other{item}} '{itemName}' seadmest kustutada?",
+    "deleteDownloadsPrompt": "Kas oled kindel, et soovid {itemType, select, album{albumi} playlist{esitusloendi} artist{esitaja} genre{žanri} track{loo} library{meediakogu} other{üksuse}} '{itemName}' seadmest kustutada?",
     "@deleteDownloadsPrompt": {
         "placeholders": {
             "itemName": {
@@ -684,7 +544,7 @@
         },
         "description": "Confirmation prompt shown before deleting downloaded media from the local device, destructive action, doesn't affect the media on the server."
     },
-    "offlineTrackCountArtist": "{count,plural,=1{{count} Track} other{{count} Tracks}} Alla laaditud",
+    "offlineTrackCountArtist": "{count,plural,=1{{count} Track} other{{count} Tracks}} alla laaditud",
     "@offlineTrackCountArtist": {
         "placeholders": {
             "count": {
@@ -692,8 +552,7 @@
             }
         }
     },
-    "seconds": "Sekundit",
-    "@seconds": {},
+    "seconds": "sekundit",
     "trackCountTooltip": "{currentTrackIndex} lugu {totalTrackCount} loost",
     "@trackCountTooltip": {
         "description": "Tooltip and accessibility label for the queue progress. {currentTrackIndex} and {totalTrackCount} are both numbers",
@@ -708,8 +567,7 @@
             }
         }
     },
-    "addToMorePlaylistsTitle": "Lisa teistesse Esitusloenditesse",
-    "@addToMorePlaylistsTitle": {},
+    "addToMorePlaylistsTitle": "Lisa teistesse esitusloenditesse",
     "removeFromPlaylistNamedTooltip": "Eemalda esitusloendist '{playlistName}'",
     "@removeFromPlaylistNamedTooltip": {
         "description": "Tooltip for the action that removes a track from a specific playlist. The playlist name is a placeholder.",
@@ -737,7 +595,6 @@
         "description": "Snackbar message that shows when the user successfully inserts items into the play queue at a location that is not necessarily the end."
     },
     "bufferDisableSizeConstraintsTitle": "Ära piira puhvri suurust",
-    "@bufferDisableSizeConstraintsTitle": {},
     "previousTracks": "Eelmised lood",
     "@previousTracks": {
         "description": "Description in the queue panel for the list of tracks that come before the current track in the queue. The tracks might not actually have been played (e.g. if the user skipped ahead to a specific track)."
@@ -746,21 +603,20 @@
     "@nextUp": {
         "description": "Description in the queue panel for the list of tracks were manually added to be played after the current track. This should be capitalized (if applicable) to be more recognizable throughout the UI"
     },
-    "bufferDisableSizeConstraintsSubtitle": "Eemaldab puhvri suuruspiirangu ('Buffer Size'). Puhver on kogu aeg laetud seatud pikkusele ('Buffer Duration'), isegi väga suurte failide korral. Võib põhjustada rakenduse kokkujooksmist. Nõuab taaskäivitust.",
-    "@bufferDisableSizeConstraintsSubtitle": {},
-    "playNext": "Mängi järgmist",
+    "bufferDisableSizeConstraintsSubtitle": "Eirab puhvri suuruse piiranguid (\"Puhvri suurus\"). Puhver laetakse alati määratud kestuseni (\"Puhvri kestus\"), isegi väga suurte failide puhul. Võib põhjustada rakenduse krahhe. Vajab taaskäivitamist.",
+    "playNext": "Lisa järgmiseks",
     "@playNext": {
         "description": "Used for adding a track to the \"Next Up\" queue at the first position, to play right after the current track finishes playing"
     },
-    "playingFrom": "Esitab asukohast",
+    "playingFrom": "Allikast:",
     "@playingFrom": {
         "description": "Prefix shown before the name of the main queue source, like the album or playlist that was used to start playback. Example: \"Playing from {My Nice Playlist}\""
     },
-    "stopAndClearQueue": "Lõpeta esitus ja eemalda järjekord",
+    "stopAndClearQueue": "Lõpeta esitus ja tühjenda järjekord",
     "@stopAndClearQueue": {
         "description": "Label for a button that stops playback and removes all tracks from the queue."
     },
-    "addToNextUp": "Lisa järgmistesse",
+    "addToNextUp": "Lisa loendisse 'Järgmiseks'",
     "@addToNextUp": {
         "description": "Used for adding a track to the \"Next Up\" queue at the end, to play after all prior tracks from Next Up have played"
     },
@@ -769,22 +625,16 @@
         "description": "Feature chip that is shown when tracks are being played directly from the server, without transcoding"
     },
     "goToArtist": "Mine esitaja juurde",
-    "@goToArtist": {},
     "removeFavorite": "Eemalda lemmikutest",
-    "@removeFavorite": {},
     "addFavorite": "Lisa lemmikutesse",
-    "@addFavorite": {},
-    "clearNextUp": "Eemalda järgmine",
+    "clearNextUp": "Tühjenda \"Järgmiseks\" järjekord",
     "@clearNextUp": {
         "description": "Label for the action that deletes all tracks added to Next Up"
     },
     "bufferSizeTitle": "Puhvri suurus",
-    "@bufferSizeTitle": {},
-    "removeFromPlaylistTitle": "Eemalda Esitusloendist",
-    "@removeFromPlaylistTitle": {},
+    "removeFromPlaylistTitle": "Eemalda esitusloendist",
     "confirmFavoriteRemoved": "Eemaldatud lemmikutest",
-    "@confirmFavoriteRemoved": {},
-    "offlineTrackCount": "{count,plural,=1{{count} Track} other{{count} Tracks}}, {downloads} Alla laaditud",
+    "offlineTrackCount": "{count,plural,=1{{count} Track} other{{count} Tracks}}, {downloads} alla laaditud",
     "@offlineTrackCount": {
         "placeholders": {
             "count": {
@@ -795,17 +645,14 @@
             }
         }
     },
-    "hours": "Tundi",
-    "@hours": {},
+    "hours": "tundi",
     "addToMorePlaylistsTooltip": "Lisa teistesse esitusloenditesse",
-    "@addToMorePlaylistsTooltip": {},
     "confirmFavoriteAdded": "Lisatud lemmikutesse",
-    "@confirmFavoriteAdded": {},
-    "skipToNextTrackButtonTooltip": "Järgmine lugu",
+    "skipToNextTrackButtonTooltip": "Hüppa järgmisele loole",
     "@skipToNextTrackButtonTooltip": {
         "description": "Tooltip for the button that skips to the next track"
     },
-    "sleepTimerRemainingTime": "Unetaimer {time,plural,=1{<1 minut} other{{time} minutit}} pärast",
+    "sleepTimerRemainingTime": "Uinumiseni {time,plural,=1{<1 minut} other{{time} minutit}}",
     "@sleepTimerRemainingTime": {
         "description": "Button label for sleep timer. {time} is the amount of minutes left.",
         "placeholders": {
@@ -823,12 +670,9 @@
         "description": "Feature chip that is shown when tracks are being played from local downloads, without using the server"
     },
     "showFastScroller": "Kuva kiirkerimisriba",
-    "@showFastScroller": {},
     "goToGenre": "Mine žanri juurde",
-    "@goToGenre": {},
-    "showArtistsTracksSection": "Näita lugude sektsiooni",
-    "@showArtistsTracksSection": {},
-    "editItemTitle": "Muuda {itemType, select, playlist{Playlist} other{}}",
+    "showArtistsTracksSection": "Näita jaotist 'Lood'",
+    "editItemTitle": "Muuda {itemType, select, playlist{Esitusloend} other{}}",
     "@editItemTitle": {
         "placeholders": {
             "itemType": {
@@ -836,7 +680,7 @@
             }
         }
     },
-    "timeFractionTooltip": "{currentTime} {totalTime}-st",
+    "timeFractionTooltip": "{currentTime} / {totalTime}",
     "@timeFractionTooltip": {
         "placeholders": {
             "currentTime": {
@@ -850,7 +694,7 @@
         },
         "description": "Tooltip and accessibility label for the track progress. {currentTime} is the current position within the track, as a translated string like '2 minutes 40 seconds', and {totalTime} is the total duration of the track, also a translated string."
     },
-    "removeFromPlaylistNamedTitle": "Eemalda Esitusloendist '{playlistName}'",
+    "removeFromPlaylistNamedTitle": "Eemalda esitusloendist '{playlistName}'",
     "@removeFromPlaylistNamedTitle": {
         "description": "Tooltip for the action that removes a track from a specific playlist. The playlist name is a placeholder.",
         "placeholders": {
@@ -861,24 +705,19 @@
         }
     },
     "removedFromPlaylist": "Esitusloendist eemaldatud.",
-    "@removedFromPlaylist": {},
-    "playerScreen": "Mängija vaade",
+    "playerScreen": "Peieri vaade",
     "@playerScreen": {
         "description": "Name for the expanded player"
     },
     "unknownAlbum": "Tundmatu album",
-    "@unknownAlbum": {},
-    "bufferSizeSubtitle": "Maksimaalne puhvri suurus MB-des. Nõuab taaskäivitust",
-    "@bufferSizeSubtitle": {},
-    "skipToPreviousTrackButtonTooltip": "Mine algusesse või eelmisele loole",
+    "bufferSizeSubtitle": "Puhvri suurus megabaitides (MB). Vajab taaskäivitamist.",
+    "skipToPreviousTrackButtonTooltip": "Hüppa algusesse või eelmisele loole",
     "@skipToPreviousTrackButtonTooltip": {
         "description": "Tooltip for the button that skips to the beginning of the current track or to the previous track"
     },
     "language": "Keel",
-    "@language": {},
     "removeFromPlaylistTooltip": "Eemalda esitusloendist",
-    "@removeFromPlaylistTooltip": {},
-    "togglePlaybackButtonTooltip": "Taasesitus",
+    "togglePlaybackButtonTooltip": "Esita / peata",
     "@togglePlaybackButtonTooltip": {
         "description": "Tooltip for the button that toggles playback"
     },
@@ -893,13 +732,11 @@
         }
     },
     "adaptive": "Kohanduv",
-    "@adaptive": {},
-    "startupErrorCallToAction": "Palun esita probleem aadressil \"github.com/jmshrv/finamp\", lisades logid (kasuta allolevat nuppu) ja selle lehe ekraanipildi, et saaksime selle võimalikult kiiresti parandada.",
+    "startupErrorCallToAction": "Palun loo veateade lehel \\\"github.com/jmshrv/finamp\\\", lisades logid (kasuta allolevat nuppu) ja ekraanipildi sellest lehest, et saaksime vea võimalikult kiiresti parandada.",
     "@startupErrorCallToAction": {
         "description": "The subtitle / call to action for what to do after encountering a startup error"
     },
     "shuffleSome": "Sega mõned",
-    "@shuffleSome": {},
     "shuffleCountButton": "Sega ({count,plural,=1{{count} lugu} other{{count} lugu}})",
     "@shuffleCountButton": {
         "placeholders": {
@@ -921,7 +758,6 @@
         "description": "Label for the playback action page that contains all actions related to appending tracks at the end of the queue"
     },
     "logoutButtonSubtitle": "Teise serverisse sisselogimine kustutab olemasolevad allalaadimised",
-    "@logoutButtonSubtitle": {},
     "formattedRelativeTime": "{type, select, just_now{praegu} minutes{{value} minutit tagasi} hours{{value} tundi tagasi} yesterday{eile} days{{value, plural, =1{1 päeva tagasi} other{{value} päeva tagasi}}} other{value}}",
     "@formattedRelativeTime": {
         "description": "Returns a relative time string based on how long ago something happened. Used for various DateTime values such as Date Last Played and Date Added.",
@@ -963,16 +799,11 @@
         "description": "Text shown while the changes to a playlist are being saved"
     },
     "none": "Puudub",
-    "@none": {},
-    "autoSwitchItemCurationTypeTitle": "Üksuste kureerimistüübi automaatne vahetamine",
-    "@autoSwitchItemCurationTypeTitle": {},
-    "autoSwitchItemCurationTypeSubtitle": "Kui lubatud, lülituvad artisti ja žanri üksuste jaotised automaatselt teistsugusele kureerimistüübile, kui üksusi pole saadaval (nt konkreetse artisti lemmikuid pole).",
-    "@autoSwitchItemCurationTypeSubtitle": {},
+    "autoSwitchItemCurationTypeTitle": "Sisuvaliku tüübi automaatne vahetus",
+    "autoSwitchItemCurationTypeSubtitle": "Kui see on lubatud, vahetavad esitaja ja žanri lehed automaatselt sisuvalikut (nt kui konkreetse esitaja jaoks pole lemmikuid).",
     "swipeInsertQueueNext": "Esita nipsatud lugu järgmisena",
-    "@swipeInsertQueueNext": {},
     "swipeInsertQueueNextSubtitle": "Lubab loo lisamise järjekorra järgmise üksusena, kui lugude loendis nipsata, selle asemel, et see lõppu lisada.",
-    "@swipeInsertQueueNextSubtitle": {},
-    "sleepTimerRemainingTracks": "Uinu {time,plural,=1{pärast seda lugu} other{in {time} loo pärast}}",
+    "sleepTimerRemainingTracks": "Uinumine {time,plural,=1{pärast seda lugu} other{in {time} loo pärast}}",
     "@sleepTimerRemainingTracks": {
         "description": "Button label for sleep timer. {time} is the amount of minutes left.",
         "placeholders": {
@@ -1016,5 +847,200 @@
     "playbackOrderShuffledButtonLabel": "Lugude segamine",
     "@playbackOrderShuffledButtonLabel": {
         "description": "Label for the button that toggles the playback order between linear/in-order and shuffle, while the queue is in shuffle mode"
+    },
+    "playbackActionPageMoveWithinQueue": "Liiguta järjekorra sees",
+    "@playbackActionPageMoveWithinQueue": {
+        "description": "Label for the playback action page that contains all actions related to moving tracks within the queue"
+    },
+    "playbackActionPageRegularTrackOptions": "Esita",
+    "@playbackActionPageRegularTrackOptions": {
+        "description": "Label for the playback action page that contains all actions of the normal track menu, like starting a new queue or duplicating the track within the existing queue"
+    },
+    "playbackActionPageNextUp": "Lisa järgmiseks",
+    "@playbackActionPageNextUp": {
+        "description": "Label for the playback action page that contains all actions related to appending tracks to Next Up"
+    },
+    "stackTrace": "Pinujälg (Stack Trace)",
+    "showArtistsTracksSectionSubtitle": "Määrab, kas näidatakse jaotist kuni viie looga. Lubamisel saad valida enim mängitud, lemmikute, juhuslike, uusimate või hiljuti lisatud lugude vahel.",
+    "accentColor": "Rõhuvärv",
+    "@accentColor": {
+        "description": "Title of the accent color setting"
+    },
+    "accentColorTitle": "Vali rõhuvärv",
+    "@accentColorTitle": {
+        "description": "Title for the accent color picker sheet"
+    },
+    "systemAccentColor": "Kasuta süsteemset rõhuvärvi",
+    "@systemAccentColor": {
+        "description": "Title of the System Accent Color setting."
+    },
+    "systemAccentColorHasPriorityInfo": "Kohandatud rõhuvärv on keelatud, kuna kasutusel on süsteemne rõhuvärv",
+    "@systemAccentColorHasPriorityInfo": {
+        "description": "Text under the AccentColorTitle which is only visible when the system color is enabled since the system color will be prioritized over custom accent color"
+    },
+    "useMonochromeIcon": "Kasuta mustvalget logo",
+    "@useMonochromeIcon": {
+        "description": "Toggles the Finamp icon between classic and it being monochromic. This does not change the outside-app-icon"
+    },
+    "useMonochromeIconSubtitle": "See muudab ainult rakendusesisest ikooni, mitte rakenduse käivitusikooni.",
+    "@useMonochromeIconSubtitle": {
+        "description": "Subtitle for the toggle that switches the Finamp icon between classic and it being monochromic."
+    },
+    "defaultWord": "Vaikimisi",
+    "useDefaultButton": "Lähtesta vaikimisi rõhuvärvile",
+    "colorCode": "Värvikood (Hex)",
+    "@colorCode": {
+        "description": "Label for a text field where the user can manually enter a color in hexadecimal format"
+    },
+    "colorCodeHint": "nt. #FFFFFF või #coffee",
+    "@colorCodeHint": {
+        "description": "Hint text for the color code input field. Don't translate 'coffee', unless the translation is also a valid hex color code."
+    },
+    "save": "Salvesta",
+    "invalidColorCode": "Sobimatu värvikood",
+    "@invalidColorCode": {
+        "description": "Snackbar message shown when the user tries to save an invalid hex color code"
+    },
+    "startRadio": "Käivita raadio",
+    "@startRadio": {
+        "description": "Menu label for starting a radio from a playlist, album, etc."
+    },
+    "shuffleNext": "Sega järgmiseks",
+    "@shuffleNext": {
+        "description": "Used for shuffling a list (album, playlist, etc.) to the \"Next Up\" queue at the first position, to play right after the current track finishes playing"
+    },
+    "shuffleSomeNext": "Sega mõned järgmiseks",
+    "@shuffleSomeNext": {
+        "description": "Used for shuffling some tracks to the \"Next Up\" queue at the first position, to play right after the current track finishes playing"
+    },
+    "shuffleToNextUp": "Sega loendisse 'Järgmiseks'",
+    "@shuffleToNextUp": {
+        "description": "Used for shuffling a list (album, playlist, etc.) to the end of the \"Next Up\" queue, to play after all prior tracks from Next Up have played"
+    },
+    "shuffleSomeToNextUp": "Sega mõned loendisse 'Järgmiseks'",
+    "@shuffleSomeToNextUp": {
+        "description": "Used for shuffling some tracks to the end of the \"Next Up\" queue, to play after all prior tracks from Next Up have played"
+    },
+    "shuffleToQueue": "Sega järjekorda",
+    "@shuffleToQueue": {
+        "description": "Used for shuffling a list (album, playlist, etc.) to the end of the regular queue, to play after all prior tracks from the queue have played"
+    },
+    "shuffleSomeToQueue": "Sega mõned järjekorda",
+    "@shuffleSomeToQueue": {
+        "description": "Used for shuffling some tracks to the end of the regular queue, to play after all prior tracks from the queue have played"
+    },
+    "movePlayNext": "Liiguta järgmiseks",
+    "@movePlayNext": {
+        "description": "Used for moving a track to the \"Next Up\" queue at the first position, to play right after the current track finishes playing"
+    },
+    "moveAddToNextUp": "Liiguta loendisse 'Järgmiseks'",
+    "@moveAddToNextUp": {
+        "description": "Used for moving a track to the \"Next Up\" queue at the end, to play after all prior tracks from Next Up have played"
+    },
+    "moveAddToQueue": "Liiguta lõppu",
+    "@moveAddToQueue": {
+        "description": "Used for moving a track to the end of the queue, to play after all prior tracks from the queue have played"
+    },
+    "confirmPlayNext": "{type, select, track{Lugu} album{Album} artist{Esitaja} playlist{Esitusloend} genre{Žanr} other{Üksus}} on järgmine",
+    "@confirmPlayNext": {
+        "description": "A confirmation message that is shown after successfully adding a track to the front of the \"Next Up\" queue",
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "confirmAddToNextUp": "{type, select, track{Lugu} album{album} artist{esitaja} playlist{esitusloend} genre{žannr} disc{plaat} other{üksus}} lisati loendisse 'Järgmiseks'",
+    "@confirmAddToNextUp": {
+        "description": "A confirmation message that is shown after successfully adding a track to the end of the \"Next Up\" queue",
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "confirmAddToQueue": "{type, select, track{Lugu} album{album} artist{esitaja} playlist{esitusloend} genre{žannr} disc{plaat} other{üksus}} lisati järjekorda",
+    "@confirmAddToQueue": {
+        "description": "A confirmation message that is shown after successfully adding a track to the end of the regular queue",
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "confirmShuffleNext": "Segatakse järgmiseks",
+    "@confirmShuffleNext": {
+        "description": "A confirmation message that is shown after successfully shuffling a list (album, playlist, etc.) to the front of the \"Next Up\" queue"
+    },
+    "confirmShuffleToNextUp": "Segati loendisse 'Järgmiseks'",
+    "@confirmShuffleToNextUp": {
+        "description": "A confirmation message that is shown after successfully shuffling a list (album, playlist, etc.) to the end of the \"Next Up\" queue"
+    },
+    "confirmShuffleToQueue": "Segati järjekorda",
+    "@confirmShuffleToQueue": {
+        "description": "A confirmation message that is shown after successfully shuffling a list (album, playlist, etc.) to the end of the regular queue"
+    },
+    "placeholderSource": "Tundmatu allikas",
+    "@placeholderSource": {
+        "description": "Placeholder text used when the source of the current track/queue is unknown"
+    },
+    "mix": "{mixSource} - Segu",
+    "@mix": {
+        "description": "Suffix added to a queue source when playing a mix. Example: \"Never Gonna Give You Up - Mix\"",
+        "placeholders": {
+            "mixSource": {
+                "type": "String",
+                "example": "Never Gonna Give You Up"
+            }
+        }
+    },
+    "tracksFormerNextUp": "\"Järgmiseks\" kaudu lisatud lood",
+    "@tracksFormerNextUp": {
+        "description": "Title for the queue source for tracks that were once added to the queue via the \"Next Up\" feature, but have since been played"
+    },
+    "radio": "Raadio",
+    "@radio": {
+        "description": "Title for the queue source when the user is playing a track added via radio"
+    },
+    "radioForItem": "{radioSource} - Raadio",
+    "@radioForItem": {
+        "description": "Suffix added to a queue source when playing a radio track. Example: \"Never Gonna Give You Up - Radio\"",
+        "placeholders": {
+            "radioSource": {
+                "type": "String",
+                "example": "Never Gonna Give You Up"
+            }
+        }
+    },
+    "playingFromType": "Esitatakse {source, select, album{albumilt} playlist{esitusloendist} trackMix{loomiksist} artistMix{esitajamiksist} albumMix{albumimiksist} genreMix{žanrimiksist} favorites{lemmikutest} allTracks{kõigi lugude hulgast} filteredList{valitud loendist} genre{žanrist} artist{esitajalt} track{loost} nextUpAlbum{albumilt (Järgmiseks)} nextUpPlaylist{esitusloendist (Järgmiseks)} nextUpArtist{esitajalt (Järgmiseks)} nextUpGenre{žanrist (Järgmiseks)} remoteClient{kaugseadmest} radio{raadiost} other{}}",
+    "@playingFromType": {
+        "description": "Prefix shown before the type of the main queue source at the top of the player screen. Example: \"Playing From Album\"",
+        "placeholders": {
+            "source": {
+                "type": "String"
+            }
+        }
+    },
+    "playbackOrderShuffledButtonTooltip": "Lugude segamine. Puuduta järjekorras esitamiseks.",
+    "@playbackOrderShuffledButtonTooltip": {
+        "description": "Tooltip for the button that toggles the playback order between linear/in-order and shuffle, while the queue is in shuffle mode"
+    },
+    "playbackSpeedButtonLabel": "Esitab kiirusel x{speed}",
+    "@playbackSpeedButtonLabel": {
+        "description": "Label for the button that toggles visibility. of the playback speed menu, {speed} is the current playback speed.",
+        "placeholders": {
+            "speed": {
+                "type": "double"
+            }
+        }
+    },
+    "playbackSpeedFeatureText": "x{speed} kiirus",
+    "@playbackSpeedFeatureText": {
+        "description": "Label for the feature chip that is shown if the playback speed is different from x1, {speed} is the current playback speed.",
+        "placeholders": {
+            "speed": {
+                "type": "double"
+            }
+        }
     }
 }
