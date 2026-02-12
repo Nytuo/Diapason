@@ -604,7 +604,7 @@
         "description": "Description in the queue panel for the list of tracks were manually added to be played after the current track. This should be capitalized (if applicable) to be more recognizable throughout the UI"
     },
     "bufferDisableSizeConstraintsSubtitle": "Eirab puhvri suuruse piiranguid (\"Puhvri suurus\"). Puhver laetakse alati määratud kestuseni (\"Puhvri kestus\"), isegi väga suurte failide puhul. Võib põhjustada rakenduse krahhe. Vajab taaskäivitamist.",
-    "playNext": "Lisa järgmiseks",
+    "playNext": "Esita järgmisena",
     "@playNext": {
         "description": "Used for adding a track to the \"Next Up\" queue at the first position, to play right after the current track finishes playing"
     },
@@ -624,7 +624,7 @@
     "@playbackModeDirectPlaying": {
         "description": "Feature chip that is shown when tracks are being played directly from the server, without transcoding"
     },
-    "goToArtist": "Mine esitaja juurde",
+    "goToArtist": "Mine esitaja lehele",
     "removeFavorite": "Eemalda lemmikutest",
     "addFavorite": "Lisa lemmikutesse",
     "clearNextUp": "Tühjenda \"Järgmiseks\" järjekord",
@@ -710,7 +710,7 @@
         "description": "Name for the expanded player"
     },
     "unknownAlbum": "Tundmatu album",
-    "bufferSizeSubtitle": "Puhvri suurus megabaitides (MB). Vajab taaskäivitamist.",
+    "bufferSizeSubtitle": "Puhvri suurus megabaitides (MB). Vajab taaskäivitamist",
     "skipToPreviousTrackButtonTooltip": "Hüppa algusesse või eelmisele loole",
     "@skipToPreviousTrackButtonTooltip": {
         "description": "Tooltip for the button that skips to the beginning of the current track or to the previous track"
@@ -929,7 +929,7 @@
     "@shuffleSomeToQueue": {
         "description": "Used for shuffling some tracks to the end of the regular queue, to play after all prior tracks from the queue have played"
     },
-    "movePlayNext": "Liiguta järgmiseks",
+    "movePlayNext": "Esita järgmisena",
     "@movePlayNext": {
         "description": "Used for moving a track to the \"Next Up\" queue at the first position, to play right after the current track finishes playing"
     },
@@ -1749,7 +1749,7 @@
     "@redownloadTitle": {
         "description": "Title for download transcode setting which redownloads tracks with higher allowed qualities"
     },
-    "redownloadSubtitle": "Laadi lood automaatselt uuesti alla, kui nende oodatav kvaliteet on muutunud (nt kogumiku seadete muutmise tõttu)",
+    "redownloadSubtitle": "Laadi lood automaatselt uuesti alla, kui nende oodatav kvaliteet on muutunud (nt kogumiku seadete muutmise tõttu).",
     "@redownloadSubtitle": {
         "description": "subtitle for download transcode setting which redownloads tracks with higher allowed qualities"
     },
@@ -2911,5 +2911,57 @@
     "removedTracks": "Eemaldatud lood",
     "@removedTracks": {
         "description": "Section header for the list of removed tracks on the playlist edit screen"
+    },
+    "removedTracksEmptyListPlaceholder": "Eemaldatud lood kuvatakse siin",
+    "@removedTracksEmptyListPlaceholder": {
+        "description": "Placeholder text shown when there are no removed tracks"
+    },
+    "restoreTrack": "Taasta lugu",
+    "@restoreTrack": {
+        "description": "Button title for restoring a track that was marked to be removed"
+    },
+    "discardChangesTitle": "Kas tühistada muudatused?",
+    "@discardChangesTitle": {
+        "description": "Title for the dialog shown when the user tries to leave the playlist edit screen with unsaved changes"
+    },
+    "discardChangesDescription": "Sul on salvestamata muudatusi. Kas soovid need tühistada ja tagasi minna?",
+    "@discardChangesDescription": {
+        "description": "Description for the dialog shown when the user tries to leave the playlist edit screen with unsaved changes"
+    },
+    "discardChangesConfirmButton": "Tühista muudatused",
+    "@discardChangesConfirmButton": {
+        "description": "Positive action button for the dialog shown when the user tries to leave the playlist edit screen with unsaved changes"
+    },
+    "snackbarOptionsMenuTitle": "Halda sõnumeid",
+    "@snackbarOptionsMenuTitle": {
+        "description": "Title for the snackbar options menu that allows the user to manage snackbar messages"
+    },
+    "snackbarOptionsMenuClearAllButton": "Eemalda kõik sõnumid",
+    "@snackbarOptionsMenuClearAllButton": {
+        "description": "Button title for clearing all snackbar messages"
+    },
+    "snackbarOptionsMenuViewLogsButton": "Vaata logisid",
+    "@snackbarOptionsMenuViewLogsButton": {
+        "description": "Button title for opening the logs screen from the snackbar options menu"
+    },
+    "duckOnAudioInterruptionTitle": "Vähenda helitugevust märguannete ajal",
+    "@duckOnAudioInterruptionTitle": {
+        "description": "Title for the setting that controls ducking."
+    },
+    "duckOnAudioInterruptionSubtitle": "Muuda muusika vaiksemaks, kui mõni teine rakendus esitab lühidalt heli. Vajab taaskäivitamist.",
+    "@duckOnAudioInterruptionSubtitle": {
+        "description": "Subtitle for the setting that controls ducking."
+    },
+    "forceAudioOffloadingOnAndroidTitle": "Sunni riistvaraline helitöötlus",
+    "@forceAudioOffloadingOnAndroidTitle": {
+        "description": "Title for the setting that controls audio offloading on Android."
+    },
+    "forceAudioOffloadingOnAndroidSubtitle": "Suuna helitöötlus seadme riistvarasse, kui seade seda toetab.",
+    "@forceAudioOffloadingOnAndroidSubtitle": {
+        "description": "Subtitle for the setting that controls audio offloading on Android."
+    },
+    "explicit": "Explicit (ebasobiv sisu)",
+    "@explicit": {
+        "description": "Label for content that is considered explicit, usually marked by an 'E' in music apps"
     }
 }
