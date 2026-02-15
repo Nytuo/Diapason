@@ -9,6 +9,7 @@ import 'package:finamp/menus/music_screen_drawer.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
 import 'package:finamp/screens/settings_screen.dart';
+import 'package:finamp/screens/tabs_settings_screen.dart';
 import 'package:finamp/services/downloads_service.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:finamp/services/finamp_user_helper.dart';
@@ -203,8 +204,10 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
                               Row(
                                 children: [
                                   if (!Platform.isIOS && !Platform.isAndroid)
-                                    IconButton(
-                                      icon: const Icon(Icons.refresh),
+                                    IconButtonWithSemantics(
+                                      label: "Refresh*",
+                                      icon: TablerIcons.refresh,
+                                      iconSize: 28.0,
                                       onPressed: () {
                                         refreshTab();
                                       },
@@ -258,64 +261,72 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
                 : TextTheme.of(context).bodyMedium!.copyWith(color: inactiveTabTextColor);
             return Tab(
               height: 32.0,
-              child: Container(
-                decoration: ShapeDecoration(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    side: BorderSide(
-                      color: tabController?.index == sortedTabs.indexOf(tabType)
-                          ? Theme.of(context).colorScheme.primaryContainer
-                          : ColorScheme.of(context).outlineVariant,
-                      strokeAlign: 1.0,
-                      width: 1.5,
+              child: GestureDetector(
+                onLongPress: () {
+                  Navigator.pushNamed(context, TabsSettingsScreen.routeName);
+                },
+                onSecondaryTap: () {
+                  Navigator.pushNamed(context, TabsSettingsScreen.routeName);
+                },
+                child: Container(
+                  decoration: ShapeDecoration(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      side: BorderSide(
+                        color: tabController?.index == sortedTabs.indexOf(tabType)
+                            ? Theme.of(context).colorScheme.primaryContainer
+                            : ColorScheme.of(context).outlineVariant,
+                        strokeAlign: 1.0,
+                        width: 1.5,
+                      ),
                     ),
                   ),
-                ),
-                padding: tabType == TabContentType.home
-                    ? EdgeInsets.only(left: 4, right: 8, top: 3, bottom: 3)
-                    : EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                constraints: const BoxConstraints(minWidth: 50),
-                alignment: Alignment.center,
-                child: tabType == TabContentType.home
-                    ? Row(
-                        spacing: 4.0,
-                        children: [
-                          FutureBuilder(
-                            future: GetIt.instance<JellyfinApiHelper>().getUser(),
-                            builder: (context, asyncSnapshot) {
-                              if (ref.watch(finampSettingsProvider.isOffline)) {
-                                return SizedBox.shrink();
-                              }
-                              if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
-                                return SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                );
-                              } else if (asyncSnapshot.data?.primaryImageTag == null) {
-                                return SizedBox.shrink();
-                              }
-                              return Padding(
-                                padding: const EdgeInsets.all(1.5),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(9999),
-                                  child: Image.network(
-                                    GetIt.instance<JellyfinApiHelper>()
-                                        .getUserImageUrl(
-                                          baseUrl: Uri.parse(finampUserHelper.currentUser!.baseURL),
-                                          user: asyncSnapshot.data!,
-                                        )
-                                        .toString(),
-                                    fit: BoxFit.fitHeight,
+                  padding: tabType == TabContentType.home
+                      ? EdgeInsets.only(left: 4, right: 8, top: 3, bottom: 3)
+                      : EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  constraints: const BoxConstraints(minWidth: 50),
+                  alignment: Alignment.center,
+                  child: tabType == TabContentType.home
+                      ? Row(
+                          spacing: 4.0,
+                          children: [
+                            FutureBuilder(
+                              future: GetIt.instance<JellyfinApiHelper>().getUser(),
+                              builder: (context, asyncSnapshot) {
+                                if (ref.watch(finampSettingsProvider.isOffline)) {
+                                  return SizedBox.shrink();
+                                }
+                                if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+                                  return SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  );
+                                } else if (asyncSnapshot.data?.primaryImageTag == null) {
+                                  return SizedBox.shrink();
+                                }
+                                return Padding(
+                                  padding: const EdgeInsets.all(1.5),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(9999),
+                                    child: Image.network(
+                                      GetIt.instance<JellyfinApiHelper>()
+                                          .getUserImageUrl(
+                                            baseUrl: Uri.parse(finampUserHelper.currentUser!.baseURL),
+                                            user: asyncSnapshot.data!,
+                                          )
+                                          .toString(),
+                                      fit: BoxFit.fitHeight,
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                          Text(tabType.toLocalisedString(context), style: textStyle),
-                        ],
-                      )
-                    : Text(tabType.toLocalisedString(context), style: textStyle),
+                                );
+                              },
+                            ),
+                            Text(tabType.toLocalisedString(context), style: textStyle),
+                          ],
+                        )
+                      : Text(tabType.toLocalisedString(context), style: textStyle),
+                ),
               ),
             );
           }).toList(),

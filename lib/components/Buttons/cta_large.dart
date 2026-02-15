@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:finamp/services/feedback_helper.dart';
 import 'package:flutter/material.dart';
 
@@ -35,7 +37,9 @@ class CTALarge extends StatelessWidget {
               },
         style: ButtonStyle(
           shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Platform.isLinux || Platform.isWindows || Platform.isMacOS ? 16 : 20),
+            ),
           ),
           padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
             const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

@@ -40,7 +40,9 @@ final _homeScreenLogger = Logger("HomeScreen");
 const homeScreenSectionItemLimit = 20;
 
 class HomeScreenContent extends ConsumerStatefulWidget {
-  const HomeScreenContent({super.key});
+  const HomeScreenContent({super.key, this.refresh});
+
+  final MusicRefreshCallback? refresh;
 
   @override
   ConsumerState<HomeScreenContent> createState() => _HomeScreenContentState();
@@ -54,11 +56,17 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
   @override
   void initState() {
     super.initState();
+
+    widget.refresh?.callback = _refresh;
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  void _refresh() {
+    return ref.invalidate(loadHomeSectionItemsProvider);
   }
 
   @override
@@ -68,7 +76,7 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
     return SafeArea(
       bottom: false,
       child: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(loadHomeSectionItemsProvider),
+        onRefresh: () async => _refresh(),
         child: CustomScrollView(
           slivers: [
             SliverPadding(padding: const EdgeInsets.only(top: 16.0)),
@@ -79,7 +87,7 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
                   spacing: 0,
                   runSpacing: 8,
                   direction: Axis.horizontal,
-                  alignment: WrapAlignment.spaceBetween,
+                  alignment: WrapAlignment.spaceAround,
                   runAlignment: WrapAlignment.center,
                   children: ref.watch(finampSettingsProvider.homeScreenConfiguration).actions.map((action) {
                     return CTALarge(

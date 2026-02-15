@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:finamp/components/AlbumScreen/track_list_tile.dart';
+import 'package:finamp/components/MusicScreen/music_screen_tab_view.dart' show MusicRefreshCallback;
 import 'package:finamp/services/item_by_id_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -282,11 +283,6 @@ class _ShowAllScreenState extends ConsumerState<ShowAllScreen> with AutomaticKee
       bottomNavigationBar: const NowPlayingBar(),
     );
   }
-}
-
-class MusicRefreshCallback {
-  void call() => callback?.call();
-  void Function()? callback;
 }
 
 class SliverGridDelegateWithFixedSizeTiles extends SliverGridDelegate {

@@ -262,7 +262,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
               dragStartBehavior: DragStartBehavior.down,
               children: sortedTabs.map((tabType) {
                 if (tabType == TabContentType.home) {
-                  return HomeScreenContent();
+                  return HomeScreenContent(refresh: refreshMap[tabType]!);
                 }
                 return SafeArea(
                   top: !widget.showHeader,

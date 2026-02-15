@@ -312,6 +312,9 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
 
   final _jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
 
+  // Cached configuration that only updates when content properties change, not title
+  HomeScreenSectionConfiguration? _cachedSectionConfig;
+
   @override
   void initState() {
     super.initState();
@@ -364,7 +367,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
     return HomeScreenSectionConfiguration(
       type: selectedSectionType,
       customSectionTitle: (sectionTitle ?? "") == "" ? null : sectionTitle,
-      itemId: selectedCollectionId,
+      itemId: selectedCollectionId ?? collections.firstOrNull?.id,
       contentType: selectedContentType ?? TabContentType.tracks,
       sortAndFilterConfiguration: SortAndFilterConfiguration(
         sortBy: selectedSortBy ?? SortBy.sortName,
@@ -374,35 +377,33 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final menuEntries = _getMenuEntries(context);
-    final stackHeight = 40.0;
+  // Get cached config for preview - only creates new instance when content properties change
+  HomeScreenSectionConfiguration _getCachedSectionConfigForPreview() {
+    final newConfig = HomeScreenSectionConfiguration(
+      type: selectedSectionType,
+      customSectionTitle: null, // Exclude title from cache comparison
+      itemId: selectedCollectionId ?? collections.firstOrNull?.id,
+      contentType: selectedContentType ?? TabContentType.tracks,
+      sortAndFilterConfiguration: SortAndFilterConfiguration(
+        sortBy: selectedSortBy ?? SortBy.sortName,
+        sortOrder: selectedSortOrder ?? SortOrder.ascending,
+        filters: selectedFilters ?? <ItemFilter>{},
+      ),
+    );
 
-    return widget.childBuilder(stackHeight, menu(context, menuEntries));
+    // Only update cache if content properties actually changed
+    if (_cachedSectionConfig != newConfig) {
+      _cachedSectionConfig = newConfig;
+    }
+
+    return _cachedSectionConfig!;
   }
 
-  // Normal track menu entries, excluding headers
-  List<Widget> _getMenuEntries(BuildContext context) {
-    return [
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.max,
-        spacing: 4.0,
-        children: [
-          Text(
-            ((sectionTitle ?? "") != "") ? sectionTitle! : "Preview*",
-            style: ((sectionTitle ?? "") != "")
-                ? TextTheme.of(context).titleSmall?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 18,
-                    color: Theme.of(context).brightness == Brightness.light ? Colors.black : Colors.white,
-                  )
-                : Theme.of(context).textTheme.bodyMedium,
-          ),
-          HomeScreenSectionContent(sectionInfo: _getCurrentSectionInfo()),
-        ],
-      ),
+  @override
+  Widget build(BuildContext context) {
+    // Normal track menu entries, excluding headers
+    final menuEntries = [
+      SectionPreview(sectionInfo: _getCachedSectionConfigForPreview(), customTitle: sectionTitle),
       SizedBox(height: 16.0),
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -461,7 +462,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
                         ),
                       )
                       .toList(),
-                  initialSelection: selectedCollectionId ?? collections.firstOrNull?.id,
+                  initialSelection: _getCurrentSectionInfo().itemId,
                   enableFilter: true,
                   enableSearch: true,
                   requestFocusOnTap: true,
@@ -610,6 +611,10 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
       CTAMedium(
         text: "Save*",
         icon: TablerIcons.device_floppy,
+        disabled:
+            _getCurrentSectionInfo().type == HomeScreenSectionType.tabView &&
+            _getCurrentSectionInfo().presetType == null &&
+            (_getCurrentSectionInfo().customSectionTitle ?? "") == "",
         onPressed: () {
           final sections = FinampSettingsHelper.finampSettings.homeScreenConfiguration.sections;
           //TODO remove preset type when editing section and changes are made, pre-fill name?
@@ -641,11 +646,9 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
       ),
       SizedBox(height: 200.0),
     ];
-  }
+    final stackHeight = 40.0;
 
-  // All track menu slivers, including headers
-  List<Widget> menu(BuildContext context, List<Widget> menuEntries) {
-    return [
+    return widget.childBuilder(stackHeight, [
       SliverStickyHeader(
         header: Padding(
           padding: const EdgeInsets.only(top: 10.0, bottom: 8.0, left: 16.0, right: 16.0),
@@ -659,11 +662,11 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
           height: MenuMaskHeight(32.0),
           child: SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            sliver: SliverList.list(children: _getMenuEntries(context)),
+            sliver: SliverList.list(children: menuEntries),
           ),
         ),
       ),
-    ];
+    ]);
   }
 }
 
@@ -767,4 +770,50 @@ Future<HomeScreenSectionPresetType?> showSectionPresetPickerMenu(
       return (stackHeight, menu);
     },
   );
+}
+
+class SectionPreview extends ConsumerStatefulWidget {
+  const SectionPreview({super.key, required this.sectionInfo, this.customTitle});
+
+  final HomeScreenSectionConfiguration sectionInfo;
+  final String? customTitle;
+
+  @override
+  ConsumerState<SectionPreview> createState() => _SectionPreviewState();
+}
+
+class _SectionPreviewState extends ConsumerState<SectionPreview> {
+  @override
+  Widget build(BuildContext context) {
+    final hasTitle =
+        ((widget.customTitle ?? "") != "") ||
+        widget.sectionInfo.itemId != null ||
+        widget.sectionInfo.presetType != null;
+
+    final sectionTitle = ((widget.customTitle ?? "") != "")
+        ? widget.customTitle!
+        : widget.sectionInfo.itemId != null
+        ? ref.watch(itemByIdProvider(widget.sectionInfo.itemId!)).valueOrNull?.name ??
+              widget.sectionInfo.getTitle(context)
+        : (widget.sectionInfo.presetType != null ? widget.sectionInfo.getTitle(context) : "Preview*");
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.max,
+      spacing: 4.0,
+      children: [
+        Text(
+          sectionTitle,
+          style: hasTitle
+              ? TextTheme.of(context).titleSmall?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 18,
+                  color: Theme.of(context).brightness == Brightness.light ? Colors.black : Colors.white,
+                )
+              : Theme.of(context).textTheme.bodyMedium,
+        ),
+        HomeScreenSectionContent(sectionInfo: widget.sectionInfo),
+      ],
+    );
+  }
 }
