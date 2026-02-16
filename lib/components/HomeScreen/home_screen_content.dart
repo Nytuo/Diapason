@@ -320,7 +320,6 @@ class HomeScreenSectionContent extends ConsumerWidget {
     );
     return switch (items) {
       AsyncData(:final value) => switch (value) {
-        _ => _buildHorizontalSkeletonLoader(context),
         null => _buildHorizontalSkeletonLoader(context),
         [] => const Center(child: Text("No items available.", maxLines: 1)),
         _ => SizedBox(
