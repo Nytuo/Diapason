@@ -320,6 +320,7 @@ class HomeScreenSectionContent extends ConsumerWidget {
     );
     return switch (items) {
       AsyncData(:final value) => switch (value) {
+        _ => _buildHorizontalSkeletonLoader(context),
         null => _buildHorizontalSkeletonLoader(context),
         [] => const Center(child: Text("No items available.", maxLines: 1)),
         _ => SizedBox(
@@ -371,10 +372,38 @@ class HomeScreenSectionContent extends ConsumerWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: cardWidth,
-                height: cardWidth,
-                decoration: BoxDecoration(color: skeletonBaseColor, borderRadius: BorderRadius.circular(8)),
+              RepeatingAnimationBuilder<double>(
+                animatable: Tween<double>(begin: 0.0, end: 1.0),
+                duration: const Duration(milliseconds: 700),
+                repeatMode: RepeatMode.reverse,
+                curve: Curves.easeInOut,
+                builder: (BuildContext context, double opacity, Widget? child) {
+                  return Stack(
+                    children: [
+                      Container(
+                        width: cardWidth,
+                        height: cardWidth,
+                        decoration: BoxDecoration(color: skeletonBaseColor, borderRadius: BorderRadius.circular(8)),
+                      ),
+                      Opacity(
+                        opacity: opacity * 0.7,
+                        child: Container(
+                          width: cardWidth,
+                          height: cardWidth,
+                          decoration: BoxDecoration(
+                            gradient: RadialGradient(
+                              center: Alignment.center,
+                              radius: 3.0,
+                              colors: [Colors.white.withOpacity(0.4), Colors.transparent],
+                              stops: const [0.1, 1.0],
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
               SizedBox(height: 4),
               Padding(
