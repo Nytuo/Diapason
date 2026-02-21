@@ -10,11 +10,11 @@ import 'process_artist.dart';
 String? generateSubtitle({
   required BuildContext context,
   required BaseItemDto item,
-  String? parentType,
+  TabContentType? parentType,
   ArtistType? artistType,
 }) {
   // If the parentType is MusicArtist, this is being called by an ItemCollectionListTile in an AlbumView of an artist.
-  if (parentType == "MusicArtist") {
+  if (parentType == TabContentType.artists) {
     return ReleaseDateHelper.autoFormat(item);
   }
 

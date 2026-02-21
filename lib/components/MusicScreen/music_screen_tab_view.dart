@@ -547,6 +547,7 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
             separatorBuilder: (context, index) => const SizedBox.shrink(),
           )
         : PagedGridView(
+            padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 20.0),
             pagingController: _pagingController,
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             scrollController: controller,
@@ -586,11 +587,19 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
             //             : FinampSettingsHelper.finampSettings.contentGridViewCrossAxisCountPortrait,
             //       ),
             gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: calculateItemCollectionCardWidth(context),
+              maxCrossAxisExtent: calculateItemCollectionCardWidth(
+                context,
+                widget.tabContentType.itemType ?? BaseItemDtoType.album,
+              ),
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
               childAspectRatio:
-                  (calculateItemCollectionCardWidth(context) / calculateItemCollectionCardHeight(context) * 10.0)
+                  (calculateItemCollectionCardWidth(context, widget.tabContentType.itemType ?? BaseItemDtoType.album) /
+                          calculateItemCollectionCardHeight(
+                            context,
+                            widget.tabContentType.itemType ?? BaseItemDtoType.album,
+                          ) *
+                          10.0)
                       .floorToDouble() /
                   10.0,
             ),

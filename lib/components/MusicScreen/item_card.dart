@@ -1,4 +1,5 @@
 import 'package:finamp/components/album_image.dart';
+import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:finamp/services/generate_subtitle.dart';
@@ -15,7 +16,7 @@ class ItemCard extends ConsumerWidget {
   const ItemCard({super.key, required this.item, this.parentType, this.onTap});
 
   final BaseItemDto item;
-  final String? parentType;
+  final TabContentType? parentType;
   final void Function()? onTap;
 
   @override
@@ -61,7 +62,7 @@ class _ItemCollectionCardText extends ConsumerWidget {
   const _ItemCollectionCardText({required this.item, required this.parentType});
 
   final BaseItemDto item;
-  final String? parentType;
+  final TabContentType? parentType;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -73,7 +74,10 @@ class _ItemCollectionCardText extends ConsumerWidget {
     );
 
     return SizedBox(
-      height: calculateTextHeight(style: TextTheme.of(context).bodySmall!, lines: 3),
+      height: calculateTextHeight(
+        style: TextTheme.of(context).bodySmall!,
+        lines: calculateItemCollectionTextLines(BaseItemDtoType.fromItem(item)),
+      ),
       child: Align(
         alignment: Alignment.topLeft,
         child: Wrap(
@@ -102,16 +106,29 @@ class _ItemCollectionCardText extends ConsumerWidget {
 }
 
 /// This might calculate the width base on the device width in the future, or something similar
-double calculateItemCollectionCardWidth(BuildContext context) {
+double calculateItemCollectionCardWidth(BuildContext context, BaseItemDtoType itemType) {
   return _itemCollectionCardCoverSize;
 }
 
-double calculateItemCollectionCardHeight(BuildContext context) {
+int calculateItemCollectionTextLines(BaseItemDtoType itemType) {
+  switch (itemType) {
+    case BaseItemDtoType.artist:
+    case BaseItemDtoType.track:
+      return 2;
+    case BaseItemDtoType.album:
+    case BaseItemDtoType.playlist:
+    case BaseItemDtoType.genre:
+    case _:
+      return 3;
+  }
+}
+
+double calculateItemCollectionCardHeight(BuildContext context, BaseItemDtoType itemType) {
   return _itemCollectionCardCoverSize +
       (GetIt.instance<ProviderContainer>().read(finampSettingsProvider.showTextOnGridView)
           ? _itemCollectionCardSpacing
           : 0) +
-      calculateTextHeight(style: TextTheme.of(context).bodySmall!, lines: 3);
+      calculateTextHeight(style: TextTheme.of(context).bodySmall!, lines: calculateItemCollectionTextLines(itemType));
 }
 
 double calculateTextHeight({required TextStyle style, required int lines}) {

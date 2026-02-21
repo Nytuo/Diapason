@@ -34,7 +34,7 @@ class ItemCollectionListTile extends ConsumerWidget {
   });
 
   final BaseItemDto item;
-  final String? parentType;
+  final TabContentType? parentType;
   final void Function()? onTap;
   final bool albumShowsYearAndDurationInstead;
   final SortBy? adaptiveAdditionalInfoSortBy;

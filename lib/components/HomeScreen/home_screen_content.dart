@@ -333,7 +333,10 @@ class HomeScreenSectionContent extends ConsumerWidget {
         null => _buildHorizontalSkeletonLoader(context),
         [] => const Center(child: Text("No items available.", maxLines: 1)),
         _ => SizedBox(
-          height: calculateItemCollectionCardHeight(context),
+          height: calculateItemCollectionCardHeight(
+            context,
+            sectionInfo.contentType?.itemType ?? BaseItemDtoType.album,
+          ),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: value.length + 1,
@@ -370,7 +373,7 @@ class HomeScreenSectionContent extends ConsumerWidget {
         ? Colors.grey.shade300
         : Colors.grey.shade800;
     return SizedBox(
-      height: calculateItemCollectionCardHeight(context),
+      height: calculateItemCollectionCardHeight(context, sectionInfo.contentType?.itemType ?? BaseItemDtoType.album),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: skeletonCount + 1, // Show [skeletonCount] skeleton items
@@ -378,7 +381,10 @@ class HomeScreenSectionContent extends ConsumerWidget {
           if (index == 0) {
             return SizedBox(width: 4.0); // initial padding, + separator
           }
-          final cardWidth = calculateItemCollectionCardWidth(context);
+          final cardWidth = calculateItemCollectionCardWidth(
+            context,
+            sectionInfo.contentType?.itemType ?? BaseItemDtoType.album,
+          );
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

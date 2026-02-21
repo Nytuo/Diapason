@@ -16,7 +16,7 @@ class ArtistItemListTile extends StatelessWidget {
   const ArtistItemListTile({super.key, required this.item, this.parentType, this.onTap});
 
   final BaseItemDto item;
-  final String? parentType;
+  final TabContentType? parentType;
   final void Function()? onTap;
 
   @override

@@ -44,7 +44,7 @@ class ItemWrapper extends ConsumerStatefulWidget {
 
   /// The parent type of the item. Used to change onTap functionality for stuff
   /// like artists.
-  final String? parentType;
+  final TabContentType? parentType;
 
   /// A custom onTap can be provided to override the default value, which is to
   /// open the item's album/artist/genre/playlist screen.

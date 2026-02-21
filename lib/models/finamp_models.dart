@@ -1121,7 +1121,7 @@ enum TabContentType {
     }
   }
 
-  static TabContentType fromItemType(String itemType) {
+  static TabContentType fromItemType(String? itemType) {
     switch (itemType) {
       case "Audio":
         return TabContentType.tracks;
