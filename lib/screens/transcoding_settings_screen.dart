@@ -162,17 +162,24 @@ class MultichannelHandlingSelector extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ListTile(
       title: Text(AppLocalizations.of(context)!.multichannelHandlingTitle),
-      subtitle: FinampSettingsDropdown<MultichannelHandlingSetting>(
-        dropdownItems: MultichannelHandlingSetting.values
-            .map(
-              (e) => DropdownMenuEntry<MultichannelHandlingSetting>(
-                value: e,
-                label: AppLocalizations.of(context)!.multichannelHandlingOption(e.name),
-              ),
-            )
-            .toList(),
-        selectedValue: ref.watch(finampSettingsProvider.multichannelHandlingSetting),
-        onSelected: FinampSetters.setMultichannelHandlingSetting.ifNonNull,
+      subtitle: Column(
+        spacing: 4.0,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(AppLocalizations.of(context)!.multichannelHandlingSubtitle),
+          FinampSettingsDropdown<MultichannelHandlingSetting>(
+            dropdownItems: MultichannelHandlingSetting.values
+                .map(
+                  (e) => DropdownMenuEntry<MultichannelHandlingSetting>(
+                    value: e,
+                    label: AppLocalizations.of(context)!.multichannelHandlingOption(e.name),
+                  ),
+                )
+                .toList(),
+            selectedValue: ref.watch(finampSettingsProvider.multichannelHandlingSetting),
+            onSelected: FinampSetters.setMultichannelHandlingSetting.ifNonNull,
+          ),
+        ],
       ),
     );
   }
