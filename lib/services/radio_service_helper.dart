@@ -381,7 +381,7 @@ Future<List<BaseItemDto>> generateRadioTracks(
       // since the base item never changes
       repetitionThresholdTracks: currentQueue.trackCount,
       // don't use old queue to filter out tracks if we're starting a new queue
-      ignoreDuplicatesFromQueue: forNewQueue,
+      disableDuplicateFiltering: forNewQueue,
     );
   }
 
@@ -408,7 +408,7 @@ Future<List<BaseItemDto>> generateRadioTracks(
         // filter out recent tracks within 90 minutes
         repetitionThresholdTracks: currentQueue.getTrackCountWithinDuration(Duration(minutes: 90)),
         // don't use old queue to filter out tracks if we're starting a new queue
-        ignoreDuplicatesFromQueue: forNewQueue,
+        disableDuplicateFiltering: forNewQueue,
       );
       if (continuousTracksSample.isEmpty) {
         _radioLogger.warning("Failed to find similar track to ${continuousTracks.last.name}. Aborting.");
@@ -653,7 +653,7 @@ Future<List<BaseItemDto>> _getSimilarTracks({
   required int randomnessExtraTracks,
   required int repetitionThresholdTracks,
   required int maxAttempts,
-  bool ignoreDuplicatesFromQueue = false,
+  bool disableDuplicateFiltering = false,
 }) async {
   const skippedTracks = 1; // extra track to exclude the current track
   const filterExtraTracks = 10; // extra tracks in case duplicates are removed
@@ -685,7 +685,7 @@ Future<List<BaseItemDto>> _getSimilarTracks({
       final originalTrackCount = filteredSample.length;
       // filter out duplicate tracks, including upcoming ones
       final recentlyPlayedIds =
-          (ignoreDuplicatesFromQueue
+          (disableDuplicateFiltering
                   ? <BaseItemDto>[]
                   : queueService
                         .getQueue()

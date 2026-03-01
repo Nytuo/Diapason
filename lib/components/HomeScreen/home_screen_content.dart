@@ -101,6 +101,7 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
                       children: ref.watch(finampSettingsProvider.homeScreenConfiguration).actions.map((action) {
                         return CTALarge(
                           text: action.toLocalisedString(context),
+                          label: action.getDescription(context),
                           icon: switch (action) {
                             FinampQuickAction.trackMix => TablerIcons.arrows_shuffle,
                             FinampQuickAction.recents => TablerIcons.calendar,
@@ -293,6 +294,7 @@ class HomeScreenSection extends ConsumerWidget {
                     builder: (context) => MusicScreen(
                       showHeader: false,
                       tabTypeFilter: sectionInfo.contentType,
+                      homeScreenSectionConfiguration: sectionInfo,
                       sortAndFilterConfigurationOverrideInit: sectionInfo.sortAndFilterConfiguration,
                     ),
                   ),

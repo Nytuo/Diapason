@@ -9,6 +9,7 @@ class IconButtonWithSemantics extends ConsumerWidget {
   final Color? color;
   final String label;
   final double? iconSize;
+  final double? strokeWidth;
   final EdgeInsetsGeometry? padding;
   final VisualDensity? visualDensity;
 
@@ -19,6 +20,7 @@ class IconButtonWithSemantics extends ConsumerWidget {
     required this.icon,
     this.color,
     this.iconSize,
+    this.strokeWidth,
     this.visualDensity,
     this.padding,
     this.onLongPress,
@@ -39,7 +41,7 @@ class IconButtonWithSemantics extends ConsumerWidget {
           }
         },
         child: IconTheme(
-          data: IconThemeData(color: color ?? IconTheme.of(context).color, size: iconSize ?? 24.0),
+          data: IconThemeData(color: color ?? IconTheme.of(context).color, size: iconSize ?? 24.0, weight: strokeWidth),
           child: IconButton(
             tooltip: label,
             icon: Icon(icon),

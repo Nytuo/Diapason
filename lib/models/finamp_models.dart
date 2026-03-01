@@ -4248,6 +4248,19 @@ enum FinampQuickAction {
         return "Surprise Me*";
     }
   }
+
+  String getDescription(BuildContext context) => _humanReadableLocalisedDescription(this, context);
+
+  String _humanReadableLocalisedDescription(FinampQuickAction quickAction, BuildContext context) {
+    switch (quickAction) {
+      case FinampQuickAction.trackMix:
+        return "Shuffles random tracks from your library*";
+      case FinampQuickAction.recents:
+        return "Choose from recent queues*";
+      case FinampQuickAction.surpriseMe:
+        return "Starts 'Continuous' radio from a random track*";
+    }
+  }
 }
 
 @JsonSerializable()

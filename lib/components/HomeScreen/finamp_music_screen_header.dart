@@ -85,6 +85,11 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
           future: PackageInfo.fromPlatform(),
           builder: (context, snapshot) {
             final appName = snapshot.data?.appName ?? AppLocalizations.of(context)!.finamp;
+            final statusIcon = ref.watch(finampSettingsProvider.isOffline)
+                ? TablerIcons.plug_connected_x
+                : ref.watch(FinampUserHelper.finampCurrentUserProvider).valueOrNull?.isLocal ?? false
+                ? TablerIcons.server_bolt
+                : null; // hide icon by default (remote connection)
             return SafeArea(
               child: Padding(
                 padding: EdgeInsets.only(
@@ -113,18 +118,7 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
                                 ? TextTheme.of(context).bodyMedium?.color?.withOpacity(0.6)
                                 : null,
                           ),
-                          Positioned(
-                            bottom: -4,
-                            right: -2,
-                            child: Icon(
-                              ref.watch(finampSettingsProvider.isOffline)
-                                  ? TablerIcons.plug_connected_x
-                                  : ref.watch(FinampUserHelper.finampCurrentUserProvider).valueOrNull?.isLocal ?? false
-                                  ? TablerIcons.server_bolt
-                                  : null, // hide icon by default (remote connection)
-                              size: 16,
-                            ),
-                          ),
+                          Positioned(bottom: -4, right: -2, child: Icon(statusIcon, size: 16)),
                           StreamBuilder<Map<String, int>>(
                             //!!! this stream doesn't refresh on its own, see timer above
                             stream: downloadsService.downloadCountsStream,
@@ -138,10 +132,10 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
                               final isDownloadSystemDoingWork = (counts["sync"] ?? 0) > 0;
                               if (isDownloadSystemDoingWork) {
                                 return Positioned(
-                                  bottom: -6,
-                                  right: -4,
+                                  bottom: statusIcon != null ? -6 : 1,
+                                  right: statusIcon != null ? -4 : 3,
                                   child: SizedBox.square(
-                                    dimension: 20.0,
+                                    dimension: statusIcon != null ? 20.0 : 10.0,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 1,
                                       valueColor: AlwaysStoppedAnimation<Color>(
