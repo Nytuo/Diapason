@@ -217,6 +217,11 @@ class HomeScreenSection extends ConsumerWidget {
     var currentLibrary = ref.watch(
       FinampUserHelper.finampCurrentUserProvider.select((value) => value.valueOrNull?.currentView),
     );
+    bool isOffline = ref.watch(finampSettingsProvider.isOffline);
+    bool isDownloaded =
+        sectionInfo.type !=
+        HomeScreenSectionType
+            .collection; //TODO implement once collection downloads or generic item sections are supported
     return SliverPadding(
       padding: const EdgeInsets.only(bottom: 8.0),
       sliver: FinampSectionHeader(
@@ -226,119 +231,123 @@ class HomeScreenSection extends ConsumerWidget {
             : sectionInfo.getTitle(context),
         headerPadding: const EdgeInsets.only(left: 14.0, right: 8.0),
         contentPadding: EdgeInsets.zero,
-        actions: [
-          if (sectionInfo.type == HomeScreenSectionType.tabView && sectionInfo.contentType == TabContentType.tracks)
-          //TODO use similar logic to [loadChildTracksFromShuffledGenreAlbums] for loading tracks from other tab types
-          //TODO for collections, try to recursively load tracks directly, Jellyfin can do that
-          ...[
-            IconButtonWithSemantics(
-              onPressed: () async {
-                final queueService = GetIt.instance<QueueService>();
-                final source = QueueItemSource.rawId(
-                  type: QueueItemSourceType.homeScreenSection,
-                  name: QueueItemSourceName(
-                    type: QueueItemSourceNameType.homeScreenSection,
-                    localizationParameter: sectionInfo.presetType?.name,
-                    pretranslatedName: sectionInfo.getTitle(context),
+        actions: (isOffline && !isDownloaded)
+            ? []
+            : [
+                if (sectionInfo.type == HomeScreenSectionType.tabView &&
+                    sectionInfo.contentType == TabContentType.tracks)
+                //TODO use similar logic to [loadChildTracksFromShuffledGenreAlbums] for loading tracks from other tab types
+                //TODO for collections, try to recursively load tracks directly, Jellyfin can do that
+                ...[
+                  IconButtonWithSemantics(
+                    onPressed: () async {
+                      final queueService = GetIt.instance<QueueService>();
+                      final source = QueueItemSource.rawId(
+                        type: QueueItemSourceType.homeScreenSection,
+                        name: QueueItemSourceName(
+                          type: QueueItemSourceNameType.homeScreenSection,
+                          localizationParameter: sectionInfo.presetType?.name,
+                          pretranslatedName: sectionInfo.getTitle(context),
+                        ),
+                        id: sectionInfo.toLocalisedString(context),
+                      );
+                      // only add loaded items at first, to ensure order (for random sections) is the same, and to improve responsiveness
+                      final initialItems = await ref.read(
+                        loadHomeSectionItemsProvider(
+                          sectionInfo: sectionInfo,
+                          library: currentLibrary,
+                          limit: homeScreenSectionItemLimit,
+                        ).future,
+                      );
+                      await queueService.startPlayback(
+                        items: initialItems ?? [],
+                        source: source,
+                        order: FinampPlaybackOrder.linear,
+                      );
+                      // append additional items in the background
+                      final isRandomizedSection = sectionInfo.sortAndFilterConfiguration.sortBy == SortBy.random;
+                      var items = (await ref.read(
+                        loadHomeSectionItemsProvider(
+                          sectionInfo: sectionInfo,
+                          library: currentLibrary,
+                          // skipping existing items in randomized sections isn't needed since the order will be different
+                          limit:
+                              (isRandomizedSection ? 0 : homeScreenSectionItemLimit) +
+                              FinampSettingsHelper.finampSettings.trackShuffleItemCount,
+                        ).future,
+                      ));
+                      if (isRandomizedSection) {
+                        // filter duplicates for randomized sections
+                        for (var existingTrack in initialItems ?? []) {
+                          items?.removeWhere((item) => item.id == existingTrack.id);
+                        }
+                      } else {
+                        items = items?.skip(homeScreenSectionItemLimit).toList();
+                      }
+                      await queueService.addToQueue(
+                        // ensure we only add exactly [trackShuffleItemCount] items in total, since we fetched more tracks initially
+                        items:
+                            items
+                                ?.take(
+                                  FinampSettingsHelper.finampSettings.trackShuffleItemCount -
+                                      (initialItems?.length ?? 0),
+                                )
+                                .toList() ??
+                            [],
+                      );
+                    },
+                    label: AppLocalizations.of(context)!.playButtonLabel,
+                    icon: TablerIcons.player_play,
                   ),
-                  id: sectionInfo.toLocalisedString(context),
-                );
-                // only add loaded items at first, to ensure order (for random sections) is the same, and to improve responsiveness
-                final initialItems = await ref.read(
-                  loadHomeSectionItemsProvider(
-                    sectionInfo: sectionInfo,
-                    library: currentLibrary,
-                    limit: homeScreenSectionItemLimit,
-                  ).future,
-                );
-                await queueService.startPlayback(
-                  items: initialItems ?? [],
-                  source: source,
-                  order: FinampPlaybackOrder.linear,
-                );
-                // append additional items in the background
-                final isRandomizedSection = sectionInfo.sortAndFilterConfiguration.sortBy == SortBy.random;
-                var items = (await ref.read(
-                  loadHomeSectionItemsProvider(
-                    sectionInfo: sectionInfo,
-                    library: currentLibrary,
-                    // skipping existing items in randomized sections isn't needed since the order will be different
-                    limit:
-                        (isRandomizedSection ? 0 : homeScreenSectionItemLimit) +
-                        FinampSettingsHelper.finampSettings.trackShuffleItemCount,
-                  ).future,
-                ));
-                if (isRandomizedSection) {
-                  // filter duplicates for randomized sections
-                  for (var existingTrack in initialItems ?? []) {
-                    items?.removeWhere((item) => item.id == existingTrack.id);
-                  }
-                } else {
-                  items = items?.skip(homeScreenSectionItemLimit).toList();
-                }
-                await queueService.addToQueue(
-                  // ensure we only add exactly [trackShuffleItemCount] items in total, since we fetched more tracks initially
-                  items:
-                      items
-                          ?.take(
-                            FinampSettingsHelper.finampSettings.trackShuffleItemCount - (initialItems?.length ?? 0),
-                          )
-                          .toList() ??
-                      [],
-                );
-              },
-              label: AppLocalizations.of(context)!.playButtonLabel,
-              icon: TablerIcons.player_play,
-            ),
-            IconButtonWithSemantics(
-              onPressed: () async {
-                final source = QueueItemSource.rawId(
-                  type: QueueItemSourceType.homeScreenSection,
-                  name: QueueItemSourceName(
-                    type: QueueItemSourceNameType.homeScreenSection,
-                    localizationParameter: sectionInfo.presetType?.name,
-                    pretranslatedName: sectionInfo.getTitle(context),
+                  IconButtonWithSemantics(
+                    onPressed: () async {
+                      final source = QueueItemSource.rawId(
+                        type: QueueItemSourceType.homeScreenSection,
+                        name: QueueItemSourceName(
+                          type: QueueItemSourceNameType.homeScreenSection,
+                          localizationParameter: sectionInfo.presetType?.name,
+                          pretranslatedName: sectionInfo.getTitle(context),
+                        ),
+                        id: sectionInfo.toLocalisedString(context),
+                      );
+                      // no need to optimize item fetching here, since the order doesn't matter and the provider doesn't support "skipping" tracks, so all [trackShuffleItemCount] items will be loaded anyway
+                      final items = await ref.read(
+                        loadHomeSectionItemsProvider(
+                          sectionInfo: sectionInfo,
+                          library: currentLibrary,
+                          limit: FinampSettingsHelper.finampSettings.trackShuffleItemCount,
+                        ).future,
+                      );
+                      await GetIt.instance<QueueService>().startPlayback(
+                        items: items ?? [],
+                        source: source,
+                        order: FinampPlaybackOrder.shuffled,
+                      );
+                    },
+                    label: AppLocalizations.of(context)!.shuffleButtonLabel,
+                    icon: TablerIcons.arrows_shuffle,
                   ),
-                  id: sectionInfo.toLocalisedString(context),
-                );
-                // no need to optimize item fetching here, since the order doesn't matter and the provider doesn't support "skipping" tracks, so all [trackShuffleItemCount] items will be loaded anyway
-                final items = await ref.read(
-                  loadHomeSectionItemsProvider(
-                    sectionInfo: sectionInfo,
-                    library: currentLibrary,
-                    limit: FinampSettingsHelper.finampSettings.trackShuffleItemCount,
-                  ).future,
-                );
-                await GetIt.instance<QueueService>().startPlayback(
-                  items: items ?? [],
-                  source: source,
-                  order: FinampPlaybackOrder.shuffled,
-                );
-              },
-              label: AppLocalizations.of(context)!.shuffleButtonLabel,
-              icon: TablerIcons.arrows_shuffle,
-            ),
-          ],
-          ShowAllButton(
-            label: "Show All*",
-            onPressed: () {
-              if (sectionInfo.type == HomeScreenSectionType.tabView) {
-                Navigator.of(context).push(
-                  MaterialPageRoute<MusicScreen>(
-                    builder: (context) => MusicScreen(
-                      showHeader: false,
-                      tabTypeFilter: sectionInfo.contentType,
-                      homeScreenSectionConfiguration: sectionInfo,
-                      sortAndFilterConfigurationOverrideInit: sectionInfo.sortAndFilterConfiguration,
-                    ),
-                  ),
-                );
-              } else {
-                Navigator.pushNamed(context, ShowAllScreen.routeName, arguments: sectionInfo);
-              }
-            },
-          ),
-        ],
+                ],
+                ShowAllButton(
+                  label: "Show All*",
+                  onPressed: () {
+                    if (sectionInfo.type == HomeScreenSectionType.tabView) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<MusicScreen>(
+                          builder: (context) => MusicScreen(
+                            showHeader: false,
+                            tabTypeFilter: sectionInfo.contentType,
+                            homeScreenSectionConfiguration: sectionInfo,
+                            sortAndFilterConfigurationOverrideInit: sectionInfo.sortAndFilterConfiguration,
+                          ),
+                        ),
+                      );
+                    } else {
+                      Navigator.pushNamed(context, ShowAllScreen.routeName, arguments: sectionInfo);
+                    }
+                  },
+                ),
+              ],
         onTap: () {
           if (sectionInfo.type == HomeScreenSectionType.tabView) {
             Navigator.of(context).push(
@@ -392,6 +401,11 @@ class HomeScreenSectionContent extends ConsumerWidget {
     var currentLibrary = ref.watch(
       FinampUserHelper.finampCurrentUserProvider.select((value) => value.valueOrNull?.currentView),
     );
+    bool isOffline = ref.watch(finampSettingsProvider.isOffline);
+    bool isDownloaded =
+        sectionInfo.type !=
+        HomeScreenSectionType
+            .collection; //TODO implement once collection downloads or generic item sections are supported
     final items = ref.watch(loadHomeSectionItemsProvider(sectionInfo: sectionInfo, library: currentLibrary));
     final source = QueueItemSource.rawId(
       type: QueueItemSourceType.homeScreenSection,
@@ -405,32 +419,35 @@ class HomeScreenSectionContent extends ConsumerWidget {
     return switch (items) {
       AsyncData(:final value) => switch (value) {
         null => _buildHorizontalSkeletonLoader(context),
-        [] => const Center(child: Text("No items available.", maxLines: 1)),
-        _ => SizedBox(
-          height: calculateItemCollectionCardHeight(
-            context,
-            sectionInfo.contentType?.itemType ?? BaseItemDtoType.album,
-          ),
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: value.length + 1,
-            itemBuilder: (context, rawIndex) {
-              if (rawIndex == 0) {
-                return SizedBox(width: 4.0); // initial padding, + separator
-              }
-              final index = rawIndex - 1;
-              final BaseItemDto item = value[index];
-              return ItemWrapper(
-                key: ValueKey(item.id),
-                item: item,
-                isGrid: true,
-                interactive: interactive,
-                source: source,
-              );
-            },
-            separatorBuilder: (context, index) => const SizedBox(width: 8, height: 1),
-          ),
-        ),
+        [] => const Center(child: Text("No items available.*", maxLines: 1)),
+        _ =>
+          (isOffline && !isDownloaded)
+              ? const Center(child: Text("Section contents not downloaded.*", maxLines: 1))
+              : SizedBox(
+                  height: calculateItemCollectionCardHeight(
+                    context,
+                    sectionInfo.contentType?.itemType ?? BaseItemDtoType.album,
+                  ),
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: value.length + 1,
+                    itemBuilder: (context, rawIndex) {
+                      if (rawIndex == 0) {
+                        return SizedBox(width: 4.0); // initial padding, + separator
+                      }
+                      final index = rawIndex - 1;
+                      final BaseItemDto item = value[index];
+                      return ItemWrapper(
+                        key: ValueKey(item.id),
+                        item: item,
+                        isGrid: true,
+                        interactive: interactive,
+                        source: source,
+                      );
+                    },
+                    separatorBuilder: (context, index) => const SizedBox(width: 8, height: 1),
+                  ),
+                ),
         // _ => _buildHorizontalSkeletonLoader(),
       },
       AsyncError(:final error) => () {
