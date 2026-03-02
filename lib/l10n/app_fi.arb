@@ -2925,5 +2925,22 @@
     "autoOfflineSettingSubtitle": "Kytke offline-tila automaattisesti verkkoyhteyden tai serverin tavoitettavuuden mukaan.",
     "@autoOfflineSettingSubtitle": {
         "description": "Subtitle for the automated offline mode setting."
+    },
+    "multichannelHandlingTitle": "Monikanavaisen transkoodauksen käsittely",
+    "@multichannelHandlingTitle": {
+        "description": "Title for multi-channel handling dropdown"
+    },
+    "multichannelHandlingSubtitle": "Kuinka käsitellä monikanavaiset raidat (yli kaksi kanavaa) transkoodauksessa. Koskee suoratoistoa ja latauksia.",
+    "@multichannelHandlingSubtitle": {
+        "description": "Subtitle for multi-channel handling dropdown"
+    },
+    "multichannelHandlingOption": "{option, select, stereoDownmixLossy{Muunna vain häviölliset stereoksi} stereoDownmixAll{Muunna kaikki stereoksi} fixedBitrate{Älä muunna koskaan} other{{option}} }",
+    "@multichannelHandlingOption": {
+        "placeholders": {
+            "option": {
+                "type": "String"
+            }
+        },
+        "description": "Options in multi-channel handling dropdown"
     }
 }
