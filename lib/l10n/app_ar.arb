@@ -21,15 +21,15 @@
     "artists": "الفنانين",
     "genres": "التصنيفات",
     "playlists": "قوائم التشغيل",
-    "startMix": "خلط فوري",
-    "startMixNoTracksArtist": "إكبس طويل على البوم لتضيف أو تزيل هم من بناء الخلطة قبل ان تبدأ الخلطة",
+    "startMix": "بدء مزيج",
+    "startMixNoTracksArtist": "اضغط مطولاً على فنان لإضافته أو إزالته من منشئ المزيج قبل بدء المزيج",
     "@startMixNoTracksArtist": {
         "description": "Snackbar message that shows when the user presses the instant mix button with no artists selected"
     },
     "finamp": "Finamp",
     "clear": "إمسح",
     "shuffleAll": "استماع عشوائي للكل",
-    "startMixNoTracksAlbum": "إكبس طويل على البوم لتضيف أو تزيل ها من بناء الخلطة قبل ان تبدأ الخلطة",
+    "startMixNoTracksAlbum": "اضغط مطولاً على ألبوم لإضافته أو إزالته من منشئ المزيج قبل بدء المزيج",
     "@startMixNoTracksAlbum": {
         "description": "Snackbar message that shows when the user presses the instant mix button with no albums selected"
     },
@@ -177,10 +177,10 @@
     "goToAlbum": "إذهب إلى الألبوم",
     "addToQueue": "إضافة إلى قائمة الانتظار",
     "queue": "قائمة الانتظار",
-    "instantMix": "خلط فوري",
+    "instantMix": "مزيج فوري",
     "addedToQueue": "تَمَّت الإضافة إلى قائمة الانتظار.",
     "queueReplaced": "تم تبديل قائمة المحتوى.",
-    "startingInstantMix": "ابتداء خلط فوري.",
+    "startingInstantMix": "جارٍ بدء المزيج الفوري.",
     "addDownloadLocation": "إضافة مكان التنزيل",
     "errorScreenError": "حدث خطأ أثناء جلب قائمة الأخطاء! في هذه الحالة، يُنصح بإنشاء تقرير على GitHub وحذف بيانات التطبيق",
     "downloadLocations": "مواقع التنزيل",
@@ -251,8 +251,8 @@
     },
     "anErrorHasOccured": "حدث خطأ.",
     "customLocationsBuggy": "اختيار مجلد حفظ مخصص قد يؤدي إلى كثيراً من المشاكل، ولا يُنصح به في معظم الحالات. المجلدات الموجودة ضمن مجلد \"الموسيقى\" في النظام تمنع من حفظ صور الألبومات بسبب قيود نظام التشغيل.",
-    "addToMix": "إضافة إالى الخلطة",
-    "removeFromMix": "إزالة من الخلطة",
+    "addToMix": "إضافة إلى المزيج",
+    "removeFromMix": "إزالة من المزيج",
     "minutes": "دقائق",
     "removeFromPlaylistTooltip": "إزالة من قائمة التشغيل",
     "removeFromPlaylistTitle": "إزالة من قائمة التشغيل",
@@ -454,7 +454,7 @@
     "@noGenres": {
         "description": "Gets shown when there are no genres available for an album or artist"
     },
-    "startMixNoTracksGenre": "اضغط مطولاً على نوع موسيقي لإضافته أو إزالته من صانع المزيج قبل بدء عملية المزج",
+    "startMixNoTracksGenre": "اضغط مطولاً على نوع موسيقي لإضافته أو إزالته من منشئ المزيج قبل بدء المزيج",
     "@startMixNoTracksGenre": {
         "description": "Snackbar message that shows when the user presses the instant mix button with no genres selected"
     },
@@ -1270,7 +1270,7 @@
             }
         }
     },
-    "couldNotLoad": "تعذر تحميل {source, select, album{الألبوم} playlist{قائمة التشغيل} trackMix{خليط الأغاني} artistMix{خليط الفنانون} albumMix{خليط الألبوم} genreMix{خليط النوع الموسيقي} favorites{المفضلة} allTracks{كل الأغاني} filteredList{الأغاني} genre{النوع الموسيقي} artist{الفنان} track{الأغنية} nextUpAlbum{الألبوم في قائمة التالي} nextUpPlaylist{قائمة التشغيل في قائمة التالي} nextUpArtist{الفنان في قائمة التالي} nextUpGenre{النوع الموسيقي في قائمة التالي} other{}}",
+    "couldNotLoad": "تعذر تحميل {source, select, album{الألبوم} playlist{قائمة التشغيل} trackMix{مزيج الأغنية} artistMix{مزيج الفنان} albumMix{مزيج الألبوم} genreMix{مزيج النوع الموسيقي} favorites{المفضلة} allTracks{كل الأغاني} filteredList{الأغاني} genre{النوع الموسيقي} artist{الفنان} track{الأغنية} nextUpAlbum{الألبوم في التالي} nextUpPlaylist{قائمة التشغيل في التالي} nextUpArtist{الفنان في التالي} nextUpGenre{النوع الموسيقي في التالي} other{}}",
     "@couldNotLoad": {
         "placeholders": {
             "source": {
@@ -1367,7 +1367,7 @@
             }
         }
     },
-    "playingFromType": "تشغيل من {source, select, album{ألبوم} playlist{قائمة تشغيل} trackMix{خليط الأغاني} artistMix{خليط الفنان} albumMix{خليط الألبوم} genreMix{خليط النوع الموسيقي} favorites{المفضلة} allTracks{كل الأغاني} filteredList{الأغاني} genre{النوع الموسيقي} artist{Artist} track{الأغنية} nextUpAlbum{ألبوم في قائمة التالي} nextUpPlaylist{قائمة تشغيل في قائمة التالي} nextUpArtist{فنان في قائمة التالي} nextUpGenre{نوع موسيقي في قائمة التالي} remoteClient{عميل عن بعد} radio{الراديو} other{}}",
+    "playingFromType": "تشغيل من {source, select, album{ألبوم} playlist{قائمة تشغيل} trackMix{مزيج أغنية} artistMix{مزيج فنان} albumMix{مزيج ألبوم} genreMix{مزيج نوع موسيقي} favorites{المفضلة} allTracks{كل الأغاني} filteredList{الأغاني} genre{نوع موسيقي} artist{فنان} track{أغنية} nextUpAlbum{الألبوم في التالي} nextUpPlaylist{قائمة التشغيل في التالي} nextUpArtist{الفنان في التالي} nextUpGenre{النوع الموسيقي في التالي} remoteClient{جهاز تحكم عن بعد} radio{راديو} other{}}",
     "@playingFromType": {
         "description": "Prefix shown before the type of the main queue source at the top of the player screen. Example: \"Playing From Album\"",
         "placeholders": {
@@ -1423,5 +1423,158 @@
         }
     },
     "swipeInsertQueueNext": "تشغيل الأغنية المسحوبة تالياً",
-    "swipeInsertQueueNextSubtitle": "تفعيل إدراج الأغنية كعنصر تالٍ في قائمة الانتظار عند سحبها من قائمة الأغاني، بدلاً من إضافتها إلى نهايتها."
+    "swipeInsertQueueNextSubtitle": "تفعيل إدراج الأغنية كعنصر تالٍ في قائمة الانتظار عند سحبها من قائمة الأغاني، بدلاً من إضافتها إلى نهايتها.",
+    "swipeLeftToRightAction": "إجراء السحب لليمين",
+    "swipeLeftToRightActionSubtitle": "الإجراء الذي يتم تفعيله عند سحب أغنية في القائمة من اليسار إلى اليمين.",
+    "swipeRightToLeftAction": "إجراء السحب لليسار",
+    "swipeRightToLeftActionSubtitle": "الإجراء الذي يتم تفعيله عند سحب أغنية في القائمة من اليمين إلى اليسار.",
+    "startInstantMixForIndividualTracksSwitchTitle": "بدء مزيجات فورية للأغاني الفردية",
+    "@startInstantMixForIndividualTracksSwitchTitle": {
+        "description": "Title for the switch that toggles if tapping a track on the tracks tab will start an instant mix of that track instead of just playing a single track."
+    },
+    "startInstantMixForIndividualTracksSwitchSubtitle": "عند التفعيل، سيؤدي النقر على أغنية في تبويب الأغاني إلى بدء مزيج فوري لتلك الـ أغنية بدلاً من مجرد تشغيل أغنية واحدة.",
+    "multichannelHandlingOption": "{option, select, stereoDownmixLossy{تحويل فقط التنسيقات المضغوطة إلى ستيريو} stereoDownmixAll{تحويل الكل إلى ستيريو} fixedBitrate{عدم التحويل أبداً} other{{option}}}",
+    "@multichannelHandlingOption": {
+        "placeholders": {
+            "option": {
+                "type": "String"
+            }
+        },
+        "description": "Options in multi-channel handling dropdown"
+    },
+    "radioModeOptionName": "{option, select, reshuffle{إعادة الترتيب العشوائي} random{اختيار عشوائي} similar{مشابه} continuous{مستمر} albumMix{مزيج ألبوم} other{{option}}}",
+    "@radioModeOptionName": {
+        "placeholders": {
+            "option": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Radio mode names in radio mode/algorithm dropdown"
+    },
+    "radioModeOptionTitle": "{option, select, reshuffle{نمط إعادة الترتيب العشوائي} random{النمط العشوائي} similar{النمط المشابه} continuous{النمط المستمر} albumMix{مزيج الألبوم} other{{option}}} مفعّل",
+    "@radioModeOptionTitle": {
+        "placeholders": {
+            "option": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Title displayed in the queue, showing which radio mode/algorithm is currently being used."
+    },
+    "radioModeOptionConfirmation": "تم التبديل إلى {option, select, reshuffle{نمط إعادة الترتيب العشوائي} random{النمط العشوائي} similar{النمط المشابه} continuous{النمط المستمر} albumMix{مزيج الألبوم} other{{option}}}",
+    "@radioModeOptionConfirmation": {
+        "placeholders": {
+            "option": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Confirmation displayed when the radio mode is changed."
+    },
+    "radioModeDescription": "{mode, select, reshuffle{إعادة الترتيب العشوائي لقائمة الانتظار باستمرار} random{إلحاق أغانٍ عشوائياً من الاختيار الأولي} similar{إلحاق بناءً على قائمة الانتظار الأصلية} continuous{إلحاق بناءً على الأغنية الحالية} albumMix{إلحاق ألبومات مشابهة} other{}}",
+    "@radioModeDescription": {
+        "placeholders": {
+            "mode": {
+                "type": "String",
+                "description": "Corresponds to RadioMode.name"
+            }
+        },
+        "description": "Subtitle displayed in the queue to describe what the radio is doing if enabled"
+    },
+    "downloadItem": "تنزيل",
+    "@downloadItem": {
+        "description": "Option to download item in long-press menu."
+    },
+    "repairComplete": "اكتمل إصلاح التنزيلات.",
+    "@repairComplete": {
+        "description": "Message displayed after download repair completes."
+    },
+    "syncComplete": "تمت إعادة مزامنة جميع التنزيلات.",
+    "@syncComplete": {
+        "description": "Message displayed after download sync completes."
+    },
+    "syncDownloads": "مزامنة وتنزيل العناصر المفقودة.",
+    "@syncDownloads": {
+        "description": "Tooltip for downloads sync button."
+    },
+    "repairDownloads": "إصلاح المشكلات في الملفات المنزلة أو البيانات الوصفية.",
+    "@repairDownloads": {
+        "description": "Tooltip for downloads repair button."
+    },
+    "requireWifiForDownloads": "اشتراط الاتصال بالـ Wi-Fi عند التنزيل.",
+    "@requireWifiForDownloads": {
+        "description": "Description of setting for only performing downloads while on wifi"
+    },
+    "queueRestoreError": "تحذير: تعذر استعادة {count,plural, =1{أغنية واحدة} other{{count} أغاني}} إلى قائمة الانتظار.",
+    "@queueRestoreError": {
+        "description": "Message that shows when some, but not all, tracks in the Now-Playing queue from the previous session cannot be restored due to server issues or being offline.",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "activeDownloadsListHeader": "{itemCount} {typeName, select, downloading{جاري تنزيلها} failed{فشلت} syncFailed{فشلت مزامنتها متكرراً} enqueued{في الانتظار} other{}} {itemCount, plural, =1{تنزيل واحد} other{تنزيلات}}",
+    "@activeDownloadsListHeader": {
+        "description": "Header text for lists of active downloads of a particular state.",
+        "placeholders": {
+            "typeName": {
+                "type": "String"
+            },
+            "itemCount": {
+                "type": "int"
+            }
+        }
+    },
+    "downloadLibraryPrompt": "هل أنت متأكد من رغبتك في تنزيل جميع محتويات المكتبة \"{libraryName}\"؟",
+    "@downloadLibraryPrompt": {
+        "description": "Confirmation prompt before downloading entire library, which may be large.",
+        "placeholders": {
+            "libraryName": {
+                "type": "String"
+            }
+        }
+    },
+    "onlyShowFullyDownloaded": "إظهار الألبومات المنزلة بالكامل فقط",
+    "@onlyShowFullyDownloaded": {
+        "description": "Tooltip for button that hides all partially downloaded albums"
+    },
+    "filesystemFull": "لا يمكن إكمال التنزيلات المتبقية. وحدة التخزين ممتلئة.",
+    "@filesystemFull": {
+        "description": "Message shown when a download cannot complete due to the filesystem being full."
+    },
+    "connectionInterrupted": "انقطع الاتصال، جارٍ إيقاف التنزيلات مؤقتاً.",
+    "@connectionInterrupted": {
+        "description": "Message shown when the connection is interrupted during a download."
+    },
+    "connectionInterruptedBackground": "انقطع الاتصال أثناء التنزيل في الخلفية. قد يكون ذلك بسبب إعدادات نظام التشغيل.",
+    "@connectionInterruptedBackground": {
+        "description": "Message shown when the connection is interrupted during a download while in the background. It advises checking OS settings, as they may cause background downloads to be blocked."
+    },
+    "connectionInterruptedBackgroundAndroid": "انقطع الاتصال أثناء التنزيل في الخلفية. قد يكون ذلك بسبب تفعيل خيار \"الدخول في حالة أولوية منخفضة عند الإيقاف المؤقت\" أو إعدادات نظام التشغيل.",
+    "@connectionInterruptedBackgroundAndroid": {
+        "description": "Message shown when the connection is interrupted during a download while in the background on android. It advises checking OS settings, as they may cause background downloads to be blocked, or checking the  'Enter Low-Priority State on Pause' setting."
+    },
+    "activeDownloadSize": "جارٍ التنزيل…",
+    "@activeDownloadSize": {
+        "description": "Message shown for download size while item is still being downloaded"
+    },
+    "missingDownloadSize": "جارٍ الحذف…",
+    "@missingDownloadSize": {
+        "description": "Message shown for download size while item is being deleted but is not fully removed"
+    },
+    "syncingDownloadSize": "جارٍ المزامنة…",
+    "@syncingDownloadSize": {
+        "description": "Message shown for download size while item is still syncing."
+    },
+    "runRepairWarning": "تعذر الاتصال بالخادم لإتمام هجرة التنزيلات. يرجى تشغيل \"إصلاح التنزيلات\" من شاشة التنزيلات بمجرد عودة الاتصال.",
+    "@runRepairWarning": {
+        "description": "Message shown when an error occurs during the downloads repair step of the Isar downloads migration, which requires a server connection."
+    },
+    "downloadSettings": "التنزيلات",
+    "showNullLibraryItemsTitle": "إظهار الوسائط ذات المكتبة غير المعروفة.",
+    "@showNullLibraryItemsTitle": {
+        "description": "Title of setting that shows tracks/albums from an unknown library in all libraries when on, or in no libraries when off."
+    }
 }
