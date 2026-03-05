@@ -276,6 +276,7 @@ class CarPlayHelper {
       order: order,
       startingIndex: order == FinampPlaybackOrder.linear ? index : null,
     );
+    await FlutterCarplay.showSharedNowPlaying();
   }
 
   // Play a list of tracks as an ad-hoc queue (for tracks without a parent container)
@@ -298,12 +299,15 @@ class CarPlayHelper {
       order: order,
       startingIndex: order == FinampPlaybackOrder.linear ? index : null,
     );
+    await FlutterCarplay.showSharedNowPlaying();
   }
 
   /// CarPlay-optimized shuffle that fetches a smaller initial batch for fast startup.
   /// The default shuffleAll() fetches 250 tracks which is slow on poor connections.
   Future<void> shuffleAllTracks() async {
     _carPlayLogger.info("Starting shuffle all tracks (CarPlay-optimized)");
+
+    await _queueService.stopAndClearQueue();
 
     List<BaseItemDto>? items;
 
@@ -327,6 +331,9 @@ class CarPlayHelper {
     }
 
     if (items != null && items.isNotEmpty) {
+      // Pre-cache the first track's image so it's available for the now-playing screen
+      await _preloadCarPlayImages([items.first]);
+
       await _queueService.startPlayback(
         items: items,
         source: QueueItemSource.rawId(
@@ -338,11 +345,14 @@ class CarPlayHelper {
         ),
         order: FinampPlaybackOrder.shuffled,
       );
+      await FlutterCarplay.showSharedNowPlaying();
     }
   }
 
   Future<void> startInstantMix() async {
     _carPlayLogger.info("Starting instant mix");
+
+    await _queueService.stopAndClearQueue();
 
     if (FinampSettingsHelper.finampSettings.isOffline) {
       // Offline: instant mix not available, fallback to shuffle
@@ -360,9 +370,13 @@ class CarPlayHelper {
     );
 
     if (randomTracks != null && randomTracks.isNotEmpty) {
+      // Pre-cache the first track's image so it's available for the now-playing screen
+      await _preloadCarPlayImages([randomTracks.first]);
+
       _carPlayLogger.info("Starting continuous radio from: ${randomTracks.first.name}");
       FinampSetters.setRadioMode(RadioMode.continuous);
       await radio.startRadioPlayback(randomTracks.first);
+      await FlutterCarplay.showSharedNowPlaying();
     } else {
       // Fallback to shuffle all if we can't get any tracks
       await shuffleAllTracks();
@@ -447,6 +461,7 @@ class CarPlayHelper {
               order: FinampPlaybackOrder.linear,
             );
             complete();
+            await FlutterCarplay.showSharedNowPlaying();
           },
         ));
       }
@@ -567,7 +582,10 @@ class CarPlayHelper {
   }
 
   Future<void> showPlaylistTemplate(BaseItemDto parent) async {
-    if (_isPushingPageUpdate) return;
+    if (_isPushingPageUpdate) {
+      _carPlayLogger.warning("Navigation dropped: already pushing page update");
+      return;
+    }
     _isPushingPageUpdate = true;
     try {
       List<BaseItemDto> mediaItems = await loadChildTracksFromBaseItem(baseItem: parent);
@@ -641,7 +659,10 @@ class CarPlayHelper {
   }
 
   Future<void> showTracksTemplate() async {
-    if (_isPushingPageUpdate) return;
+    if (_isPushingPageUpdate) {
+      _carPlayLogger.warning("Navigation dropped: already pushing page update");
+      return;
+    }
     _isPushingPageUpdate = true;
     try {
       List<BaseItemDto> tracks;
@@ -697,7 +718,10 @@ class CarPlayHelper {
   }
 
   Future<void> showArtistsTemplate() async {
-    if (_isPushingPageUpdate) return;
+    if (_isPushingPageUpdate) {
+      _carPlayLogger.warning("Navigation dropped: already pushing page update");
+      return;
+    }
     _isPushingPageUpdate = true;
     try {
       List<BaseItemDto> artists;
@@ -737,7 +761,10 @@ class CarPlayHelper {
   }
   
   Future<void> showArtistTemplate(BaseItemDto parent) async {
-    if (_isPushingPageUpdate) return;
+    if (_isPushingPageUpdate) {
+      _carPlayLogger.warning("Navigation dropped: already pushing page update");
+      return;
+    }
     _isPushingPageUpdate = true;
     try {
       _carPlayLogger.info("Loading artist template for ${parent.name}");

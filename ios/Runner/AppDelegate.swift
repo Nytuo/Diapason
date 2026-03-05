@@ -193,6 +193,16 @@ extension AppDelegate {
         if let genreNames = mediaSearch?.genreNames, !genreNames.isEmpty {
             searchData["genre"] = genreNames.first
         }
+        if let mediaType = mediaSearch?.mediaType {
+            switch mediaType {
+            case .artist: searchData["mediaType"] = "artist"
+            case .album: searchData["mediaType"] = "album"
+            case .song: searchData["mediaType"] = "song"
+            case .playlist: searchData["mediaType"] = "playlist"
+            case .genre: searchData["mediaType"] = "genre"
+            default: break
+            }
+        }
         if intent.playShuffled == true {
             searchData["shuffle"] = true
         }
