@@ -104,22 +104,22 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
                           text: action.toLocalisedString(context),
                           label: action.getDescription(context),
                           icon: switch (action) {
-                            FinampQuickAction.trackMix => TablerIcons.arrows_shuffle,
-                            FinampQuickAction.recents => TablerIcons.calendar,
-                            FinampQuickAction.surpriseMe => TablerIcons.radio,
+                            FinampQuickActions.trackMix => TablerIcons.arrows_shuffle,
+                            FinampQuickActions.recents => TablerIcons.calendar,
+                            FinampQuickActions.surpriseMe => TablerIcons.radio,
                           },
                           vertical: true,
                           minWidth: 110,
                           onPressed: switch (action) {
-                            FinampQuickAction.trackMix => () {
+                            FinampQuickActions.trackMix => () {
                               _audioServiceHelper.shuffleAll(
                                 onlyShowFavorites: finampSettings?.onlyShowFavorites ?? false,
                               );
                             },
-                            FinampQuickAction.recents => () {
+                            FinampQuickActions.recents => () {
                               Navigator.pushNamed(context, QueueRestoreScreen.routeName);
                             },
-                            FinampQuickAction.surpriseMe => () async {
+                            FinampQuickActions.surpriseMe => () async {
                               //TODO handle offline mode (continuous radio not available, and offline request needed) - maybe just hide this?
                               // start continuous radio with a random track?
                               final randomTracks = await _jellyfinApiHelper.getItems(

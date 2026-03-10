@@ -3263,6 +3263,10 @@
   "@homeScreenSectionCustomSectionDescription": {
     "description": "Description for the custom section type, which can be added to the home screen"
   },
+  "homeScreenQuickActionPickerMenuTitle": "Pick an Action",
+  "@homeScreenQuickActionPickerMenuTitle": {
+    "description": "Title for the quick action picker menu, which allows users to pick a quick action to add to the home screen"
+  },
   "homeScreenSectionPresetFavoriteTracksTitle": "Favorite Tracks",
   "@homeScreenSectionPresetFavoriteTracksTitle": {
     "description": "Title for the favorite tracks preset section, which can be added to the home screen"

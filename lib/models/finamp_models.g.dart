@@ -1632,7 +1632,7 @@ class FinampHomeScreenConfigurationAdapter
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return FinampHomeScreenConfiguration(
-      actions: (fields[0] as List).cast<FinampQuickAction>(),
+      actions: (fields[0] as List).cast<FinampQuickActions>(),
       sections: (fields[1] as List).cast<HomeScreenSectionConfiguration>(),
     );
   }
@@ -3362,32 +3362,32 @@ class HomeScreenSectionPresetTypeAdapter
           typeId == other.typeId;
 }
 
-class FinampQuickActionAdapter extends TypeAdapter<FinampQuickAction> {
+class FinampQuickActionsAdapter extends TypeAdapter<FinampQuickActions> {
   @override
   final typeId = 114;
 
   @override
-  FinampQuickAction read(BinaryReader reader) {
+  FinampQuickActions read(BinaryReader reader) {
     switch (reader.readByte()) {
       case 0:
-        return FinampQuickAction.trackMix;
+        return FinampQuickActions.trackMix;
       case 1:
-        return FinampQuickAction.recents;
+        return FinampQuickActions.recents;
       case 2:
-        return FinampQuickAction.surpriseMe;
+        return FinampQuickActions.surpriseMe;
       default:
-        return FinampQuickAction.trackMix;
+        return FinampQuickActions.trackMix;
     }
   }
 
   @override
-  void write(BinaryWriter writer, FinampQuickAction obj) {
+  void write(BinaryWriter writer, FinampQuickActions obj) {
     switch (obj) {
-      case FinampQuickAction.trackMix:
+      case FinampQuickActions.trackMix:
         writer.writeByte(0);
-      case FinampQuickAction.recents:
+      case FinampQuickActions.recents:
         writer.writeByte(1);
-      case FinampQuickAction.surpriseMe:
+      case FinampQuickActions.surpriseMe:
         writer.writeByte(2);
     }
   }
@@ -3398,7 +3398,7 @@ class FinampQuickActionAdapter extends TypeAdapter<FinampQuickAction> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is FinampQuickActionAdapter &&
+      other is FinampQuickActionsAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
@@ -9347,7 +9347,7 @@ FinampHomeScreenConfiguration _$FinampHomeScreenConfigurationFromJson(
   Map<String, dynamic> json,
 ) => FinampHomeScreenConfiguration(
   actions: (json['actions'] as List<dynamic>)
-      .map((e) => $enumDecode(_$FinampQuickActionEnumMap, e))
+      .map((e) => $enumDecode(_$FinampQuickActionsEnumMap, e))
       .toList(),
   sections: (json['sections'] as List<dynamic>)
       .map(
@@ -9361,15 +9361,15 @@ Map<String, dynamic> _$FinampHomeScreenConfigurationToJson(
   FinampHomeScreenConfiguration instance,
 ) => <String, dynamic>{
   'actions': instance.actions
-      .map((e) => _$FinampQuickActionEnumMap[e]!)
+      .map((e) => _$FinampQuickActionsEnumMap[e]!)
       .toList(),
   'sections': instance.sections,
 };
 
-const _$FinampQuickActionEnumMap = {
-  FinampQuickAction.trackMix: 'trackMix',
-  FinampQuickAction.recents: 'recents',
-  FinampQuickAction.surpriseMe: 'surpriseMe',
+const _$FinampQuickActionsEnumMap = {
+  FinampQuickActions.trackMix: 'trackMix',
+  FinampQuickActions.recents: 'recents',
+  FinampQuickActions.surpriseMe: 'surpriseMe',
 };
 
 ItemFilter _$ItemFilterFromJson(Map<String, dynamic> json) => ItemFilter(

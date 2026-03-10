@@ -256,7 +256,7 @@ class DefaultSettings {
   static const duckOnAudioInterruption = true;
   static const forceAudioOffloadingOnAndroid = false;
   static final homeScreenConfiguration = FinampHomeScreenConfiguration(
-    actions: [FinampQuickAction.trackMix, FinampQuickAction.recents, FinampQuickAction.surpriseMe],
+    actions: [FinampQuickActions.trackMix, FinampQuickActions.recents, FinampQuickActions.surpriseMe],
     sections: [
       HomeScreenSectionConfiguration.fromPreset(HomeScreenSectionPresetType.favoriteTracks),
       HomeScreenSectionConfiguration.fromPreset(HomeScreenSectionPresetType.forgottenFavoriteTracks),
@@ -4212,7 +4212,7 @@ enum HomeScreenSectionPresetType {
 }
 
 @HiveType(typeId: 114)
-enum FinampQuickAction {
+enum FinampQuickActions {
   @HiveField(0)
   trackMix,
   @HiveField(1)
@@ -4227,37 +4227,37 @@ enum FinampQuickAction {
 
   String toLocalisedString(BuildContext context) => _humanReadableLocalisedName(this, context);
 
-  String _humanReadableName(FinampQuickAction quickAction) {
+  String _humanReadableName(FinampQuickActions quickAction) {
     switch (quickAction) {
-      case FinampQuickAction.trackMix:
+      case FinampQuickActions.trackMix:
         return "Track Mix";
-      case FinampQuickAction.recents:
+      case FinampQuickActions.recents:
         return "Recents";
-      case FinampQuickAction.surpriseMe:
+      case FinampQuickActions.surpriseMe:
         return "Surprise Me";
     }
   }
 
-  String _humanReadableLocalisedName(FinampQuickAction quickAction, BuildContext context) {
+  String _humanReadableLocalisedName(FinampQuickActions quickAction, BuildContext context) {
     switch (quickAction) {
-      case FinampQuickAction.trackMix:
+      case FinampQuickActions.trackMix:
         return "Track Mix*";
-      case FinampQuickAction.recents:
+      case FinampQuickActions.recents:
         return "Recents*";
-      case FinampQuickAction.surpriseMe:
+      case FinampQuickActions.surpriseMe:
         return "Surprise Me*";
     }
   }
 
   String getDescription(BuildContext context) => _humanReadableLocalisedDescription(this, context);
 
-  String _humanReadableLocalisedDescription(FinampQuickAction quickAction, BuildContext context) {
+  String _humanReadableLocalisedDescription(FinampQuickActions quickAction, BuildContext context) {
     switch (quickAction) {
-      case FinampQuickAction.trackMix:
+      case FinampQuickActions.trackMix:
         return "Shuffles random tracks from your library*";
-      case FinampQuickAction.recents:
+      case FinampQuickActions.recents:
         return "Choose from recent queues*";
-      case FinampQuickAction.surpriseMe:
+      case FinampQuickActions.surpriseMe:
         return "Starts 'Continuous' radio from a random track*";
     }
   }
@@ -4269,7 +4269,7 @@ class FinampHomeScreenConfiguration {
   const FinampHomeScreenConfiguration({required this.actions, required this.sections});
 
   @HiveField(0)
-  final List<FinampQuickAction> actions;
+  final List<FinampQuickActions> actions;
 
   @HiveField(1)
   final List<HomeScreenSectionConfiguration> sections;
@@ -4286,7 +4286,7 @@ class FinampHomeScreenConfiguration {
 
   // implement copyWith
   FinampHomeScreenConfiguration copyWith({
-    List<FinampQuickAction>? actions,
+    List<FinampQuickActions>? actions,
     List<HomeScreenSectionConfiguration>? sections,
   }) {
     return FinampHomeScreenConfiguration(actions: actions ?? this.actions, sections: sections ?? this.sections);

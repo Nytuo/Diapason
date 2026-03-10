@@ -71,7 +71,7 @@ class QuickActionsSelector extends ConsumerWidget {
             itemBuilder: (context, index) {
               final action = quickActions[index];
               return Padding(
-                key: ValueKey(action),
+                key: ValueKey("quick-action-$action-$index"),
                 padding: const EdgeInsets.only(bottom: 8.0, left: 12.0, right: 12.0),
                 child: ListTile(
                   tileColor: ColorScheme.of(context).primary.withOpacity(0.05),
@@ -84,14 +84,28 @@ class QuickActionsSelector extends ConsumerWidget {
                   contentPadding: EdgeInsets.only(left: 6.0),
                   leading: ReorderableDragStartListener(
                     index: index,
-                    key: ValueKey("handle-quick-action-$action"),
+                    key: ValueKey("drag-handle-quick-action-$action-$index"),
                     child: const Icon(Icons.drag_handle),
                   ),
                   subtitle: Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      SimpleButton.small(text: "Edit Action*", icon: TablerIcons.edit, onPressed: () {}),
+                      SimpleButton.small(
+                        text: "Edit Action*",
+                        icon: TablerIcons.edit,
+                        onPressed: () async {
+                          final selectedAction = await showQuickActionPresetPickerMenu(
+                            context,
+                            editingQuickActionIndex: index,
+                          );
+                          if (selectedAction != null) {
+                            final newHomeScreenConfig = FinampSettingsHelper.finampSettings.homeScreenConfiguration
+                                .copyWith(actions: [...quickActions]..[index] = selectedAction);
+                            FinampSetters.setHomeScreenConfiguration(newHomeScreenConfig);
+                          }
+                        },
+                      ),
                       SimpleButton.small(
                         text: "Remove Action*",
                         icon: TablerIcons.trash,
@@ -128,23 +142,92 @@ class QuickActionsSelector extends ConsumerWidget {
             child: CTAMedium(
               text: "Add New Action*",
               icon: TablerIcons.plus,
-              onPressed: () {
-                final newAction = FinampQuickAction.values.firstWhere(
-                  (action) => !quickActions.contains(action),
-                  orElse: () => FinampQuickAction.trackMix,
-                );
-                final newHomeScreenConfig = FinampSettingsHelper.finampSettings.homeScreenConfiguration.copyWith(
-                  actions: [...quickActions, newAction],
-                );
-                FinampSetters.setHomeScreenConfiguration(newHomeScreenConfig);
+              onPressed: () async {
+                final selectedAction = await showQuickActionPresetPickerMenu(context);
+                if (selectedAction != null) {
+                  final newHomeScreenConfig = FinampSettingsHelper.finampSettings.homeScreenConfiguration.copyWith(
+                    actions: [...quickActions, selectedAction],
+                  );
+                  FinampSetters.setHomeScreenConfiguration(newHomeScreenConfig);
+                }
               },
-              disabled: quickActions.length >= FinampQuickAction.values.length,
+              disabled: quickActions.length >= FinampQuickActions.values.length,
             ),
           ),
         ],
       ),
     );
   }
+}
+
+const quickActionPickerMenuRouteName = "/quick-action-preset-picker-menu";
+
+Future<FinampQuickActions?> showQuickActionPresetPickerMenu(
+  BuildContext context, {
+  int? editingQuickActionIndex,
+}) async {
+  final List<Widget> menuItems = FinampQuickActions.values.map<Widget>((quickAction) {
+    return Consumer(
+      builder: (context, ref, child) {
+        final currentActions = ref.watch(finampSettingsProvider.homeScreenConfiguration).actions;
+        return ChoiceMenuOption(
+          title: quickAction.toLocalisedString(context),
+          description: quickAction.getDescription(context),
+          badges: [
+            // // similar mode is recommended
+            // if (preset == RadioMode.similar && radioModeOptionAvailabilityStatus.isAvailable)
+            //   Icon(TablerIcons.star, size: 14.0),
+          ],
+          enabled: true,
+          icon: TablerIcons.bolt,
+          isInactive: false,
+          isSelected: editingQuickActionIndex != null && currentActions[editingQuickActionIndex] == quickAction,
+          onSelect: () async {
+            //TODO ideally rebuild with check and then pop after delay
+            // FeedbackHelper.feedback(FeedbackType.selection);
+            // await Future<void>.delayed(const Duration(milliseconds: 400));
+            // Navigator.of(context).pop(preset);
+            if (context.mounted) {
+              FeedbackHelper.feedback(FeedbackType.selection);
+              Navigator.of(context).pop(quickAction);
+            }
+          },
+        );
+      },
+    );
+  }).toList();
+
+  return await showThemedBottomSheet<FinampQuickActions?>(
+    context: context,
+    routeName: quickActionPickerMenuRouteName,
+    minDraggableHeight: 0.25,
+    buildSlivers: (context) {
+      var menu = [
+        SliverStickyHeader(
+          header: Padding(
+            padding: const EdgeInsets.only(top: 10.0, bottom: 8.0, left: 16.0, right: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 2.0,
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.homeScreenQuickActionPickerMenuTitle,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+          ),
+          sliver: MenuMask(
+            height: MenuMaskHeight(36.0),
+            child: SliverList.list(children: menuItems),
+          ),
+        ),
+      ];
+      // header + menu entries
+      var stackHeight = 42.0 + menuItems.length * ((Platform.isAndroid || Platform.isIOS) ? 72.0 : 64.0);
+      return (stackHeight, menu);
+    },
+  );
 }
 
 class HomeScreenSectionsSelector extends ConsumerWidget {
@@ -207,7 +290,7 @@ class HomeScreenSectionsSelector extends ConsumerWidget {
                   contentPadding: EdgeInsets.only(left: 6.0),
                   leading: ReorderableDragStartListener(
                     index: index,
-                    key: ValueKey("section_$section"),
+                    key: ValueKey("drag-handle-section-$section-$index"),
                     child: const Icon(Icons.drag_handle),
                   ),
                   subtitle: Row(
@@ -371,7 +454,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
     return HomeScreenSectionConfiguration(
       type: selectedSectionType,
       customSectionTitle: (sectionTitle ?? "") == "" ? null : sectionTitle,
-      itemId: selectedCollectionId ?? collections.firstOrNull?.id,
+      itemId: selectedCollectionId,
       contentType:
           selectedContentType ?? (selectedSectionType == HomeScreenSectionType.tabView ? TabContentType.tracks : null),
       sortAndFilterConfiguration: SortAndFilterConfiguration(
@@ -457,6 +540,8 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
                         ),
                       )
                       .toList(),
+                  hintText: "Choose a Jellyfin collection*",
+                  errorText: collections.isEmpty ? "You don't have any Jellyfin collections yet*" : null,
                   initialSelection: _getCurrentSectionInfo().itemId,
                   enableFilter: true,
                   enableSearch: true,
@@ -619,9 +704,9 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
             final newSectionWithSamePreset = newSectionInfo.copyWith(
               presetType: sections[widget.editingSectionIndex!].presetType,
             );
+            // check if the config matches the current preset, if so, preserve the preset type to keep related functionality
             if (oldSection == newSectionWithSamePreset) {
-              Navigator.of(context).pop();
-              return;
+              newSectionInfo = newSectionWithSamePreset;
             }
             newSectionInfo = newSectionInfo.copyWith(presetType: null);
             final newSections = [...sections];
