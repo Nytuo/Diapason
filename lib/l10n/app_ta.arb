@@ -865,7 +865,7 @@
             }
         }
     },
-    "playingFromType": "{source, தேர்ந்தெடுத்து, ஆல்பம் nextUpAlbum{Album} nextUpPlaylist{Playlist} nextUpArtist{Track Mix} nextUpGenre{Artist Mix} remoteClient{Album Mix} radio{Genre Mix} மற்றொன்று{}}",
+    "playingFromType": "{source, select, nextUpAlbum{ஆல்பம்} nextUpPlaylist{பிளேலிஸ்ட்} nextUpArtist{டிராக் மிக்ஸ்} nextUpGenre{கலைஞர் மிக்ஸ்} remoteClient{ஆல்பம் மிக்ஸ்} radio{ஜானர் மிக்ஸ்} other{}}",
     "@playingFromType": {
         "description": "Prefix shown before the type of the main queue source at the top of the player screen. Example: \"Playing From Album\"",
         "placeholders": {
@@ -2186,7 +2186,7 @@
     "@downloadPaused": {
         "description": "Gets shown in the snackbar if loosing wifi connection while downloads are running and the 'requireWifiForDownloads' is enabled"
     },
-    "missingSchemaError": "முகவரி HTTP (கள்) உடன் தொடங்க வேண்டும்: //",
+    "missingSchemaError": "Url என்பது http(s):// இதனால் தொடங்க வேண்டும்",
     "@missingSchemaError": {
         "description": "Snackbar message when the user changes their home/public address but it doesn't start with http"
     },
@@ -2586,7 +2586,7 @@
     "@emptyAlbum": {
         "description": "Message shown as a placeholder when an album or playlist is empty."
     },
-    "confirmAddCollectionItemToPlaylist": "இந்த பிளேலிச்ட்டில் {itemType, தேர்ந்தெடுக்கப்பட்ட, ஆல்பம்{album} பிளேலிச்ட்{playlist} கலைஞர்{artist} வகை{genre} மற்ற{item}} '{itemName}' இலிருந்து எல்லா டிராக்குகளையும் நிச்சயமாகச் சேர்க்க விரும்புகிறீர்களா? அவை தனித்தனியாக மட்டுமே அகற்றப்படும்.",
+    "confirmAddCollectionItemToPlaylist": "இந்த பிளேலிஸ்டில் {itemType, select, album{ஆல்பம்} playlist{பிளேலிஸ்ட்} artist{கலைஞர்} genre{வகை} other{உருப்பு}} '{itemName}' இலிருந்து எல்லா டிராக்குகளையும் சேர்க்க விரும்புகிறீர்களா? அவை தனித்தனியாக மட்டுமே அகற்றப்படும்.",
     "@confirmAddCollectionItemToPlaylist": {
         "description": "Warning dialog for adding an album, artist, etc. or multiple tracks to a playlist, clarifying that this cannot be undone without removing all tracks individually and manually.",
         "placeholders": {
@@ -2632,7 +2632,7 @@
     "@radioFailedSubtitle": {
         "description": "Subtitle displayed in the radio menu to show that no radio tracks could be generated."
     },
-    "radioModeOptionName": "{option, தேர்ந்தெடு, மறுசீரமைப்பு{Reshuffle} சீரற்ற{Random} ஒத்த{Similar} தொடர்ச்சியான{Continuous} albumMix{Album Mix} மற்றவை{{option}}}",
+    "radioModeOptionName": "{option, select, reshuffle{மறுசீரமைப்பு} random{சீரற்ற} similar{ஒத்த} continuous{தொடர்ச்சியான} albumMix{ஆல்பம் கலவை} other{{option}}}",
     "@radioModeOptionName": {
         "placeholders": {
             "option": {
@@ -2642,7 +2642,7 @@
         },
         "description": "Radio mode names in radio mode/algorithm dropdown"
     },
-    "radioModeOptionTitle": "{option, தேர்ந்தெடுக்கவும், மாற்றியமை",
+    "radioModeOptionTitle": "{option, select, reshuffle{மறுசீரமைப்பு முறை} random{சீரற்ற முறை} similar{ஒத்த முறை} continuous{தொடர்ச்சியான முறை} albumMix{ஆல்பம் கலவை முறை} other{{option}}} இயலுமைப்படுத்தப்பட்டது",
     "@radioModeOptionTitle": {
         "placeholders": {
             "option": {
@@ -2676,7 +2676,7 @@
     "@radioModeDisableButtonSubtitle": {
         "description": "Subtitle for the option that disables radio mode."
     },
-    "radioModeOptionConfirmation": "{option, தேர்ந்தெடு, மறுசீரமைப்பு{reshuffle mode} ரேண்டம்{random mode} ஒத்த{similar mode} தொடர்ச்சியான{continuous mode} albumMix{album mix} மற்றொன்று{{option}}}க்கு மாறியது",
+    "radioModeOptionConfirmation": "{option, select, reshuffle{மறுசீரமைப்பு முறை} random{சீரற்ற முறை} similar{ஒத்த முறை} continuous{தொடர்ச்சியான முறை} albumMix{ஆல்பம் மிக்ஸ் முறை} other{{option}}}க்கு மாறியது",
     "@radioModeOptionConfirmation": {
         "placeholders": {
             "option": {
@@ -2698,7 +2698,7 @@
     "@radioModeDisabledBecauseNotAvailableOfflineSubtitle": {
         "description": "Subtitle displayed in the queue to show that radio mode is disabled because the current mode is not available offline."
     },
-    "radioModeDescription": "{mode, select, resuffle{Continuously reshuffle queue} random{ஆரம்பத் தேர்விலிருந்து ரேண்டம் டிராக்குகளைச் சேர்",
+    "radioModeDescription": "{mode, select, reshuffle{வரிசையை தொடர்ந்து மறுசீரமைக்கும்} random{ஆரம்பத் தேர்விலிருந்து சீரற்ற டிராக்குகளைச் சேர்க்கும்} similar{ஒத்த டிராக்குகளை இயக்கும்} continuous{தொடர்ச்சியாக இயக்கும்} albumMix{ஆல்பம் மிக்ஸ் டிராக்குகளை இயக்கும்} other{}}",
     "@radioModeDescription": {
         "placeholders": {
             "mode": {
