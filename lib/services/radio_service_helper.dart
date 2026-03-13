@@ -210,6 +210,7 @@ Future<void> startRadioPlayback(BaseItemDto source) async {
       type: QueueItemSourceType.radio,
       name: QueueItemSourceName(type: QueueItemSourceNameType.radio, localizationParameter: source.name ?? ""),
       id: source.id,
+      item: source,
     ),
     skipRadioCacheInvalidation: true,
   );

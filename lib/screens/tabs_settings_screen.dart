@@ -24,6 +24,7 @@ class _TabsSettingsScreenState extends State<TabsSettingsScreen> {
         ],
       ),
       body: ReorderableListView.builder(
+        padding: const EdgeInsets.only(bottom: 200.0),
         buildDefaultDragHandles: false,
         itemCount: FinampSettingsHelper.finampSettings.tabOrder.length,
         itemBuilder: (context, index) {

@@ -35,6 +35,7 @@ class _AudioServiceSettingsScreenState extends State<AudioServiceSettingsScreen>
         ],
       ),
       body: ListView(
+        padding: const EdgeInsets.only(bottom: 200.0),
         children: [
           if (Platform.isAndroid) const StopForegroundSelector(),
           if (Platform.isAndroid) const EnableDuckingOnInterruptionsToggle(),

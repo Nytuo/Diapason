@@ -27,6 +27,7 @@ class _PlayerSettingsScreenState extends State<PlayerSettingsScreen> {
         ],
       ),
       body: ListView(
+        padding: const EdgeInsets.only(bottom: 200.0),
         children: const [
           ShowFeatureChipsToggle(),
           ShowAlbumReleaseDateOnPlayerScreenToggle(),

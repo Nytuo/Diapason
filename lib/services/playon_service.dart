@@ -367,6 +367,7 @@ class PlayOnService {
                             name: QueueItemSourceName(type: QueueItemSourceNameType.remoteClient),
                             type: QueueItemSourceType.remoteClient,
                             id: items[0].id,
+                            item: items[0],
                           ),
                           // seems like Jellyfin isn't always sending the correct index
                           startingIndex: request['Data']['StartIndex'] as int,

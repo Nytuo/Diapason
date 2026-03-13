@@ -30,6 +30,7 @@ class _InteractionSettingsScreenState extends State<InteractionSettingsScreen> {
         ],
       ),
       body: ListView(
+        padding: const EdgeInsets.only(bottom: 200.0),
         children: const [
           ItemSwipeLeftToRightActionDropdownListTile(),
           ItemSwipeRightToLeftActionDropdownListTile(),

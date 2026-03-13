@@ -30,6 +30,7 @@ class _VolumeNormalizationSettingsScreenState extends State<VolumeNormalizationS
         ],
       ),
       body: ListView(
+        padding: const EdgeInsets.only(bottom: 200.0),
         children: [
           const VolumeNormalizationSwitch(),
           if (!Platform.isAndroid) const VolumeNormalizationIOSBaseGainEditor(),

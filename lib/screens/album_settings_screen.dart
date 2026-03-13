@@ -21,7 +21,7 @@ class _AlbumSettingsScreenState extends State<AlbumSettingsScreen> {
           FinampSettingsHelper.makeSettingsResetButtonWithDialog(context, FinampSettingsHelper.resetAlbumSettings),
         ],
       ),
-      body: ListView(children: const [ShowCoversOnAlbumScreenToggle()]),
+      body: ListView(padding: const EdgeInsets.only(bottom: 200.0), children: const [ShowCoversOnAlbumScreenToggle()]),
     );
   }
 }

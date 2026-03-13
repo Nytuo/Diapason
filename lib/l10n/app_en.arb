@@ -1618,9 +1618,13 @@
   "@volumeNormalizationIOSBaseGainEditorTitle": {
     "description": "Title for the input that sets the replay gain base gain on iOS and other non-Android platforms"
   },
-  "volumeNormalizationIOSBaseGainEditorSubtitle": "Currently, Volume Normalization on iOS requires changing the playback volume to emulate the gain change. Since we can''t increase the volume above 100%, we need to decrease the volume by default so that we can boost the volume of quiet tracks. The value is in decibels (dB), where -10 dB is ~30% volume, -4.5 dB is ~60% volume and -2 dB is ~80% volume.",
+  "volumeNormalizationIOSBaseGainEditorSubtitle": "Choose a volume gain offset (in dB)",
   "@volumeNormalizationIOSBaseGainEditorSubtitle": {
     "description": "Subtitle for the input that sets the replay gain base gain on iOS and other non-Android platforms"
+  },
+  "volumeNormalizationIOSBaseGainEditorDescription": "Currently, Volume Normalization on platforms other than Android requires changing the playback volume to emulate the gain change. Since we can't increase the volume above 100%, we need to decrease the volume by default so that we can boost the volume of quiet tracks.\n\nThe value is in decibels (dB), where -10 dB is ~30% volume, -4.5 dB is ~60% volume and -2 dB is ~80% volume.\nPositive values mean that no volume reduction is applied up until the threshold (i.e. -6.4 dB gain (and more positive) for a +6.4 dB offset), but prevents quieter tracks from being boosted.\n\nYou should set this to the inverse of the highest (most positive) gain in your library, i.e., set it to +3 dB if the highest gain in your library is -3 dB (and all other tracks have gains like -5 dB, -8 dB, -10 dB, etc.).",
+  "@volumeNormalizationIOSBaseGainEditorDescription": {
+    "description": "Description for the input that sets the replay gain base gain on iOS and other non-Android platforms"
   },
   "numberAsDecibel": "{value} dB",
   "@numberAsDecibel": {
@@ -1883,6 +1887,23 @@
   "downloadBitrateSubtitle": "A higher bitrate gives higher quality audio at the cost of larger storage requirements.",
   "@downloadBitrateSubtitle": {
     "description": "subtitle for Download Bitrate settings slider"
+  },
+  "multichannelHandlingTitle": "Multi-Channel Transcode Handling",
+  "@multichannelHandlingTitle": {
+    "description": "Title for multi-channel handling dropdown"
+  },
+  "multichannelHandlingSubtitle": "How to deal with multi-channel tracks (> 2 channels) when transcoding. Applies to both streaming and downloads.",
+  "@multichannelHandlingSubtitle": {
+    "description": "Subtitle for multi-channel handling dropdown"
+  },
+  "multichannelHandlingOption": "{option, select, stereoDownmixLossy{Only Downmix Lossy to Stereo} stereoDownmixAll{Downmix All to Stereo} fixedBitrate{Never Downmix} other{{option}} }",
+  "@multichannelHandlingOption": {
+    "placeholders": {
+      "option": {
+        "type": "String"
+      }
+    },
+    "description": "Options in multi-channel handling dropdown"
   },
   "transcodeHint": "Transcode?",
   "@transcodeHint": {
@@ -2548,9 +2569,27 @@
   "@autoOfflineOptionUnreachable": {
     "description": "This is shown when the autoOffline feature is set to Unreachable, this means offline mode will be automatically enabled when - after a network change - the server cant be pinged"
   },
-  "autoOfflineSettingDescription": "Automatically enable Offline Mode.\nDisabled: Wont Automatically turn on Offline Mode. May save battery.\nLocal Network: Turn Offline Mode on when not being connected to wifi or ethernet.\nDisconnected: Turn Offline Mode on when not being connected to anything.\nUnreachable: Turn Offline Mode on when the server cant be pinged after changing networks.\nYou can always manually turn on offline mode which pauses automation until you turn offline mode off again",
+  "autoOfflineSettingSubtitle": "Automatically enable Offline Mode based on network connectivity or server reachability.",
+  "@autoOfflineSettingSubtitle": {
+    "description": "Subtitle for the automated offline mode setting."
+  },
+  "autoOfflineSettingDescription": "{disabledModeName}:\nWont Automatically turn on Offline Mode. May save battery.\n\n{localNetworkModeName}:\nTurn Offline Mode on when not being connected to WiFi or ethernet.\n\n{disconnectedModeName}:\nTurn Offline Mode on when not being connected to anything.\n\n{unreachableModeName}:\nTurn Offline Mode on when the server cant be pinged after changing networks.\n\nYou can always manually toggle offline mode which pauses the automation until you reenable it.",
   "@autoOfflineSettingDescription": {
-    "description": "Setting description. Make sure the Mode names match the translations."
+    "description": "Setting description. Make sure the Mode names match the translations.",
+    "placeholders": {
+      "disabledModeName": {
+        "type": "String"
+      },
+      "localNetworkModeName": {
+        "type": "String"
+      },
+      "disconnectedModeName": {
+        "type": "String"
+      },
+      "unreachableModeName": {
+        "type": "String"
+      }
+    }
   },
   "autoOfflineSettingTitle": "Automated Offline Mode",
   "@autoOfflineSettingTitle": {},
@@ -3197,7 +3236,7 @@
   "@duckOnAudioInterruptionTitle": {
     "description": "Title for the setting that controls ducking."
   },
-  "duckOnAudioInterruptionSubtitle": "Lower the volume (duck) when another app briefly plays audio.",
+  "duckOnAudioInterruptionSubtitle": "Lower the volume (duck) when another app briefly plays audio. Requires a restart.",
   "@duckOnAudioInterruptionSubtitle": {
     "description": "Subtitle for the setting that controls ducking."
   },

@@ -127,6 +127,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ],
       ),
       body: ListView(
+        padding: const EdgeInsets.only(bottom: 200.0),
         children: [
           ListTile(
             leading: const Icon(Icons.compress),

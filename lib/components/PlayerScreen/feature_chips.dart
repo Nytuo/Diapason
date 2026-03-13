@@ -77,7 +77,7 @@ class FeatureState {
           supportsExternalStream: false,
         )
       : metadata?.mediaSourceInfo.mediaStreams.firstWhereOrNull((stream) => stream.type == "Audio") ??
-            metadata?.mediaSourceInfo.mediaStreams.first;
+            metadata?.mediaSourceInfo.mediaStreams.firstOrNull;
   // Transcoded downloads will not have a valid MediaStream, but will have
   // the target transcode bitrate set for the mediasource bitrate.  Other items
   // should have a valid mediaStream, so use that audio-only bitrate instead of the

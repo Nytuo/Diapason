@@ -21,7 +21,7 @@ class QueueRestoreScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.queuesScreen)),
       body: ListView.builder(
-        padding: const EdgeInsets.only(top: 10.0, bottom: 45.0),
+        padding: const EdgeInsets.only(top: 10.0, bottom: 200.0),
         itemCount: queueList.length,
         itemBuilder: (context, index) {
           return QueueRestoreTile(key: ValueKey(queueList.elementAt(index).creation), info: queueList.elementAt(index));

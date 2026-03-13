@@ -16,6 +16,10 @@
     </name>
   </developer>
   <url type="homepage">https://github.com/jmshrv/finamp</url>
+  <url type="vcs-browser">https://github.com/jmshrv/finamp/tree/redesign</url>
+  <url type="translate">https://hosted.weblate.org/engage/finamp/</url>
+  <url type="bugtracker">https://github.com/jmshrv/finamp/issues</url>
+  <url type="contribute">https://github.com/jmshrv/finamp/blob/redesign/CONTRIBUTING.md</url>
   <description>
     <p>Finamp is an open source, cross-platform Jellyfin music player that supports streaming playback and offline downloads, playlists, favorites and shuffle. Linux support is currently in Beta.</p> 
   </description>
@@ -39,6 +43,29 @@
   </screenshots>
   <launchable type="desktop-id">com.unicornsonlsd.finamp.desktop</launchable>
   <releases>
+    <release version="0.9.22-beta" date="2025-12-22">
+      <url type="details">https://github.com/jmshrv/finamp/releases/tag/0.9.22-beta</url>
+      <description>
+        <p>
+          New Features
+        </p>
+        <ul>
+          <li>Improved layout in settings, especially for non-English languages</li>
+        </ul>
+        <p>
+          Bug Fixes
+        </p>
+        <ul>
+          <li>Fixed playback not stopping on interruptions of disconnects</li>
+          <li>Hide more network errors</li>
+          <li>Use device name when reporting playback activity to the server on Android, instead of device model</li>
+          <li>Use correct color theme for server sharing and authorize Quick Connect menus</li>
+        </ul>
+        <p>
+          <em>Thank you for using Finamp!</em>
+        </p>
+      </description>
+    </release>
     <release version="0.9.21-beta" date="2025-12-15">
       <url type="details">https://github.com/jmshrv/finamp/releases/tag/0.9.21-beta</url>
       <description>

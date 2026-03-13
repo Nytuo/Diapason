@@ -1,5 +1,6 @@
 import 'package:finamp/components/LayoutSettingsScreen/automatic_accent_color_selector.dart';
 import 'package:finamp/components/LayoutSettingsScreen/use_monochrome_icon.dart';
+import 'package:finamp/components/SettingsScreen/finamp_settings_dropdown.dart';
 import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/screens/album_settings_screen.dart';
 import 'package:finamp/screens/artist_settings_screen.dart';
@@ -39,6 +40,7 @@ class _LayoutSettingsScreenState extends ConsumerState<LayoutSettingsScreen> {
         ],
       ),
       body: ListView(
+        padding: const EdgeInsets.only(bottom: 200.0),
         children: [
           ListTile(
             leading: const Icon(TablerIcons.sparkles),
@@ -133,17 +135,17 @@ class FixedGridTileSizeDropdownListTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ListTile(
       title: Text(AppLocalizations.of(context)!.fixedGridSizeTitle),
-      trailing: DropdownButton<FixedGridTileSize>(
-        value: FixedGridTileSize.fromInt(FinampSettingsHelper.finampSettings.fixedGridTileSize),
-        items: FixedGridTileSize.values
+      subtitle: FinampSettingsDropdown<FixedGridTileSize>(
+        dropdownItems: FixedGridTileSize.values
             .map(
-              (e) => DropdownMenuItem<FixedGridTileSize>(
+              (e) => DropdownMenuEntry<FixedGridTileSize>(
                 value: e,
-                child: Text(AppLocalizations.of(context)!.fixedGridTileSizeEnum(e.name)),
+                label: AppLocalizations.of(context)!.fixedGridTileSizeEnum(e.name),
               ),
             )
             .toList(),
-        onChanged: (value) => FinampSetters.setFixedGridTileSize.ifNonNull(value?.toInt),
+        selectedValue: FixedGridTileSize.fromInt(FinampSettingsHelper.finampSettings.fixedGridTileSize),
+        onSelected: (value) => FinampSetters.setFixedGridTileSize.ifNonNull(value?.toInt),
       ),
     );
   }

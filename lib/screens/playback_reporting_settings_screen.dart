@@ -36,6 +36,7 @@ class _PlaybackReportingSettingsScreenState extends State<PlaybackReportingSetti
         ],
       ),
       body: ListView(
+        padding: const EdgeInsets.only(bottom: 200.0),
         children: [
           const EnablePlayonToggle(),
           const PeriodicPlaybackSessionUpdateFrequencyEditor(),

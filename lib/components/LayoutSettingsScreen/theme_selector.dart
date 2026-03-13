@@ -1,7 +1,9 @@
+import 'package:finamp/components/SettingsScreen/finamp_settings_dropdown.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:finamp/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 
 extension LocalisedName on ThemeMode {
   String toLocalisedString(BuildContext context) => _humanReadableLocalisedName(this, context);
@@ -26,12 +28,22 @@ class ThemeSelector extends ConsumerWidget {
     final themeMode = ref.watch(finampSettingsProvider.themeMode);
     return ListTile(
       title: Text(AppLocalizations.of(context)!.theme),
-      trailing: DropdownButton<ThemeMode>(
-        value: themeMode,
-        items: ThemeMode.values
-            .map((e) => DropdownMenuItem<ThemeMode>(value: e, child: Text(e.toLocalisedString(context))))
+      subtitle: FinampSettingsDropdown<ThemeMode>(
+        dropdownItems: ThemeMode.values
+            .map(
+              (e) => DropdownMenuEntry<ThemeMode>(
+                value: e,
+                label: e.toLocalisedString(context),
+                leadingIcon: switch (e) {
+                  ThemeMode.system => const Icon(TablerIcons.brightness_auto),
+                  ThemeMode.light => const Icon(TablerIcons.brightness_2),
+                  ThemeMode.dark => const Icon(TablerIcons.moon_stars),
+                },
+              ),
+            )
             .toList(),
-        onChanged: (value) {
+        selectedValue: themeMode,
+        onSelected: (value) {
           if (value != null) {
             FinampSetters.setThemeMode(value);
           }

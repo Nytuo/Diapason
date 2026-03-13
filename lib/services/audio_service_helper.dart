@@ -94,6 +94,7 @@ class AudioServiceHelper {
               localizationParameter: item.name ?? "",
             ),
             id: item.id,
+            item: item,
           ),
           // instant mixes should have their order determined by the server
           order: FinampPlaybackOrder.linear,

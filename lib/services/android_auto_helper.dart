@@ -501,6 +501,7 @@ class AndroidAutoHelper {
               name: const QueueItemSourceName(type: QueueItemSourceNameType.mix),
               type: QueueItemSourceType.allTracks,
               id: selectedResult.id,
+              item: selectedResult,
             ),
           );
         } else {
@@ -592,6 +593,7 @@ class AndroidAutoHelper {
             name: const QueueItemSourceName(type: QueueItemSourceNameType.mix),
             type: QueueItemSourceType.allTracks,
             id: itemId.itemId!,
+            item: items[indexOfSelected],
           ),
         );
       } else {

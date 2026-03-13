@@ -209,6 +209,7 @@ class TrackListTile extends ConsumerWidget {
               ),
               type: QueueItemSourceType.allTracks,
               id: item.id,
+              item: item,
             ),
           );
         } else {

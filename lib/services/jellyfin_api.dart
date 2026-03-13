@@ -683,7 +683,7 @@ Future<DeviceInfo> getDeviceInfo() async {
   if (Platform.isAndroid) {
     AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
     final appSetId = await AppSetId().getIdentifier();
-    info = DeviceInfo(name: androidDeviceInfo.model, id: "$appSetId-$idExtension");
+    info = DeviceInfo(name: androidDeviceInfo.name, id: "$appSetId-$idExtension");
   } else if (Platform.isIOS) {
     IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
     final appSetId = await AppSetId().getIdentifier();

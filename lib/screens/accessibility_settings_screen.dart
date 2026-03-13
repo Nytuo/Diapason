@@ -25,6 +25,7 @@ class _AccessibilitySettingsScreenState extends State<AccessibilitySettingsScree
         ],
       ),
       body: ListView(
+        padding: const EdgeInsets.only(bottom: 200.0),
         children: const [UseHighContrastColorsToggle(), DisableGestureSelector(), DisableVibrationSelector()],
       ),
     );

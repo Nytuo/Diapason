@@ -58,8 +58,7 @@ Future<void> showThemedBottomSheet({
     builder: (BuildContext context) {
       return ProviderScope(
         overrides: [
-          if (useDefaultTheme || item == null)
-            localThemeProvider.overrideWithValue(getDefaultTheme(Theme.brightnessOf(context))),
+          if (useDefaultTheme || item == null) localThemeProvider.overrideWith((_) => ColorScheme.of(context)),
           if (!useDefaultTheme && item != null)
             localThemeInfoProvider.overrideWithValue(ThemeInfo(item, useIsolate: false)),
         ],

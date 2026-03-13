@@ -338,6 +338,15 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
           }
         }
       });
+      session.becomingNoisyEventStream.listen((_) {
+        // The user unplugged/disconnected the headphones/speaker/car, so we should pause ~~or lower~~ the volume.
+        if (FinampSettingsHelper.finampSettings.duckOnAudioInterruption) {
+          // if this is enabled, we let the [AudioPlayer] handle this automatically, via [handleInterruptions]
+        } else {
+          // if ducking is disabled, the audio player doesn't handle interruptions on its own, so we need to make sure to pause
+          pause();
+        }
+      });
       session.devicesChangedEventStream.listen((event) {
         _outputLogger.info('Devices added:   ${event.devicesAdded}');
         _outputLogger.info('Devices removed: ${event.devicesRemoved}');
@@ -346,7 +355,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
     _player = AudioPlayer(
       maxSkipsOnError: 0,
-      handleInterruptions: false,
+      handleInterruptions: FinampSettingsHelper.finampSettings.duckOnAudioInterruption,
       androidAudioOffloadPreferences: AndroidAudioOffloadPreferences(
         audioOffloadMode: FinampSettingsHelper.finampSettings.forceAudioOffloadingOnAndroid
             ? AndroidAudioOffloadMode.enabled
@@ -388,9 +397,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     );
 
     _loudnessEnhancerEffect?.setEnabled(FinampSettingsHelper.finampSettings.volumeNormalizationActive);
-    _loudnessEnhancerEffect?.setTargetGain(
-      0.0 / 10.0,
-    ); //!!! always divide by 10, the just_audio implementation has a bug so it expects a value in Bel and not Decibel (remove once https://github.com/ryanheise/just_audio/pull/1092/commits/436b3274d0233818a061ecc1c0856a630329c4e6 is merged)
+    _loudnessEnhancerEffect?.setTargetGain(0.0);
     // calculate base volume gain for iOS as a linear factor, because just_audio doesn't yet support AudioEffect on iOS
     iosBaseVolumeGainFactor =
         pow(10.0, FinampSettingsHelper.finampSettings.volumeNormalizationIOSBaseGain / 20.0)
@@ -1121,9 +1128,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       );
       if (effectiveGainChange != null) {
         if (Platform.isAndroid) {
-          _loudnessEnhancerEffect?.setTargetGain(
-            effectiveGainChange / 10.0,
-          ); //!!! always divide by 10, the just_audio implementation has a bug so it expects a value in Bel and not Decibel (remove once https://github.com/ryanheise/just_audio/pull/1092/commits/436b3274d0233818a061ecc1c0856a630329c4e6 is merged)
+          _loudnessEnhancerEffect?.setTargetGain(effectiveGainChange);
         } else {
           final newVolume =
               iosBaseVolumeGainFactor *
@@ -1137,9 +1142,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       } else {
         if (Platform.isAndroid) {
           // reset gain offset
-          _loudnessEnhancerEffect?.setTargetGain(
-            0 / 10.0,
-          ); //!!! always divide by 10, the just_audio implementation has a bug so it expects a value in Bel and not Decibel (remove once https://github.com/ryanheise/just_audio/pull/1092/commits/436b3274d0233818a061ecc1c0856ua630329c4e6 is merged)
+          _loudnessEnhancerEffect?.setTargetGain(0);
         }
         _volume.setReplayGainVolume(
           iosBaseVolumeGainFactor,
@@ -1371,6 +1374,14 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
         "audioBitRate": FinampSettingsHelper.finampSettings.transcodeBitrate.toString(),
         "segmentContainer": FinampSettingsHelper.finampSettings.transcodingStreamingFormat.container,
       });
+
+      if (FinampSettingsHelper.finampSettings.multichannelHandlingSetting ==
+              MultichannelHandlingSetting.stereoDownmixAll ||
+          (FinampSettingsHelper.finampSettings.multichannelHandlingSetting ==
+                  MultichannelHandlingSetting.stereoDownmixLossy &&
+              FinampSettingsHelper.finampSettings.transcodingStreamingFormat.codec != "flac")) {
+        queryParameters.addAll({"maxAudioChannels": "2"});
+      }
     } else {
       builtPath.addAll(["Items", mediaItem.extras!["itemJson"]["Id"] as String, "File"]);
     }

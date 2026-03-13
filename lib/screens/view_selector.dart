@@ -87,6 +87,7 @@ class _ViewSelectorState extends State<ViewSelector> {
             }
 
             return ListView.builder(
+              padding: const EdgeInsets.only(bottom: 200.0),
               itemCount: _views.length,
               itemBuilder: (context, index) {
                 final isSelected = _views.values.elementAt(index);
