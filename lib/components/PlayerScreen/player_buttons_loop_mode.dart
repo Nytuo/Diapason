@@ -8,6 +8,7 @@ import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:finamp/services/music_player_background_task.dart';
 import 'package:finamp/services/queue_service.dart';
 import 'package:finamp/services/radio_service_helper.dart';
+import 'package:finamp/utils/locale_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -64,11 +65,14 @@ class PlayerButtonsLoopMode extends ConsumerWidget {
       stream: queueService.getLoopModeStream(),
       initialData: queueService.loopMode,
       builder: (BuildContext context, snapshot) {
+        final shortcutHint = GlobalShortcuts.getDisplay(ToggleLoopModeIntent);
+        final loopModeHint = getLocalizedLoopMode(context, snapshot.data!);
         return IconButton(
-          tooltip:
-              "${getLocalizedLoopMode(context, snapshot.data!)}. "
-              "${AppLocalizations.of(context)!.genericToggleButtonTooltip} "
-              "(${GlobalShortcuts.getDisplay(ToggleLoopModeIntent)})",
+          tooltip: getStringComponentsInLocaleOrder(context, [
+            loopModeHint,
+            AppLocalizations.of(context)!.genericToggleButtonTooltip,
+            "($shortcutHint)",
+          ], separator: "\n"),
           onPressed: () async {
             if (radioEnabled) {
               await showRadioMenu(

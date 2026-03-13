@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:finamp/components/Shortcuts/global_shortcut_manager.dart';
 import 'package:finamp/components/global_snackbar.dart';
 import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/models/finamp_models.dart';
@@ -140,6 +141,7 @@ class _MusicControlAction<T extends Intent> extends CallbackAction<T> {
   @override
   Object? invoke(T intent) {
     if (GetIt.instance<QueueService>().getQueue().currentTrack == null) return null;
+    shortcutLogger.info("Invoking shortcut for intent: $intent");
     return super.invoke(intent);
   }
 }
@@ -155,6 +157,7 @@ class _MusicControlTextFieldSafeAction<T extends Intent> extends _MusicControlAc
   @override
   Object? invoke(T intent) {
     if (_isInTextField()) return null;
+    shortcutLogger.info("Invoking shortcut for intent: $intent");
     return super.invoke(intent);
   }
 }

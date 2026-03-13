@@ -7,6 +7,7 @@ import 'package:finamp/components/Shortcuts/music_control_shortcuts.dart';
 import 'package:finamp/components/audio_fade_progress_visualizer_container.dart';
 import 'package:finamp/screens/player_screen.dart';
 import 'package:finamp/services/feedback_helper.dart';
+import 'package:finamp/utils/locale_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -51,7 +52,10 @@ class PlayerButtons extends StatelessWidget {
               container: true,
               excludeSemantics: true,
               child: IconButton(
-                tooltip: GlobalShortcuts.getDisplay(SkipToPreviousIntent),
+                tooltip: getStringComponentsInLocaleOrder(context, [
+                  AppLocalizations.of(context)!.skipToPreviousTrackButtonTooltip,
+                  "(${GlobalShortcuts.getDisplay(SkipToPreviousIntent)})",
+                ], separator: "\n"),
                 icon: const Icon(TablerIcons.player_skip_back),
                 onPressed: () async {
                   FeedbackHelper.feedback(FeedbackType.light);
@@ -74,6 +78,11 @@ class PlayerButtons extends StatelessWidget {
                   FeedbackHelper.feedback(FeedbackType.light);
                   unawaited(audioHandler.togglePlayback());
                 },
+                label: AppLocalizations.of(context)!.togglePlaybackButtonTooltip,
+                tooltip: getStringComponentsInLocaleOrder(context, [
+                  AppLocalizations.of(context)!.togglePlaybackButtonTooltip,
+                  "(${GlobalShortcuts.getDisplay(TogglePlaybackIntent)})",
+                ], separator: "\n"),
                 icon: AudioFadeProgressVisualizerContainer(
                   key: const Key("PlayerButtonAudioFadeProgressVisualizer"),
                   borderRadius: BorderRadius.all(
@@ -99,7 +108,10 @@ class PlayerButtons extends StatelessWidget {
               container: true,
               excludeSemantics: true,
               child: IconButton(
-                tooltip: GlobalShortcuts.getDisplay(SkipToNextIntent),
+                tooltip: getStringComponentsInLocaleOrder(context, [
+                  AppLocalizations.of(context)!.skipToNextTrackButtonTooltip,
+                  "(${GlobalShortcuts.getDisplay(SkipToNextIntent)})",
+                ], separator: "\n"),
                 icon: const Icon(TablerIcons.player_skip_forward),
                 onPressed: () async {
                   FeedbackHelper.feedback(FeedbackType.light);
@@ -116,9 +128,19 @@ class PlayerButtons extends StatelessWidget {
 }
 
 class _RoundedIconButton extends StatelessWidget {
-  const _RoundedIconButton({required this.icon, this.borderRadius, this.width = 48, this.height = 48, this.onTap});
+  const _RoundedIconButton({
+    required this.icon,
+    required this.label,
+    this.tooltip,
+    this.borderRadius,
+    this.width = 48,
+    this.height = 48,
+    this.onTap,
+  });
 
   final Widget icon;
+  final String? label;
+  final String? tooltip;
   final BorderRadius? borderRadius;
   final double width;
   final double height;
@@ -149,7 +171,7 @@ class _RoundedIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final actualBorderRadius = borderRadius ?? BorderRadius.circular(height);
     final actualIcon = icon is Icon ? _addDropShadow(icon as Icon, context) : icon;
-    return SizedBox(
+    final button = SizedBox(
       width: width,
       height: height,
       child: Material(
@@ -157,6 +179,15 @@ class _RoundedIconButton extends StatelessWidget {
         color: IconTheme.of(context).color!.withOpacity(0.15),
         child: InkWell(borderRadius: actualBorderRadius, onTap: onTap, child: actualIcon),
       ),
+    );
+
+    return Semantics(
+      excludeSemantics: true,
+      label: label,
+      tooltip: tooltip,
+      hint: tooltip,
+      button: true,
+      child: tooltip != null ? Tooltip(message: tooltip!, triggerMode: TooltipTriggerMode.tap, child: button) : button,
     );
   }
 }

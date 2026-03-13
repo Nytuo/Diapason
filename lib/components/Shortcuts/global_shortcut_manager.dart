@@ -2,6 +2,9 @@ import 'package:finamp/components/Shortcuts/music_control_shortcuts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:finamp/utils/platform_helper.dart';
+import 'package:logging/logging.dart';
+
+final shortcutLogger = Logger("KeyboardShortcut");
 
 class GlobalShortcuts {
   static final Map<Intent, List<LogicalKeySet>> _raw = {
@@ -55,7 +58,7 @@ class GlobalShortcuts {
     if (k == LogicalKeyboardKey.arrowDown) return "↓";
     if (k == LogicalKeyboardKey.arrowLeft) return "←";
     if (k == LogicalKeyboardKey.arrowRight) return "→";
-    if (k == LogicalKeyboardKey.space) return "Space";
+    if (k == LogicalKeyboardKey.space) return "⎵";
     return k.keyLabel.toUpperCase();
   }
 }
@@ -74,7 +77,8 @@ class GlobalShortcutManager extends StatelessWidget {
           ...getMusicControlActions(),
           // Other actions can be added here
         },
-        child: child,
+        //!!! without this FocusScope, focus can get lost (clicking into a different window), and then it's hard to get back the focus, since most parts of the UI are not focusable by default. And without focus, no actions will be dispatched
+        child: FocusScope(autofocus: true, child: child),
       ),
     );
   }
