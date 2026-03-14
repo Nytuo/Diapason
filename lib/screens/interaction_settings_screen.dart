@@ -4,6 +4,7 @@ import 'package:finamp/components/InteractionSettingsScreen/auto_expand_player_s
 import 'package:finamp/components/InteractionSettingsScreen/item_swipe_action_dropdown_list_tile.dart';
 import 'package:finamp/components/InteractionSettingsScreen/keep_screen_on_dropdown_list_tile.dart';
 import 'package:finamp/components/InteractionSettingsScreen/keep_screen_on_while_charging_selector.dart';
+import 'package:finamp/components/InteractionSettingsScreen/previous_tracks_persistence_mode_dropdown_list_tile.dart';
 import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/screens/layout_settings_screen.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
@@ -47,6 +48,7 @@ class _InteractionSettingsScreenState extends State<InteractionSettingsScreen> {
           PreferAddingToFavoritesOverPlaylistsToggle(),
           PreferNextUpPrependingToggle(),
           RememberLastUsedPlaybackActionRowPageToggle(),
+          PreviousTracksPersistenceModeSelector(),
         ],
       ),
     );

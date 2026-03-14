@@ -448,9 +448,12 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
         forceAudioOffloadingOnAndroid: fields[143] == null
             ? false
             : fields[143] as bool,
-        homeScreenConfiguration: fields[145] == null
+        homeScreenConfiguration: fields[146] == null
             ? const FinampHomeScreenConfiguration(actions: [], sections: [])
-            : fields[145] as FinampHomeScreenConfiguration,
+            : fields[146] as FinampHomeScreenConfiguration,
+        previousTracksPersistenceMode: fields[145] == null
+            ? PreviousTracksPersistenceMode.persistent
+            : fields[145] as PreviousTracksPersistenceMode,
       )
       ..disableGesture = fields[19] == null ? false : fields[19] as bool
       ..showFastScroller = fields[25] == null ? true : fields[25] as bool
@@ -469,7 +472,7 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
   @override
   void write(BinaryWriter writer, FinampSettings obj) {
     writer
-      ..writeByte(139)
+      ..writeByte(140)
       ..writeByte(0)
       ..write(obj.isOffline)
       ..writeByte(1)
@@ -747,6 +750,8 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..writeByte(144)
       ..write(obj.multichannelHandlingSetting)
       ..writeByte(145)
+      ..write(obj.previousTracksPersistenceMode)
+      ..writeByte(146)
       ..write(obj.homeScreenConfiguration);
   }
 
@@ -1578,7 +1583,7 @@ class FinampStorableQueueInfoAdapter
 class HomeScreenSectionConfigurationAdapter
     extends TypeAdapter<HomeScreenSectionConfiguration> {
   @override
-  final typeId = 113;
+  final typeId = 114;
 
   @override
   HomeScreenSectionConfiguration read(BinaryReader reader) {
@@ -1628,7 +1633,7 @@ class HomeScreenSectionConfigurationAdapter
 class FinampHomeScreenConfigurationAdapter
     extends TypeAdapter<FinampHomeScreenConfiguration> {
   @override
-  final typeId = 116;
+  final typeId = 117;
 
   @override
   FinampHomeScreenConfiguration read(BinaryReader reader) {
@@ -1665,7 +1670,7 @@ class FinampHomeScreenConfigurationAdapter
 
 class ItemFilterAdapter extends TypeAdapter<ItemFilter> {
   @override
-  final typeId = 118;
+  final typeId = 119;
 
   @override
   ItemFilter read(BinaryReader reader) {
@@ -1703,7 +1708,7 @@ class ItemFilterAdapter extends TypeAdapter<ItemFilter> {
 class SortAndFilterConfigurationAdapter
     extends TypeAdapter<SortAndFilterConfiguration> {
   @override
-  final typeId = 119;
+  final typeId = 120;
 
   @override
   SortAndFilterConfiguration read(BinaryReader reader) {
@@ -3334,9 +3339,51 @@ class MultichannelHandlingSettingAdapter
           typeId == other.typeId;
 }
 
-class HomeScreenSectionTypeAdapter extends TypeAdapter<HomeScreenSectionType> {
+class PreviousTracksPersistenceModeAdapter
+    extends TypeAdapter<PreviousTracksPersistenceMode> {
   @override
   final typeId = 112;
+
+  @override
+  PreviousTracksPersistenceMode read(BinaryReader reader) {
+    switch (reader.readByte()) {
+      case 0:
+        return PreviousTracksPersistenceMode.persistent;
+      case 1:
+        return PreviousTracksPersistenceMode.initiallyCollapsed;
+      case 2:
+        return PreviousTracksPersistenceMode.initiallyExpanded;
+      default:
+        return PreviousTracksPersistenceMode.persistent;
+    }
+  }
+
+  @override
+  void write(BinaryWriter writer, PreviousTracksPersistenceMode obj) {
+    switch (obj) {
+      case PreviousTracksPersistenceMode.persistent:
+        writer.writeByte(0);
+      case PreviousTracksPersistenceMode.initiallyCollapsed:
+        writer.writeByte(1);
+      case PreviousTracksPersistenceMode.initiallyExpanded:
+        writer.writeByte(2);
+    }
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PreviousTracksPersistenceModeAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class HomeScreenSectionTypeAdapter extends TypeAdapter<HomeScreenSectionType> {
+  @override
+  final typeId = 113;
 
   @override
   HomeScreenSectionType read(BinaryReader reader) {
@@ -3374,7 +3421,7 @@ class HomeScreenSectionTypeAdapter extends TypeAdapter<HomeScreenSectionType> {
 class HomeScreenSectionPresetTypeAdapter
     extends TypeAdapter<HomeScreenSectionPresetType> {
   @override
-  final typeId = 114;
+  final typeId = 115;
 
   @override
   HomeScreenSectionPresetType read(BinaryReader reader) {
@@ -3411,7 +3458,7 @@ class HomeScreenSectionPresetTypeAdapter
 
 class FinampQuickActionsAdapter extends TypeAdapter<FinampQuickActions> {
   @override
-  final typeId = 115;
+  final typeId = 116;
 
   @override
   FinampQuickActions read(BinaryReader reader) {
@@ -3452,7 +3499,7 @@ class FinampQuickActionsAdapter extends TypeAdapter<FinampQuickActions> {
 
 class ItemFilterTypeAdapter extends TypeAdapter<ItemFilterType> {
   @override
-  final typeId = 117;
+  final typeId = 118;
 
   @override
   ItemFilterType read(BinaryReader reader) {

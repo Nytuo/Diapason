@@ -256,6 +256,7 @@ class DefaultSettings {
   static const radioEnabled = false;
   static const duckOnAudioInterruption = true;
   static const forceAudioOffloadingOnAndroid = false;
+  static const previousTracksPersistenceMode = PreviousTracksPersistenceMode.persistent;
   static final homeScreenConfiguration = FinampHomeScreenConfiguration(
     actions: [FinampQuickActions.trackMix, FinampQuickActions.recents, FinampQuickActions.surpriseMe],
     sections: [
@@ -433,6 +434,7 @@ class FinampSettings {
     this.duckOnAudioInterruption = DefaultSettings.duckOnAudioInterruption,
     this.forceAudioOffloadingOnAndroid = DefaultSettings.forceAudioOffloadingOnAndroid,
     required this.homeScreenConfiguration,
+    this.previousTracksPersistenceMode = DefaultSettings.previousTracksPersistenceMode,
   });
 
   @HiveField(0, defaultValue: DefaultSettings.isOffline)
@@ -885,8 +887,11 @@ class FinampSettings {
   @HiveField(144, defaultValue: DefaultSettings.multichannelHandlingSetting)
   MultichannelHandlingSetting multichannelHandlingSetting;
 
+  @HiveField(145, defaultValue: DefaultSettings.previousTracksPersistenceMode)
+  PreviousTracksPersistenceMode previousTracksPersistenceMode = DefaultSettings.previousTracksPersistenceMode;
+
   @HiveField(
-    145,
+    146,
     //!!! this is a dummy value, the actual default is set in [_migrateHomescreen] because it's a non-constant value, and therefore not supported as a Hive default value
     defaultValue: FinampHomeScreenConfiguration(actions: [], sections: []),
   )
@@ -4054,7 +4059,23 @@ enum MultichannelHandlingSetting {
   **/
 }
 
+/// Describes initial state of "previous tracks" header on queue open
 @HiveType(typeId: 112)
+enum PreviousTracksPersistenceMode {
+  /// Use last stored state
+  @HiveField(0)
+  persistent,
+
+  /// Override state to be collapsed on open
+  @HiveField(1)
+  initiallyCollapsed,
+
+  /// Override state to be expanded on open
+  @HiveField(2)
+  initiallyExpanded,
+}
+
+@HiveType(typeId: 113)
 enum HomeScreenSectionType {
   @HiveField(0)
   tabView,
@@ -4088,7 +4109,7 @@ enum HomeScreenSectionType {
 }
 
 @JsonSerializable(converters: [BaseItemIdConverter()])
-@HiveType(typeId: 113)
+@HiveType(typeId: 114)
 class HomeScreenSectionConfiguration {
   @HiveField(0)
   final HomeScreenSectionType type;
@@ -4222,7 +4243,7 @@ class HomeScreenSectionConfiguration {
   int get hashCode => Object.hash(type, itemId, contentType, sortAndFilterConfiguration);
 }
 
-@HiveType(typeId: 114)
+@HiveType(typeId: 115)
 enum HomeScreenSectionPresetType {
   @HiveField(0)
   favoriteTracks,
@@ -4231,7 +4252,7 @@ enum HomeScreenSectionPresetType {
   //TODO add more
 }
 
-@HiveType(typeId: 115)
+@HiveType(typeId: 116)
 enum FinampQuickActions {
   @HiveField(0)
   trackMix,
@@ -4284,7 +4305,7 @@ enum FinampQuickActions {
 }
 
 @JsonSerializable()
-@HiveType(typeId: 116)
+@HiveType(typeId: 117)
 class FinampHomeScreenConfiguration {
   const FinampHomeScreenConfiguration({required this.actions, required this.sections});
 
@@ -4313,7 +4334,7 @@ class FinampHomeScreenConfiguration {
   }
 }
 
-@HiveType(typeId: 117)
+@HiveType(typeId: 118)
 enum ItemFilterType {
   @HiveField(0)
   isFavorite,
@@ -4324,7 +4345,7 @@ enum ItemFilterType {
 }
 
 @JsonSerializable()
-@HiveType(typeId: 118)
+@HiveType(typeId: 119)
 class ItemFilter {
   const ItemFilter({required this.type, this.extras});
 
@@ -4345,7 +4366,7 @@ class ItemFilter {
 }
 
 @JsonSerializable()
-@HiveType(typeId: 119)
+@HiveType(typeId: 120)
 class SortAndFilterConfiguration {
   const SortAndFilterConfiguration({required this.sortBy, required this.sortOrder, required this.filters});
 
