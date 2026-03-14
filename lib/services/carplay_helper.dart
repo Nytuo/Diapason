@@ -18,6 +18,7 @@ import 'package:logging/logging.dart';
 import 'finamp_settings_helper.dart';
 import 'finamp_user_helper.dart';
 import 'jellyfin_api_helper.dart';
+import 'audio_service_helper.dart';
 import 'queue_service.dart';
 import 'item_helper.dart';
 import 'artist_content_provider.dart';
@@ -37,10 +38,6 @@ const _carPlayOnlineLimit = 250;
 /// Maximum items to show in offline mode for CarPlay lists.
 /// Higher than online since no network latency, but still limited for performance.
 const _carPlayOfflineLimit = 1000;
-
-/// Smaller batch for CarPlay shuffle to start playback quickly.
-/// The default shuffleAll() fetches 250 tracks which is slow on poor connections.
-const _carPlayShuffleLimit = 30;
 
 /// Image size for CarPlay artwork. 100x100 is plenty for car displays
 /// and transfers much faster than 200x200.
@@ -302,51 +299,12 @@ class CarPlayHelper {
     await FlutterCarplay.showSharedNowPlaying();
   }
 
-  /// CarPlay-optimized shuffle that fetches a smaller initial batch for fast startup.
-  /// The default shuffleAll() fetches 250 tracks which is slow on poor connections.
+  /// Shuffles all tracks using the shared shuffle handler, then shows CarPlay's Now Playing screen.
   Future<void> shuffleAllTracks() async {
-    _carPlayLogger.info("Starting shuffle all tracks (CarPlay-optimized)");
-
-    await _queueService.stopAndClearQueue();
-
-    List<BaseItemDto>? items;
-
-    if (FinampSettingsHelper.finampSettings.isOffline) {
-      final downloadsService = GetIt.instance<DownloadsService>();
-      items = (await downloadsService.getAllTracks(
-        viewFilter: _finampUserHelper.currentUser?.currentView?.id,
-        nullableViewFilters: FinampSettingsHelper.finampSettings.showDownloadsWithUnknownLibrary,
-      )).map((e) => e.baseItem!).toList();
-      items.shuffle();
-      if (items.length > _carPlayShuffleLimit) {
-        items = items.sublist(0, _carPlayShuffleLimit);
-      }
-    } else {
-      items = await _jellyfinApiHelper.getItems(
-        parentItem: _finampUserHelper.currentUser?.currentView,
-        includeItemTypes: "Audio",
-        sortBy: "Random",
-        limit: _carPlayShuffleLimit,
-      );
-    }
-
-    if (items != null && items.isNotEmpty) {
-      // Pre-cache the first track's image so it's available for the now-playing screen
-      await _preloadCarPlayImages([items.first]);
-
-      await _queueService.startPlayback(
-        items: items,
-        source: QueueItemSource.rawId(
-          type: QueueItemSourceType.allTracks,
-          name: const QueueItemSourceName(
-            type: QueueItemSourceNameType.shuffleAll,
-          ),
-          id: "shuffleAll",
-        ),
-        order: FinampPlaybackOrder.shuffled,
-      );
-      await FlutterCarplay.showSharedNowPlaying();
-    }
+    _carPlayLogger.info("Starting shuffle all tracks");
+    final audioServiceHelper = GetIt.instance<AudioServiceHelper>();
+    await audioServiceHelper.shuffleAll(onlyShowFavorites: false);
+    await FlutterCarplay.showSharedNowPlaying();
   }
 
   Future<void> startInstantMix() async {

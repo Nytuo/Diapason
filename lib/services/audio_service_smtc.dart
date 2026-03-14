@@ -1,10 +1,10 @@
 import 'package:audio_service_platform_interface/audio_service_platform_interface.dart';
 import 'package:flutter/cupertino.dart' hide RepeatMode;
-import 'package:smtc_windows/smtc_windows.dart' as smtc_windows;
+import 'package:smtc_windows/smtc_windows.dart';
 
 class AudioServiceSMTC extends AudioServicePlatform {
   AudioHandlerCallbacks? _handlerCallbacks;
-  late smtc_windows.SMTCWindows smtc;
+  late SMTCWindows smtc;
 
   static void registerWith() {
     AudioServicePlatform.instance = AudioServiceSMTC();
@@ -15,10 +15,10 @@ class AudioServiceSMTC extends AudioServicePlatform {
     // initialize SMTC
     //TODO we should call smtc.dispose() before the app is closed to prevent a background process from continuing to run
     // https://pub.dev/packages/flutter_window_close could be used to detect when the app is closed
-    await smtc_windows.SMTCWindows.initialize();
-    smtc = smtc_windows.SMTCWindows(
+    await SMTCWindows.initialize();
+    smtc = SMTCWindows(
       // Which buttons to show in the OS media player
-      config: const smtc_windows.SMTCConfig(
+      config: const SMTCConfig(
         fastForwardEnabled: true,
         nextEnabled: true,
         pauseEnabled: true,
@@ -31,21 +31,21 @@ class AudioServiceSMTC extends AudioServicePlatform {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
         // Listen to button events and update playback status accordingly
-        smtc.buttonPressStream.listen((smtc_windows.PressedButton event) async {
+        smtc.buttonPressStream.listen((PressedButton event) async {
           switch (event) {
-            case smtc_windows.PressedButton.play:
+            case PressedButton.play:
               await _handlerCallbacks!.play(const PlayRequest());
-            case smtc_windows.PressedButton.pause:
+            case PressedButton.pause:
               await _handlerCallbacks!.pause(const PauseRequest());
-            case smtc_windows.PressedButton.next:
+            case PressedButton.next:
               await _handlerCallbacks!.skipToNext(const SkipToNextRequest());
-            case smtc_windows.PressedButton.previous:
+            case PressedButton.previous:
               await _handlerCallbacks!.skipToPrevious(const SkipToPreviousRequest());
-            case smtc_windows.PressedButton.stop:
+            case PressedButton.stop:
               await _handlerCallbacks!.stop(const StopRequest());
-            case smtc_windows.PressedButton.fastForward:
+            case PressedButton.fastForward:
               await _handlerCallbacks!.fastForward(const FastForwardRequest());
-            case smtc_windows.PressedButton.rewind:
+            case PressedButton.rewind:
               await _handlerCallbacks!.rewind(const RewindRequest());
             default:
               break;
@@ -60,15 +60,15 @@ class AudioServiceSMTC extends AudioServicePlatform {
   @override
   Future<void> setState(SetStateRequest request) async {
     if (request.state.playing && !smtc.enabled) {
-      await smtc.enableSmtc().then((value) => smtc.setPlaybackStatus(smtc_windows.PlaybackStatus.playing));
+      await smtc.enableSmtc().then((value) => smtc.setPlaybackStatus(PlaybackStatus.playing));
     } else {
       await smtc.setPosition(request.state.updatePosition);
-      await smtc.setPlaybackStatus(request.state.playing ? smtc_windows.PlaybackStatus.playing : smtc_windows.PlaybackStatus.paused);
+      await smtc.setPlaybackStatus(request.state.playing ? PlaybackStatus.playing : PlaybackStatus.paused);
 
       await smtc.setRepeatMode(switch (request.state.repeatMode) {
-        AudioServiceRepeatModeMessage.none => smtc_windows.RepeatMode.none,
-        AudioServiceRepeatModeMessage.one => smtc_windows.RepeatMode.track,
-        AudioServiceRepeatModeMessage.all => smtc_windows.RepeatMode.list,
+        AudioServiceRepeatModeMessage.none => RepeatMode.none,
+        AudioServiceRepeatModeMessage.one => RepeatMode.track,
+        AudioServiceRepeatModeMessage.all => RepeatMode.list,
         AudioServiceRepeatModeMessage.group => throw UnimplementedError(),
       });
       await smtc.setShuffleEnabled(switch (request.state.shuffleMode) {
@@ -86,7 +86,7 @@ class AudioServiceSMTC extends AudioServicePlatform {
   Future<void> setMediaItem(SetMediaItemRequest request) async {
     var artURI = request.mediaItem.artUri;
     await smtc.updateMetadata(
-      smtc_windows.MusicMetadata(
+      MusicMetadata(
         title: request.mediaItem.title,
         album: request.mediaItem.album,
         artist: request.mediaItem.artist,
@@ -96,7 +96,7 @@ class AudioServiceSMTC extends AudioServicePlatform {
       ),
     );
     await smtc.setTimeline(
-      smtc_windows.PlaybackTimeline(
+      PlaybackTimeline(
         startTimeMs: 0,
         minSeekTimeMs: 0,
         endTimeMs: request.mediaItem.duration?.inMilliseconds ?? 0,

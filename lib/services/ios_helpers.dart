@@ -1,18 +1,12 @@
 import 'dart:io';
 
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/components/now_playing_bar.dart';
 import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 
 import 'android_auto_helper.dart';
 import 'audio_service_helper.dart';
-import 'downloads_service.dart';
-import 'finamp_settings_helper.dart';
-import 'finamp_user_helper.dart';
 import 'jellyfin_api_helper.dart';
 import 'queue_service.dart';
 
@@ -28,7 +22,7 @@ final _logger = Logger('IosHelpers');
 /// play/pause state when playback is started from the phone.
 /// Consider contributing a fix upstream to audio_service.
 class IosPlaybackStateSync {
-  static const _channel = MethodChannel('com.unicornsonlsd.finamp/playback_state');
+  static const _channel = MethodChannel('com.unicornsonlsd.finamp-ios/playback_state');
 
   /// Sets the playback state on iOS's MPNowPlayingInfoCenter.
   /// This is needed for CarPlay to show the correct play/pause state.
@@ -49,7 +43,7 @@ class IosPlaybackStateSync {
 /// This enables voice commands like "Hey Siri, play [song/artist] on Finamp"
 /// from anywhere on iOS (phone, CarPlay, AirPods, etc.).
 class IosSiriHandler {
-  static const _siriIntentChannel = MethodChannel('com.unicornsonlsd.finamp/siri_intent');
+  static const _siriIntentChannel = MethodChannel('com.unicornsonlsd.finamp-ios/siri_intent');
 
   /// Sets up the method channel handler for Siri media intents.
   /// Should be called once during app initialization.
@@ -97,7 +91,6 @@ class IosSiriHandler {
     if (shuffle) {
       if (query == null && artist == null && album == null) {
         await _shuffleAll();
-        _showPlayerScreen();
         return;
       }
     }
@@ -115,7 +108,6 @@ class IosSiriHandler {
         query ?? artist ?? album ?? '',
         extras,
       ));
-      _showPlayerScreen();
       return;
     }
 
@@ -124,7 +116,6 @@ class IosSiriHandler {
     if (searchTerm.isEmpty) {
       // No query at all - shuffle everything
       await _shuffleAll();
-      _showPlayerScreen();
       return;
     }
 
@@ -135,7 +126,6 @@ class IosSiriHandler {
       final androidAutoHelper = GetIt.instance<AndroidAutoHelper>();
       await androidAutoHelper.playFromSearch(AndroidAutoSearchQuery(searchTerm, null));
     }
-    _showPlayerScreen();
   }
 
   /// Searches for the query across entity types and starts playback if found.
@@ -232,56 +222,10 @@ class IosSiriHandler {
     return true;
   }
 
-  /// Shows the player screen in the Flutter app after Siri-initiated playback.
-  static void _showPlayerScreen() {
-    final context = GlobalSnackbar.materialAppNavigatorKey.currentContext;
-    if (context != null && context.mounted) {
-      NowPlayingBar.openPlayerScreen(context);
-    }
-  }
-
-  static const _siriShuffleLimit = 30;
-
-  /// Fast shuffle (same approach as CarPlay) - fetches 30 random tracks instead of 250.
+  /// Shuffles all tracks using the shared shuffle handler.
   static Future<void> _shuffleAll() async {
-    final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
-    final finampUserHelper = GetIt.instance<FinampUserHelper>();
-    final queueService = GetIt.instance<QueueService>();
-
-    List<BaseItemDto>? items;
-
-    if (FinampSettingsHelper.finampSettings.isOffline) {
-      final downloadsService = GetIt.instance<DownloadsService>();
-      items = (await downloadsService.getAllTracks(
-        viewFilter: finampUserHelper.currentUser?.currentView?.id,
-        nullableViewFilters: FinampSettingsHelper.finampSettings.showDownloadsWithUnknownLibrary,
-      )).map((e) => e.baseItem!).toList();
-      items.shuffle();
-      if (items.length > _siriShuffleLimit) {
-        items = items.sublist(0, _siriShuffleLimit);
-      }
-    } else {
-      items = await jellyfinApiHelper.getItems(
-        parentItem: finampUserHelper.currentUser?.currentView,
-        includeItemTypes: "Audio",
-        sortBy: "Random",
-        limit: _siriShuffleLimit,
-      );
-    }
-
-    if (items != null && items.isNotEmpty) {
-      await queueService.startPlayback(
-        items: items,
-        source: QueueItemSource.rawId(
-          type: QueueItemSourceType.allTracks,
-          name: const QueueItemSourceName(
-            type: QueueItemSourceNameType.shuffleAll,
-          ),
-          id: "shuffleAll",
-        ),
-        order: FinampPlaybackOrder.shuffled,
-      );
-    }
+    final audioServiceHelper = GetIt.instance<AudioServiceHelper>();
+    await audioServiceHelper.shuffleAll(onlyShowFavorites: false);
   }
 
   /// Handles Siri "Search for X on Finamp" voice commands
