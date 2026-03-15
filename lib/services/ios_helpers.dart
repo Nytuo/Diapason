@@ -1,14 +1,11 @@
 import 'dart:io';
 
-import 'package:finamp/models/finamp_models.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 
 import 'android_auto_helper.dart';
 import 'audio_service_helper.dart';
-import 'jellyfin_api_helper.dart';
-import 'queue_service.dart';
 
 /// iOS-specific helpers for playback state sync and Siri media intents.
 
@@ -68,11 +65,12 @@ class IosSiriHandler {
     _logger.info("Siri intent handler set up");
   }
 
-  /// Handles Siri "Play X on Finamp" voice commands.
+  /// Handles Siri "Play X on Finamp" voice commands by delegating to
+  /// Android Auto's search engine, which has sophisticated metadata-driven
+  /// type detection, multi-type ranking, playlist preference, and artist filtering.
   ///
-  /// Siri typically only populates `mediaName` (mapped to `query`) for ~80% of
-  /// requests. `artistName`/`albumName` are only set for compound queries like
-  /// "Play X by Y". So we must search across entity types ourselves.
+  /// Siri metadata is translated into Android Auto's extras format so that
+  /// AA's decision tree can determine the best search strategy.
   static Future<void> _handlePlayFromSearch(Map<dynamic, dynamic>? arguments) async {
     if (arguments == null) {
       _logger.warning("Siri playFromSearch called with null arguments");
@@ -88,138 +86,67 @@ class IosSiriHandler {
 
     _logger.info("Siri playFromSearch - query: $query, artist: $artist, album: $album, genre: $genre, mediaType: $mediaType, shuffle: $shuffle");
 
-    if (shuffle) {
-      if (query == null && artist == null && album == null) {
-        await _shuffleAll();
-        return;
-      }
-    }
-
-    // If Siri provided explicit artist/album fields (compound query like "Play X by Y"),
-    // delegate to Android Auto's search logic which handles extras correctly
-    if (artist != null || album != null) {
-      final Map<String, dynamic> extras = {};
-      if (artist != null) extras['android.intent.extra.artist'] = artist;
-      if (album != null) extras['android.intent.extra.album'] = album;
-      if (query != null) extras['android.intent.extra.title'] = query;
-
-      final androidAutoHelper = GetIt.instance<AndroidAutoHelper>();
-      await androidAutoHelper.playFromSearch(AndroidAutoSearchQuery(
-        query ?? artist ?? album ?? '',
-        extras,
-      ));
-      return;
-    }
-
-    // For bare queries (most Siri requests), do a smart multi-type search
-    final searchTerm = query ?? genre ?? '';
-    if (searchTerm.isEmpty) {
-      // No query at all - shuffle everything
+    // Shuffle with no specific query
+    if (shuffle && query == null && artist == null && album == null) {
       await _shuffleAll();
       return;
     }
 
-    final played = await _smartSearch(searchTerm, mediaType);
-    if (!played) {
-      // Fall back to Android Auto's generic search (playlists + tracks)
-      _logger.info("Smart search found nothing, falling back to generic search");
-      final androidAutoHelper = GetIt.instance<AndroidAutoHelper>();
-      await androidAutoHelper.playFromSearch(AndroidAutoSearchQuery(searchTerm, null));
+    // Build search query for Android Auto's search engine
+    final rawQuery = query ?? artist ?? album ?? genre ?? '';
+    if (rawQuery.isEmpty) {
+      await _shuffleAll();
+      return;
     }
+
+    final extras = _buildExtrasFromSiriData(
+      query: query, artist: artist, album: album, genre: genre, mediaType: mediaType,
+    );
+
+    _logger.info("Siri delegating to AA search - rawQuery: $rawQuery, extras: $extras");
+    final androidAutoHelper = GetIt.instance<AndroidAutoHelper>();
+    await androidAutoHelper.playFromSearch(AndroidAutoSearchQuery(rawQuery, extras));
   }
 
-  /// Searches for the query across entity types and starts playback if found.
-  /// Returns true if something was played.
-  static Future<bool> _smartSearch(String searchTerm, String? mediaType) async {
-    final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
-    final audioServiceHelper = GetIt.instance<AudioServiceHelper>();
-    final queueService = GetIt.instance<QueueService>();
+  /// Translates Siri metadata fields into Android Auto intent extras format.
+  ///
+  /// This mapping allows AA's decision tree to correctly identify the search type:
+  /// - artist + query → track search filtered by artist
+  /// - album + query → track search
+  /// - artist only → artist search (instant mix)
+  /// - mediaType hint on bare query → maps query to the appropriate extra
+  /// - bare query with no hints → null extras (AA does generic: playlists first, then tracks)
+  static Map<String, dynamic>? _buildExtrasFromSiriData({
+    String? query, String? artist, String? album, String? genre, String? mediaType,
+  }) {
+    final extras = <String, dynamic>{};
 
-    // If Siri told us the type (e.g., "Play the artist Taylor Swift"), search that type directly
-    if (mediaType == 'artist') {
-      return await _searchAndPlayArtist(searchTerm, jellyfinApiHelper, audioServiceHelper);
-    } else if (mediaType == 'album') {
-      return await _searchAndPlayAlbum(searchTerm, jellyfinApiHelper, queueService);
-    } else if (mediaType == 'song') {
-      // For explicit song requests, let the Android Auto fallback handle it
-      return false;
+    // Direct fields from Siri (compound queries like "Play X by Y")
+    if (artist != null) extras['android.intent.extra.artist'] = artist;
+    if (album != null) extras['android.intent.extra.album'] = album;
+    if (query != null && (artist != null || album != null)) {
+      extras['android.intent.extra.title'] = query;
+    }
+    if (genre != null) extras['android.intent.extra.genre'] = genre;
+
+    // Use Siri's mediaType hint for bare queries (no artist/album fields)
+    // e.g. "Play the artist Taylor Swift" → mediaType='artist', query='Taylor Swift'
+    if (artist == null && album == null && query != null && mediaType != null) {
+      switch (mediaType) {
+        case 'artist':
+          extras['android.intent.extra.artist'] = query;
+        case 'album':
+          extras['android.intent.extra.album'] = query;
+        case 'song':
+          extras['android.intent.extra.title'] = query;
+        case 'playlist':
+          extras['android.intent.extra.playlist'] = query;
+        case 'genre':
+          extras['android.intent.extra.genre'] = query;
+      }
     }
 
-    // No type hint - search in priority order: artists -> albums -> fallback to tracks
-    _logger.info("Smart search: trying artists for '$searchTerm'");
-    if (await _searchAndPlayArtist(searchTerm, jellyfinApiHelper, audioServiceHelper)) {
-      return true;
-    }
-
-    _logger.info("Smart search: trying albums for '$searchTerm'");
-    if (await _searchAndPlayAlbum(searchTerm, jellyfinApiHelper, queueService)) {
-      return true;
-    }
-
-    return false;
-  }
-
-  static Future<bool> _searchAndPlayArtist(
-    String searchTerm,
-    JellyfinApiHelper jellyfinApiHelper,
-    AudioServiceHelper audioServiceHelper,
-  ) async {
-    final artists = await jellyfinApiHelper.getArtists(searchTerm: searchTerm, limit: 5);
-    if (artists == null || artists.isEmpty) return false;
-
-    // Pick the best match (prefer exact match, then first result)
-    final exactMatch = artists.where(
-      (a) => a.name?.toLowerCase() == searchTerm.toLowerCase(),
-    );
-    final artist = exactMatch.isNotEmpty ? exactMatch.first : artists.first;
-
-    _logger.info("Smart search: found artist '${artist.name}', starting mix");
-    await audioServiceHelper.startInstantMixForArtists([artist]);
-    return true;
-  }
-
-  static Future<bool> _searchAndPlayAlbum(
-    String searchTerm,
-    JellyfinApiHelper jellyfinApiHelper,
-    QueueService queueService,
-  ) async {
-    final albums = await jellyfinApiHelper.getItems(
-      searchTerm: searchTerm,
-      includeItemTypes: "MusicAlbum",
-      limit: 5,
-    );
-    if (albums == null || albums.isEmpty) return false;
-
-    final exactMatch = albums.where(
-      (a) => a.name?.toLowerCase() == searchTerm.toLowerCase(),
-    );
-    final selectedAlbum = exactMatch.isNotEmpty ? exactMatch.first : albums.first;
-
-    // Fetch album tracks
-    final tracks = await jellyfinApiHelper.getItems(
-      parentItem: selectedAlbum,
-      includeItemTypes: "Audio",
-      sortBy: "ParentIndexNumber,IndexNumber,SortName",
-      sortOrder: "Ascending",
-      limit: 200,
-    );
-    if (tracks == null || tracks.isEmpty) return false;
-
-    _logger.info("Smart search: found album '${selectedAlbum.name}' with ${tracks.length} tracks");
-    await queueService.startPlayback(
-      items: tracks,
-      source: QueueItemSource(
-        type: QueueItemSourceType.album,
-        name: QueueItemSourceName(
-          type: QueueItemSourceNameType.preTranslated,
-          pretranslatedName: selectedAlbum.name,
-        ),
-        id: selectedAlbum.id,
-        item: selectedAlbum,
-      ),
-      order: FinampPlaybackOrder.linear,
-    );
-    return true;
+    return extras.isEmpty ? null : extras;
   }
 
   /// Shuffles all tracks using the shared shuffle handler.
