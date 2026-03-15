@@ -35,7 +35,7 @@ class CTAHuge extends StatelessWidget {
         ),
         padding: WidgetStateProperty.all<EdgeInsetsGeometry>(const EdgeInsets.symmetric(horizontal: 24, vertical: 20)),
         backgroundColor: WidgetStateProperty.all<Color>(
-          Theme.of(context).brightness == Brightness.dark
+          Theme.brightnessOf(context) == Brightness.dark
               ? accentColor.withOpacity(disabled ? 0.05 : 0.15)
               : Color.alphaBlend(accentColor.withOpacity(0.2), Colors.white).withOpacity(disabled ? 0.5 : 1.0),
         ),
@@ -51,7 +51,7 @@ class CTAHuge extends StatelessWidget {
             text,
             style: TextStyle(
               color:
-                  (Theme.of(context).brightness == Brightness.light
+                  (Theme.brightnessOf(context) == Brightness.light
                           ? Color.alphaBlend(accentColor.withOpacity(0.33), Colors.black)
                           : Colors.white)
                       .withOpacity(disabled ? 0.5 : 1.0),

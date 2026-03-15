@@ -76,8 +76,6 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
 
   @override
   Widget build(BuildContext context) {
-    FinampSettings? finampSettings = ref.watch(finampSettingsProvider).value;
-
     return SafeArea(
       bottom: false,
       child: RefreshIndicator(
@@ -113,7 +111,7 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
                           onPressed: switch (action) {
                             FinampQuickActions.trackMix => () {
                               _audioServiceHelper.shuffleAll(
-                                onlyShowFavorites: finampSettings?.onlyShowFavorites ?? false,
+                                onlyShowFavorites: ref.watch(finampSettingsProvider.onlyShowFavorites) ?? false,
                               );
                             },
                             FinampQuickActions.recents => () {
@@ -444,7 +442,7 @@ class HomeScreenSectionContent extends ConsumerWidget {
 
   Widget _buildHorizontalSkeletonLoader(BuildContext context) {
     final skeletonCount = 10;
-    final skeletonBaseColor = Theme.of(context).brightness == Brightness.light
+    final skeletonBaseColor = Theme.brightnessOf(context) == Brightness.light
         ? Colors.grey.shade300
         : Colors.grey.shade800;
     return SizedBox(
@@ -533,11 +531,10 @@ Future<List<BaseItemDto>?> loadHomeSectionItems(
 }) async {
   final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
   final finampUserHelper = GetIt.instance<FinampUserHelper>();
-  final settings = FinampSettingsHelper.finampSettings;
 
   final Future<List<BaseItemDto>?> newItemsFuture;
 
-  if (settings.isOffline) {
+  if (ref.watch(finampSettingsProvider.isOffline)) {
     newItemsFuture = loadHomeSectionItemsOffline(
       sectionInfo: sectionInfo,
       library: library,

@@ -42,9 +42,7 @@ class ShowAllScreen extends ConsumerStatefulWidget {
   ConsumerState<ShowAllScreen> createState() => _ShowAllScreenState();
 }
 
-// We use AutomaticKeepAliveClientMixin so that the view keeps its position after the tab is changed.
-// https://stackoverflow.com/questions/49439047/how-to-preserve-widget-states-in-flutter-when-navigating-using-bottomnavigation
-class _ShowAllScreenState extends ConsumerState<ShowAllScreen> with AutomaticKeepAliveClientMixin<ShowAllScreen> {
+class _ShowAllScreenState extends ConsumerState<ShowAllScreen> {
   // tabs on the music screen should be kept alive
   @override
   bool get wantKeepAlive => true;
@@ -177,7 +175,6 @@ class _ShowAllScreenState extends ConsumerState<ShowAllScreen> with AutomaticKee
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     widget.refresh?.callback = _refresh;
 
     // If the searchTerm argument is different to lastSearch, the user has changed their search input.
@@ -277,7 +274,7 @@ class _ShowAllScreenState extends ConsumerState<ShowAllScreen> with AutomaticKee
           // this is needed to ensure the player screen stays in full screen mode WITHOUT having contrast issues in the status bar
           systemNavigationBarColor: Colors.transparent,
           systemStatusBarContrastEnforced: false,
-          statusBarIconBrightness: Theme.of(context).brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+          statusBarIconBrightness: Theme.brightnessOf(context) == Brightness.dark ? Brightness.light : Brightness.dark,
         ),
         elevation: 0,
         scrolledUnderElevation: 0.0, // disable tint/shadow when content is scrolled under the app bar

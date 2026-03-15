@@ -1145,7 +1145,7 @@ enum TabContentType {
       case "Playlist":
         return TabContentType.playlists;
       default:
-        return TabContentType.home;
+        throw const FormatException("Unsupported itemType");
     }
   }
 }

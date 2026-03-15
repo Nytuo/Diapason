@@ -475,7 +475,7 @@ class _HeaderSection extends ConsumerWidget {
                               labelText: AppLocalizations.of(context)!.name,
                               floatingLabelBehavior: FloatingLabelBehavior.never,
                               filled: true,
-                              fillColor: Theme.of(context).brightness == Brightness.dark
+                              fillColor: Theme.brightnessOf(context) == Brightness.dark
                                   ? Colors.black.withOpacity(0.8)
                                   : Colors.white.withOpacity(0.8),
                               border: OutlineInputBorder(

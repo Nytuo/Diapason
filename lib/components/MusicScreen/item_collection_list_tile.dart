@@ -103,7 +103,7 @@ class ItemCollectionListTile extends ConsumerWidget {
 
     TabContentType? associatedTabContentType;
     try {
-      associatedTabContentType = TabContentType.fromItemType(itemType.jellyfinName ?? "");
+      associatedTabContentType = TabContentType.fromItemType(itemType.jellyfinName ?? "Collection");
     } on FormatException {
       associatedTabContentType = null;
     }

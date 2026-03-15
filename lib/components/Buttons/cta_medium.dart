@@ -62,7 +62,7 @@ class CTAMedium extends StatelessWidget {
               text,
               style: TextStyle(
                 color:
-                    (Theme.of(context).brightness == Brightness.light
+                    (Theme.brightnessOf(context) == Brightness.light
                             ? Color.alphaBlend(accentColor.withOpacity(0.33), Colors.black)
                             : Colors.white)
                         .withOpacity(disabled ? 0.5 : 1.0),

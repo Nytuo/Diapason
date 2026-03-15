@@ -28,9 +28,6 @@ class ClearQueueMenuEntry extends ConsumerWidget implements HideableMenuEntry {
         await withRadioLock(() async {
           await queueService.stopAndClearQueue();
         });
-        if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-          await WindowManager.instance.setTitle("Finamp");
-        }
       },
     );
   }

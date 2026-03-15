@@ -78,173 +78,170 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
       }
     });
 
+    final statusIcon = ref.watch(finampSettingsProvider.isOffline)
+        ? TablerIcons.plug_connected_x
+        : ref.watch(FinampUserHelper.finampCurrentUserProvider).valueOrNull?.isLocal ?? false
+        ? TablerIcons.server_bolt
+        : null; // hide icon by default (remote connection)
+
     return Column(
       spacing: 8.0,
       children: [
-        FutureBuilder(
-          future: PackageInfo.fromPlatform(),
-          builder: (context, snapshot) {
-            final appName = snapshot.data?.appName ?? AppLocalizations.of(context)!.finamp;
-            final statusIcon = ref.watch(finampSettingsProvider.isOffline)
-                ? TablerIcons.plug_connected_x
-                : ref.watch(FinampUserHelper.finampCurrentUserProvider).valueOrNull?.isLocal ?? false
-                ? TablerIcons.server_bolt
-                : null; // hide icon by default (remote connection)
-            return SafeArea(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 12.0,
-                  right: 6.0,
-                  top: (Platform.isLinux || Platform.isWindows || Platform.isMacOS) ? 12.0 : 0.0,
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    SimpleGestureDetector(
-                      onTap: () {
-                        // open drawer
-                        // Scaffold.of(context).openDrawer();
-                        showFinampMainMenu(context: context);
-                      },
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          FinampIcon(
-                            36,
-                            36,
-                            overrideColor: ref.watch(finampSettingsProvider.isOffline)
-                                ? TextTheme.of(context).bodyMedium?.color?.withOpacity(0.6)
-                                : null,
-                          ),
-                          Positioned(bottom: -4, right: -2, child: Icon(statusIcon, size: 16)),
-                          StreamBuilder<Map<String, int>>(
-                            //!!! this stream doesn't refresh on its own, see timer above
-                            stream: downloadsService.downloadCountsStream,
-                            initialData: downloadsService.downloadCounts,
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
-                                return SizedBox.shrink();
-                              }
-                              // final (counts, statuses) = snapshot.data!;
-                              final counts = snapshot.data!;
-                              final isDownloadSystemDoingWork = (counts["sync"] ?? 0) > 0;
-                              if (isDownloadSystemDoingWork) {
-                                return Positioned(
-                                  bottom: statusIcon != null ? -6 : 1,
-                                  right: statusIcon != null ? -4 : 3,
-                                  child: SizedBox.square(
-                                    dimension: statusIcon != null ? 20.0 : 10.0,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 1,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Theme.of(context).colorScheme.onSurface,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              } else {
-                                return SizedBox.shrink();
-                              }
-                            },
-                          ),
-                        ],
+        SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 12.0,
+              right: 6.0,
+              top: (Platform.isLinux || Platform.isWindows || Platform.isMacOS) ? 12.0 : 0.0,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                SimpleGestureDetector(
+                  onTap: () {
+                    // open drawer
+                    // Scaffold.of(context).openDrawer();
+                    showFinampMainMenu(context: context);
+                  },
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      FinampIcon(
+                        36,
+                        36,
+                        overrideColor: ref.watch(finampSettingsProvider.isOffline)
+                            ? TextTheme.of(context).bodyMedium?.color?.withOpacity(0.6)
+                            : null,
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    if (backButtonInsteadOfTabs) ...[FinampAppBarBackButton(), const SizedBox(width: 8)],
-                    ...isSearching
-                        ? [
-                            Expanded(
-                              child: TextField(
-                                controller: textEditingController,
-                                autocorrect: false, // avoid autocorrect
-                                enableSuggestions: true, // keep suggestions which can be manually selected
-                                autofocus: true,
-                                keyboardType: TextInputType.text,
-                                textInputAction: TextInputAction.search,
-                                onChanged: (value) {
-                                  if (debounce?.isActive ?? false) debounce!.cancel();
-                                  debounce = Timer(const Duration(milliseconds: 400), () {
-                                    onUpdateSearchQuery?.call(value);
-                                  });
-                                },
-                                onSubmitted: (value) => onUpdateSearchQuery?.call(value),
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: MaterialLocalizations.of(context).searchFieldLabel,
-                                  contentPadding: EdgeInsets.only(left: 4.0, top: 8.0, bottom: 8.0),
-                                  isDense: true,
+                      Positioned(bottom: -4, right: -2, child: Icon(statusIcon, size: 16)),
+                      StreamBuilder<Map<String, int>>(
+                        //!!! this stream doesn't refresh on its own, see timer above
+                        stream: downloadsService.downloadCountsStream,
+                        initialData: downloadsService.downloadCounts,
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return SizedBox.shrink();
+                          }
+                          // final (counts, statuses) = snapshot.data!;
+                          final counts = snapshot.data!;
+                          final isDownloadSystemDoingWork = (counts["sync"] ?? 0) > 0;
+                          if (isDownloadSystemDoingWork) {
+                            return Positioned(
+                              bottom: statusIcon != null ? -6 : 1,
+                              right: statusIcon != null ? -4 : 3,
+                              child: SizedBox.square(
+                                dimension: statusIcon != null ? 20.0 : 10.0,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 1,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onSurface),
                                 ),
                               ),
-                            ),
-                            IconButtonWithSemantics(
-                              icon: TablerIcons.x,
-                              label: AppLocalizations.of(context)!.clear,
-                              onPressed: () {
-                                onStopSearch?.call();
-                              },
-                              visualDensity: VisualDensity(horizontal: 0, vertical: -4),
-                            ),
-                          ]
-                        : [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  GestureDetector(
-                                    onTap: () {
-                                      if (title == null) {
-                                        showFinampMainMenu(context: context);
-                                      }
-                                    },
-                                    child: Text(
-                                      title ?? finampUserHelper.currentUser?.currentView?.name ?? appName,
-                                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (!Platform.isIOS && !Platform.isAndroid)
-                              IconButtonWithSemantics(
-                                label: "Refresh*",
-                                icon: TablerIcons.refresh,
-                                iconSize: 28.0,
-                                onPressed: () {
-                                  refreshTab();
-                                },
-                              ),
-                            IconButtonWithSemantics(
-                              label: "Search*",
-                              icon: TablerIcons.search,
-                              iconSize: 28.0,
-                              onPressed: () {
-                                if (onSearch != null) {
-                                  onSearch!();
-                                }
-                              },
-                            ),
-                          ],
+                            );
+                          } else {
+                            return SizedBox.shrink();
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                if (backButtonInsteadOfTabs) ...[FinampAppBarBackButton(), const SizedBox(width: 8)],
+                if (isSearching) ...[
+                  Expanded(
+                    child: TextField(
+                      controller: textEditingController,
+                      autocorrect: false, // avoid autocorrect
+                      enableSuggestions: true, // keep suggestions which can be manually selected
+                      autofocus: true,
+                      keyboardType: TextInputType.text,
+                      textInputAction: TextInputAction.search,
+                      onChanged: (value) {
+                        if (debounce?.isActive ?? false) debounce!.cancel();
+                        debounce = Timer(const Duration(milliseconds: 400), () {
+                          onUpdateSearchQuery?.call(value);
+                        });
+                      },
+                      onSubmitted: (value) => onUpdateSearchQuery?.call(value),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: MaterialLocalizations.of(context).searchFieldLabel,
+                        contentPadding: EdgeInsets.only(left: 4.0, top: 8.0, bottom: 8.0),
+                        isDense: true,
+                      ),
+                    ),
+                  ),
+                  IconButtonWithSemantics(
+                    icon: TablerIcons.x,
+                    label: AppLocalizations.of(context)!.clear,
+                    onPressed: () {
+                      onStopSearch?.call();
+                    },
+                    visualDensity: VisualDensity(horizontal: 0, vertical: -4),
+                  ),
+                ] else ...[
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            if (title == null) {
+                              showFinampMainMenu(context: context);
+                            }
+                          },
+                          child: FutureBuilder(
+                            future: PackageInfo.fromPlatform(),
+                            builder: (context, asyncSnapshot) {
+                              final appName = asyncSnapshot.data?.appName ?? AppLocalizations.of(context)!.finamp;
+                              return Text(
+                                title ?? finampUserHelper.currentUser?.currentView?.name ?? appName,
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (!Platform.isIOS && !Platform.isAndroid)
                     IconButtonWithSemantics(
-                      label: "Menu*",
-                      icon: TablerIcons.dots,
+                      label: "Refresh*",
+                      icon: TablerIcons.refresh,
                       iconSize: 28.0,
                       onPressed: () {
-                        // Scaffold.of(context).openDrawer();
-                        showFinampMainMenu(context: context);
-                      },
-                      onLongPress: () {
-                        Navigator.pushNamed(context, SettingsScreen.routeName);
+                        refreshTab();
                       },
                     ),
-                  ],
+                  IconButtonWithSemantics(
+                    label: "Search*",
+                    icon: TablerIcons.search,
+                    iconSize: 28.0,
+                    onPressed: () {
+                      if (onSearch != null) {
+                        onSearch!();
+                      }
+                    },
+                  ),
+                ],
+                IconButtonWithSemantics(
+                  label: "Menu*",
+                  icon: TablerIcons.dots,
+                  iconSize: 28.0,
+                  onPressed: () {
+                    // Scaffold.of(context).openDrawer();
+                    showFinampMainMenu(context: context);
+                  },
+                  onLongPress: () {
+                    Navigator.pushNamed(context, SettingsScreen.routeName);
+                  },
                 ),
-              ),
-            );
-          },
+              ],
+            ),
+          ),
         ),
         if (!backButtonInsteadOfTabs)
           TabBar(
