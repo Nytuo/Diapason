@@ -140,6 +140,7 @@ class DefaultSettings {
   static const syncPlaybackSpeedAndPitch = false;
   static const autoLoadLastQueueOnStartup = true;
   static const shouldTranscodeDownloads = TranscodeDownloadsSetting.ask;
+  static const multichannelHandlingSetting = MultichannelHandlingSetting.stereoDownmixLossy;
   static const shouldRedownloadTranscodes = false;
   static const resyncOnStartup = true;
   static const fixedGridTileSize = 150;
@@ -167,7 +168,7 @@ class DefaultSettings {
   static const showFavoriteButtonOnMediaNotification = true;
   static const showSeekControlsOnMediaNotification = true;
   static const keepScreenOnOption = KeepScreenOnOption.whileLyrics;
-  static const keepScreenOnWhilePluggedIn = true;
+  static const keepScreenOnWhilePluggedIn = false;
   static const hasDownloadedPlaylistInfo = false;
   static const transcodingStreamingFormat = FinampTranscodingStreamingFormat.aacFragmentedMp4;
   static const featureChipsConfiguration = FinampFeatureChipsConfiguration(
@@ -247,6 +248,7 @@ class DefaultSettings {
   static const radioEnabled = false;
   static const duckOnAudioInterruption = true;
   static const forceAudioOffloadingOnAndroid = false;
+  static const previousTracksPersistenceMode = PreviousTracksPersistenceMode.persistent;
 }
 
 @HiveType(typeId: 28)
@@ -302,6 +304,7 @@ class FinampSettings {
     this.downloadTranscodingCodec,
     this.downloadTranscodeBitrate,
     this.shouldTranscodeDownloads = DefaultSettings.shouldTranscodeDownloads,
+    this.multichannelHandlingSetting = DefaultSettings.multichannelHandlingSetting,
     this.shouldRedownloadTranscodes = DefaultSettings.shouldRedownloadTranscodes,
     this.itemSwipeActionLeftToRight = DefaultSettings.itemSwipeActionLeftToRight,
     this.itemSwipeActionRightToLeft = DefaultSettings.itemSwipeActionRightToLeft,
@@ -388,6 +391,7 @@ class FinampSettings {
     this.useMonochromeIcon = DefaultSettings.useMonochromeIcon,
     this.duckOnAudioInterruption = DefaultSettings.duckOnAudioInterruption,
     this.forceAudioOffloadingOnAndroid = DefaultSettings.forceAudioOffloadingOnAndroid,
+    this.previousTracksPersistenceMode = DefaultSettings.previousTracksPersistenceMode,
   });
 
   @HiveField(0, defaultValue: DefaultSettings.isOffline)
@@ -836,6 +840,12 @@ class FinampSettings {
 
   @HiveField(143, defaultValue: DefaultSettings.forceAudioOffloadingOnAndroid)
   bool forceAudioOffloadingOnAndroid = DefaultSettings.forceAudioOffloadingOnAndroid;
+
+  @HiveField(144, defaultValue: DefaultSettings.multichannelHandlingSetting)
+  MultichannelHandlingSetting multichannelHandlingSetting;
+
+  @HiveField(145, defaultValue: DefaultSettings.previousTracksPersistenceMode)
+  PreviousTracksPersistenceMode previousTracksPersistenceMode = DefaultSettings.previousTracksPersistenceMode;
 
   static Future<FinampSettings> create() async {
     final downloadLocation = await DownloadLocation.create(
@@ -3962,4 +3972,35 @@ class FinampStorableQueueInfo extends FinampStorableQueueInfoLegacy {
   String toString() {
     return "previous:${previousTracks.length} current:$currentTrack seek:$currentTrackSeek next:${nextUp.length} queue:${queue.length} order:${packedShuffleOrder == null ? "linear" : "shuffled"} sources $sourceList";
   }
+}
+
+@HiveType(typeId: 111)
+enum MultichannelHandlingSetting {
+  @HiveField(0)
+  stereoDownmixLossy,
+  @HiveField(1)
+  stereoDownmixAll,
+  @HiveField(2)
+  fixedBitrate,
+  /**
+    reserved for potential automatic bitrate calculation
+  @HiveField(3)
+  dynamicBitrate,
+  **/
+}
+
+@HiveType(typeId: 112)
+/// Describes initial state of "previous tracks" header on queue open
+enum PreviousTracksPersistenceMode {
+  /// Use last stored state
+  @HiveField(0)
+  persistent,
+
+  /// Override state to be collapsed on open
+  @HiveField(1)
+  initiallyCollapsed,
+
+  /// Override state to be expanded on open
+  @HiveField(2)
+  initiallyExpanded,
 }

@@ -63,6 +63,7 @@ extension HiveRegistrar on HiveInterface {
     registerAdapter(MediaSourceInfoAdapter());
     registerAdapter(MediaStreamAdapter());
     registerAdapter(MediaUrlAdapter());
+    registerAdapter(MultichannelHandlingSettingAdapter());
     registerAdapter(NameIdPairAdapter());
     registerAdapter(NameLongIdPairAdapter());
     registerAdapter(OfflineListenAdapter());
@@ -73,6 +74,7 @@ extension HiveRegistrar on HiveInterface {
     registerAdapter(PlaylistInfoAdapter());
     registerAdapter(PlaylistUserAdapter());
     registerAdapter(PlaylistUsersAdapter());
+    registerAdapter(PreviousTracksPersistenceModeAdapter());
     registerAdapter(ProfileConditionAdapter());
     registerAdapter(QueueItemAdapter());
     registerAdapter(QueueItemQueueTypeAdapter());
@@ -163,6 +165,7 @@ extension IsolatedHiveRegistrar on IsolatedHiveInterface {
     registerAdapter(MediaSourceInfoAdapter());
     registerAdapter(MediaStreamAdapter());
     registerAdapter(MediaUrlAdapter());
+    registerAdapter(MultichannelHandlingSettingAdapter());
     registerAdapter(NameIdPairAdapter());
     registerAdapter(NameLongIdPairAdapter());
     registerAdapter(OfflineListenAdapter());
@@ -173,6 +176,7 @@ extension IsolatedHiveRegistrar on IsolatedHiveInterface {
     registerAdapter(PlaylistInfoAdapter());
     registerAdapter(PlaylistUserAdapter());
     registerAdapter(PlaylistUsersAdapter());
+    registerAdapter(PreviousTracksPersistenceModeAdapter());
     registerAdapter(ProfileConditionAdapter());
     registerAdapter(QueueItemAdapter());
     registerAdapter(QueueItemQueueTypeAdapter());

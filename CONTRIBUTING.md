@@ -14,16 +14,46 @@ flutter doctor -v
 This will list out all components used for Flutter development, and if they are installed. This should include either Android or iOS development (depending on your platform), as well as any desktop platform you want to target.  
 You can ignore the Chrome/Web component, since Finamp is not a web app.
 
-### NixOS and Flakes
+### NixOS
 
 The project includes a `flake.nix` file that can help you install Flutter and Rust dependencies. The recommended way of using it is to
-use `nix develop`, which allows rustup for Discord RPC dependency. Also, there's `nix develop .#fenix` which stubs rustup with fenix, but it is a hack.
+use `nix develop`, which allows rustup for Discord RPC dependency. Also, there's `nix develop .#fenix` which stubs rustup with [fenix](https://github.com/nix-community/fenix/), but it is a hack.
 
 To get the application running on NixOS once you are in the development shell:
 - `flutter build linux` - generates the build files in `./build/linux/x64/release/bundle` where the `lib` folder will have all the dynamic libraries.
-- `cd /build/linux/x64/release/bundle/lib` - flutter cannot find the dynamic libraries by default. Probably works from here only because the fallback is CWD.
-- `../flutter` - start the application.
-- The normally-used `flutter run ...` command does not seem to work on NixOS at this time.
+- `cd ./build/linux/x64/release/bundle/lib` - flutter cannot find the dynamic libraries by default. Probably works only with this CWD because the fallback is CWD.
+- `../finamp` - start the application.  
+  Or use convenient `(cd build/linux/x64/release/bundle/lib && ../finamp)` command to cd in subshell
+
+It is possible those actions will not lead to application start in JetBrains IDEs. Then, the actual run should be done outside JetBrains IDE using the same flake.
+
+The normally-used `flutter run ...` command does not seem to launch application on NixOS at this time but could be used to run on Android (not tested).
+
+Note that code generation fails since 21baadbaf6852d34d7d12725a293c359c05cf20b due to unknown issue in nixpkgs. Applying this patch helps:
+
+```diff
+diff --git a/lib/builders/finamp_settings_builder.dart b/lib/builders/finamp_settings_builder.dart
+--- a/lib/builders/finamp_settings_builder.dart	(revision 66736f47c5d084463591dd74189c46123f4144ff)
++++ b/lib/builders/finamp_settings_builder.dart	(date 1768146068892)
+@@ -129,13 +129,6 @@
+   }
+ 
+   static String _typeName(DartType type) {
+-    var typeArg = type.element!.displayName;
+-    if (type is ParameterizedType && type.typeArguments.isNotEmpty) {
+-      typeArg = "$typeArg<${type.typeArguments.map((x) => _typeName(x)).join(",")}>";
+-    }
+-    if (type.nullabilitySuffix == NullabilitySuffix.question) {
+-      typeArg = "$typeArg?";
+-    }
+-    return typeArg;
++    return type.getDisplayString();
+   }
+ }
+
+```
+
+After that, you need to manually update `InvalidType` in generated code to represent actual types, which most of the time is done by reverting affected lines since there are currently only two types (`Color` and `Locale`) that trigger failure. This patch is not to be committed to tree due to [`getDisplayString` not being intended for code generation](https://github.com/dart-lang/sdk/issues/52455#issuecomment-1559972986), and so manual check of generated code is required.
 
 ### Building for Android
 
@@ -119,6 +149,8 @@ lib/                                -- the codebase also known as src in other p
 ```
 ## Developing
 
+*Remember to format your changes before pushing (ideally in a **separate commit**), by running `flutter gen-l10n` or the "Generate Localizations" command in VS Code*
+
 ### Extending the Jellyfin API
 
 1. Figure out the endpoint you need. You can use https://api.jellyfin.org for this, for example
@@ -127,9 +159,20 @@ lib/                                -- the codebase also known as src in other p
 4. Create a new method for interacting with the endpoint in `jellyfin_api_helper.dart`. Again, just copy-paste what you need.
 5. Call the new method through `JellyfinApiHelper` to make your request
 
+### Adding a New Setting
+
+1. Find a setting that has a similar UI (e.g. toggle, dropdown) as what you're trying to add
+2. Find the code for that setting on one of the settings screens, and check what kind of data structure it uses (defined in `finamp_models.dart`)
+3. Add a new property for the setting you're trying to add, with the right data structure. That [can] involve, in that order: [create a new enum or class at the end of the file], [assign new HiveIDs and field IDs], add a new default value for the setting (`DefaultSettings` class), add a new property to `FinampSettings` (remember to increment the `HiveField` annotation), and add an argument for the new property to the `FinampSettings` constructor
+4. Then run code generation via `dart run build_runner build --delete-conflicting-outputs`
+5. Now duplicate the code for the new setting in the appropriate settings screen file, and update the settings property it references to match your newly added setting
+6. Now add new translation strings in `app_en.arb` at the bottom, then generate the new localizations via `flutter gen-l10n` (see "Adding i18n strings")
+7. Use the new translation tokens in your new settings' code, replacing the old translation tokens
+8. Format everything via `dart format . `
+
 ### Adding i18n strings
 
-1. In [app_en.arb](lib/l10n/app_en.arb), add default english string as well as string description following examples in the file
+1. In [app_en.arb](lib/l10n/app_en.arb), add default English string as well as string description following examples in the file
 2. Run `flutter gen-l10n` or VSCode command "Generate Localizations" if you have Flutter plugin installed
 
 ### Playback Reporting
@@ -173,6 +216,17 @@ Now you need to wait a bit, but it'll finish :)
 1. Open `lib/services/dbus_manager.dart`
 2. Add another `else if (call.interface == 'com.unicornsonlsd.Finamp' && call.name == 'YOUR FUNCTION NAME')`
 3. Profit
+
+### Add global keyboard shortcuts
+
+Finamp uses Flutter `Shortcuts`/`Actions` under `lib/components/Shortcuts/`.
+
+1. Create a new file (Example: `lib/components/Shortcuts/navigation_shortcuts.dart`).
+2. Create intents and get actions function (see example at `music_control_shortcuts.dart`).
+3. Define shortcuts and add actions to `global_shortcut_manager.dart`.
+
+Note:
+Handle `consumesKey` and `invoke` in the `CallbackAction` class for cases where text input is happening in a TextField for potentially conflicting shortcuts.
 
 ## The Redesign
 

@@ -152,6 +152,7 @@ class FinampSettingsHelper {
     finampSettingsTemp.downloadTranscodingCodec =
         FinampTranscodingCodec.opus; // starts uninitilized, idk what value this should be
     finampSettingsTemp.downloadTranscodeBitrate = 128000; // starts uninitilized, idk what value this should be
+    finampSettingsTemp.multichannelHandlingSetting = DefaultSettings.multichannelHandlingSetting;
 
     Hive.box<FinampSettings>("FinampSettings").put("FinampSettings", finampSettingsTemp);
   }
@@ -228,6 +229,7 @@ class FinampSettingsHelper {
     FinampSetters.setPreferAddingToFavoritesOverPlaylists(DefaultSettings.preferAddingToFavoritesOverPlaylists);
     FinampSetters.setPreferNextUpPrepending(DefaultSettings.preferNextUpPrepending);
     FinampSetters.setRememberLastUsedPlaybackActionRowPage(DefaultSettings.rememberLastUsedPlaybackActionRowPage);
+    FinampSetters.setPreviousTracksPersistenceMode(DefaultSettings.previousTracksPersistenceMode);
 
     Hive.box<FinampSettings>("FinampSettings").put("FinampSettings", finampSettingsTemp);
   }
