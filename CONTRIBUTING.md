@@ -148,18 +148,6 @@ As mentioned above, Finamp uses Hive for most data storage needs. If you're doin
 
 When creating new types, note that you'll also have to register an adapter in `main.dart`. After code generation, there should be a class called `[YourType]Adapter`, which you can initialize in `setupHive`.
 
-### Native Splash Screens
-
-Native splash screens are generated from `flutter_native_splash.yaml`.
-
-Run:
-
-```bash
-dart run flutter_native_splash:create --path=flutter_native_splash.yaml
-```
-
-Rerun this after changing splash colors, splash icon assets, or light/dark splash behavior. This updates the generated iOS and Android native splash resources.
-
 ## Project Structure
 Here is a short description on the paths you'll most likely come across
 ```
