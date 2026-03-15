@@ -494,24 +494,26 @@ class HomeScreenSectionContent extends ConsumerWidget {
                   );
                 },
               ),
-              SizedBox(height: 4),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2.0),
-                child: Container(
-                  width: cardWidth * Random().nextDouble().clamp(0.2, 0.9),
-                  height: max(calculateTextHeight(style: TextTheme.of(context).bodySmall!, lines: 1) - 4, 0),
-                  decoration: BoxDecoration(color: skeletonBaseColor, borderRadius: BorderRadius.circular(8)),
+              if (FinampSettingsHelper.finampSettings.showTextOnGridView) ...[
+                SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2.0),
+                  child: Container(
+                    width: cardWidth * Random().nextDouble().clamp(0.2, 0.9),
+                    height: max(calculateTextHeight(style: TextTheme.of(context).bodySmall!, lines: 1) - 4, 0),
+                    decoration: BoxDecoration(color: skeletonBaseColor, borderRadius: BorderRadius.circular(8)),
+                  ),
                 ),
-              ),
-              SizedBox(height: 2),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2.0),
-                child: Container(
-                  width: cardWidth * Random().nextDouble().clamp(0.2, 0.9),
-                  height: max(calculateTextHeight(style: TextTheme.of(context).bodySmall!, lines: 1) - 4, 0),
-                  decoration: BoxDecoration(color: skeletonBaseColor, borderRadius: BorderRadius.circular(8)),
+                SizedBox(height: 2),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2.0),
+                  child: Container(
+                    width: cardWidth * Random().nextDouble().clamp(0.2, 0.9),
+                    height: max(calculateTextHeight(style: TextTheme.of(context).bodySmall!, lines: 1) - 4, 0),
+                    decoration: BoxDecoration(color: skeletonBaseColor, borderRadius: BorderRadius.circular(8)),
+                  ),
                 ),
-              ),
+              ],
             ],
           );
         },
