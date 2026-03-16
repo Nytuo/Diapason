@@ -584,13 +584,39 @@ class CarPlayHelper {
     }
   }
 
-  Future<void> showAlbumsTemplate({required TabContentType tabType}) async {
-    if (_isPushingPageUpdate) return;
+  Future<void> showAlbumsTemplate({required TabContentType tabType, BaseItemDto? genreFilter}) async {
+    if (_isPushingPageUpdate) {
+      _carPlayLogger.warning("Navigation dropped: already pushing page update");
+      return;
+    }
     _isPushingPageUpdate = true;
     try {
-      List<BaseItemDto> mediaItems = await getTabItems(tabContentType: tabType);
+      List<BaseItemDto> mediaItems;
+      if (genreFilter != null) {
+        if (FinampSettingsHelper.finampSettings.isOffline) {
+          final allCollections = await _downloadsService.getAllCollections();
+          mediaItems = allCollections
+              .where((d) =>
+                  d.baseItem != null &&
+                  d.baseItemType == BaseItemDtoType.album &&
+                  (d.baseItem!.genreItems?.any((g) => g.id == genreFilter.id) ?? false))
+              .map((d) => d.baseItem!)
+              .take(_carPlayOfflineLimit)
+              .toList();
+        } else {
+          mediaItems = await _jellyfinApiHelper.getItems(
+            parentItem: _finampUserHelper.currentUser?.currentView,
+            includeItemTypes: "MusicAlbum",
+            sortBy: "SortName",
+            genreFilter: genreFilter,
+            limit: _carPlayOnlineLimit,
+          ) ?? [];
+        }
+      } else {
+        mediaItems = await getTabItems(tabContentType: tabType);
+      }
 
-      // Pre-cache images for all albums in the list
+      // Pre-cache images for all items in the list
       final imageMap = await _preloadCarPlayImages(mediaItems);
 
       final sections = _groupItemsIntoSections(mediaItems, (item, index) {
@@ -599,7 +625,11 @@ class CarPlayHelper {
           detailText: item.artists?.join(", ") ?? item.albumArtist,
           image: _getImageFromPreloaded(item, imageMap),
           onPress: (complete, self) async {
-            await showPlaylistTemplate(item);
+            if (tabType == TabContentType.genres && genreFilter == null) {
+              await showAlbumsTemplate(tabType: tabType, genreFilter: item);
+            } else {
+              await showPlaylistTemplate(item);
+            }
             complete();
           },
         );
