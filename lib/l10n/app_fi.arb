@@ -2942,5 +2942,45 @@
             }
         },
         "description": "Options in multi-channel handling dropdown"
+    },
+    "volumeControlHint": "Käytä {shortcut} säätääksesi äänenvoimakkuutta",
+    "@volumeControlHint": {
+        "description": "Hint text displayed below the volume bar to inform users about keyboard shortcuts for volume control.",
+        "placeholders": {
+            "shortcut": {
+                "type": "String",
+                "example": "Ctrl + ↑/↓"
+            }
+        }
+    },
+    "seekControlHint": "{shortcut} siirry -5s/+30s",
+    "@seekControlHint": {
+        "description": "Shortcut hint for seeking backward 5s or forward 30s.",
+        "placeholders": {
+            "shortcut": {
+                "type": "String",
+                "example": "Ctrl + ←/→"
+            }
+        }
+    },
+    "previousTracksPersistenceModeSelectorTitle": "Jonon aiempien kappaleiden näkyvyys",
+    "@previousTracksPersistenceModeSelectorTitle": {
+        "description": "Title for setting that allows to override state of previous tracks header in queue list"
+    },
+    "previousTracksPersistenceModeSelectorSubtitle": "Kun jonopaneeli avataan, aiempien kappaleiden osion pitäisi olla...",
+    "@previousTracksPersistenceModeSelectorSubtitle": {
+        "description": "Subtitle for setting that allows to override state of previous tracks header in queue list"
+    },
+    "previousTracksPersistenceModePersistent": "Kuten aiemmin (muista laajennettu/supistettu näkymä)",
+    "@previousTracksPersistenceModePersistent": {
+        "description": "Does nothing to previous tracks header in queue list, using its saved value"
+    },
+    "previousTracksPersistenceModeCollapsed": "Supistettu (piilotettu)",
+    "@previousTracksPersistenceModeCollapsed": {
+        "description": "Overrides saved value to collapse previous tracks header on queue list open"
+    },
+    "previousTracksPersistenceModeExpanded": "Laajennettu (näkyvissä)",
+    "@previousTracksPersistenceModeExpanded": {
+        "description": "Overrides saved value to expand previous tracks header on queue list open"
     }
 }
