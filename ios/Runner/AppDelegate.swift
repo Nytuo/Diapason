@@ -8,7 +8,7 @@ import Intents
 let flutterEngine = FlutterEngine(name: "SharedEngine", project: nil, allowHeadlessExecution: true)
 
 @main
-@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate, INPlayMediaIntentHandling {
+@objc class AppDelegate: FlutterAppDelegate, INPlayMediaIntentHandling {
     override func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -42,10 +42,6 @@ let flutterEngine = FlutterEngine(name: "SharedEngine", project: nil, allowHeadl
         }
             
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-    }
-
-    func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
-        GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     }
 
     // Tell iOS to dispatch media intents to this AppDelegate (in-app intent handling, iOS 14+)
