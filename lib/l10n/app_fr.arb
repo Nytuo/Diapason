@@ -2,7 +2,7 @@
     "downloadsQueued": "Téléchargement des fichiers",
     "grid": "Mosaïque",
     "serverUrl": "URL du serveur",
-    "internalExternalIpExplanation": "Si vous souhaitez pouvoir accéder à votre serveur Jellyfin à distance, vous devez utiliser votre adresse IP externe.\n\nSi votre serveur utilise les ports HTTP par défaut (80/443) ou le port par défaut de Jellyfin (8096), vous n'avez pas besoin de spécifier le port. \n\nSi l'URL est correcte, vous devriez voir apparaître des informations sur votre serveur sous le champ de saisie.",
+    "internalExternalIpExplanation": "Si vous souhaitez pouvoir accéder à votre serveur Jellyfin à distance, vous devez utiliser votre adresse IP externe.\n\nSi votre serveur utilise les ports HTTP/S par défaut (80/443) ou le port par défaut de Jellyfin (8096/8920), vous n'avez pas besoin de spécifier le port. \n\nSi l'URL est correcte, vous devriez voir apparaître des informations sur votre serveur sous le champ de saisie.",
     "@internalExternalIpExplanation": {
         "description": "Informations supplémentaires sur l'IP à utiliser pour l'accès à distance, et sur la nécessité ou non de spécifier un port"
     },
@@ -795,7 +795,7 @@
     "@emptyFilteredListSubtitle": {
         "description": "Message shown when a list of items is filtered and no items match the filter"
     },
-    "bufferSizeSubtitle": "Taille du tampon en Mo. Un redémarrage est nécessaire.",
+    "bufferSizeSubtitle": "Taille du tampon en Mo. Un redémarrage est nécessaire",
     "playbackOrderLinearButtonLabel": "Jouer dans l'ordre",
     "@playbackOrderLinearButtonLabel": {
         "description": "Label for the button that toggles the playback order between linear/in-order and shuffle, while the queue is in linear/in-order mode"
@@ -1556,7 +1556,7 @@
     "@autoOfflineNotification": {
         "description": "The text for 'other' should never be seen anyway, so feel free to put in a little harmless easter egg :)"
     },
-    "playOnReconnectionDelay": "Délai de reconnexion de la session 'Jouer sur'",
+    "playOnReconnectionDelay": "Délai de reconnexion de la session 'Play On'",
     "@playOnReconnectionDelay": {
         "description": "Label for the setting that controls the reconnection attempts frequency of a disconnected PlayOn session"
     },
@@ -1662,15 +1662,15 @@
         "description": "This is shown when the autoOffline feature is set to Network, this means offline mode will be automatically enabled when no wifi or ethernet connection is active"
     },
     "exportLogs": "Enregistrer les journaux",
-    "playOnStaleDelay": "Expiration de la session 'Jouer sur'",
+    "playOnStaleDelay": "Expiration de la session 'Play On'",
     "@playOnStaleDelay": {
         "description": "Label for the setting that controls how long a PlayOn remote session is considered active"
     },
-    "enablePlayonTitle": "Activer le support de 'Jouer sur'",
+    "enablePlayonTitle": "Activer le support de 'Play On'",
     "@enablePlayonTitle": {
         "description": "Label for the setting to enable Jellyfin's 'Play On' feature (remote control)"
     },
-    "playOnReconnectionDelaySubtitle": "Contrôle le délai entre les tentatives de reconnexion au websocket 'Jouer sur' lorsqu’il est déconnecté (en secondes). Un délai plus faible augmente l’utilisation de la bande passante.",
+    "playOnReconnectionDelaySubtitle": "Contrôle le délai entre les tentatives de reconnexion au websocket 'Play On' lorsqu’il est déconnecté (en secondes). Un délai plus faible augmente l’utilisation de la bande passante.",
     "@playOnReconnectionDelaySubtitle": {
         "description": "Description of the setting that controls the reconnection attempts frequency of a disconnected PlayOn session"
     },
@@ -1698,11 +1698,11 @@
     "@releaseDateFormatISO": {
         "description": "Date format option for the release date of an album, showing the full ISO 8601 date"
     },
-    "playOnStaleDelaySubtitle": "Combien de temps une session 'Jouer sur' à distance est considérée comme active après avoir reçu une commande. Lorsqu’elle est considérée comme active, la lecture est signalée plus fréquemment, ce qui peut entraîner une utilisation accrue de la bande passante.",
+    "playOnStaleDelaySubtitle": "Combien de temps une session 'Play On' à distance est considérée comme active après avoir reçu une commande. Lorsqu’elle est considérée comme active, la lecture est signalée plus fréquemment, ce qui peut entraîner une utilisation accrue de la bande passante.",
     "@playOnStaleDelaySubtitle": {
         "description": "Description of the setting that controls how long a PlayOn remote session is considered active"
     },
-    "enablePlayonSubtitle": "Activer la fonction 'Jouer sur' de Jellyfin (contrôle à distance de Finamp depuis un autre client). Désactivez cette option si votre serveur ou proxy inverse ne prend pas en charge les websockets.",
+    "enablePlayonSubtitle": "Activer la fonction 'Play On' de Jellyfin (contrôle à distance de Finamp depuis un autre client). Désactivez cette option si votre serveur ou proxy inverse ne prend pas en charge les websockets.",
     "@enablePlayonSubtitle": {
         "description": "Description of the setting to enable Jellyfin's 'Play On' feature (remote control)"
     },
@@ -1754,7 +1754,7 @@
     "@deleteFromTargetDialogText": {
         "description": "(Important: Note the space in front of some cases) A Confirm Prompt used whenever an item is about to be deleted from the device or server. The Server case should explain that this cannot be reverted, this information is not needed for the device since the user can just download the track again. The delete Type adapts the server text even more in can the user can or cant delete the item."
     },
-    "autoOfflineSettingDescription": "{disabledModeName} :\nLe mode hors ligne ne s'active pas automatiquement. Cela peut permettre d'économiser la batterie.\n\n{localNetworkModeName} :\nLe mode hors ligne s'active lorsque vous n'êtes pas connecté au Wi-Fi ou à un réseau Ethernet.\n\n{disconnectedModeName} :\nLe mode hors ligne s'active lorsque vous n'êtes connecté à aucun réseau.\n\n{unreachableModeName} :\nLe mode hors ligne s'active lorsque le serveur est injoignable après un changement de réseau.\n\n\nVous pouvez activer ou désactiver manuellement le mode hors ligne, ce qui suspend l'automatisation jusqu'à ce que vous la réactiviez.",
+    "autoOfflineSettingDescription": "{disabledModeName} :\nLe mode hors ligne ne s'active pas automatiquement. Cela peut permettre d'économiser la batterie.\n\n{localNetworkModeName} :\nLe mode hors ligne s'active lorsque vous n'êtes pas connecté au Wi-Fi ou à un réseau Ethernet.\n\n{disconnectedModeName} :\nLe mode hors ligne s'active lorsque vous n'êtes connecté à aucun réseau.\n\n{unreachableModeName} :\nLe mode hors ligne s'active lorsque le serveur est injoignable après un changement de réseau.\n\nVous pouvez activer ou désactiver manuellement le mode hors ligne, ce qui suspend l'automatisation jusqu'à ce que vous la réactiviez.",
     "@autoOfflineSettingDescription": {
         "description": "Setting description. Make sure the Mode names match the translations."
     },
@@ -1974,7 +1974,7 @@
     "@additionalPeople": {
         "description": "Label for the feature chips showing additional people in the credits of a track or album"
     },
-    "genreListsInheritSorting": "Listes Complètes Tri Héritage",
+    "genreListsInheritSorting": "Héritage du tri des listes complètes",
     "@genreListsInheritSorting": {
         "description": "Label for the setting that controls if a See All Genre Lists should inherit the Genre Sorting and Filtering."
     },
@@ -2713,7 +2713,7 @@
     "@radioModeMenuTitle": {
         "description": "Title for menu that allows users to choose the radio mode."
     },
-    "loopingOverriddenByRadioSubtitle": "La boucle de file d'attente est désactivée lorsque la radio est activée.",
+    "loopingOverriddenByRadioSubtitle": "La boucle de file d'attente est désactivée lorsque la radio est activée",
     "@loopingOverriddenByRadioSubtitle": {
         "description": "Subtitle displayed in the radio menu to show that queue looping is disabled while radio mode is enabled."
     },
@@ -2939,7 +2939,7 @@
     "@multichannelHandlingSubtitle": {
         "description": "Subtitle for multi-channel handling dropdown"
     },
-    "multichannelHandlingOption": "{option, select, stereoDownmixLossy{Only Downmix Lossy to Stereo} stereoDownmixAll{Downmix All to Stereo} fixedBitrate{Never Downmix} other{{option}} }",
+    "multichannelHandlingOption": "{option, select, stereoDownmixLossy{Uniquement un mixage vers le bas avec perte en stéréo} stereoDownmixAll{Tout mixer en stéréo} fixedBitrate{Ne jamais réduire la résolution} other{{option}} }",
     "@multichannelHandlingOption": {
         "placeholders": {
             "option": {
