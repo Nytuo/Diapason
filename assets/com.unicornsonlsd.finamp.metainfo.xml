@@ -72,6 +72,8 @@
           Bug Fixes
         </p>
         <ul>
+          <li
+          >Fixed duplicate tracks being generated in the "Continuous" radio mode</li>
           <li>Fixed UI glitches for some languages</li>
           <li>Avoid restoring queues after something else started playing</li>
         </ul>
