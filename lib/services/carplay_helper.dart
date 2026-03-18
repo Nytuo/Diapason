@@ -303,7 +303,7 @@ class CarPlayHelper {
   Future<void> shuffleAllTracks() async {
     _carPlayLogger.info("Starting shuffle all tracks");
     final audioServiceHelper = GetIt.instance<AudioServiceHelper>();
-    await audioServiceHelper.shuffleAll(onlyShowFavorites: false);
+    await audioServiceHelper.shuffleAll(onlyShowFavorites: false, itemCount: DefaultSettings.quickShuffleItemCount);
     await FlutterCarplay.showSharedNowPlaying();
   }
 

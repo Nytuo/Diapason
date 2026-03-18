@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 
+import '../models/finamp_models.dart';
 import 'android_auto_helper.dart';
 import 'audio_service_helper.dart';
 
@@ -152,7 +153,7 @@ class IosSiriHandler {
   /// Shuffles all tracks using the shared shuffle handler.
   static Future<void> _shuffleAll() async {
     final audioServiceHelper = GetIt.instance<AudioServiceHelper>();
-    await audioServiceHelper.shuffleAll(onlyShowFavorites: false);
+    await audioServiceHelper.shuffleAll(onlyShowFavorites: false, itemCount: DefaultSettings.quickShuffleItemCount);
   }
 
   /// Handles Siri "Search for X on Finamp" voice commands
