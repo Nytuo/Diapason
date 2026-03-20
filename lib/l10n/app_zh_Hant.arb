@@ -708,7 +708,7 @@
     "@togglePlaybackButtonTooltip": {
         "description": "Tooltip for the button that toggles playback"
     },
-    "previousTracks": "先前播放的歌曲",
+    "previousTracks": "已播放歌曲",
     "@previousTracks": {
         "description": "Description in the queue panel for the list of tracks that come before the current track in the queue. The tracks might not actually have been played (e.g. if the user skipped ahead to a specific track)."
     },
