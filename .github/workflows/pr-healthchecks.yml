@@ -12,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -40,9 +40,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -64,6 +64,16 @@ jobs:
           git add . # new files are not tracked by git
           if git diff --cached --name-only | grep -q '\.g\.dart$'; then
             echo "Code generation is different, diff follows"
+            git diff --cached | cat
+            exit 2
+          fi
+      - name: Verify splash screen generation
+        run: |
+          git reset HEAD -- . # clear any staged changes from previous steps
+          dart run flutter_native_splash:create --path=flutter_native_splash.yaml
+          git add .
+          if git diff --cached --name-only | grep -q .; then
+            echo "Splash screen generation is different, diff follows"
             git diff --cached | cat
             exit 2
           fi
