@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:window_manager/window_manager.dart';
 
 class ClearQueueMenuEntry extends ConsumerWidget implements HideableMenuEntry {
   final BaseItemDto baseItem;

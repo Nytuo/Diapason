@@ -23,13 +23,12 @@ import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:finamp/services/finamp_user_helper.dart';
 import 'package:finamp/services/item_by_id_provider.dart';
 import 'package:finamp/services/queue_service.dart';
+import 'package:finamp/services/music_screen_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
-
-import '../../services/music_screen_provider.dart';
 
 final _homeScreenLogger = Logger("HomeScreen");
 
@@ -169,7 +168,7 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
                 ),
               ),
             ],
-            SliverPadding(padding: const EdgeInsets.only(bottom: 100.0)),
+            SliverPadding(padding: const EdgeInsets.only(bottom: 120.0)),
           ],
         ),
       ),

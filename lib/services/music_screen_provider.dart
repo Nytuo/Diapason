@@ -53,7 +53,7 @@ class PlayableSlice {
 @riverpod
 class MusicScreenContent extends _$MusicScreenContent {
   int _pageCount = 0;
-  List<LoadHomeSectionItemsProvider> _dependancies = [];
+  List<LoadHomeSectionItemsProvider> _dependencies = [];
 
   @override
   PagingState<int, BaseItemDto> build(MusicScreenRequest request) {
@@ -102,7 +102,7 @@ class MusicScreenContent extends _$MusicScreenContent {
       offset += pageSize;
     }
 
-    _dependancies = providers;
+    _dependencies = providers;
 
     return PagingState(
       pages: pages.isEmpty ? null : pages,
@@ -126,7 +126,7 @@ class MusicScreenContent extends _$MusicScreenContent {
     ref.invalidateSelf();
     // Delay invalidation of page providers until after we stop depending on them
     // to avoid immediate rebuild of all.
-    final oldProviders = _dependancies;
+    final oldProviders = _dependencies;
     listenSelf((_, _) {
       for (var provider in oldProviders) {
         ref.invalidate(provider);

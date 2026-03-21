@@ -12,7 +12,7 @@ part of 'music_screen_provider.dart';
 // **************************************************************************
 
 String _$loadHomeSectionItemsHash() =>
-    r'abbb3d6f1ac7d6eefa2d143895e34357a2924a10';
+    r'c234dbb9b46881890e2f94a10067c8d5fb9d7b78';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -216,7 +216,7 @@ class _LoadHomeSectionItemsProviderElement
 }
 
 String _$musicScreenContentHash() =>
-    r'438cae96d8579aaff2a99475de9d72d16398aa0c';
+    r'912078bbd5dbf82fe0e87e972dffdb71c87ea834';
 
 abstract class _$MusicScreenContent
     extends BuildlessAutoDisposeNotifier<PagingState<int, BaseItemDto>> {
