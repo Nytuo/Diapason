@@ -34,7 +34,12 @@ class TileAdditionalInfoTypeDropdownListTile extends ConsumerWidget {
       if ([TabContentType.tracks, TabContentType.albums].contains(tabContentType)) TileAdditionalInfoType.dateReleased,
       if ([TabContentType.tracks].contains(tabContentType)) TileAdditionalInfoType.playCount,
       if ([TabContentType.tracks].contains(tabContentType)) TileAdditionalInfoType.dateLastPlayed,
-      if ([TabContentType.albums, TabContentType.artists, TabContentType.playlists].contains(tabContentType))
+      if ([
+        TabContentType.albums,
+        TabContentType.albumArtists,
+        TabContentType.performingArtists,
+        TabContentType.playlists,
+      ].contains(tabContentType))
         TileAdditionalInfoType.duration,
       TileAdditionalInfoType.none,
     ];

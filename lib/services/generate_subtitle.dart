@@ -1,7 +1,7 @@
+import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/services/datetime_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:finamp/l10n/app_localizations.dart';
 
 import '../models/jellyfin_models.dart';
 import 'process_artist.dart';
@@ -14,7 +14,7 @@ String? generateSubtitle({
   ArtistType? artistType,
 }) {
   // If the parentType is MusicArtist, this is being called by an ItemCollectionListTile in an AlbumView of an artist.
-  if (parentType == TabContentType.artists) {
+  if (parentType?.isArtist ?? false) {
     return ReleaseDateHelper.autoFormat(item);
   }
 

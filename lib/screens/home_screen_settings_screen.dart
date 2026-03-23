@@ -6,7 +6,9 @@ import 'package:finamp/components/Buttons/simple_button.dart';
 import 'package:finamp/components/HomeScreen/home_screen_content.dart';
 import 'package:finamp/components/MusicScreen/sort_and_filter_row.dart';
 import 'package:finamp/components/SettingsScreen/finamp_settings_dropdown.dart';
+import 'package:finamp/components/finamp_app_bar_back_button.dart';
 import 'package:finamp/components/themed_bottom_sheet.dart';
+import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/menus/choice_menu.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
@@ -15,12 +17,10 @@ import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:finamp/services/item_by_id_provider.dart';
 import 'package:finamp/services/jellyfin_api_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:finamp/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:finamp/components/finamp_app_bar_back_button.dart';
 
 class HomeScreenSettingsScreen extends StatefulWidget {
   const HomeScreenSettingsScreen({super.key});
@@ -637,7 +637,9 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
             ),
             FinampSettingsDropdown<TabContentType>(
               dropdownItems: TabContentType.values
-                  .whereNot((contentType) => contentType == TabContentType.home)
+                  .whereNot(
+                    (contentType) => contentType == TabContentType.home || contentType == TabContentType.genericArtists,
+                  )
                   .map((e) => DropdownMenuEntry<TabContentType>(value: e, label: e.toLocalisedString(context)))
                   .toList(),
               selectedValue: selectedContentType ?? TabContentType.tracks,

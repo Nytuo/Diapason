@@ -4,18 +4,14 @@ import 'package:finamp/components/Buttons/simple_button.dart';
 import 'package:finamp/components/GenreScreen/genre_count_column.dart';
 import 'package:finamp/components/MusicScreen/item_wrapper.dart';
 import 'package:finamp/components/curated_item_filter_row.dart';
-import 'package:finamp/components/finamp_app_bar_back_button.dart';
-import 'package:finamp/menus/components/playbackActions/playback_action_row.dart';
-import 'package:finamp/menus/components/playbackActions/playback_actions.dart';
-import 'package:finamp/services/genre_screen_provider.dart';
 import 'package:finamp/components/curated_item_sections.dart';
 import 'package:finamp/components/favorite_button.dart';
-import 'package:finamp/components/global_snackbar.dart';
+import 'package:finamp/components/finamp_app_bar_back_button.dart';
 import 'package:finamp/l10n/app_localizations.dart';
+import 'package:finamp/menus/components/playbackActions/playback_action_row.dart';
 import 'package:finamp/screens/music_screen.dart';
-import 'package:finamp/services/audio_service_helper.dart';
 import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/queue_service.dart';
+import 'package:finamp/services/genre_screen_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -278,11 +274,9 @@ class _GenreScreenContentState extends ConsumerState<GenreScreenContent> {
                     padding: const EdgeInsets.only(left: 4),
                     child: buildCountColumn(
                       count: artistCount,
-                      label: (ref.read(finampSettingsProvider.defaultArtistType) == ArtistType.albumArtist)
-                          ? AppLocalizations.of(context)!.albumArtists
-                          : AppLocalizations.of(context)!.performingArtists,
+                      label: ref.watch(finampSettingsProvider.defaultArtistType).tabType.toLocalisedString(context),
                       onTap: () {
-                        openSeeAll(TabContentType.artists, doOverride: false);
+                        openSeeAll(ref.watch(finampSettingsProvider.defaultArtistType).tabType, doOverride: false);
                       },
                       textColor: countsTextColor,
                       subtitleColor: countsSubtitleColor,
@@ -356,8 +350,11 @@ class _GenreScreenContentState extends ConsumerState<GenreScreenContent> {
                         ? genreCuratedItemSelectionTypeArtists.toLocalisedSectionTitle(context, BaseItemDtoType.artist)
                         : loc.artists,
                     items: artists,
-                    seeAllCallbackFunction: () =>
-                        openSeeAll(TabContentType.artists, itemSelectionType: genreCuratedItemSelectionTypeArtists),
+                    // TODO should there be an album artist option?
+                    seeAllCallbackFunction: () => openSeeAll(
+                      TabContentType.performingArtists,
+                      itemSelectionType: genreCuratedItemSelectionTypeArtists,
+                    ),
                     genreFilter: widget.parent,
                     includeFilterRowFor: BaseItemDtoType.artist,
                     customFilterOrder: genreCuratedItemSectionFilterOrder,

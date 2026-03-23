@@ -115,7 +115,7 @@ Future<(List<BaseItemDto>, int)> getCuratedItemsOnline({
   final sortBy = genreCuratedItemSelectionType.getSortBy();
   TabContentType tabType = switch (baseItemType) {
     BaseItemDtoType.album => TabContentType.albums,
-    BaseItemDtoType.artist => TabContentType.artists,
+    BaseItemDtoType.artist => TabContentType.performingArtists,
     _ => TabContentType.tracks,
   };
   int itemCount;

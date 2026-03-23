@@ -463,6 +463,18 @@ void _migrateHomescreen() {
     changed = true;
   }
 
+  if (!finampSettings.tabSortBy.keys.contains(TabContentType.performingArtists)) {
+    finampSettings.tabSortBy[TabContentType.performingArtists] =
+        finampSettings.tabSortBy[TabContentType.genericArtists] ?? SortBy.defaultOrder;
+    finampSettings.tabSortOrder[TabContentType.performingArtists] =
+        finampSettings.tabSortOrder[TabContentType.genericArtists] ?? SortOrder.ascending;
+    finampSettings.tabSortBy[TabContentType.albumArtists] =
+        finampSettings.tabSortBy[TabContentType.genericArtists] ?? SortBy.defaultOrder;
+    finampSettings.tabSortOrder[TabContentType.albumArtists] =
+        finampSettings.tabSortOrder[TabContentType.genericArtists] ?? SortOrder.ascending;
+    changed = true;
+  }
+
   if (changed) {
     FinampSettingsHelper.overwriteFinampSettings(finampSettings);
   }

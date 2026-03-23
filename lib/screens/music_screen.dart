@@ -134,7 +134,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
         child: const Icon(TablerIcons.arrows_shuffle),
       );
     } else if ([
-      TabContentType.artists,
+      TabContentType.genericArtists,
       TabContentType.albums,
       TabContentType.genres,
     ].contains(sortedTabs.elementAt(_tabController!.index))) {
@@ -143,7 +143,8 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
         onPressed: () async {
           try {
             switch (sortedTabs.elementAt(_tabController!.index)) {
-              case TabContentType.artists:
+              // TODO should this distinguish between artist types somehow?
+              case TabContentType.genericArtists:
                 if (_jellyfinApiHelper.selectedMixArtists.isEmpty) {
                   GlobalSnackbar.message((scaffold) => AppLocalizations.of(context)!.startMixNoTracksArtist);
                 } else {
@@ -266,6 +267,9 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
                 if (tabType == TabContentType.home) {
                   return HomeScreenContent(refresh: refreshMap[tabType]);
                 }
+                final contentTabType = tabType == TabContentType.genericArtists
+                    ? ref.watch(finampSettingsProvider.defaultArtistType).tabType
+                    : tabType;
                 return SafeArea(
                   top: true,
                   bottom: false,
@@ -274,7 +278,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
                   child: Column(
                     children: [
                       SortAndFilterRow(
-                        tabType: tabType,
+                        tabType: contentTabType,
                         refreshTab: refreshTab,
                         sortByOverride: sortAndFilterConfigurationOverride?.sortBy,
                         updateSortByOverride: (newSortBy) {
@@ -308,7 +312,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
                       ),
                       Expanded(
                         child: MusicScreenTabView(
-                          tabContentType: tabType,
+                          tabContentType: contentTabType,
                           searchTerm: searchQuery,
                           view: _finampUserHelper.currentUser?.currentView,
                           refresh: refreshMap[tabType],

@@ -230,9 +230,12 @@ Future<List<BaseItemDto>?> loadHomeSectionItems(
         //    sortAndFilterConfig.filters.any((filter) => filter.type == ItemFilterType.isFavorite))
         //     ? true
         //    : null,
-        // TODO how does home screen handle artist type?
-        //artistType: settings.defaultArtistType,
-        genreFilter: genreFilter != null ? genreFilter.extraBaseItem : null,
+        artistType: switch (sectionInfo.contentType) {
+          TabContentType.albumArtists => ArtistType.albumArtist,
+          TabContentType.performingArtists => ArtistType.artist,
+          _ => null,
+        },
+        genreFilter: genreFilter?.extraBaseItem,
       );
       break;
     case HomeScreenSectionType.collection:
@@ -338,9 +341,6 @@ Future<List<BaseItemDto>?> loadHomeSectionItemsOffline({
           genreFilter: genreFilter?.extraBaseItem,
         );
       } else {
-        //var artistInfoForType = (settings.defaultArtistType == ArtistType.albumArtist)
-        //    ? BaseItemDtoType.album
-        //    : BaseItemDtoType.track;
         offlineItems = await downloadsService.getAllCollections(
           nameFilter: searchFilter?.extraString.trim(),
           includeItemTypes: [
@@ -356,8 +356,11 @@ Future<List<BaseItemDto>?> loadHomeSectionItemsOffline({
           onlyFavorites: sectionInfo.sortAndFilterConfiguration.filters.any(
             (filter) => filter.type == ItemFilterType.isFavorite,
           ),
-          // TODO figure out how to handle album artists(several places)
-          //infoForType: (widget.tabContentType == TabContentType.artists) ? artistInfoForType : null,
+          infoForType: switch (sectionInfo.contentType) {
+            TabContentType.albumArtists => BaseItemDtoType.album,
+            TabContentType.performingArtists => BaseItemDtoType.track,
+            _ => null,
+          },
           genreFilter: sectionInfo.contentType == TabContentType.playlists ? null : genreFilter?.extraBaseItem,
         );
       }

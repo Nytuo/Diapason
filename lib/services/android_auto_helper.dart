@@ -82,7 +82,7 @@ class AndroidAutoHelper {
         )).toList().map((e) => e.baseItem).whereNotNull().toList();
         genreAlbums.sort((a, b) => (a.premiereDate ?? "").compareTo(b.premiereDate ?? ""));
         return genreAlbums;
-      } else if (itemId.contentType == TabContentType.artists) {
+      } else if (itemId.contentType.isArtist) {
         final artistBaseItem = await getParentFromId(itemId.itemId!);
 
         final List<BaseItemDto> artistAlbums = (await _downloadsService.getAllCollections(
@@ -123,7 +123,9 @@ class AndroidAutoHelper {
           // get an album's tracks
           includeItemTypes = TabContentType.tracks.itemType!;
           break;
-        case TabContentType.artists:
+        case TabContentType.genericArtists:
+        case TabContentType.albumArtists:
+        case TabContentType.performingArtists:
           // get an artist's albums
           includeItemTypes = TabContentType.albums.itemType!;
           break;
@@ -289,7 +291,7 @@ class AndroidAutoHelper {
     } else if (searchQuery.extras?["android.intent.extra.artist"] != null &&
         searchQuery.extras?["android.intent.extra.title"] == null) {
       // if only artist is provided, search for artist
-      itemType = TabContentType.artists.itemType;
+      itemType = TabContentType.performingArtists.itemType;
       enhancedQuery = searchQuery.extras?["android.intent.extra.artist"] as String?;
     } else {
       // if no metadata is provided, search for tracks *and* playlists, preferring playlists
@@ -453,11 +455,11 @@ class AndroidAutoHelper {
           order: FinampPlaybackOrder
               .linear, //TODO add a setting that sets the default (because Android Auto doesn't give use the prompt as an extra), or use the current order?
         );
-      } else if (itemType == TabContentType.artists.itemType) {
+      } else if (itemType == TabContentType.performingArtists.itemType) {
         if (FinampSettingsHelper.finampSettings.isOffline) {
           final parentBaseItems = await getBaseItems(
             MediaItemId(
-              contentType: TabContentType.artists,
+              contentType: TabContentType.performingArtists,
               parentType: MediaItemParentType.collection,
               parentId: selectedResult.id,
               itemId: selectedResult.id,
@@ -617,7 +619,7 @@ class AndroidAutoHelper {
     final parentItem = await getParentFromId(itemId.itemId!);
 
     // start instant mix for artists
-    if (itemId.contentType == TabContentType.artists) {
+    if (itemId.contentType.isArtist) {
       if (FinampSettingsHelper.finampSettings.isOffline || parentItem == null) {
         final parentBaseItems = await getBaseItems(itemId);
 
@@ -894,7 +896,7 @@ class AndroidAutoHelper {
     try {
       searchResultExactQuery = await _getResults(
         searchTerm: searchQuery.rawQuery.trim(),
-        itemTypes: [TabContentType.artists.itemType].nonNulls.toList(),
+        itemTypes: [TabContentType.performingArtists.itemType].nonNulls.toList(),
         limit: hasArtistMetadata ? (limit / 2).round() : limit,
       );
     } catch (e) {
@@ -904,7 +906,7 @@ class AndroidAutoHelper {
       try {
         searchResultAdjustedQuery = await _getResults(
           searchTerm: (searchQuery.extras!["android.intent.extra.artist"] as String).trim(),
-          itemTypes: [TabContentType.artists.itemType].nonNulls.toList(),
+          itemTypes: [TabContentType.performingArtists.itemType].nonNulls.toList(),
           limit: limit - (searchResultExactQuery?.length ?? 0),
         );
       } catch (e) {
@@ -1098,7 +1100,7 @@ class AndroidAutoHelper {
     final tabContentType = TabContentType.fromItemType(item?.type ?? contentType?.itemType?.jellyfinName ?? "Audio");
     return tabContentType == TabContentType.albums ||
         tabContentType == TabContentType.playlists ||
-        tabContentType == TabContentType.artists ||
+        tabContentType.isArtist ||
         tabContentType == TabContentType.tracks;
   }
 }

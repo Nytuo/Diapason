@@ -134,7 +134,7 @@ class DefaultSettings {
   static const tabOrder = [
     TabContentType.home,
     TabContentType.albums,
-    TabContentType.artists,
+    TabContentType.genericArtists,
     TabContentType.playlists,
     TabContentType.tracks,
     TabContentType.genres,
@@ -236,7 +236,8 @@ class DefaultSettings {
   static const tileAdditionalInfoType = {
     TabContentType.tracks: TileAdditionalInfoType.adaptive,
     TabContentType.albums: TileAdditionalInfoType.adaptive,
-    TabContentType.artists: TileAdditionalInfoType.adaptive,
+    TabContentType.performingArtists: TileAdditionalInfoType.adaptive,
+    TabContentType.albumArtists: TileAdditionalInfoType.adaptive,
     TabContentType.playlists: TileAdditionalInfoType.adaptive,
     TabContentType.genres: TileAdditionalInfoType.adaptive,
   };
@@ -281,7 +282,7 @@ class DefaultSettings {
       ),
       HomeScreenSectionConfiguration(
         type: HomeScreenSectionType.tabView,
-        contentType: TabContentType.artists,
+        contentType: TabContentType.performingArtists,
         sortAndFilterConfiguration: SortAndFilterConfiguration(
           sortBy: SortBy.sortName,
           sortOrder: SortOrder.ascending,
@@ -905,7 +906,7 @@ class FinampSettings {
     return FinampSettings(
       downloadLocations: [],
       // Create a map of TabContentType from TabContentType's values.
-      showTabs: Map.fromEntries(TabContentType.values.map((e) => MapEntry(e, true))),
+      showTabs: Map.fromEntries(DefaultSettings.tabOrder.map((e) => MapEntry(e, true))),
       downloadLocationsMap: {downloadLocation.id: downloadLocation},
       tabSortBy: {},
       tabSortOrder: {},
@@ -1070,19 +1071,22 @@ class NewDownloadLocation {
 /// Supported tab types in MusicScreenTabView.
 @HiveType(typeId: 36)
 enum TabContentType {
-  // this is first because when resetting tab settings, home should be the first tab
-  @HiveField(5)
-  home(null),
   @HiveField(0)
   albums(BaseItemDtoType.album),
   @HiveField(1)
-  artists(BaseItemDtoType.artist),
+  genericArtists(BaseItemDtoType.artist),
   @HiveField(2)
   playlists(BaseItemDtoType.playlist),
   @HiveField(3)
   genres(BaseItemDtoType.genre),
   @HiveField(4)
-  tracks(BaseItemDtoType.track);
+  tracks(BaseItemDtoType.track),
+  @HiveField(5)
+  home(null),
+  @HiveField(6)
+  performingArtists(BaseItemDtoType.artist),
+  @HiveField(7)
+  albumArtists(BaseItemDtoType.artist);
 
   const TabContentType(this.itemType);
 
@@ -1103,7 +1107,7 @@ enum TabContentType {
         return "Tracks";
       case TabContentType.albums:
         return "Albums";
-      case TabContentType.artists:
+      case TabContentType.genericArtists:
         return "Artists";
       case TabContentType.genres:
         return "Genres";
@@ -1111,6 +1115,10 @@ enum TabContentType {
         return "Playlists";
       case TabContentType.home:
         return "Home";
+      case TabContentType.performingArtists:
+        return "Performing Artists";
+      case TabContentType.albumArtists:
+        return "Album Artists";
     }
   }
 
@@ -1120,7 +1128,7 @@ enum TabContentType {
         return AppLocalizations.of(context)!.tracks;
       case TabContentType.albums:
         return AppLocalizations.of(context)!.albums;
-      case TabContentType.artists:
+      case TabContentType.genericArtists:
         return AppLocalizations.of(context)!.artists;
       case TabContentType.genres:
         return AppLocalizations.of(context)!.genres;
@@ -1128,6 +1136,10 @@ enum TabContentType {
         return AppLocalizations.of(context)!.playlists;
       case TabContentType.home:
         return AppLocalizations.of(context)!.home;
+      case TabContentType.performingArtists:
+        return AppLocalizations.of(context)!.performingArtists;
+      case TabContentType.albumArtists:
+        return AppLocalizations.of(context)!.albumArtists;
     }
   }
 
@@ -1138,7 +1150,7 @@ enum TabContentType {
       case "MusicAlbum":
         return TabContentType.albums;
       case "MusicArtist":
-        return TabContentType.artists;
+        return TabContentType.genericArtists;
       case "MusicGenre":
         return TabContentType.genres;
       case "Playlist":
@@ -1147,6 +1159,11 @@ enum TabContentType {
         throw const FormatException("Unsupported itemType");
     }
   }
+
+  bool get isArtist => switch (this) {
+    TabContentType.genericArtists || TabContentType.performingArtists || TabContentType.albumArtists => true,
+    _ => false,
+  };
 }
 
 @HiveType(typeId: 39)
@@ -3132,7 +3149,12 @@ enum ArtistType {
   @HiveField(0)
   albumArtist,
   @HiveField(1)
-  artist,
+  artist;
+
+  TabContentType get tabType => switch (this) {
+    ArtistType.albumArtist => TabContentType.albumArtists,
+    ArtistType.artist => TabContentType.performingArtists,
+  };
 }
 
 @JsonSerializable()

@@ -165,7 +165,7 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
             ? [
                 TabContentType.home,
                 TabContentType.albums,
-                TabContentType.artists,
+                TabContentType.genericArtists,
                 TabContentType.playlists,
                 TabContentType.tracks,
                 TabContentType.genres,
@@ -394,7 +394,9 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
             ? {
                 TabContentType.tracks: TileAdditionalInfoType.adaptive,
                 TabContentType.albums: TileAdditionalInfoType.adaptive,
-                TabContentType.artists: TileAdditionalInfoType.adaptive,
+                TabContentType.performingArtists:
+                    TileAdditionalInfoType.adaptive,
+                TabContentType.albumArtists: TileAdditionalInfoType.adaptive,
                 TabContentType.playlists: TileAdditionalInfoType.adaptive,
                 TabContentType.genres: TileAdditionalInfoType.adaptive,
               }
@@ -1751,7 +1753,7 @@ class TabContentTypeAdapter extends TypeAdapter<TabContentType> {
       case 0:
         return TabContentType.albums;
       case 1:
-        return TabContentType.artists;
+        return TabContentType.genericArtists;
       case 2:
         return TabContentType.playlists;
       case 3:
@@ -1760,6 +1762,10 @@ class TabContentTypeAdapter extends TypeAdapter<TabContentType> {
         return TabContentType.tracks;
       case 5:
         return TabContentType.home;
+      case 6:
+        return TabContentType.performingArtists;
+      case 7:
+        return TabContentType.albumArtists;
       default:
         return TabContentType.albums;
     }
@@ -1770,7 +1776,7 @@ class TabContentTypeAdapter extends TypeAdapter<TabContentType> {
     switch (obj) {
       case TabContentType.albums:
         writer.writeByte(0);
-      case TabContentType.artists:
+      case TabContentType.genericArtists:
         writer.writeByte(1);
       case TabContentType.playlists:
         writer.writeByte(2);
@@ -1780,6 +1786,10 @@ class TabContentTypeAdapter extends TypeAdapter<TabContentType> {
         writer.writeByte(4);
       case TabContentType.home:
         writer.writeByte(5);
+      case TabContentType.performingArtists:
+        writer.writeByte(6);
+      case TabContentType.albumArtists:
+        writer.writeByte(7);
     }
   }
 
@@ -9304,12 +9314,14 @@ Map<String, dynamic> _$MediaItemIdToJson(MediaItemId instance) =>
     };
 
 const _$TabContentTypeEnumMap = {
-  TabContentType.home: 'home',
   TabContentType.albums: 'albums',
-  TabContentType.artists: 'artists',
+  TabContentType.genericArtists: 'genericArtists',
   TabContentType.playlists: 'playlists',
   TabContentType.genres: 'genres',
   TabContentType.tracks: 'tracks',
+  TabContentType.home: 'home',
+  TabContentType.performingArtists: 'performingArtists',
+  TabContentType.albumArtists: 'albumArtists',
 };
 
 const _$MediaItemParentTypeEnumMap = {

@@ -926,9 +926,12 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
         playable: false,
       ),
       MediaItem(
-        id: MediaItemId(contentType: TabContentType.artists, parentType: MediaItemParentType.rootCollection).toString(),
+        id: MediaItemId(
+          contentType: TabContentType.performingArtists,
+          parentType: MediaItemParentType.rootCollection,
+        ).toString(),
         // ignore: deprecated_member_use_from_same_package
-        title: _appLocalizations?.artists ?? TabContentType.artists.toString(),
+        title: _appLocalizations?.artists ?? TabContentType.performingArtists.toString(),
         playable: false,
       ),
       MediaItem(

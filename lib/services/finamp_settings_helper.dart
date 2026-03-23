@@ -50,8 +50,8 @@ class FinampSettingsHelper {
 
   static void resetTabsSettings() {
     FinampSettings finampSettingsTemp = finampSettings;
-    finampSettingsTemp.tabOrder = TabContentType.values;
-    finampSettingsTemp.showTabs = Map.fromEntries(TabContentType.values.map((e) => MapEntry(e, true)));
+    finampSettingsTemp.tabOrder = DefaultSettings.tabOrder;
+    finampSettingsTemp.showTabs = Map.fromEntries(DefaultSettings.tabOrder.map((e) => MapEntry(e, true)));
     Hive.box<FinampSettings>("FinampSettings").put("FinampSettings", finampSettingsTemp);
   }
 
