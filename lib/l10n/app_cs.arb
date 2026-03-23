@@ -872,7 +872,7 @@
         },
         "description": "Localized names of special downloadable collection representing cached images for a certain library."
     },
-    "downloadTranscodeEnableOption": "{option, select, always{Vždy} never{Nikdy} ask{Zeptat} other{{option}} }",
+    "downloadTranscodeEnableOption": "{option, select, always{Vždy} never{Nikdy} ask{Zeptat se} other{{option}} }",
     "@downloadTranscodeEnableOption": {
         "placeholders": {
             "option": {
