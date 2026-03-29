@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:finamp/components/Buttons/cta_medium.dart';
 import 'package:finamp/components/MusicScreen/item_card.dart';
 import 'package:finamp/l10n/app_localizations.dart';
@@ -31,21 +32,21 @@ class MusicScreenTabView extends ConsumerStatefulWidget {
   const MusicScreenTabView({
     super.key,
     required this.tabContentType,
-    this.searchTerm,
     required this.view,
     this.refresh,
-    this.genreFilter,
     this.tabBarFiltered = false,
-    this.sortAndFilterConfigurationOverride,
+    required this.sortAndFilterConfiguration,
   });
 
   final TabContentType tabContentType;
-  final String? searchTerm;
   final BaseItemDto? view;
   final MusicRefreshCallback? refresh;
-  final BaseItemDto? genreFilter;
+
   final bool tabBarFiltered;
-  final SortAndFilterConfiguration? sortAndFilterConfigurationOverride;
+  final SortAndFilterConfiguration sortAndFilterConfiguration;
+
+  BaseItemDto? get genreFilter =>
+      sortAndFilterConfiguration.filters.firstWhereOrNull((x) => x.type == ItemFilterType.genreFilter)?.extraBaseItem;
 
   @override
   ConsumerState<MusicScreenTabView> createState() => _MusicScreenTabViewState();
@@ -201,22 +202,8 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
     // TODO test error cases?
   }
 
-  SortAndFilterConfiguration get sortAndFilterConfig =>
-      widget.sortAndFilterConfigurationOverride ??
-      SortAndFilterConfiguration(
-        sortBy: ref.watch(finampSettingsProvider.tabSortBy(widget.tabContentType))!,
-        sortOrder: ref.watch(finampSettingsProvider.tabSortOrder(widget.tabContentType))!,
-        filters: {
-          if (ref.watch(finampSettingsProvider.onlyShowFavorites)) ItemFilter(type: ItemFilterType.isFavorite),
-          if (ref.watch(finampSettingsProvider.onlyShowFullyDownloaded))
-            ItemFilter(type: ItemFilterType.isFullyDownloaded),
-          if (widget.genreFilter != null) ItemFilter(type: ItemFilterType.genreFilter, extras: widget.genreFilter),
-          if (widget.searchTerm != null) ItemFilter(type: ItemFilterType.searchTerm, extras: widget.searchTerm),
-        },
-      );
-
   MusicScreenContentProvider get pageControl => musicScreenContentProvider(
-    MusicScreenRequest(filter: sortAndFilterConfig, library: widget.view, tabType: widget.tabContentType),
+    MusicScreenRequest(filter: widget.sortAndFilterConfiguration, library: widget.view, tabType: widget.tabContentType),
   );
 
   @override
@@ -292,15 +279,14 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
                                 key: ValueKey(item.id),
                                 item: item,
                                 index: index,
-                                isShownInSearchOrHistory: widget.searchTerm != null,
                                 // when the tabBar was filtered and we only have the tracks tab,
                                 // we can allow Dismiss gestures in the track list
                                 allowDismiss: widget.tabBarFiltered,
                                 genreFilter: widget.genreFilter,
                                 isOnGenreScreen: (widget.genreFilter != null) ? true : false,
                                 parentItem: widget.genreFilter,
-                                forceAlbumArtists: (sortAndFilterConfig.sortBy == SortBy.albumArtist),
-                                adaptiveAdditionalInfoSortBy: sortAndFilterConfig.sortBy,
+                                forceAlbumArtists: (widget.sortAndFilterConfiguration.sortBy == SortBy.albumArtist),
+                                adaptiveAdditionalInfoSortBy: widget.sortAndFilterConfiguration.sortBy,
                                 // since we can't re-create the current random sorting, we simply pass the pre-sorted tracks along
                                 // only done in offline mode since online mode doesn't support playing the tab contents in order anyway
                                 fetchChildren: () async {
@@ -316,7 +302,7 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
                                 key: ValueKey(item.id),
                                 item: item,
                                 genreFilter: widget.genreFilter,
-                                adaptiveAdditionalInfoSortBy: sortAndFilterConfig.sortBy,
+                                adaptiveAdditionalInfoSortBy: widget.sortAndFilterConfiguration.sortBy,
                                 showFavoriteIconOnlyWhenFilterDisabled: true,
                               ),
                       );
@@ -395,16 +381,16 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
           );
 
     var showFastScroller = ref.watch(finampSettingsProvider.showFastScroller);
-    var tabSortBy = ref.watch(finampSettingsProvider.tabSortBy(widget.tabContentType));
     return RefreshIndicator(
       onRefresh: () async => _refresh(),
       child:
           showFastScroller &&
-              (sortAndFilterConfig.sortBy == SortBy.sortName || sortAndFilterConfig.sortBy == SortBy.albumArtist)
+              (widget.sortAndFilterConfiguration.sortBy == SortBy.sortName ||
+                  widget.sortAndFilterConfiguration.sortBy == SortBy.albumArtist)
           ? AlphabetList(
               callback: scrollToLetter,
               scrollController: controller,
-              sortOrder: sortAndFilterConfig.sortOrder,
+              sortOrder: widget.sortAndFilterConfiguration.sortOrder,
               child: tabContent,
             )
           : tabContent,

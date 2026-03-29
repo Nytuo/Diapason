@@ -4,15 +4,8 @@ import 'package:finamp/components/album_image.dart';
 import 'package:finamp/menus/components/playbackActions/playback_action_row.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:finamp/components/AlbumScreen/item_info.dart';
-import 'package:finamp/components/album_image.dart';
-import 'package:finamp/menus/components/playbackActions/playback_action_row.dart';
-import 'package:finamp/models/jellyfin_models.dart';
 
 enum AlbumMenuItems {
   addFavorite,
@@ -46,37 +39,22 @@ class AlbumScreenContentFlexibleSpaceBar extends ConsumerStatefulWidget {
 }
 
 class _AlbumScreenContentFlexibleSpaceBarState extends ConsumerState<AlbumScreenContentFlexibleSpaceBar> {
-  SortAndFilterController? sortAndFilterController;
+  late SortAndFilterController sortAndFilterController;
 
   @override
   void initState() {
     super.initState();
-    sortAndFilterController = SortAndFilterController(
-      configuration: SortAndFilterConfiguration(
-        sortBy: ref.read(finampSettingsProvider.playlistTracksSortBy),
-        sortOrder: ref.read(finampSettingsProvider.playlistTracksSortOrder),
-        filters: {},
-      ),
-      onConfigurationChanged: (newConfig) {
-        setState(() {
-          // Update the settings when the configuration changes
-          FinampSetters.setPlaylistTracksSortBy(newConfig.sortBy);
-          FinampSetters.setPlaylistTracksSortOrder(newConfig.sortOrder);
-        });
-      },
-    );
+    sortAndFilterController = SortAndFilterController.trackSettings(tabType: null);
+  }
+
+  @override
+  void dispose() {
+    sortAndFilterController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isOffline = ref.watch(finampSettingsProvider.isOffline);
-    SortBy playlistSortBySetting = ref.watch(finampSettingsProvider.playlistTracksSortBy);
-    SortOrder playlistSortOrderSetting = ref.watch(finampSettingsProvider.playlistTracksSortOrder);
-    final playlistSortBy =
-        (isOffline && (playlistSortBySetting == SortBy.datePlayed || playlistSortBySetting == SortBy.playCount))
-        ? SortBy.defaultOrder
-        : playlistSortBySetting;
-
     return FlexibleSpaceBar(
       background: SafeArea(
         bottom: false,
@@ -114,9 +92,6 @@ class _AlbumScreenContentFlexibleSpaceBarState extends ConsumerState<AlbumScreen
                   SortAndFilterRow(
                     tabType: TabContentType.tracks,
                     forPlaylistTracks: true,
-                    refreshTab: (contentType) {
-                      //nop, handled by providers on playlist screen
-                    },
                     controller: sortAndFilterController,
                   ),
                 ],

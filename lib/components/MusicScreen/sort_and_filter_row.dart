@@ -4,7 +4,6 @@ import 'package:finamp/components/Buttons/simple_button.dart';
 import 'package:finamp/components/SettingsScreen/finamp_settings_dropdown.dart';
 import 'package:finamp/components/themed_bottom_sheet.dart';
 import 'package:finamp/components/toggleable_list_tile.dart';
-import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
@@ -12,42 +11,104 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:get_it/get_it.dart';
 
 class SortAndFilterController extends ValueNotifier<SortAndFilterConfiguration> {
-  SortAndFilterController({required SortAndFilterConfiguration configuration, this.onConfigurationChanged})
-    : super(configuration);
+  SortAndFilterController({required SortAndFilterConfiguration configuration})
+    : _settingsListener = null,
+      super(configuration);
 
-  final void Function(SortAndFilterConfiguration)? onConfigurationChanged;
+  // tabType null indicates this is a playlist, not a music screen tab
+  // dispose() must be called if this constructor is used.
+  SortAndFilterController.trackSettings({required TabContentType? tabType})
+    : super(GetIt.instance<ProviderContainer>().read(sortAndFilterConfigFromSettingsProvider(tabType))) {
+    _tabType = tabType;
+    _settingsListener = GetIt.instance<ProviderContainer>().listen(
+      sortAndFilterConfigFromSettingsProvider(tabType),
+      (_, newValue) => updateConfiguration(newValue),
+    );
+    addListener(_updateSettings);
+  }
+
+  late final ProviderSubscription<SortAndFilterConfiguration>? _settingsListener;
+  late final TabContentType? _tabType;
 
   SortAndFilterConfiguration get configuration => value;
 
-  void updateConfiguration(SortAndFilterConfiguration newConfig) {
-    value = newConfig;
-    notifyListeners();
-    if (onConfigurationChanged != null) {
-      onConfigurationChanged!(newConfig);
+  void _updateSettings() {
+    if (_settingsListener != null) {
+      if (_tabType == null) {
+        if (value.sortBy != FinampSettingsHelper.finampSettings.playlistTracksSortBy) {
+          FinampSetters.setPlaylistTracksSortBy(value.sortBy);
+        }
+        if (value.sortOrder != FinampSettingsHelper.finampSettings.playlistTracksSortOrder) {
+          FinampSetters.setPlaylistTracksSortOrder(value.sortOrder);
+        }
+      } else {
+        if (value.sortBy != FinampSettingsHelper.finampSettings.tabSortBy[_tabType]) {
+          FinampSetters.setTabSortBy(_tabType, value.sortBy);
+        }
+        if (value.sortOrder != FinampSettingsHelper.finampSettings.tabSortOrder[_tabType]) {
+          FinampSetters.setTabSortOrder(_tabType, value.sortOrder);
+        }
+      }
+
+      if (value.filters.contains(ItemFilter(type: ItemFilterType.isFavorite)) !=
+          FinampSettingsHelper.finampSettings.onlyShowFavorites) {
+        FinampSetters.setOnlyShowFavorites(value.filters.contains(ItemFilter(type: ItemFilterType.isFavorite)));
+      }
+
+      if (value.filters.contains(ItemFilter(type: ItemFilterType.isFullyDownloaded)) !=
+          FinampSettingsHelper.finampSettings.onlyShowFullyDownloaded) {
+        FinampSetters.setOnlyShowFullyDownloaded(
+          value.filters.contains(ItemFilter(type: ItemFilterType.isFullyDownloaded)),
+        );
+      }
     }
   }
+
+  @override
+  void dispose() {
+    _settingsListener?.close();
+    super.dispose();
+  }
+
+  void updateConfiguration(SortAndFilterConfiguration newConfig) {
+    value = newConfig;
+  }
+
+  // TODO should reactive resolving be built into this controller somehow?  Or is letting consumers handle reactivity fine?
 }
+
+final sortAndFilterConfigFromSettingsProvider = Provider.family((Ref ref, TabContentType? tabType) {
+  var sortBy = tabType == null
+      ? ref.watch(finampSettingsProvider.playlistTracksSortBy)
+      : ref.watch(finampSettingsProvider.tabSortBy(tabType));
+  var sortOrder = tabType == null
+      ? ref.watch(finampSettingsProvider.playlistTracksSortOrder)
+      : ref.watch(finampSettingsProvider.tabSortOrder(tabType));
+  final filters = {
+    if (ref.watch(finampSettingsProvider.onlyShowFavorites)) ItemFilter(type: ItemFilterType.isFavorite),
+    if (ref.watch(finampSettingsProvider.onlyShowFullyDownloaded)) ItemFilter(type: ItemFilterType.isFullyDownloaded),
+  };
+
+  return SortAndFilterConfiguration(
+    sortBy: sortBy ?? SortBy.defaultOrder,
+    sortOrder: sortOrder ?? SortOrder.ascending,
+    filters: filters,
+  );
+});
 
 class SortAndFilterRow extends ConsumerWidget {
   final TabContentType tabType;
-  final void Function(TabContentType) refreshTab;
-  final SortAndFilterController? controller;
+  final SortAndFilterController controller;
 
   final bool forPlaylistTracks;
 
-  const SortAndFilterRow({
-    super.key,
-    required this.tabType,
-    required this.refreshTab,
-    this.controller,
-    this.forPlaylistTracks = false,
-  });
+  const SortAndFilterRow({super.key, required this.tabType, required this.controller, this.forPlaylistTracks = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    controller?.addListener(() => refreshTab(tabType));
     if (tabType != TabContentType.home) {
       return SafeArea(
         top: false,
@@ -65,17 +126,10 @@ class SortAndFilterRow extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Builder(
-                  builder: (context) {
-                    final bool isOffline = ref.watch(finampSettingsProvider.isOffline);
-                    final activeFilters =
-                        controller?.configuration.filters ??
-                        {
-                          if (ref.watch(finampSettingsProvider.onlyShowFavorites))
-                            ItemFilter(type: ItemFilterType.isFavorite),
-                          if (ref.watch(finampSettingsProvider.onlyShowFullyDownloaded))
-                            ItemFilter(type: ItemFilterType.isFullyDownloaded),
-                        };
+                ValueListenableBuilder(
+                  valueListenable: controller,
+                  builder: (context, value, child) {
+                    final activeFilters = value.filters;
                     final int activeFilterCount = activeFilters.length;
                     String statusText = activeFilterCount == 0
                         ? "No Filter Active*"
@@ -99,29 +153,20 @@ class SortAndFilterRow extends ConsumerWidget {
                     );
                   },
                 ),
-                Builder(
-                  builder: (context) {
-                    final bool isOffline = ref.watch(finampSettingsProvider.isOffline);
-                    var selectedSortBy =
-                        (controller?.configuration.sortBy ??
-                        (forPlaylistTracks
-                            ? ref.watch(finampSettingsProvider.playlistTracksSortBy)
-                            : ref.watch(finampSettingsProvider.tabSortBy(tabType))));
-                    var selectedSortOrder =
-                        (controller?.configuration.sortOrder ??
-                        (forPlaylistTracks
-                            ? ref.watch(finampSettingsProvider.playlistTracksSortOrder)
-                            : ref.watch(finampSettingsProvider.tabSortOrder(tabType))));
-                    // PlayCount and Last Played are not representative in Offline Mode
-                    // so we disable it and overwrite it with the Sort Name if it was selected
-                    if (isOffline && (selectedSortBy == SortBy.playCount || selectedSortBy == SortBy.datePlayed)) {
-                      selectedSortBy = forPlaylistTracks ? SortBy.defaultOrder : SortBy.sortName;
-                    }
+                ValueListenableBuilder(
+                  valueListenable: controller,
+                  builder: (context, value, child) {
+                    final config = value.resolve(
+                      isOffline: ref.watch(finampSettingsProvider.isOffline),
+                      inPlaylist: forPlaylistTracks,
+                    );
                     return SimpleButton(
-                      icon: selectedSortOrder == SortOrder.ascending
+                      // TODO the way that values ascend as you go down the page but we show an up arrow is confusing.
+                      // Is there a way to resolve this in a more intuitive manner?  What do other programs do?
+                      icon: config.sortOrder == SortOrder.ascending
                           ? TablerIcons.sort_ascending
                           : TablerIcons.sort_descending,
-                      text: selectedSortBy?.toLocalisedString(context) ?? AppLocalizations.of(context)!.sortBy,
+                      text: config.sortBy.toLocalisedString(context),
                       onPressed: () => showSortAndFilterMenu(
                         context,
                         tabType: tabType,
@@ -158,7 +203,7 @@ Future<void> showSortAndFilterMenu(
   BuildContext context, {
   required TabContentType tabType,
   required bool forPlaylistTracks,
-  required SortAndFilterController? controller,
+  required SortAndFilterController controller,
 }) async {
   return await showThemedBottomSheet<void>(
     context: context,
@@ -197,7 +242,7 @@ class SortAndFilterMenu extends ConsumerStatefulWidget {
 
   final TabContentType tabType;
   final bool forPlaylistTracks;
-  final SortAndFilterController? controller;
+  final SortAndFilterController controller;
 
   @override
   ConsumerState<SortAndFilterMenu> createState() => _SortAndFilterMenuState();
@@ -217,36 +262,11 @@ class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu> with Tick
     initialSheetExtent = 0.85;
     oldExtent = initialSheetExtent;
 
-    if (widget.controller != null) {
-      currentConfig = widget.controller!.configuration;
-    } else {
-      final bool isOffline = FinampSettingsHelper.finampSettings.isOffline;
-      var selectedSortBy =
-          (widget.controller?.configuration.sortBy ??
-          (widget.forPlaylistTracks
-              ? FinampSettingsHelper.finampSettings.playlistTracksSortBy
-              : FinampSettingsHelper.finampSettings.tabSortBy[widget.tabType]));
-      var selectedSortOrder =
-          (widget.controller?.configuration.sortOrder ??
-          (widget.forPlaylistTracks
-              ? FinampSettingsHelper.finampSettings.playlistTracksSortOrder
-              : FinampSettingsHelper.finampSettings.tabSortOrder[widget.tabType]));
-      // PlayCount and Last Played are not representative in Offline Mode
-      // so we disable it and overwrite it with the Sort Name if it was selected
-      if (isOffline && (selectedSortBy == SortBy.playCount || selectedSortBy == SortBy.datePlayed)) {
-        selectedSortBy = widget.forPlaylistTracks ? SortBy.defaultOrder : SortBy.sortName;
-      }
-
-      currentConfig = SortAndFilterConfiguration(
-        sortBy: selectedSortBy ?? SortBy.defaultOrder,
-        sortOrder: selectedSortOrder ?? SortOrder.ascending,
-        filters: {
-          if (FinampSettingsHelper.finampSettings.onlyShowFavorites) ItemFilter(type: ItemFilterType.isFavorite),
-          if (FinampSettingsHelper.finampSettings.onlyShowFullyDownloaded)
-            ItemFilter(type: ItemFilterType.isFullyDownloaded),
-        }.toSet(),
-      );
-    }
+    // TODO actually explain what the real current selection is and why we're not using it somewhere?
+    currentConfig = widget.controller.configuration.resolve(
+      isOffline: FinampSettingsHelper.finampSettings.isOffline,
+      inPlaylist: widget.forPlaylistTracks,
+    );
   }
 
   void scrollToExtent(DraggableScrollableController scrollController, double? percentage) {
@@ -422,41 +442,7 @@ class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu> with Tick
         text: "Apply*",
         icon: TablerIcons.check,
         onPressed: () {
-          if (widget.controller != null) {
-            widget.controller!.updateConfiguration(currentConfig);
-          } else {
-            if (widget.forPlaylistTracks) {
-              if (currentConfig.sortBy != FinampSettingsHelper.finampSettings.playlistTracksSortBy) {
-                FinampSetters.setPlaylistTracksSortBy(currentConfig.sortBy);
-              }
-              if (currentConfig.sortOrder != FinampSettingsHelper.finampSettings.playlistTracksSortOrder) {
-                FinampSetters.setPlaylistTracksSortOrder(currentConfig.sortOrder);
-              }
-            } else {
-              if (currentConfig.sortBy != FinampSettingsHelper.finampSettings.tabSortBy[widget.tabType]) {
-                FinampSetters.setTabSortBy(widget.tabType, currentConfig.sortBy);
-              }
-              if (currentConfig.sortOrder != FinampSettingsHelper.finampSettings.tabSortOrder[widget.tabType]) {
-                FinampSetters.setTabSortOrder(widget.tabType, currentConfig.sortOrder);
-              }
-            }
-
-            if (currentConfig.filters.contains(ItemFilter(type: ItemFilterType.isFavorite)) !=
-                FinampSettingsHelper.finampSettings.onlyShowFavorites) {
-              FinampSetters.setOnlyShowFavorites(
-                currentConfig.filters.contains(ItemFilter(type: ItemFilterType.isFavorite)),
-              );
-            }
-
-            if (currentConfig.filters.contains(ItemFilter(type: ItemFilterType.isFullyDownloaded)) !=
-                FinampSettingsHelper.finampSettings.onlyShowFullyDownloaded) {
-              FinampSetters.setOnlyShowFullyDownloaded(
-                currentConfig.filters.contains(ItemFilter(type: ItemFilterType.isFullyDownloaded)),
-              );
-            }
-
-            //TODO implement other filters
-          }
+          widget.controller.updateConfiguration(currentConfig);
           Navigator.of(context).pop();
         },
       ),

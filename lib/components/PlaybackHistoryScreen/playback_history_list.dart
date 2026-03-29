@@ -35,7 +35,6 @@ class PlaybackHistoryList extends StatelessWidget {
                     key: ValueKey(group.value[actualIndex].item.id),
                     index: actualIndex,
                     item: group.value[actualIndex].item.baseItem,
-                    isShownInSearchOrHistory: true,
                     highlightCurrentTrack: groupIndex == 0 && index == 0, // only highlight first track
                     playbackProgress: group.value[actualIndex].playPercentage,
                     fetchChildren: () {

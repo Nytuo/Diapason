@@ -56,7 +56,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
   TextEditingController textEditingController = TextEditingController();
   String? searchQuery;
   final Map<TabContentType, MusicRefreshCallback> refreshMap = {};
-  SortAndFilterController? sortAndFilterController;
+  final Map<TabContentType, SortAndFilterController> sortAndFilterControllerMap = {};
 
   TabController? _tabController;
 
@@ -103,25 +103,19 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
   @override
   void initState() {
     super.initState();
-    if (widget.sortAndFilterConfigurationOverrideInit != null) {
-      sortAndFilterController = SortAndFilterController(
-        configuration: widget.sortAndFilterConfigurationOverrideInit!,
-        onConfigurationChanged: (newConfig) {
-          setState(() {
-            // re-render based on updated controller
-          });
-        },
-      );
-    }
   }
 
   @override
   void dispose() {
     _tabController?.dispose();
+    for (var x in sortAndFilterControllerMap.values) {
+      x.dispose();
+    }
     super.dispose();
   }
 
   FloatingActionButton? getFloatingActionButton(List<TabContentType> sortedTabs) {
+    final currentTab = sortedTabs.elementAt(_tabController!.index);
     // Show the floating action button only on the albums, artists, generes and tracks tab.
     if (_tabController!.index == sortedTabs.indexOf(TabContentType.tracks)) {
       return FloatingActionButton(
@@ -129,11 +123,9 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
         onPressed: () async {
           try {
             await _audioServiceHelper.shuffleAll(
-              onlyShowFavorites:
-                  (sortAndFilterController?.configuration.filters.any(
-                    (filter) => filter.type == ItemFilterType.isFavorite,
-                  ) ??
-                  ref.read(finampSettingsProvider.onlyShowFavorites)),
+              onlyShowFavorites: (sortAndFilterControllerMap[currentTab]!.configuration.filters.any(
+                (filter) => filter.type == ItemFilterType.isFavorite,
+              )),
               genreFilter: widget.genreFilter,
             );
           } catch (e) {
@@ -142,16 +134,12 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
         },
         child: const Icon(TablerIcons.arrows_shuffle),
       );
-    } else if ([
-      TabContentType.genericArtists,
-      TabContentType.albums,
-      TabContentType.genres,
-    ].contains(sortedTabs.elementAt(_tabController!.index))) {
+    } else if ([TabContentType.genericArtists, TabContentType.albums, TabContentType.genres].contains(currentTab)) {
       return FloatingActionButton(
         tooltip: AppLocalizations.of(context)!.startMix,
         onPressed: () async {
           try {
-            switch (sortedTabs.elementAt(_tabController!.index)) {
+            switch (currentTab) {
               // TODO should this distinguish between artist types somehow?
               case TabContentType.genericArtists:
                 if (_jellyfinApiHelper.selectedMixArtists.isEmpty) {
@@ -218,6 +206,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
       // This widget should rebuild with an enabled tab on the next frame, just return empty for now.
       return SizedBox.shrink();
     }
+
     refreshMap[sortedTabs.elementAt(_tabController!.index)] = MusicRefreshCallback();
 
     return PopScope(
@@ -279,6 +268,18 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
                 final contentTabType = tabType == TabContentType.genericArtists
                     ? ref.watch(finampSettingsProvider.defaultArtistType).tabType
                     : tabType;
+                sortAndFilterControllerMap[contentTabType] ??= widget.sortAndFilterConfigurationOverrideInit != null
+                    // TODO should overridden config respond to going offline?
+                    ? SortAndFilterController(configuration: widget.sortAndFilterConfigurationOverrideInit!)
+                    : SortAndFilterController.trackSettings(tabType: contentTabType);
+                final genreFilter =
+                    (widget.genreFilter != null &&
+                        (tabType.itemType == BaseItemDtoType.track ||
+                            tabType.itemType == BaseItemDtoType.album ||
+                            tabType.itemType == BaseItemDtoType.artist ||
+                            tabType.itemType == BaseItemDtoType.playlist))
+                    ? widget.genreFilter
+                    : null;
                 return SafeArea(
                   top: true,
                   bottom: false,
@@ -288,8 +289,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
                     children: [
                       SortAndFilterRow(
                         tabType: contentTabType,
-                        refreshTab: refreshTab,
-                        controller: sortAndFilterController,
+                        controller: sortAndFilterControllerMap[contentTabType]!,
                       ),
                       ArtistTypeSelectionRow(
                         tabType: tabType,
@@ -297,21 +297,22 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
                         refreshTab: refreshTab,
                       ),
                       Expanded(
-                        child: MusicScreenTabView(
-                          tabContentType: contentTabType,
-                          searchTerm: searchQuery,
-                          view: _finampUserHelper.currentUser?.currentView,
-                          refresh: refreshMap[tabType],
-                          genreFilter:
-                              (widget.genreFilter != null &&
-                                  (tabType.itemType == BaseItemDtoType.track ||
-                                      tabType.itemType == BaseItemDtoType.album ||
-                                      tabType.itemType == BaseItemDtoType.artist ||
-                                      tabType.itemType == BaseItemDtoType.playlist))
-                              ? widget.genreFilter
-                              : null,
-                          tabBarFiltered: (widget.tabTypeFilter != null),
-                          sortAndFilterConfigurationOverride: sortAndFilterController?.configuration,
+                        child: ValueListenableBuilder(
+                          valueListenable: sortAndFilterControllerMap[contentTabType]!,
+                          builder: (context, value, child) {
+                            return MusicScreenTabView(
+                              tabContentType: contentTabType,
+                              view: _finampUserHelper.currentUser?.currentView,
+                              refresh: refreshMap[tabType],
+                              tabBarFiltered: (widget.tabTypeFilter != null),
+                              sortAndFilterConfiguration: value.resolve(
+                                isOffline: ref.watch(finampSettingsProvider.isOffline),
+                                inPlaylist: false,
+                                searchQuery: searchQuery,
+                                genreFilter: genreFilter,
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ],

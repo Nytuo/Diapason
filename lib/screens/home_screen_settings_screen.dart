@@ -391,9 +391,6 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
   String? sectionTitle;
   BaseItemId? selectedCollectionId;
   TabContentType? selectedContentType;
-  SortBy? selectedSortBy;
-  SortOrder? selectedSortOrder;
-  Set<ItemFilter>? selectedFilters;
 
   List<BaseItemDto> collections = [];
 
@@ -421,25 +418,18 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
       sectionTitle = sectionToEdit.customSectionTitle;
       selectedCollectionId = sectionToEdit.itemId;
       selectedContentType = sectionToEdit.contentType;
-      selectedSortBy = sectionToEdit.sortAndFilterConfiguration.sortBy;
-      selectedSortOrder = sectionToEdit.sortAndFilterConfiguration.sortOrder;
-      selectedFilters = sectionToEdit.sortAndFilterConfiguration.filters.toSet();
+      sortAndFilterController = SortAndFilterController(
+        configuration: sectionToEdit.sortAndFilterConfiguration.copyWith(),
+      );
+    } else {
+      sortAndFilterController = SortAndFilterController(
+        configuration: SortAndFilterConfiguration(
+          sortBy: SortBy.sortName,
+          sortOrder: SortOrder.ascending,
+          filters: <ItemFilter>{},
+        ),
+      );
     }
-
-    sortAndFilterController = SortAndFilterController(
-      configuration: SortAndFilterConfiguration(
-        sortBy: selectedSortBy ?? SortBy.sortName,
-        sortOrder: selectedSortOrder ?? SortOrder.ascending,
-        filters: selectedFilters ?? <ItemFilter>{},
-      ),
-      onConfigurationChanged: (newConfig) {
-        setState(() {
-          selectedSortBy = newConfig.sortBy;
-          selectedSortOrder = newConfig.sortOrder;
-          selectedFilters = newConfig.filters.toSet();
-        });
-      },
-    );
 
     _jellyfinApiHelper
         .getItems(includeItemTypes: [BaseItemDtoType.collection.jellyfinName].join(","), recursive: true)
@@ -474,11 +464,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
       itemId: selectedCollectionId,
       contentType:
           selectedContentType ?? (selectedSectionType == HomeScreenSectionType.tabView ? TabContentType.tracks : null),
-      sortAndFilterConfiguration: SortAndFilterConfiguration(
-        sortBy: selectedSortBy ?? SortBy.sortName,
-        sortOrder: selectedSortOrder ?? SortOrder.ascending,
-        filters: selectedFilters ?? <ItemFilter>{},
-      ),
+      sortAndFilterConfiguration: sortAndFilterController.configuration,
     );
   }
 
@@ -691,7 +677,6 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
           SortAndFilterRow(
             tabType: _getCurrentSectionInfo().contentType ?? TabContentType.tracks,
             controller: sortAndFilterController,
-            refreshTab: (_) {},
           ),
         ],
       ),

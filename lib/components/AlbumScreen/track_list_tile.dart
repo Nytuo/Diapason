@@ -72,7 +72,6 @@ class TrackListTile extends ConsumerWidget {
     this.isInPlaylist = false,
     this.isOnArtistScreen = false,
     this.isOnGenreScreen = false,
-    this.isShownInSearchOrHistory = false,
     this.allowDismiss = true,
     this.highlightCurrentTrack = true,
     this.genreFilter,
@@ -94,7 +93,6 @@ class TrackListTile extends ConsumerWidget {
   final bool isInPlaylist;
   final bool isOnArtistScreen;
   final bool isOnGenreScreen;
-  final bool isShownInSearchOrHistory;
   final bool allowDismiss;
   final bool highlightCurrentTrack;
   final BaseItemDto? genreFilter;

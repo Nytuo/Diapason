@@ -4427,8 +4427,24 @@ class SortAndFilterConfiguration {
     return SortAndFilterConfiguration(
       sortBy: sortBy ?? this.sortBy,
       sortOrder: sortOrder ?? this.sortOrder,
-      filters: filters ?? this.filters,
+      filters: filters ?? this.filters.toSet(),
     );
+  }
+
+  SortAndFilterConfiguration resolve({required bool isOffline, required bool inPlaylist, BaseItemDto? genreFilter, String? searchQuery}){
+    final newFilters=filters.union({
+      if (genreFilter != null)
+        ItemFilter(type: ItemFilterType.genreFilter, extras: genreFilter),
+      if (searchQuery != null)
+        ItemFilter(type: ItemFilterType.searchTerm, extras: searchQuery),
+    });
+    var newSortBy=sortBy;
+    // PlayCount and Last Played are not representative in Offline Mode
+    // so we disable it and overwrite it with the Sort Name if it was selected
+    if (isOffline && (sortBy == SortBy.playCount || sortBy == SortBy.datePlayed)) {
+      newSortBy = inPlaylist ? SortBy.defaultOrder : SortBy.sortName;
+    }
+    return copyWith(sortBy: newSortBy, filters: newFilters);
   }
 
   Map<String, dynamic> toJson() => _$SortAndFilterConfigurationToJson(this);
