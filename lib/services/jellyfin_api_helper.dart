@@ -6,6 +6,7 @@ import 'dart:isolate';
 import 'package:chopper/chopper.dart';
 import 'package:collection/collection.dart';
 import 'package:finamp/components/global_snackbar.dart';
+import 'package:finamp/services/client_certificate_installer.dart';
 import 'package:finamp/services/http_aggregate_logging_interceptor.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -65,6 +66,8 @@ class JellyfinApiHelper {
     // Extend the default security context to trust Android user certificates.
     // This is a workaround for <https://github.com/dart-lang/sdk/issues/50435>.
     await FlutterUserCertificatesAndroid().trustAndroidUserCertificates(SecurityContext.defaultContext);
+
+    await ClientCertificateInstaller().defaultInstallClientCertificate();
 
     input.$1.send(requestPort.sendPort);
     final dir = (Platform.isAndroid || Platform.isIOS)
