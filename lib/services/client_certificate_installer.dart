@@ -7,6 +7,8 @@ import 'package:logging/logging.dart';
 import 'finamp_settings_helper.dart';
 
 class ClientCertificateInstaller {
+  static final isSupported = Platform.isAndroid;
+
   static final _logger = Logger('ClientCertificateInstaller');
   static const _channel = MethodChannel('com.unicornsonlsd.finamp/client_certificate');
 
@@ -17,6 +19,9 @@ class ClientCertificateInstaller {
 
   /// Installs the configured [ClientCertificate] into the given [context], if available.
   Future<void> installClientCertificate(SecurityContext context) async {
+    if (!isSupported) {
+      return;
+    }
     var cert = FinampSettingsHelper.finampSettings.clientCertificate;
     if (cert == null) {
       return;

@@ -17,6 +17,7 @@ import 'package:finamp/screens/playback_reporting_settings_screen.dart';
 import 'package:finamp/screens/transcoding_settings_screen.dart';
 import 'package:finamp/screens/view_selector.dart';
 import 'package:finamp/screens/volume_normalization_settings_screen.dart';
+import 'package:finamp/services/client_certificate_installer.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -212,16 +213,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: Text(AppLocalizations.of(context)!.quickConnectAuthorizationMenuButtonTitle),
             onTap: () => showQuickConnectAuthorizationMenu(context: context),
           ),
-          ListTile(
-            leading: Icon(TablerIcons.certificate),
-            title: Text(AppLocalizations.of(context)!.clientCertificate),
-            subtitle: Text(
-              ref.watch(finampSettingsProvider.clientCertificate) != null
-                  ? AppLocalizations.of(context)!.clientCertificateInstalled
-                  : AppLocalizations.of(context)!.clientCertificateUnavailable,
+          if (ClientCertificateInstaller.isSupported)
+            ListTile(
+              leading: Icon(TablerIcons.certificate),
+              title: Text(AppLocalizations.of(context)!.clientCertificate),
+              subtitle: Text(
+                ref.watch(finampSettingsProvider.clientCertificate) != null
+                    ? AppLocalizations.of(context)!.clientCertificateInstalled
+                    : AppLocalizations.of(context)!.clientCertificateUnavailable,
+              ),
+              onTap: () => showClientCertificateMenu(context: context),
             ),
-            onTap: () => showClientCertificateMenu(context: context),
-          ),
           const LogoutListTile(),
         ],
       ),

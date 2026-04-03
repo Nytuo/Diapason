@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:finamp/components/LoginScreen/login_server_selection_page.dart';
 import 'package:finamp/models/jellyfin_models.dart';
 import 'package:finamp/screens/view_selector.dart';
+import 'package:finamp/services/client_certificate_installer.dart';
 import 'package:finamp/services/jellyfin_api_helper.dart';
 import 'package:finamp/services/server_client_discovery_service.dart';
 import 'package:flutter/material.dart';
@@ -262,7 +263,9 @@ class ServerState {
       try {
         publicServerInfo = await jellyfinApiHelper.loadServerPublicInfo();
       } catch (error) {
-        if (error is ClientException && error.message.contains("TLSV1_ALERT_CERTIFICATE_REQUIRED")) {
+        if (ClientCertificateInstaller.isSupported &&
+            error is ClientException &&
+            error.message.contains("TLSV1_ALERT_CERTIFICATE_REQUIRED")) {
           clientCertificateRequired = true;
         } else {
           serverStateLogger.severe("Error loading server info: $error");
