@@ -3296,7 +3296,7 @@
   "@useAndroidGainEffectTitle": {
     "description": "Title for Android gain effect setting.  This setting is used to work around player errors on some devices."
   },
-  "useAndroidGainEffectSubtitle": "Use native gain effect to control volume.  This is more flexible but breaks the player on some devices.  You shouldn't need to change this manually.",
+  "useAndroidGainEffectSubtitle": "Use native gain effect to control volume.  This is more flexible but breaks the player on some devices.  You shouldn't need to change this manually.  Requires app restart to apply.",
   "@useAndroidGainEffectSubtitle": {
     "description": "Subtitle for Android gain effect setting.  This setting is used to work around player errors on some devices."
   },
