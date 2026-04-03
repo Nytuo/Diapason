@@ -15,6 +15,7 @@ import 'package:finamp/services/radio_service_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:isar/isar.dart';
@@ -258,7 +259,11 @@ class DefaultSettings {
   static const forceAudioOffloadingOnAndroid = false;
   static const previousTracksPersistenceMode = PreviousTracksPersistenceMode.persistent;
   static final homeScreenConfiguration = FinampHomeScreenConfiguration(
-    actions: [FinampQuickActions.trackMix, FinampQuickActions.recents, FinampQuickActions.surpriseMe],
+    actions: [
+      FinampQuickActions.shuffleTracks,
+      FinampQuickActions.browseRecentQueues,
+      FinampQuickActions.playRandomTrack,
+    ],
     sections: [
       HomeScreenSectionConfiguration.fromPreset(HomeScreenSectionPresetType.favoriteTracks),
       HomeScreenSectionConfiguration.fromPreset(HomeScreenSectionPresetType.forgottenFavoriteTracks),
@@ -4179,6 +4184,7 @@ class HomeScreenSectionConfiguration {
       customSectionTitle: null,
       presetType: presetType,
     ),
+    _ => throw UnimplementedError("Preset type $presetType does not have a defined configuration"),
   };
 
   String getTitle(BuildContext context) =>
@@ -4192,6 +4198,7 @@ class HomeScreenSectionConfiguration {
         HomeScreenSectionPresetType.forgottenFavoriteTracks => AppLocalizations.of(
           context,
         )!.homeScreenSectionPresetForgottenFavoriteTracksTitle,
+        _ => throw UnimplementedError("Preset type $presetType does not have a defined title"),
       };
   String getDescription(BuildContext context) => presetType != null
       ? getDescriptionForPreset(context: context, presetType: presetType!)
@@ -4206,6 +4213,7 @@ class HomeScreenSectionConfiguration {
     HomeScreenSectionPresetType.forgottenFavoriteTracks => AppLocalizations.of(
       context,
     )!.homeScreenSectionPresetForgottenFavoriteTracksDescription,
+    _ => throw UnimplementedError("Preset type $presetType does not have a defined description"),
   };
 
   factory HomeScreenSectionConfiguration.fromJson(Map<String, dynamic> json) =>
@@ -4269,18 +4277,59 @@ enum HomeScreenSectionPresetType {
   @HiveField(0)
   favoriteTracks,
   @HiveField(1)
+  favoriteAlbums,
+  @HiveField(2)
+  favoriteArtists,
+  @HiveField(3)
+  favoritePlaylists,
+  @HiveField(4)
+  favoriteGenre,
+  @HiveField(5)
+  recentlyAddedAlbums,
+  @HiveField(6)
+  recentlyAddedTracks,
+  @HiveField(7)
+  recentlyPlayedPlaylists,
+  @HiveField(8)
+  frequentlyPlayedAlbums,
+  @HiveField(9)
+  frequentlyPlayedTracks,
+  @HiveField(10)
+  frequentlyPlayedArtists,
+  @HiveField(11)
+  neverPlayedAlbums,
+  @HiveField(12)
   forgottenFavoriteTracks,
+  @HiveField(13)
+  recentQueues,
+  //TODO add section with generated mixes, e.g. via AudioMuse
   //TODO add more
 }
 
 @HiveType(typeId: 116)
 enum FinampQuickActions {
   @HiveField(0)
-  trackMix,
+  shuffleTracks,
   @HiveField(1)
-  recents,
+  browseRecentQueues,
   @HiveField(2)
-  surpriseMe;
+  browsePlaybackHistory,
+  @HiveField(3)
+  playRandomAlbum,
+  @HiveField(4)
+  playRandomTrack,
+  @HiveField(5)
+  playRandomFavoriteItem,
+  @HiveField(6)
+  playMostRecentQueue,
+  @HiveField(7)
+  configureOutput,
+  @HiveField(8)
+  surpriseMe,
+  @HiveField(9)
+  //TODO to support this, we need to support passing item IDs to the action configuration somehow
+  playSpecificItem;
+  //TODO support album/artist shuffle (requires queue support)
 
   /// Human-readable version of the [FinampQuickActionType]
   @override
@@ -4291,10 +4340,24 @@ enum FinampQuickActions {
 
   String _humanReadableName(FinampQuickActions quickAction) {
     switch (quickAction) {
-      case FinampQuickActions.trackMix:
-        return "Track Mix";
-      case FinampQuickActions.recents:
-        return "Recents";
+      case FinampQuickActions.shuffleTracks:
+        return "Shuffle Tracks";
+      case FinampQuickActions.browseRecentQueues:
+        return "Browse Recent Queues";
+      case FinampQuickActions.browsePlaybackHistory:
+        return "Playback History";
+      case FinampQuickActions.playRandomAlbum:
+        return "Play Random Album";
+      case FinampQuickActions.playRandomTrack:
+        return "Play Random Track";
+      case FinampQuickActions.playRandomFavoriteItem:
+        return "Play Random Favorite";
+      case FinampQuickActions.playMostRecentQueue:
+        return "Play Most Recent Queue";
+      case FinampQuickActions.configureOutput:
+        return "Configure Output";
+      case FinampQuickActions.playSpecificItem:
+        return "Play Specific Item";
       case FinampQuickActions.surpriseMe:
         return "Surprise Me";
     }
@@ -4302,10 +4365,24 @@ enum FinampQuickActions {
 
   String _humanReadableLocalisedName(FinampQuickActions quickAction, BuildContext context) {
     switch (quickAction) {
-      case FinampQuickActions.trackMix:
-        return "Track Mix*";
-      case FinampQuickActions.recents:
-        return "Recents*";
+      case FinampQuickActions.shuffleTracks:
+        return "Shuffle Tracks*";
+      case FinampQuickActions.browseRecentQueues:
+        return "Recent Queues*";
+      case FinampQuickActions.browsePlaybackHistory:
+        return "Playback History*";
+      case FinampQuickActions.playRandomAlbum:
+        return "Random Album*";
+      case FinampQuickActions.playRandomTrack:
+        return "Random Track*";
+      case FinampQuickActions.playRandomFavoriteItem:
+        return "Random Favorite*";
+      case FinampQuickActions.playMostRecentQueue:
+        return "Last Queue*";
+      case FinampQuickActions.configureOutput:
+        return "Configure Output*";
+      case FinampQuickActions.playSpecificItem:
+        return "Play <Item>*";
       case FinampQuickActions.surpriseMe:
         return "Surprise Me*";
     }
@@ -4315,13 +4392,42 @@ enum FinampQuickActions {
 
   String _humanReadableLocalisedDescription(FinampQuickActions quickAction, BuildContext context) {
     switch (quickAction) {
-      case FinampQuickActions.trackMix:
+      case FinampQuickActions.shuffleTracks:
         return "Shuffles random tracks from your library*";
-      case FinampQuickActions.recents:
-        return "Choose from recent queues*";
+      case FinampQuickActions.browseRecentQueues:
+        return "Choose from your recently played queues*";
+      case FinampQuickActions.browsePlaybackHistory:
+        return "Browse your playback history*";
+      case FinampQuickActions.playRandomAlbum:
+        return "Starts playback from a random album*";
+      case FinampQuickActions.playRandomTrack:
+        return "Starts continuous radio from a random track*";
+      case FinampQuickActions.playRandomFavoriteItem:
+        return "Starts playback from a random favorite item*";
+      case FinampQuickActions.playMostRecentQueue:
+        return "Restores and plays your most recent queue*";
+      case FinampQuickActions.configureOutput:
+        return "Opens output device configuration*";
+      case FinampQuickActions.playSpecificItem:
+        return "Plays a specific configured item*";
       case FinampQuickActions.surpriseMe:
         return "Starts 'Continuous' radio from a random track*";
     }
+  }
+
+  IconData getIcon() {
+    return switch (this) {
+      FinampQuickActions.shuffleTracks => TablerIcons.arrows_shuffle,
+      FinampQuickActions.browseRecentQueues => Icons.auto_delete,
+      FinampQuickActions.browsePlaybackHistory => TablerIcons.clock,
+      FinampQuickActions.playRandomAlbum => TablerIcons.album,
+      FinampQuickActions.playRandomTrack => TablerIcons.music,
+      FinampQuickActions.playRandomFavoriteItem => TablerIcons.heart_question,
+      FinampQuickActions.playMostRecentQueue => TablerIcons.restore,
+      FinampQuickActions.configureOutput => TablerIcons.device_speaker,
+      FinampQuickActions.playSpecificItem => TablerIcons.music_pin,
+      FinampQuickActions.surpriseMe => TablerIcons.radio,
+    };
   }
 }
 
@@ -4431,14 +4537,17 @@ class SortAndFilterConfiguration {
     );
   }
 
-  SortAndFilterConfiguration resolve({required bool isOffline, required bool inPlaylist, BaseItemDto? genreFilter, String? searchQuery}){
-    final newFilters=filters.union({
-      if (genreFilter != null)
-        ItemFilter(type: ItemFilterType.genreFilter, extras: genreFilter),
-      if (searchQuery != null)
-        ItemFilter(type: ItemFilterType.searchTerm, extras: searchQuery),
+  SortAndFilterConfiguration resolve({
+    required bool isOffline,
+    required bool inPlaylist,
+    BaseItemDto? genreFilter,
+    String? searchQuery,
+  }) {
+    final newFilters = filters.union({
+      if (genreFilter != null) ItemFilter(type: ItemFilterType.genreFilter, extras: genreFilter),
+      if (searchQuery != null) ItemFilter(type: ItemFilterType.searchTerm, extras: searchQuery),
     });
-    var newSortBy=sortBy;
+    var newSortBy = sortBy;
     // PlayCount and Last Played are not representative in Offline Mode
     // so we disable it and overwrite it with the Sort Name if it was selected
     if (isOffline && (sortBy == SortBy.playCount || sortBy == SortBy.datePlayed)) {

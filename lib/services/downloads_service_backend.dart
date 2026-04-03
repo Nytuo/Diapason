@@ -1375,6 +1375,7 @@ class DownloadsSyncService {
               ) ??
               [];
           // Artists use a different endpoint, so request those separately
+          //TODO this ^ seems to be outdated?
           outputItems.addAll(
             await _jellyfinApiData.getItems(includeItemTypes: "MusicArtist", filters: "IsFavorite", fields: fields) ??
                 [],

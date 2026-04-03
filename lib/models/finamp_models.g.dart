@@ -3434,7 +3434,31 @@ class HomeScreenSectionPresetTypeAdapter
       case 0:
         return HomeScreenSectionPresetType.favoriteTracks;
       case 1:
+        return HomeScreenSectionPresetType.favoriteAlbums;
+      case 2:
+        return HomeScreenSectionPresetType.favoriteArtists;
+      case 3:
+        return HomeScreenSectionPresetType.favoritePlaylists;
+      case 4:
+        return HomeScreenSectionPresetType.favoriteGenre;
+      case 5:
+        return HomeScreenSectionPresetType.recentlyAddedAlbums;
+      case 6:
+        return HomeScreenSectionPresetType.recentlyAddedTracks;
+      case 7:
+        return HomeScreenSectionPresetType.recentlyPlayedPlaylists;
+      case 8:
+        return HomeScreenSectionPresetType.frequentlyPlayedAlbums;
+      case 9:
+        return HomeScreenSectionPresetType.frequentlyPlayedTracks;
+      case 10:
+        return HomeScreenSectionPresetType.frequentlyPlayedArtists;
+      case 11:
+        return HomeScreenSectionPresetType.neverPlayedAlbums;
+      case 12:
         return HomeScreenSectionPresetType.forgottenFavoriteTracks;
+      case 13:
+        return HomeScreenSectionPresetType.recentQueues;
       default:
         return HomeScreenSectionPresetType.favoriteTracks;
     }
@@ -3445,8 +3469,32 @@ class HomeScreenSectionPresetTypeAdapter
     switch (obj) {
       case HomeScreenSectionPresetType.favoriteTracks:
         writer.writeByte(0);
-      case HomeScreenSectionPresetType.forgottenFavoriteTracks:
+      case HomeScreenSectionPresetType.favoriteAlbums:
         writer.writeByte(1);
+      case HomeScreenSectionPresetType.favoriteArtists:
+        writer.writeByte(2);
+      case HomeScreenSectionPresetType.favoritePlaylists:
+        writer.writeByte(3);
+      case HomeScreenSectionPresetType.favoriteGenre:
+        writer.writeByte(4);
+      case HomeScreenSectionPresetType.recentlyAddedAlbums:
+        writer.writeByte(5);
+      case HomeScreenSectionPresetType.recentlyAddedTracks:
+        writer.writeByte(6);
+      case HomeScreenSectionPresetType.recentlyPlayedPlaylists:
+        writer.writeByte(7);
+      case HomeScreenSectionPresetType.frequentlyPlayedAlbums:
+        writer.writeByte(8);
+      case HomeScreenSectionPresetType.frequentlyPlayedTracks:
+        writer.writeByte(9);
+      case HomeScreenSectionPresetType.frequentlyPlayedArtists:
+        writer.writeByte(10);
+      case HomeScreenSectionPresetType.neverPlayedAlbums:
+        writer.writeByte(11);
+      case HomeScreenSectionPresetType.forgottenFavoriteTracks:
+        writer.writeByte(12);
+      case HomeScreenSectionPresetType.recentQueues:
+        writer.writeByte(13);
     }
   }
 
@@ -3469,25 +3517,53 @@ class FinampQuickActionsAdapter extends TypeAdapter<FinampQuickActions> {
   FinampQuickActions read(BinaryReader reader) {
     switch (reader.readByte()) {
       case 0:
-        return FinampQuickActions.trackMix;
+        return FinampQuickActions.shuffleTracks;
       case 1:
-        return FinampQuickActions.recents;
+        return FinampQuickActions.browseRecentQueues;
       case 2:
+        return FinampQuickActions.browsePlaybackHistory;
+      case 3:
+        return FinampQuickActions.playRandomAlbum;
+      case 4:
+        return FinampQuickActions.playRandomTrack;
+      case 5:
+        return FinampQuickActions.playRandomFavoriteItem;
+      case 6:
+        return FinampQuickActions.playMostRecentQueue;
+      case 7:
+        return FinampQuickActions.configureOutput;
+      case 8:
         return FinampQuickActions.surpriseMe;
+      case 9:
+        return FinampQuickActions.playSpecificItem;
       default:
-        return FinampQuickActions.trackMix;
+        return FinampQuickActions.shuffleTracks;
     }
   }
 
   @override
   void write(BinaryWriter writer, FinampQuickActions obj) {
     switch (obj) {
-      case FinampQuickActions.trackMix:
+      case FinampQuickActions.shuffleTracks:
         writer.writeByte(0);
-      case FinampQuickActions.recents:
+      case FinampQuickActions.browseRecentQueues:
         writer.writeByte(1);
-      case FinampQuickActions.surpriseMe:
+      case FinampQuickActions.browsePlaybackHistory:
         writer.writeByte(2);
+      case FinampQuickActions.playRandomAlbum:
+        writer.writeByte(3);
+      case FinampQuickActions.playRandomTrack:
+        writer.writeByte(4);
+      case FinampQuickActions.playRandomFavoriteItem:
+        writer.writeByte(5);
+      case FinampQuickActions.playMostRecentQueue:
+        writer.writeByte(6);
+      case FinampQuickActions.configureOutput:
+        writer.writeByte(7);
+      case FinampQuickActions.surpriseMe:
+        writer.writeByte(8);
+      case FinampQuickActions.playSpecificItem:
+        writer.writeByte(9);
     }
   }
 
@@ -9448,8 +9524,22 @@ const _$HomeScreenSectionTypeEnumMap = {
 
 const _$HomeScreenSectionPresetTypeEnumMap = {
   HomeScreenSectionPresetType.favoriteTracks: 'favoriteTracks',
+  HomeScreenSectionPresetType.favoriteAlbums: 'favoriteAlbums',
+  HomeScreenSectionPresetType.favoriteArtists: 'favoriteArtists',
+  HomeScreenSectionPresetType.favoritePlaylists: 'favoritePlaylists',
+  HomeScreenSectionPresetType.favoriteGenre: 'favoriteGenre',
+  HomeScreenSectionPresetType.recentlyAddedAlbums: 'recentlyAddedAlbums',
+  HomeScreenSectionPresetType.recentlyAddedTracks: 'recentlyAddedTracks',
+  HomeScreenSectionPresetType.recentlyPlayedPlaylists:
+      'recentlyPlayedPlaylists',
+  HomeScreenSectionPresetType.frequentlyPlayedAlbums: 'frequentlyPlayedAlbums',
+  HomeScreenSectionPresetType.frequentlyPlayedTracks: 'frequentlyPlayedTracks',
+  HomeScreenSectionPresetType.frequentlyPlayedArtists:
+      'frequentlyPlayedArtists',
+  HomeScreenSectionPresetType.neverPlayedAlbums: 'neverPlayedAlbums',
   HomeScreenSectionPresetType.forgottenFavoriteTracks:
       'forgottenFavoriteTracks',
+  HomeScreenSectionPresetType.recentQueues: 'recentQueues',
 };
 
 FinampHomeScreenConfiguration _$FinampHomeScreenConfigurationFromJson(
@@ -9476,9 +9566,16 @@ Map<String, dynamic> _$FinampHomeScreenConfigurationToJson(
 };
 
 const _$FinampQuickActionsEnumMap = {
-  FinampQuickActions.trackMix: 'trackMix',
-  FinampQuickActions.recents: 'recents',
+  FinampQuickActions.shuffleTracks: 'shuffleTracks',
+  FinampQuickActions.browseRecentQueues: 'browseRecentQueues',
+  FinampQuickActions.browsePlaybackHistory: 'browsePlaybackHistory',
+  FinampQuickActions.playRandomAlbum: 'playRandomAlbum',
+  FinampQuickActions.playRandomTrack: 'playRandomTrack',
+  FinampQuickActions.playRandomFavoriteItem: 'playRandomFavoriteItem',
+  FinampQuickActions.playMostRecentQueue: 'playMostRecentQueue',
+  FinampQuickActions.configureOutput: 'configureOutput',
   FinampQuickActions.surpriseMe: 'surpriseMe',
+  FinampQuickActions.playSpecificItem: 'playSpecificItem',
 };
 
 ItemFilter _$ItemFilterFromJson(Map<String, dynamic> json) => ItemFilter(

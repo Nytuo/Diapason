@@ -1,3 +1,4 @@
+import 'package:finamp/components/global_snackbar.dart';
 import 'package:finamp/models/jellyfin_models.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -212,6 +213,51 @@ class AudioServiceHelper {
       );
       FinampSetters.setRadioMode(RadioMode.continuous);
       toggleRadio(true);
+    } else {
+      GlobalSnackbar.message((context) => "No tracks found to start Surprise Me Mix.*");
     }
+  }
+
+  Future<void> playRandomItem({bool favoritesOnly = false, List<BaseItemDtoType>? limitItemTypes}) async {
+    // get random favorite (any item type)
+    final randomFavorite = (await _jellyfinApiHelper.getItems(
+      parentItem: _finampUserHelper.currentUser!.currentView,
+      filters: favoritesOnly ? "IsFavorite" : null,
+      includeItemTypes:
+          (limitItemTypes ??
+                  [
+                    BaseItemDtoType.track,
+                    BaseItemDtoType.album,
+                    BaseItemDtoType.artist,
+                    BaseItemDtoType.genre,
+                    BaseItemDtoType.playlist,
+                  ])
+              .map((e) => e.jellyfinName)
+              .join(","),
+      sortBy: SortBy.random.jellyfinName(null),
+      limit: 1,
+    ))?.firstOrNull;
+
+    if (randomFavorite == null) {
+      GlobalSnackbar.message((context) => "Nothing found to play.*");
+      return;
+    }
+
+    // if item is a collection, get its tracks, otherwise just play the item
+    List<jellyfin_models.BaseItemDto> itemsToPlay;
+    if (BaseItemDtoType.fromItem(randomFavorite) != BaseItemDtoType.track) {
+      itemsToPlay =
+          await _jellyfinApiHelper.getItems(
+            parentItem: randomFavorite,
+            includeItemTypes: [BaseItemDtoType.track].map((e) => e.jellyfinName).join(","),
+            sortBy: SortBy.defaultOrder.jellyfinName(TabContentType.tracks),
+            sortOrder: SortOrder.ascending.name,
+          ) ??
+          [];
+    } else {
+      itemsToPlay = [randomFavorite];
+    }
+
+    await _queueService.startPlayback(items: itemsToPlay, source: QueueItemSource.fromBaseItem(randomFavorite));
   }
 }

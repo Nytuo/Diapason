@@ -179,7 +179,7 @@ Future<FinampQuickActions?> showQuickActionPresetPickerMenu(
             //   Icon(TablerIcons.star, size: 14.0),
           ],
           enabled: true,
-          icon: TablerIcons.bolt,
+          icon: quickAction.getIcon(),
           isInactive: false,
           isSelected: editingQuickActionIndex != null && currentActions[editingQuickActionIndex] == quickAction,
           onSelect: () async {

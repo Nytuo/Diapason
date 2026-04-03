@@ -4,6 +4,7 @@ import 'package:balanced_text/balanced_text.dart';
 import 'package:finamp/components/AlbumScreen/track_list_tile.dart';
 import 'package:finamp/components/Buttons/cta_large.dart';
 import 'package:finamp/components/Buttons/cta_small.dart';
+import 'package:finamp/components/HomeScreen/home_screen_quick_action_button.dart';
 import 'package:finamp/components/HomeScreen/show_all_button.dart';
 import 'package:finamp/components/HomeScreen/show_all_screen.dart';
 import 'package:finamp/components/MusicScreen/item_card.dart';
@@ -22,6 +23,7 @@ import 'package:finamp/services/audio_service_helper.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:finamp/services/finamp_user_helper.dart';
 import 'package:finamp/services/item_by_id_provider.dart';
+import 'package:finamp/services/quick_actions_service.dart';
 import 'package:finamp/services/queue_service.dart';
 import 'package:finamp/services/music_screen_provider.dart';
 import 'package:flutter/material.dart';
@@ -42,8 +44,6 @@ class HomeScreenContent extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
-  final _audioServiceHelper = GetIt.instance<AudioServiceHelper>();
-
   void _refresh() {
     var currentLibrary = ref.watch(
       FinampUserHelper.finampCurrentUserProvider.select((value) => value.valueOrNull?.currentView),
@@ -69,14 +69,16 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
         onRefresh: () async => _refresh(),
         child: CustomScrollView(
           slivers: [
-            SliverPadding(padding: const EdgeInsets.only(top: 16.0)),
+            if (ref.watch(finampSettingsProvider.homeScreenConfiguration).actions.isNotEmpty)
+              SliverPadding(padding: const EdgeInsets.only(top: 16.0)),
             SliverLayoutBuilder(
               builder: (context, constraints) {
                 final maxWidth = 600;
                 // center action buttons
-                final horizontalPadding = max(0, (constraints.crossAxisExtent - maxWidth) / 2);
+                final horizontalPadding = max(0, (constraints.crossAxisExtent - maxWidth) / 2) + 8.0;
+                final configuredQuickActions = ref.watch(finampSettingsProvider.homeScreenConfiguration).actions;
                 return SliverPadding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding + 14.0),
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                   sliver: SliverToBoxAdapter(
                     child: Wrap(
                       spacing: 0,
@@ -84,30 +86,34 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
                       direction: Axis.horizontal,
                       alignment: WrapAlignment.spaceAround,
                       runAlignment: WrapAlignment.center,
-                      children: ref.watch(finampSettingsProvider.homeScreenConfiguration).actions.map((action) {
-                        return CTALarge(
+                      children: configuredQuickActions.indexed.map((indexedAction) {
+                        final (index, action) = indexedAction;
+                        //!!! custom adaptive grid
+                        // calculate button width based on available space and number of actions per row
+                        final quickActionsWidth = min(constraints.crossAxisExtent - horizontalPadding, maxWidth);
+                        double verticalButtonWidth = (quickActionsWidth / 3) - 2 * 5.0;
+                        double horizontalButtonWidth = (quickActionsWidth / 2) - 1 * 16.0;
+                        double singleButtonWidth = quickActionsWidth - 2 * 16.0;
+                        double buttonWidth;
+                        // always fill each row completely
+                        if (configuredQuickActions.length % 3 == 0) {
+                          buttonWidth = verticalButtonWidth;
+                        } else if (configuredQuickActions.length == 4) {
+                          buttonWidth = horizontalButtonWidth;
+                        } else if ((configuredQuickActions.length % 3 == 1 &&
+                                configuredQuickActions.length - index <= 4) ||
+                            (configuredQuickActions.length % 3 == 2 && configuredQuickActions.length - index < 3)) {
+                          buttonWidth = horizontalButtonWidth;
+                        } else {
+                          buttonWidth = singleButtonWidth;
+                        }
+                        return HomeScreenQuickActionButton(
+                          width: buttonWidth,
                           text: action.toLocalisedString(context),
                           label: action.getDescription(context),
-                          icon: switch (action) {
-                            FinampQuickActions.trackMix => TablerIcons.arrows_shuffle,
-                            FinampQuickActions.recents => TablerIcons.calendar,
-                            FinampQuickActions.surpriseMe => TablerIcons.radio,
-                          },
-                          vertical: true,
-                          minWidth: 110,
-                          onPressed: switch (action) {
-                            FinampQuickActions.trackMix => () {
-                              _audioServiceHelper.shuffleAll(
-                                onlyShowFavorites: ref.watch(finampSettingsProvider.onlyShowFavorites) ?? false,
-                              );
-                            },
-                            FinampQuickActions.recents => () {
-                              Navigator.pushNamed(context, QueueRestoreScreen.routeName);
-                            },
-                            FinampQuickActions.surpriseMe => () async {
-                              await GetIt.instance<AudioServiceHelper>().startSurpriseMeMix();
-                            },
-                          },
+                          icon: action.getIcon(),
+                          vertical: buttonWidth == verticalButtonWidth,
+                          onPressed: () async => QuickActionsService.handleAction(action, context),
                         );
                       }).toList(),
                     ),
@@ -203,6 +209,8 @@ class HomeScreenSection extends ConsumerWidget {
         actions: (isOffline && !isDownloaded)
             ? []
             : [
+                // if (sectionInfo.presetType == HomeScreenSectionPresetType.//TODO)
+                //TODO download button
                 if (sectionInfo.type == HomeScreenSectionType.tabView &&
                     sectionInfo.contentType == TabContentType.tracks)
                 //TODO use similar logic to [loadChildTracksFromShuffledGenreAlbums] for loading tracks from other tab types
