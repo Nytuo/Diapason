@@ -368,6 +368,21 @@ Future<void> _setupOSIntegration() async {
       albumBuffer.asUint8List(albumImageBytes.offsetInBytes, albumImageBytes.lengthInBytes),
     );
   }
+
+  if (Platform.isAndroid) {
+    var themeModeChannel = MethodChannel("com.unicornsonlsd.finamp/set_native_theme");
+    GetIt.instance<ProviderContainer>().listen(finampSettingsProvider.themeMode, (_, mode) {
+      _mainLog.info("Setting android native theme to $mode");
+      themeModeChannel.invokeMethod("setNativeThemeMode", {
+        "targetMode": switch (mode) {
+          ThemeMode.system => 0,
+          ThemeMode.light => 1,
+          ThemeMode.dark => 2,
+        },
+      });
+      // Fire on startup to correct desyncs and apply migration
+    }, fireImmediately: true);
+  }
 }
 
 Future<void> _setupPlaybackServices() async {
