@@ -1270,6 +1270,14 @@ extension FinampSetters on FinampSettingsHelper {
     ).put("FinampSettings", finampSettingsTemp);
   }
 
+  static void setAmoledTheme(bool newAmoledTheme) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.amoledTheme = newAmoledTheme;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
   static void setUseAndroidGainEffect(bool newUseAndroidGainEffect) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
     finampSettingsTemp.useAndroidGainEffect = newUseAndroidGainEffect;
@@ -1717,6 +1725,8 @@ extension FinampSettingsProviderSelectors on StreamProvider<FinampSettings> {
   get previousTracksPersistenceMode => finampSettingsProvider.select(
     (value) => value.requireValue.previousTracksPersistenceMode,
   );
+  ProviderListenable<bool> get amoledTheme =>
+      finampSettingsProvider.select((value) => value.requireValue.amoledTheme);
   ProviderListenable<bool> get useAndroidGainEffect => finampSettingsProvider
       .select((value) => value.requireValue.useAndroidGainEffect);
   ProviderListenable<DownloadProfile> get downloadTranscodingProfile =>
