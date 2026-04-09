@@ -225,7 +225,7 @@ class CarPlayHelper {
       return sortItems(baseItems, sortBy, sortOrder);
     }
 
-    // Fetch the online version if we can't get the offline versions
+    // Online mode: fetch from server API
     final items = await _jellyfinApiHelper.getItems(
       parentItem: tabContentType.itemType == BaseItemDtoType.playlist
           ? null
@@ -311,9 +311,6 @@ class CarPlayHelper {
     );
 
     if (randomTracks != null && randomTracks.isNotEmpty) {
-      // Pre-cache the first track's image so it's available for the now-playing screen
-      await _preloadCarPlayImages([randomTracks.first]);
-
       _carPlayLogger.info("Starting continuous radio from: ${randomTracks.first.name}");
       FinampSetters.setRadioMode(RadioMode.continuous);
       await radio.startRadioPlayback(randomTracks.first);
@@ -377,6 +374,9 @@ class CarPlayHelper {
 
     final recentPlays = getRecentPlays(limit: 5);
     if (recentPlays.isNotEmpty) {
+      final recentPlayItems = recentPlays.map((q) => q.baseItem).toList();
+      final recentPlayImageMap = await _preloadCarPlayImages(recentPlayItems);
+
       CPListSection recentPlaysSection = CPListSection(header: _l10n.recentlyPlayed, items: []);
 
       for (final queueItem in recentPlays) {
@@ -386,7 +386,7 @@ class CarPlayHelper {
           CPListItem(
             text: baseItem.name ?? _l10n.unknown,
             detailText: baseItem.artists?.join(", ") ?? baseItem.albumArtist,
-            image: _getCarPlayImageUrl(baseItem),
+            image: _getImageFromPreloaded(baseItem, recentPlayImageMap),
             onPress: (complete, self) async {
               if (!FinampSettingsHelper.finampSettings.isOffline) {
                 final audioServiceHelper = GetIt.instance<AudioServiceHelper>();
@@ -421,6 +421,8 @@ class CarPlayHelper {
     final recentlyAdded = await getRecentlyAddedAlbums(limit: 3);
     _carPlayLogger.info("Got ${recentlyAdded.length} recently added albums");
     if (recentlyAdded.isNotEmpty) {
+      final recentlyAddedImageMap = await _preloadCarPlayImages(recentlyAdded);
+
       CPListSection recentlyAddedSection = CPListSection(header: _l10n.recentlyAdded, items: []);
 
       for (final album in recentlyAdded) {
@@ -428,9 +430,9 @@ class CarPlayHelper {
           CPListItem(
             text: album.name ?? _l10n.unknownAlbum,
             detailText: album.albumArtist,
-            image: _getCarPlayImageUrl(album),
+            image: _getImageFromPreloaded(album, recentlyAddedImageMap),
             onPress: (complete, self) async {
-              await showPlaylistTemplate(album);
+              await showCollectionTracksTemplate(album);
               complete();
             },
           ),
@@ -472,7 +474,7 @@ class CarPlayHelper {
               case TabContentType.albums:
               case TabContentType.playlists:
               case TabContentType.genres:
-                showAlbumsTemplate(tabType: parentId.contentType);
+                showBrowsableListTemplate(tabType: parentId.contentType);
               case TabContentType.artists:
                 showArtistsTemplate();
               case TabContentType.tracks:
@@ -531,7 +533,9 @@ class CarPlayHelper {
     await _flutterCarplay.forceUpdateRootTemplate();
   }
 
-  Future<void> showPlaylistTemplate(BaseItemDto parent) async {
+  /// Shows the tracks within a single collection (album or playlist) as a
+  /// scrollable list with a shuffle button, and plays on tap.
+  Future<void> showCollectionTracksTemplate(BaseItemDto parent) async {
     if (_isPushingPageUpdate) {
       _carPlayLogger.warning("Navigation dropped: already pushing page update");
       return;
@@ -577,7 +581,10 @@ class CarPlayHelper {
     }
   }
 
-  Future<void> showAlbumsTemplate({required TabContentType tabType, BaseItemDto? genreFilter}) async {
+  /// Shows a browsable list of items for a library tab (albums, playlists, or
+  /// genres). Tapping an item drills down: genres show their albums, albums and
+  /// playlists show their tracks via [showCollectionTracksTemplate].
+  Future<void> showBrowsableListTemplate({required TabContentType tabType, BaseItemDto? genreFilter}) async {
     if (_isPushingPageUpdate) {
       _carPlayLogger.warning("Navigation dropped: already pushing page update");
       return;
@@ -587,17 +594,10 @@ class CarPlayHelper {
       List<BaseItemDto> mediaItems;
       if (genreFilter != null) {
         if (FinampSettingsHelper.finampSettings.isOffline) {
-          final allCollections = await _downloadsService.getAllCollections();
-          mediaItems = allCollections
-              .where(
-                (d) =>
-                    d.baseItem != null &&
-                    d.baseItemType == BaseItemDtoType.album &&
-                    (d.baseItem!.genreItems?.any((g) => g.id == genreFilter.id) ?? false),
-              )
-              .map((d) => d.baseItem!)
-              .take(_carPlayOfflineLimit)
-              .toList();
+          mediaItems = (await _downloadsService.getAllCollections(
+            baseTypeFilter: BaseItemDtoType.album,
+            genreFilter: genreFilter,
+          )).where((d) => d.baseItem != null).map((d) => d.baseItem!).take(_carPlayOfflineLimit).toList();
         } else {
           mediaItems =
               await _jellyfinApiHelper.getItems(
@@ -623,9 +623,9 @@ class CarPlayHelper {
           image: _getImageFromPreloaded(item, imageMap),
           onPress: (complete, self) async {
             if (tabType == TabContentType.genres && genreFilter == null) {
-              await showAlbumsTemplate(tabType: tabType, genreFilter: item);
+              await showBrowsableListTemplate(tabType: tabType, genreFilter: item);
             } else {
-              await showPlaylistTemplate(item);
+              await showCollectionTracksTemplate(item);
             }
             complete();
           },
@@ -650,8 +650,8 @@ class CarPlayHelper {
       List<BaseItemDto> tracks;
       if (FinampSettingsHelper.finampSettings.isOffline) {
         tracks = await getTabItems(tabContentType: TabContentType.tracks);
-        if (tracks.length > _carPlayOnlineLimit) {
-          tracks = tracks.sublist(0, _carPlayOnlineLimit);
+        if (tracks.length > _carPlayOfflineLimit) {
+          tracks = tracks.sublist(0, _carPlayOfflineLimit);
         }
       } else {
         tracks =
@@ -711,8 +711,8 @@ class CarPlayHelper {
       List<BaseItemDto> artists;
       if (FinampSettingsHelper.finampSettings.isOffline) {
         artists = await getTabItems(tabContentType: TabContentType.artists);
-        if (artists.length > _carPlayOnlineLimit) {
-          artists = artists.sublist(0, _carPlayOnlineLimit);
+        if (artists.length > _carPlayOfflineLimit) {
+          artists = artists.sublist(0, _carPlayOfflineLimit);
         }
       } else {
         artists =
@@ -788,7 +788,7 @@ class CarPlayHelper {
             text: item.name ?? _l10n.unknownName,
             image: _getImageFromPreloaded(item, imageMap),
             onPress: (complete, self) async {
-              await showPlaylistTemplate(item);
+              await showCollectionTracksTemplate(item);
               complete();
             },
           ),

@@ -176,8 +176,8 @@ class IosSiriHandler {
     final query = arguments['query'] as String?;
     _logger.info("Siri searchMedia - query: $query");
 
-    // For now, just play the search result (same as playFromSearch)
-    // In the future, this could navigate to a search results screen
+    // TODO: Navigate to a search results screen instead of playing immediately.
+    // This would require a Flutter method channel callback to trigger navigation.
     await _handlePlayFromSearch(arguments);
   }
 }
