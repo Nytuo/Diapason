@@ -72,7 +72,7 @@ jobs:
           git reset HEAD -- . # clear any staged changes from previous steps
           dart run flutter_native_splash:create --path=flutter_native_splash.yaml
           git add .
-          if git diff --cached --name-only | grep -q .; then
+          if git diff --cached --name-only | grep -v pubspec.lock | grep -q .; then
             echo "Splash screen generation is different, diff follows"
             git diff --cached | cat
             exit 2
