@@ -2986,5 +2986,22 @@
     "previousTracksPersistenceModeExpanded": "Expandidos (visíveis)",
     "@previousTracksPersistenceModeExpanded": {
         "description": "Overrides saved value to expand previous tracks header on queue list open"
+    },
+    "amoledTheme": "Usar Tema AMOLED",
+    "@amoledTheme": {
+        "description": "Toggles the dark color scheme between dark gray and pure black."
+    },
+    "amoledThemeSubtitle": "Substitui o esquema de cor escura por um tema de preto puro.",
+    "useAndroidGainEffectTitle": "Usar Efeito de Ganho",
+    "@useAndroidGainEffectTitle": {
+        "description": "Title for Android gain effect setting.  This setting is used to work around player errors on some devices."
+    },
+    "useAndroidGainEffectSubtitle": "Usar efeito de ganho nativo para controlar volume.  Isto é mais flexível mas quebra o reprodutor em alguns dispositivos.  Você não deve precisar de mudar isto manualmente.  Requer reiniciar a aplicação para aplicar.",
+    "@useAndroidGainEffectSubtitle": {
+        "description": "Subtitle for Android gain effect setting.  This setting is used to work around player errors on some devices."
+    },
+    "androidGainDisabled": "A mudar para efeito de ganho de recurso devido a erro de inicialização.",
+    "@androidGainDisabled": {
+        "description": "Message presented when the android gain effect fallback is enabled after an error occurs."
     }
 }
