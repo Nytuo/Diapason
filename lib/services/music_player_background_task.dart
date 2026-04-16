@@ -141,6 +141,13 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   final _volumeNormalizationLogger = Logger("VolumeNormalization");
   final _outputLogger = Logger("Output");
 
+  /// Time window used to ignore spurious play/pause callbacks immediately
+  /// after a skip command from certain Bluetooth headsets. Behavior before this fix was that a double-tap on such headsets would trigger a skip followed by an unintended pause, because the headset sent play/pause events immediately after the skip event. With this guard, if a play/pause event is received within this window after a skip command, it will be ignored.
+  static const Duration _skipPlayPauseGuardWindow = Duration(milliseconds: 50);
+
+  /// Timestamp of the most recent explicit skip command (next/previous).
+  DateTime? _lastSkipCommandAt;
+
   // Init the new sleep timer with a length of 0
   // SleepTimer sleepTimer = SleepTimer(SleepTimerType.duration, 0);
 
@@ -163,6 +170,24 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   late final BehaviorSubject<FadeState> fadeState;
 
   final outputSwitcherChannel = MethodChannel('com.unicornsonlsd.finamp/output_switcher');
+
+  /// Some Bluetooth headsets send skip and pause/play media button events in
+  /// very quick succession for a double-tap skip gesture. This guard ignores a
+  /// trailing play/pause event if it arrives right after skip, preventing an
+  /// unintended pause while still allowing normal controls outside the window.
+  bool get _shouldIgnorePlayPauseAfterRecentSkip {
+    final lastSkipCommandAt = _lastSkipCommandAt;
+    if (lastSkipCommandAt == null) return false;
+
+    final elapsed = DateTime.now().difference(lastSkipCommandAt);
+    if (elapsed <= _skipPlayPauseGuardWindow) {
+      _audioServiceBackgroundTaskLogger.fine(
+        "Ignoring play/pause because skip was ${elapsed.inMilliseconds}ms ago (threshold ${_skipPlayPauseGuardWindow.inMilliseconds}ms)",
+      );
+      return true;
+    }
+    return false;
+  }
 
   Future<void> showOutputSwitcherDialog() async {
     if (!Platform.isAndroid) {
@@ -583,6 +608,12 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
   @override
   Future<void> play({bool disableFade = false}) async {
+    _audioServiceBackgroundTaskLogger.fine(
+      "play() start: disableFade=$disableFade, playing=${_player.playing}, fadeDirection=${fadeState.value.fadeDirection}, currentIndex=${_player.currentIndex}, position=${_player.position}",
+    );
+    if (_shouldIgnorePlayPauseAfterRecentSkip) {
+      return;
+    }
     if (!disableFade && FinampSettingsHelper.finampSettings.audioFadeInDuration > Duration.zero) {
       return fadeInAndPlay();
     } else {
@@ -608,6 +639,12 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
   @override
   Future<void> pause({bool disableFade = false}) async {
+    _audioServiceBackgroundTaskLogger.fine(
+      "pause() start: disableFade=$disableFade, playing=${_player.playing}, fadeDirection=${fadeState.value.fadeDirection}, currentIndex=${_player.currentIndex}, position=${_player.position}",
+    );
+    if (_shouldIgnorePlayPauseAfterRecentSkip) {
+      return;
+    }
     if (!disableFade && FinampSettingsHelper.finampSettings.audioFadeOutDuration > Duration.zero) {
       return fadeOutAndPause();
     } else {
@@ -771,6 +808,10 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
   @override
   Future<void> skipToPrevious({bool forceSkip = false}) async {
+    _audioServiceBackgroundTaskLogger.fine(
+      "skipToPrevious() start: forceSkip=$forceSkip, playing=${_player.playing}, fadeDirection=${fadeState.value.fadeDirection}, hasPrevious=${_player.hasPrevious}, loopMode=${_player.loopMode}, currentIndex=${_player.currentIndex}, position=${_player.position}",
+    );
+    _lastSkipCommandAt = DateTime.now();
     bool doSkip = true;
 
     try {
@@ -803,6 +844,10 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
   @override
   Future<void> skipToNext() async {
+    _audioServiceBackgroundTaskLogger.fine(
+      "skipToNext() start: playing=${_player.playing}, fadeDirection=${fadeState.value.fadeDirection}, hasNext=${_player.hasNext}, loopMode=${_player.loopMode}, currentIndex=${_player.currentIndex}, position=${_player.position}",
+    );
+    _lastSkipCommandAt = DateTime.now();
     try {
       if (_player.loopMode == LoopMode.one || !_player.hasNext) {
         // if the user manually skips to the next track, they probably want to actually skip to the next track
