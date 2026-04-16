@@ -1352,5 +1352,80 @@
     "serverSharingMenuConfirmationDialogText": "Er du sikker på at du vil aktivere server deling selvom du er i offline tilstand? Dette vil få Finamp til at sende data over det lokale netværk.",
     "@serverSharingMenuConfirmationDialogText": {
         "description": "Dialog text shown when enabling server sharing while offline mode is enabled"
+    },
+    "previousTracksPersistenceModeExpanded": "Udvidet (synlig)",
+    "@previousTracksPersistenceModeExpanded": {
+        "description": "Overrides saved value to expand previous tracks header on queue list open"
+    },
+    "discordRPCIconLight": "Finamp - Hvid",
+    "@discordRPCIconLight": {
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with a White Background"
+    },
+    "discordRPCIconJFTransparent": "Jellyfin - Gennemsigtig",
+    "@discordRPCIconJFTransparent": {
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Jellyfin logo with a Transparent Background"
+    },
+    "discordRPCIconTransparent": "Finamp - Gennemsigtig",
+    "@discordRPCIconTransparent": {
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with a Transparent Background"
+    },
+    "discordRPCIconWhiteTransparent": "Hvid Finamp - Gennemsigtig",
+    "@discordRPCIconWhiteTransparent": {
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the full white Finamp logo with a Transparent Background"
+    },
+    "preferAddingToFavoritesOverPlaylistsTitle": "Tijføj til Favoritter når du klikker på hjerte ikonet",
+    "@preferAddingToFavoritesOverPlaylistsTitle": {
+        "description": "Title for the setting that swaps the default behavior of short- vs. long-press on the heart/favorite icon"
+    },
+    "preferAddingToFavoritesOverPlaylistsSubtitle": "Når til, et kort klik vil tilføje til favoritter, og et langt tryk vil åbne 'Føj til Spilleliste' menuen. Standard er modsat.",
+    "@preferAddingToFavoritesOverPlaylistsSubtitle": {
+        "description": "Subtitle for the setting that swaps the default behavior of short- vs. long-press on the heart/favorite icon"
+    },
+    "testConnectionButtonLabel": "Test begge forbindelser",
+    "@testConnectionButtonLabel": {
+        "description": "Button to test the public and local url inside the network settings tab"
+    },
+    "radioModeSettingsTitle": "Radio Tilstand",
+    "@radioModeSettingsTitle": {
+        "description": "Title for the setting that controls the radio mode/algorithm."
+    },
+    "amoledThemeSubtitle": "Erstatter det mørke farveskema med et helt sort tema.",
+    "addToNextUp": "Føj til næste oppe",
+    "@addToNextUp": {
+        "description": "Used for adding a track to the \"Next Up\" queue at the end, to play after all prior tracks from Next Up have played"
+    },
+    "moveAddToNextUp": "Flyt til næste oppe",
+    "@moveAddToNextUp": {
+        "description": "Used for moving a track to the \"Next Up\" queue at the end, to play after all prior tracks from Next Up have played"
+    },
+    "favoriteArtists": "Favorit Kunstner",
+    "recentlyAdded": "Tilføjet for nyligt",
+    "recentlyPlayed": "spillet for nyligt",
+    "latestReleases": "Seneste udgivelser",
+    "unknown": "Ukendt",
+    "runRepairWarning": "Serveren kunne ikke kontaktes for at afslutte download migrering. Kør 'Reparer Downloads' fra downloads skærmen så snart du er tilbage online.",
+    "@runRepairWarning": {
+        "description": "Message shown when an error occurs during the downloads repair step of the Isar downloads migration, which requires a server connection."
+    },
+    "showNullLibraryItemsTitle": "Vis medier med ukendt bibliotek.",
+    "@showNullLibraryItemsTitle": {
+        "description": "Title of setting that shows tracks/albums from an unknown library in all libraries when on, or in no libraries when off."
+    },
+    "showNullLibraryItemsSubtitle": "Nogle medier kan blive downloadet med et ukendt bibliotek. Slå fra for at gemme disse udenfor deres originale samling.",
+    "@showNullLibraryItemsSubtitle": {
+        "description": "Description of setting that shows tracks/albums from an unknown library in all libraries when on, or in no libraries when off."
+    },
+    "maxConcurrentDownloads": "Maks Samtidige Overførsler",
+    "@maxConcurrentDownloads": {
+        "description": "Title of setting controlling max concurrent downloads."
+    },
+    "maxConcurrentDownloadsLabel": "{count} Samtidige Overførsler",
+    "@maxConcurrentDownloadsLabel": {
+        "description": "Label of values on max concurrent downloads slider",
+        "placeholders": {
+            "count": {
+                "type": "String"
+            }
+        }
     }
 }
