@@ -1427,5 +1427,43 @@
                 "type": "String"
             }
         }
+    },
+    "accessibility": "Tilgængelighed",
+    "@accessibility": {
+        "description": "Title for the accessibility settings screen"
+    },
+    "autoOfflineOptionNetwork": "Lokalt Netværk",
+    "@autoOfflineOptionNetwork": {
+        "description": "This is shown when the autoOffline feature is set to \"local Network\", this means offline mode will be automatically enabled when no wifi or ethernet connection is active"
+    },
+    "preferLocalNetworkEnableSwitchTitle": "Foretræk Lokalt Netværk",
+    "preferLocalNetworkPublicAddressSettingTitle": "Offentligt Netværk",
+    "networkSettingsTitle": "Netværk",
+    "@networkSettingsTitle": {
+        "description": "Title for the network settings screen"
+    },
+    "quickConnectAuthorizationMenuButtonTitle": "Autoriser Quick Connect",
+    "@quickConnectAuthorizationMenuButtonTitle": {
+        "description": "Title for the button in the drawer that opens the quick connect authorization menu"
+    },
+    "quickConnectAuthorizationMenuTitle": "Autoriser Quick Connect Anmodning",
+    "@quickConnectAuthorizationMenuTitle": {
+        "description": "Title for the quick connect authorization menu that allows the user to authorize a quick connect request from another device"
+    },
+    "quickConnectAuthorizationMenuStateTitleProcessing": "Prøver at Autorisere Anmodning",
+    "@quickConnectAuthorizationMenuStateTitleProcessing": {
+        "description": "Title for the quick connect authorization menu state info (above the input field) while a request is being processed"
+    },
+    "quickConnectAuthorizationMenuStateTitleSuccess": "Anmodning Autoriseret Succesfuldt",
+    "@quickConnectAuthorizationMenuStateTitleSuccess": {
+        "description": "Title for the quick connect authorization menu state info (above the input field) when the authorization was successful"
+    },
+    "downloadBitrate": "Overførsels Bitrate",
+    "@downloadBitrate": {
+        "description": "Title for Download Bitrate settings slider"
+    },
+    "downloadBitrateSubtitle": "En højere bitrate giver højere kvalitet lyd på bekostning af større lager krav.",
+    "@downloadBitrateSubtitle": {
+        "description": "subtitle for Download Bitrate settings slider"
     }
 }
