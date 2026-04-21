@@ -57,7 +57,7 @@ dependencies:
       ref: 7ece49cc16a459aaa0718ed23458802533daef37
       path: packages/smtc_windows/
   # Despite having loose version constraints, smtc_windows and flutter_discord_rpc actually depend on the
-  # specific vaersion 2.11.1, so we must force it.
+  # specific version 2.11.1, so we must force it.
   flutter_rust_bridge: 2.11.1
 
   audio_service: ^0.18.18
@@ -159,7 +159,8 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   build_runner: ^2.3.3
-  flutter_gen_runner:
+  # 5.14 seems to fail - might need build_runner 2.12?
+  flutter_gen_runner: 5.13.0+1
   chopper_generator: ^8.0.0
   flutter_native_splash: ^2.4.7
   hive_ce_generator: ^1.8.1
