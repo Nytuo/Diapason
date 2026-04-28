@@ -538,7 +538,7 @@
         "description": "Message shown for download size while item is being deleted but is not fully removed"
     },
     "topTracks": "Canciones más reproducidas",
-    "shuffleAlbumsToNextUp": "Mezclar Álbumes al final de \"A Continuación\"",
+    "shuffleAlbumsToNextUp": "Mezclar Álbumes al final de A Continuación",
     "@shuffleAlbumsToNextUp": {
         "description": "Label for action that shuffles all albums of an artist or genre and adds them at the end of Next Up"
     },
@@ -1492,7 +1492,7 @@
     "@deleteFromTargetDialogText": {
         "description": "(Important: Note the space in front of some cases) A Confirm Prompt used whenever an item is about to be deleted from the device or server. The Server case should explain that this cannot be reverted, this information is not needed for the device since the user can just download the track again. The delete Type adapts the server text even more in can the user can or cant delete the item."
     },
-    "confirmAddToQueue": "Se ha añadido {type, select, track{la canción} album{el álbum} artist{el artista} playlist{la lista de reproducción} genre{el género} other{el elemento}} a la cola",
+    "confirmAddToQueue": "Se ha añadido {type, select, track{la canción} album{el álbum} artist{el artista} playlist{la lista de reproducción} genre{el género} disc{el disco} other{el elemento}} a la cola",
     "@confirmAddToQueue": {
         "description": "A confirmation message that is shown after successfully adding a track to the end of the regular queue",
         "placeholders": {
@@ -1545,7 +1545,7 @@
     "@preferQuickSyncSwitchSubtitle": {
         "description": "Description of setting that skips completed albums while syncing."
     },
-    "confirmAddToNextUp": "Se ha añadido {type, select, track{la canción} album{el álbum} artist{el artista} playlist{la lista de reproducción} genre{el género} other{el elemento}} a \"A continuación\"",
+    "confirmAddToNextUp": "Se ha añadido {type, select, track{la canción} album{el álbum} artist{el artista} playlist{la lista de reproducción} genre{el género} disc{el disco} other{el elemento}} a \"A continuación\"",
     "@confirmAddToNextUp": {
         "description": "A confirmation message that is shown after successfully adding a track to the end of the \"Next Up\" queue",
         "placeholders": {
@@ -1648,7 +1648,7 @@
     "@showLyricsTimestampsSubtitle": {
         "description": "Subtitle for the setting that controls if timestamps are shown for lyrics"
     },
-    "shuffleToQueue": "Mezclar en cola",
+    "shuffleToQueue": "Mezclar hacia la Cola",
     "@shuffleToQueue": {
         "description": "Used for shuffling a list (album, playlist, etc.) to the end of the regular queue, to play after all prior tracks from the queue have played"
     },
@@ -1694,7 +1694,7 @@
     "@shuffleAlbumsToQueue": {
         "description": "Label for action that shuffles all albums of an artist or genre and adds them at the end of the regular queue"
     },
-    "playingFromType": "Reproduciendo desde {source, select, album{álbum} playlist{lista de reproducción} trackMix{mezcla de canción} artistMix{mezcla de artista} albumMix{mezcla de álbum} genreMix{mezcla de género} favorites{favoritos} allTracks{todas las canciones} filteredList{canciones} genre{género} artist{artista} track{canción} nextUpAlbum{álbum en \"A continuación\"} nextUpPlaylist{lista de Reproducción en \"A continuación\"} nextUpArtist{artista en \"A continuación\"} nextUpGenre{género en \"A continuación\"} remoteClient{cliente remoto} other{}}",
+    "playingFromType": "Reproduciendo desde {source, select, album{álbum} playlist{lista de reproducción} trackMix{mezcla de canción} artistMix{mezcla de artista} albumMix{mezcla de álbum} genreMix{mezcla de género} favorites{favoritos} allTracks{todas las canciones} filteredList{canciones} genre{género} artist{artista} track{canción} nextUpAlbum{álbum en \"A continuación\"} nextUpPlaylist{lista de Reproducción en \"A continuación\"} nextUpArtist{artista en \"A continuación\"} nextUpGenre{género en \"A continuación\"} remoteClient{un cliente remoto} radio{radio} other{}}",
     "@playingFromType": {
         "description": "Prefix shown before the type of the main queue source at the top of the player screen. Example: \"Playing From Album\"",
         "placeholders": {
@@ -2486,5 +2486,56 @@
     "movePlayNext": "Reproducir siguiente",
     "@movePlayNext": {
         "description": "Used for moving a track to the \"Next Up\" queue at the first position, to play right after the current track finishes playing"
+    },
+    "amoledTheme": "Usar tema de AMOLED",
+    "@amoledTheme": {
+        "description": "Toggles the dark color scheme between dark gray and pure black."
+    },
+    "amoledThemeSubtitle": "Reemplaza la paleta de colores oscuros por un tema de negro puro.",
+    "shuffleSomeToNextUp": "Mezcla algunos al final de \"A Continuación\"",
+    "@shuffleSomeToNextUp": {
+        "description": "Used for shuffling some tracks to the end of the \"Next Up\" queue, to play after all prior tracks from Next Up have played"
+    },
+    "shuffleSomeToQueue": "Mezclar algunos hacia la Cola",
+    "@shuffleSomeToQueue": {
+        "description": "Used for shuffling some tracks to the end of the regular queue, to play after all prior tracks from the queue have played"
+    },
+    "moveAddToNextUp": "Mover hacia A Continuación",
+    "@moveAddToNextUp": {
+        "description": "Used for moving a track to the \"Next Up\" queue at the end, to play after all prior tracks from Next Up have played"
+    },
+    "moveAddToQueue": "Mover hacia el final",
+    "@moveAddToQueue": {
+        "description": "Used for moving a track to the end of the queue, to play after all prior tracks from the queue have played"
+    },
+    "radio": "Radio",
+    "@radio": {
+        "description": "Title for the queue source when the user is playing a track added via radio"
+    },
+    "radioForItem": "{radioSource} - Radio",
+    "@radioForItem": {
+        "description": "Suffix added to a queue source when playing a radio track. Example: \"Never Gonna Give You Up - Radio\"",
+        "placeholders": {
+            "radioSource": {
+                "type": "String",
+                "example": "Never Gonna Give You Up"
+            }
+        }
+    },
+    "shuffleSomeAlbums": "Mezclar algunos álbumes",
+    "@shuffleSomeAlbums": {
+        "description": "Label for action that shuffles some albums of a genre"
+    },
+    "shuffleSomeAlbumsNext": "Mezclar algunos álbumes al inicio de A Continuación",
+    "@shuffleSomeAlbumsNext": {
+        "description": "Label for action that shuffles some albums of a genre and adds them at the start of Next Up"
+    },
+    "shuffleSomeAlbumsToNextUp": "Mezclar algunos Álbumes al final de A Continuación",
+    "@shuffleSomeAlbumsToNextUp": {
+        "description": "Label for action that shuffles all albums of a genre and adds them at the end of Next Up"
+    },
+    "shuffleSomeAlbumsToQueue": "Mezclar algunos Álbumes al final de la Cola",
+    "@shuffleSomeAlbumsToQueue": {
+        "description": "Label for action that shuffles all albums of a genre and adds them at the end of the regular queue"
     }
 }
