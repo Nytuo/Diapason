@@ -224,8 +224,8 @@ class CarPlayHelper {
     await FlutterCarplay.showSharedNowPlaying();
   }
 
-  Future<void> startRadioMix() async {
-    _carPlayLogger.info("Starting radio mix");
+  Future<void> startRadio() async {
+    _carPlayLogger.info("Starting radio");
 
     await _queueService.stopAndClearQueue();
 
@@ -296,9 +296,9 @@ class CarPlayHelper {
           },
         ),
         CPListItem(
-          text: _l10n.radioMix,
+          text: _l10n.startRadio,
           onPress: (complete, self) async {
-            await startRadioMix();
+            await startRadio();
             complete();
           },
         ),
