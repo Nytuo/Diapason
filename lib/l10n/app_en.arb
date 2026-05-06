@@ -2011,7 +2011,7 @@
   "@fixedGridSizeSwitchSubtitle": {},
   "fixedGridSizeTitle": "Grid Tile Size",
   "@fixedGridSizeTitle": {},
-  "fixedGridTileSizeEnum": "{size, select, small{Small} medium{Medium} large{Large} veryLarge{Very Large} other{???}}",
+  "fixedGridTileSizeEnum": "{size, select, verySmall{Very Small} small{Small} medium{Medium} large{Large} veryLarge{Very Large} other{???}}",
   "@fixedGridTileSizeEnum": {
     "placeholders": {
       "size": {

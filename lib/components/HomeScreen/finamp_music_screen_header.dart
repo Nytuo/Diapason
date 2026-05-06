@@ -49,7 +49,6 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
 
   final finampUserHelper = GetIt.instance<FinampUserHelper>();
   final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
-  final downloadsService = GetIt.instance<DownloadsService>();
 
   @override
   Size get preferredSize => Size.fromHeight(
@@ -67,16 +66,6 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
     final inactiveTabBackgroundColor = ColorScheme.of(context).surface;
     Color activeTabTextColor = AtContrast.getContrastiveTintedTextColor(onBackground: activeTabBackgroundColor);
     Color inactiveTabTextColor = AtContrast.getContrastiveTintedTextColor(onBackground: inactiveTabBackgroundColor);
-
-    // refresh download counts
-    downloadsService.updateDownloadCounts();
-    Timer.periodic(const Duration(seconds: 4), (timer) {
-      if (context.mounted) {
-        downloadsService.updateDownloadCounts();
-      } else {
-        timer.cancel();
-      }
-    });
 
     final statusIcon = ref.watch(finampSettingsProvider.isOffline)
         ? TablerIcons.plug_connected_x
@@ -116,18 +105,9 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
                             : null,
                       ),
                       Positioned(bottom: -4, right: -2, child: Icon(statusIcon, size: 16)),
-                      StreamBuilder<Map<String, int>>(
-                        //!!! this stream doesn't refresh on its own, see timer above
-                        stream: downloadsService.downloadCountsStream,
-                        initialData: downloadsService.downloadCounts,
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
-                            return SizedBox.shrink();
-                          }
-                          // final (counts, statuses) = snapshot.data!;
-                          final counts = snapshot.data!;
-                          final isDownloadSystemDoingWork = (counts["sync"] ?? 0) > 0;
-                          if (isDownloadSystemDoingWork) {
+                      Consumer(
+                        builder: (context, ref, _) {
+                          if (ref.watch(pollingDownloadsSyncingProvider)) {
                             return Positioned(
                               bottom: statusIcon != null ? -6 : 1,
                               right: statusIcon != null ? -4 : 3,
@@ -336,3 +316,13 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
     );
   }
 }
+
+final pollingDownloadsSyncingProvider = Provider((Ref ref) {
+  final downloadsService = GetIt.instance<DownloadsService>();
+  // Schedule this provider to be re-polled in 4 seconds
+  Timer(Duration(seconds: 4), ref.invalidateSelf);
+  // TODO do we want to show downloading separate from syncing?
+  return downloadsService.syncBuffer.isRunning ||
+      downloadsService.deleteBuffer.isRunning ||
+      downloadsService.downloadTaskQueue.isRunning;
+});

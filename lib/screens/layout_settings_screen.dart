@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:finamp/components/LayoutSettingsScreen/automatic_accent_color_selector.dart';
 import 'package:finamp/components/LayoutSettingsScreen/use_monochrome_icon.dart';
@@ -148,7 +149,9 @@ class _GridImageSizeSelectorState extends ConsumerState<GridImageSizeSelector> {
         10 -
         (ref.watch(finampSettingsProvider.showFastScroller) ? 22 : 0);
 
-    final maxAvailable = Platform.isAndroid || Platform.isIOS ? (predictedGridWidth / 50).ceil() : 25;
+    // Always allow scaling items down to 45 px wide as the smallest reasonable value.  Desktop platforms are guaranteed
+    // 25 options even if they go below this to increase flexibility and because they can handle the more precise slider
+    final maxAvailable = max((predictedGridWidth / 45).ceil(), Platform.isAndroid || Platform.isIOS ? 0 : 25);
 
     colCount ??= predictedGridWidth / FinampSettingsHelper.finampSettings.gridImageSize;
     colCount = colCount!.clamp(1, maxAvailable.toDouble());
@@ -159,13 +162,13 @@ class _GridImageSizeSelectorState extends ConsumerState<GridImageSizeSelector> {
     } else {
       numLabel = "~${colCount!.round()}";
     }
-    final sizeLabel = switch (predictedGridWidth / colCount!) {
-      < 80 => "Very Small",
-      < 125 => "Small",
-      < 190 => "Medium",
-      < 300 => "Large",
-      _ => "Very Large",
-    };
+    final sizeLabel = AppLocalizations.of(context)!.fixedGridTileSizeEnum(switch (predictedGridWidth / colCount!) {
+      < 80 => "verySmall",
+      < 125 => "small",
+      < 190 => "medium",
+      < 300 => "large",
+      _ => "veryLarge",
+    });
 
     return Column(
       children: [

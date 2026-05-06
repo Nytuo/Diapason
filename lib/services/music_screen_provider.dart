@@ -114,8 +114,10 @@ class MusicScreenContent extends _$MusicScreenContent {
   }
 
   void newPage() {
-    // Only load one page at once
-    if (!state.isLoading) {
+    // The pagination tends to generate multiple requests at once, so block all but the initial one.  The exception is
+    // while loading the first, undersized page, we allow a second request through immediately to potentially finish
+    // loading a proper page's worth faster.
+    if (!state.isLoading || _pageCount < 2) {
       _pageCount++;
       ref.invalidateSelf();
     }
@@ -267,7 +269,6 @@ Future<List<BaseItemDto>?> loadHomeSectionItems(
       break;
     case HomeScreenSectionType.queues:
       throw UnimplementedError("Queue sections should be handled directly");
-      break;
   }
 
   return await newItemsFuture;

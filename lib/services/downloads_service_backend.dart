@@ -300,6 +300,8 @@ class IsarTaskQueue implements TaskQueue {
     }
   }
 
+  bool get isRunning => _callbacksComplete != null;
+
   /// Advance the queue if possible and ready, no-op if not.
   /// Will loop until all downloads have been enqueued.  Will enqueue
   /// finampSettings.maxConcurrentDownloads at once.
@@ -473,6 +475,8 @@ class DownloadsDeleteService {
       _callbacksComplete = null;
     }
   }
+
+  bool get isRunning => _callbacksComplete != null;
 
   /// Execute all queued _syncdeletes.  Will call itself until there are max concurrent
   /// download workers running at once.  Uses age variable to determine if queued
