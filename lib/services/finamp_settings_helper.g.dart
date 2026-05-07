@@ -52,14 +52,14 @@ extension FinampSetters on FinampSettingsHelper {
     ).put("FinampSettings", finampSettingsTemp);
   }
 
-  static void setShowTabs(TabContentType tabContentType, bool value) {
+  static void setShowTabs(TabContentType tabContentType, bool newValue) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
     try {
-      finampSettingsTemp.showTabs[tabContentType] = value;
+      finampSettingsTemp.showTabs[tabContentType] = newValue;
     } on UnsupportedError {
       // We were using the default const map directly.  Clone to allow modifications.
       finampSettingsTemp.showTabs = Map.from(finampSettingsTemp.showTabs);
-      finampSettingsTemp.showTabs[tabContentType] = value;
+      finampSettingsTemp.showTabs[tabContentType] = newValue;
     }
     Hive.box<FinampSettings>(
       "FinampSettings",
@@ -144,14 +144,14 @@ extension FinampSetters on FinampSettingsHelper {
     ).put("FinampSettings", finampSettingsTemp);
   }
 
-  static void setTabSortBy(TabContentType tabContentType, SortBy sortBy) {
+  static void setTabSortBy(TabContentType tabContentType, SortBy newValue) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
     try {
-      finampSettingsTemp.tabSortBy[tabContentType] = sortBy;
+      finampSettingsTemp.tabSortBy[tabContentType] = newValue;
     } on UnsupportedError {
       // We were using the default const map directly.  Clone to allow modifications.
       finampSettingsTemp.tabSortBy = Map.from(finampSettingsTemp.tabSortBy);
-      finampSettingsTemp.tabSortBy[tabContentType] = sortBy;
+      finampSettingsTemp.tabSortBy[tabContentType] = newValue;
     }
     Hive.box<FinampSettings>(
       "FinampSettings",
@@ -160,17 +160,17 @@ extension FinampSetters on FinampSettingsHelper {
 
   static void setTabSortOrder(
     TabContentType tabContentType,
-    SortOrder sortOrder,
+    SortOrder newValue,
   ) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
     try {
-      finampSettingsTemp.tabSortOrder[tabContentType] = sortOrder;
+      finampSettingsTemp.tabSortOrder[tabContentType] = newValue;
     } on UnsupportedError {
       // We were using the default const map directly.  Clone to allow modifications.
       finampSettingsTemp.tabSortOrder = Map.from(
         finampSettingsTemp.tabSortOrder,
       );
-      finampSettingsTemp.tabSortOrder[tabContentType] = sortOrder;
+      finampSettingsTemp.tabSortOrder[tabContentType] = newValue;
     }
     Hive.box<FinampSettings>(
       "FinampSettings",
@@ -179,6 +179,9 @@ extension FinampSetters on FinampSettingsHelper {
 
   static void setTabOrder(List<TabContentType> newTabOrder) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    if (finampSettingsTemp.tabOrder == newTabOrder) {
+      newTabOrder = newTabOrder.toList();
+    }
     finampSettingsTemp.tabOrder = newTabOrder;
     Hive.box<FinampSettings>(
       "FinampSettings",
@@ -882,6 +885,10 @@ extension FinampSetters on FinampSettingsHelper {
     List<GenreItemSections> newGenreItemSectionsOrder,
   ) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    if (finampSettingsTemp.genreItemSectionsOrder ==
+        newGenreItemSectionsOrder) {
+      newGenreItemSectionsOrder = newGenreItemSectionsOrder.toList();
+    }
     finampSettingsTemp.genreItemSectionsOrder = newGenreItemSectionsOrder;
     Hive.box<FinampSettings>(
       "FinampSettings",
@@ -908,6 +915,11 @@ extension FinampSetters on FinampSettingsHelper {
     List<CuratedItemSelectionType> newGenreItemSectionFilterChipOrder,
   ) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    if (finampSettingsTemp.genreItemSectionFilterChipOrder ==
+        newGenreItemSectionFilterChipOrder) {
+      newGenreItemSectionFilterChipOrder = newGenreItemSectionFilterChipOrder
+          .toList();
+    }
     finampSettingsTemp.genreItemSectionFilterChipOrder =
         newGenreItemSectionFilterChipOrder;
     Hive.box<FinampSettings>(
@@ -938,6 +950,11 @@ extension FinampSetters on FinampSettingsHelper {
     List<CuratedItemSelectionType> newArtistItemSectionFilterChipOrder,
   ) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    if (finampSettingsTemp.artistItemSectionFilterChipOrder ==
+        newArtistItemSectionFilterChipOrder) {
+      newArtistItemSectionFilterChipOrder = newArtistItemSectionFilterChipOrder
+          .toList();
+    }
     finampSettingsTemp.artistItemSectionFilterChipOrder =
         newArtistItemSectionFilterChipOrder;
     Hive.box<FinampSettings>(
@@ -949,6 +966,10 @@ extension FinampSetters on FinampSettingsHelper {
     List<ArtistItemSections> newArtistItemSectionsOrder,
   ) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    if (finampSettingsTemp.artistItemSectionsOrder ==
+        newArtistItemSectionsOrder) {
+      newArtistItemSectionsOrder = newArtistItemSectionsOrder.toList();
+    }
     finampSettingsTemp.artistItemSectionsOrder = newArtistItemSectionsOrder;
     Hive.box<FinampSettings>(
       "FinampSettings",
@@ -1043,19 +1064,17 @@ extension FinampSetters on FinampSettingsHelper {
 
   static void setTileAdditionalInfoType(
     TabContentType tabContentType,
-    TileAdditionalInfoType tileAdditionalInfoType,
+    TileAdditionalInfoType newValue,
   ) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
     try {
-      finampSettingsTemp.tileAdditionalInfoType[tabContentType] =
-          tileAdditionalInfoType;
+      finampSettingsTemp.tileAdditionalInfoType[tabContentType] = newValue;
     } on UnsupportedError {
       // We were using the default const map directly.  Clone to allow modifications.
       finampSettingsTemp.tileAdditionalInfoType = Map.from(
         finampSettingsTemp.tileAdditionalInfoType,
       );
-      finampSettingsTemp.tileAdditionalInfoType[tabContentType] =
-          tileAdditionalInfoType;
+      finampSettingsTemp.tileAdditionalInfoType[tabContentType] = newValue;
     }
     Hive.box<FinampSettings>(
       "FinampSettings",
@@ -1739,6 +1758,19 @@ extension FinampSettingsProviderSelectors on StreamProvider<FinampSettings> {
       );
   ProviderListenable<Duration> get bufferDuration => finampSettingsProvider
       .select((value) => value.requireValue.bufferDuration);
+}
+
+// Needs import of 'package:collection/collection.dart' in parent file
+class _LengthEqualsIterable<E> extends DelegatingIterable<E> {
+  _LengthEqualsIterable(super.base);
+
+  @override
+  bool operator ==(Object other) {
+    return other is _LengthEqualsIterable && other.length == length;
+  }
+
+  @override
+  int get hashCode => Object.hash(length, '_LengthEqualsIterable');
 }
 
 // **************************************************************************

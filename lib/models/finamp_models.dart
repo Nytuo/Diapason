@@ -413,7 +413,7 @@ class FinampSettings {
   bool androidStopForegroundOnPause;
 
   @HiveField(5)
-  @SettingsHelperMap("tabContentType", "value")
+  @SettingsHelperMap("tabContentType")
   Map<TabContentType, bool> showTabs;
 
   /// Used to remember if the user has set their music screen to favorites
@@ -469,11 +469,11 @@ class FinampSettings {
   bool disableGesture = DefaultSettings.disableGesture;
 
   @HiveField(20, defaultValue: <TabContentType, SortBy>{})
-  @SettingsHelperMap("tabContentType", "sortBy")
+  @SettingsHelperMap("tabContentType")
   Map<TabContentType, SortBy> tabSortBy;
 
   @HiveField(21, defaultValue: <TabContentType, SortOrder>{})
-  @SettingsHelperMap("tabContentType", "sortOrder")
+  @SettingsHelperMap("tabContentType")
   Map<TabContentType, SortOrder> tabSortOrder;
 
   @HiveField(22, defaultValue: DefaultSettings.tabOrder)
@@ -777,7 +777,7 @@ class FinampSettings {
   bool hasCompletedDownloadsFileOwnerMigration;
 
   @HiveField(122, defaultValue: DefaultSettings.tileAdditionalInfoType)
-  @SettingsHelperMap("tabContentType", "tileAdditionalInfoType")
+  @SettingsHelperMap("tabContentType")
   Map<TabContentType, TileAdditionalInfoType> tileAdditionalInfoType;
 
   @HiveField(123, defaultValue: DefaultSettings.rpcEnabled)
