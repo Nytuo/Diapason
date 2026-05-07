@@ -130,7 +130,7 @@ jobs:
     - name: Run Integration tests on api 25
       if: *integration_if
       timeout-minutes: 20
-      # Use the oldest supported version of android
+      # android emulator is flaky so we retry once
       uses: Wandalen/wretry.action@v3.8.0
       with:
         action: reactivecircus/android-emulator-runner@v2

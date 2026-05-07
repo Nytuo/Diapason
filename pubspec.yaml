@@ -100,12 +100,12 @@ dependencies:
       ref: 8b2b0f0e1c8470183cb2df40815a05bfdb3fe219
   share_plus: ^12.0.0
   isar: ^3.1.0
-  # Use version of isar core with android compilation fix.  If this version or ref changes,
+  # Use version of isar core with android compilation fixes.  If this version or ref changes,
   # the linux arm build in upload-assets.yml must be updated.
   isar_flutter_libs:
     git:
-      url: https://github.com/MrLittleWhite/isar_flutter_libs.git
-      ref: 59103190aa2ac03041d61ad6d127b540be079ec8
+      url: https://github.com/Komodo5197/isar_flutter_libs.git
+      ref: 21c20862e94bb33fca9e9c14b5ca72fc41307f4b
 
   path: ^1.9.0
   path_provider_platform_interface: ^2.1.2

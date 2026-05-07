@@ -947,9 +947,9 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "59103190aa2ac03041d61ad6d127b540be079ec8"
-      resolved-ref: "59103190aa2ac03041d61ad6d127b540be079ec8"
-      url: "https://github.com/MrLittleWhite/isar_flutter_libs.git"
+      ref: "21c20862e94bb33fca9e9c14b5ca72fc41307f4b"
+      resolved-ref: "21c20862e94bb33fca9e9c14b5ca72fc41307f4b"
+      url: "https://github.com/Komodo5197/isar_flutter_libs.git"
     source: git
     version: "3.1.0+1"
   isar_generator:
