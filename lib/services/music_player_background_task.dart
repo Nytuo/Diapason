@@ -1327,17 +1327,17 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
       queryParameters.addAll({
         "audioCodec": FinampSettingsHelper.finampSettings.transcodingStreamingFormat.codec,
+        "playSessionId": mediaItem.extras!["playSessionId"] as String? ?? "",
         // Ideally we'd switch between 44.1/48kHz depending on the source is,
         // realistically it doesn't matter too much
         // default to 44100, only use 48000 for opus because opus doesn't support 44100
-        "playSessionId": mediaItem.extras!["playSessionId"] as String? ?? "",
-        "audioSampleRate": FinampSettingsHelper.finampSettings.transcodingStreamingFormat.codec == 'opus'
-            ? '48000'
-            : '44100',
-        "maxAudioBitDepth": "16",
-        "audioBitRate": FinampSettingsHelper.finampSettings.transcodeBitrate.toString(),
+        "audioSampleRate": FinampSettingsHelper.finampSettings.transcodingStreamingFormat.sampleRate.toString(),
         "segmentContainer": FinampSettingsHelper.finampSettings.transcodingStreamingFormat.container,
       });
+
+      if (!FinampSettingsHelper.finampSettings.transcodingStreamingFormat.lossless) {
+        queryParameters.addAll({"audioBitRate": FinampSettingsHelper.finampSettings.transcodeBitrate.toString()});
+      }
 
       if (FinampSettingsHelper.finampSettings.multichannelHandlingSetting ==
               MultichannelHandlingSetting.stereoDownmixAll ||

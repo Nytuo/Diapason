@@ -2818,6 +2818,17 @@ enum FinampTranscodingStreamingFormat {
 
   /// The container to use to transport the segments
   final String container;
+
+  int get sampleRate => switch (this) {
+    FinampTranscodingStreamingFormat.opusFragmentedMp4 => 48000,
+    FinampTranscodingStreamingFormat.flacFragmentedMp4 => 48000,
+    _ => 44100,
+  };
+
+  bool get lossless => switch (this) {
+    FinampTranscodingStreamingFormat.flacFragmentedMp4 => true,
+    _ => false,
+  };
 }
 
 @HiveType(typeId: 74)

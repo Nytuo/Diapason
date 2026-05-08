@@ -86,7 +86,9 @@ final AutoDisposeFutureProviderFamily<MetadataProvider?, BaseItemDto> metadataPr
                         bitRate: bitrate,
                         sampleRate: null,
                         channels: null,
-                        bitDepth: audioStream?.bitDepth,
+                        // Lossy formats do not have a fixed bit depth
+                        //bitDepth: audioStream?.bitDepth,
+                        bitDepth: null,
                         isInterlaced: false,
                         isDefault: true,
                         isForced: false,
