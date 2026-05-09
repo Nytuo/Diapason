@@ -1,7 +1,5 @@
 import 'package:finamp/services/feedback_helper.dart';
-import 'package:finamp/services/music_player_background_task.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 
 enum IconPosition { start, end }
 
@@ -17,6 +15,10 @@ class SimpleButton extends StatelessWidget {
   final void Function() onPressed;
   final void Function()? onPressedSecondary;
   final bool disabled;
+  final Color? backgroundColor;
+
+  /// If false, the text will be used for the tooltip but only the icon will be visible
+  final bool showText;
 
   /// fades the button out, while keeping it enabled
   /// used for representing state while also allowing interaction that can yield more information about the state (e.g. lyrics button)
@@ -35,6 +37,8 @@ class SimpleButton extends StatelessWidget {
     this.iconColor,
     this.disabled = false,
     this.inactive = false,
+    this.backgroundColor,
+    this.showText = true,
   }) : textStyle = const TextStyle(fontSize: 14, fontWeight: FontWeight.normal);
 
   const SimpleButton.small({
@@ -50,25 +54,28 @@ class SimpleButton extends StatelessWidget {
     this.iconColor,
     this.disabled = false,
     this.inactive = false,
+    this.backgroundColor,
+    this.showText = true,
   }) : textStyle = const TextStyle(fontSize: 12, fontWeight: FontWeight.normal);
 
   @override
   Widget build(BuildContext context) {
     final contents = [
       Icon(icon, size: iconSize, color: (disabled || inactive) ? iconColor?.withOpacity(0.5) : iconColor, weight: 1.5),
-      Text(
-        text,
-        style: TextStyle(
-          color: (disabled || inactive)
-              ? Theme.of(context).disabledColor
-              : (textColor != null)
-              ? textColor
-              : Theme.of(context).textTheme.bodyMedium!.color!,
-          fontSize: textStyle.fontSize,
-          fontWeight: (fontWeight != null) ? fontWeight : textStyle.fontWeight,
+      if (showText)
+        Text(
+          text,
+          style: TextStyle(
+            color: (disabled || inactive)
+                ? Theme.of(context).disabledColor
+                : (textColor != null)
+                ? textColor
+                : Theme.of(context).textTheme.bodyMedium!.color!,
+            fontSize: textStyle.fontSize,
+            fontWeight: (fontWeight != null) ? fontWeight : textStyle.fontWeight,
+          ),
+          textAlign: TextAlign.center,
         ),
-        textAlign: TextAlign.center,
-      ),
     ];
 
     return Tooltip(
@@ -93,9 +100,9 @@ class SimpleButton extends StatelessWidget {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
             padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
-              const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
+              EdgeInsets.only(left: 2, top: 0, bottom: 0, right: backgroundColor != null ? 6 : 2),
             ),
-            backgroundColor: WidgetStateProperty.all<Color>(Colors.transparent),
+            backgroundColor: WidgetStateProperty.all<Color>(backgroundColor ?? Colors.transparent),
             visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
           ),
           child: Wrap(

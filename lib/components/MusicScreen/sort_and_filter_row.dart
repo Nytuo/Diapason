@@ -110,48 +110,83 @@ class SortAndFilterRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (tabType != TabContentType.home) {
+      Future<void> showMenu() => showSortAndFilterMenu(
+        context,
+        tabType: tabType,
+        forPlaylistTracks: forPlaylistTracks,
+        controller: controller,
+      );
       return SafeArea(
         top: false,
         bottom: false,
         child: GestureDetector(
-          onTap: () => showSortAndFilterMenu(
-            context,
-            tabType: tabType,
-            forPlaylistTracks: forPlaylistTracks,
-            controller: controller,
-          ),
+          onTap: showMenu,
           behavior: HitTestBehavior.opaque,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                ValueListenableBuilder(
-                  valueListenable: controller,
-                  builder: (context, value, child) {
-                    final activeFilters = value.filters;
-                    final int activeFilterCount = activeFilters.length;
-                    String statusText = activeFilterCount == 0
-                        ? "No Filter Active*"
-                        : "$activeFilterCount ${activeFilterCount == 1 ? "Filter" : "Filters"} Active*";
-                    return SimpleButton(
-                      icon: TablerIcons.filter,
-                      text: statusText,
-                      fontWeight: activeFilterCount > 0 ? FontWeight.w600 : FontWeight.normal,
-                      iconColor: activeFilterCount > 0
-                          ? ColorScheme.of(context).primary
-                          : TextTheme.of(context).bodyMedium?.color?.withOpacity(0.7),
-                      textColor: activeFilterCount > 0
-                          ? ColorScheme.of(context).primary
-                          : TextTheme.of(context).bodyMedium?.color?.withOpacity(0.7),
-                      onPressed: () => showSortAndFilterMenu(
-                        context,
-                        tabType: tabType,
-                        forPlaylistTracks: forPlaylistTracks,
-                        controller: controller,
-                      ),
-                    );
-                  },
+                Expanded(
+                  child: ValueListenableBuilder(
+                    valueListenable: controller,
+                    builder: (context, value, child) {
+                      final activeFilters = value.filters;
+                      final int activeFilterCount = activeFilters.length;
+                      String statusText = activeFilterCount == 0
+                          ? "No Filter Active*"
+                          : "$activeFilterCount ${activeFilterCount == 1 ? "Filter" : "Filters"} Active*";
+                      return LayoutBuilder(
+                        builder: (context, constraints) {
+                          final filerButtonWidth = 52.0;
+                          final maxChipWidth = 125.0;
+                          final chipSpacing = 2.0;
+                          final maxChips = ((constraints.maxWidth - filerButtonWidth) / (maxChipWidth + chipSpacing))
+                              .floor();
+                          final showChips = maxChips >= activeFilterCount && activeFilterCount > 0;
+                          return Row(
+                            spacing: chipSpacing,
+                            children: [
+                              SimpleButton(
+                                icon: TablerIcons.filter,
+                                showText: !showChips,
+                                text: statusText,
+                                fontWeight: activeFilterCount > 0 ? FontWeight.w600 : FontWeight.normal,
+                                iconColor: activeFilterCount > 0
+                                    ? ColorScheme.of(context).primary
+                                    : TextTheme.of(context).bodyMedium?.color?.withOpacity(0.7),
+                                textColor: activeFilterCount > 0
+                                    ? ColorScheme.of(context).primary
+                                    : TextTheme.of(context).bodyMedium?.color?.withOpacity(0.7),
+                                onPressed: showMenu,
+                              ),
+                              if (showChips)
+                                ...activeFilters.map(
+                                  (filter) => ConstrainedBox(
+                                    constraints: BoxConstraints(maxWidth: maxChipWidth),
+                                    child: SimpleButton(
+                                      text: filter.type.name,
+                                      icon: TablerIcons.x,
+                                      iconColor: TextTheme.of(context).bodyMedium?.color?.withOpacity(0.7),
+                                      backgroundColor: ColorScheme.of(context).primary.withOpacity(0.1),
+                                      onPressed: () => controller.updateConfiguration(
+                                        controller.value.copyWith(
+                                          filters: controller.value.filters
+                                              .whereNot((x) => x.type == filter.type)
+                                              .toSet(),
+                                        ),
+                                      ),
+                                      onPressedSecondary: showMenu,
+                                    ),
+                                  ),
+                                ),
+                              Spacer(),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
                 ValueListenableBuilder(
                   valueListenable: controller,
@@ -174,6 +209,7 @@ class SortAndFilterRow extends ConsumerWidget {
                               : SortOrder.ascending,
                         ),
                       ),
+                      onPressedSecondary: showMenu,
                     );
                   },
                 ),
