@@ -1,11 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:get_it/get_it.dart';
-import 'package:rxdart/rxdart.dart';
 import 'package:finamp/components/PlayerScreen/queue_list.dart';
 import 'package:finamp/components/PlayerScreen/sleep_timer_cancel_dialog.dart';
 import 'package:finamp/components/themed_bottom_sheet.dart';
@@ -36,6 +30,12 @@ import 'package:finamp/services/metadata_provider.dart';
 import 'package:finamp/services/music_player_background_task.dart';
 import 'package:finamp/services/queue_service.dart';
 import 'package:finamp/services/radio_service_helper.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:get_it/get_it.dart';
+import 'package:rxdart/rxdart.dart';
 
 const Duration trackMenuDefaultAnimationDuration = Duration(milliseconds: 500);
 const Curve trackMenuDefaultInCurve = Curves.easeOutCubic;
@@ -164,8 +164,8 @@ class _TrackMenuState extends ConsumerState<TrackMenu> with TickerProviderStateM
 
   bool isBaseItemInQueueItem(BaseItemDto baseItem, FinampQueueItem? queueItem) {
     if (queueItem != null) {
-      final baseItem = BaseItemDto.fromJson(queueItem.item.extras!["itemJson"] as Map<String, dynamic>);
-      return baseItem.id == queueItem.id;
+      final queueBaseItem = BaseItemDto.fromJson(queueItem.item.extras!["itemJson"] as Map<String, dynamic>);
+      return baseItem.id == queueBaseItem.id;
     }
     return false;
   }
@@ -243,7 +243,7 @@ class _TrackMenuState extends ConsumerState<TrackMenu> with TickerProviderStateM
 
     return [
       if (widget.queueInfo != null) RestoreQueueMenuEntry(queueInfo: widget.queueInfo!),
-      AddToPlaylistMenuEntry(item: widget.item, queueItem: queueItem),
+      AddToPlaylistMenuEntry(item: PlayableBaseItem.defaultSort(widget.item), queueItem: queueItem),
       RemoveFromCurrentPlaylistMenuEntry(
         baseItem: widget.item,
         parentItem: widget.parentItem,
@@ -508,11 +508,18 @@ class _TrackMenuState extends ConsumerState<TrackMenu> with TickerProviderStateM
           ),
         ),
       ],
-      SliverPersistentHeader(delegate: MenuItemInfoSliverHeader(item: widget.item), pinned: true),
+      SliverPersistentHeader(
+        delegate: MenuItemInfoSliverHeader(item: PlayableBaseItem.defaultSort(widget.item)),
+        pinned: true,
+      ),
       MenuMask(
         height: MenuItemInfoSliverHeader.defaultHeight,
         child: SliverToBoxAdapter(
-          child: PlaybackActionRow(item: widget.item, queueItem: widget.queueItem, source: widget.source),
+          child: PlaybackActionRow(
+            item: PlayableBaseItem.defaultSort(widget.item),
+            queueItem: widget.queueItem,
+            source: widget.source,
+          ),
         ),
       ),
       MenuMask(

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:finamp/components/AlbumScreen/download_button.dart';
 import 'package:finamp/components/ArtistScreen/artist_screen_content_flexible_space_bar.dart';
 import 'package:finamp/components/MusicScreen/item_wrapper.dart';
+import 'package:finamp/components/MusicScreen/sort_and_filter_row.dart';
 import 'package:finamp/components/curated_item_filter_row.dart';
 import 'package:finamp/components/curated_item_sections.dart';
 import 'package:finamp/components/favorite_button.dart';
@@ -35,23 +36,29 @@ class _ArtistScreenContentState extends ConsumerState<ArtistScreenContent> {
   JellyfinApiHelper jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
   final _downloadsService = GetIt.instance<DownloadsService>();
   final Set<CuratedItemSelectionType> _disabledTrackFilters = {};
-  BaseItemDto? currentGenreFilter;
+  SortAndFilterController controller = SortAndFilterController(configuration: SortAndFilterConfiguration.defaultSort);
   CuratedItemSelectionType? clickedCuratedItemSelectionType;
 
   StreamSubscription<void>? _refreshStream;
+
+  bool get disableDownloads => controller.value.filters.isNotEmpty;
 
   @override
   void initState() {
     _refreshStream = _downloadsService.offlineDeletesStream.listen((event) {
       _refresh();
     });
-    currentGenreFilter = widget.genreFilter;
+    controller.updateGenreFilter(widget.genreFilter);
+    controller.addListener(_listen);
     super.initState();
   }
+
+  void _listen() => setState(() {});
 
   @override
   void dispose() {
     _refreshStream?.cancel();
+    controller.dispose();
     super.dispose();
   }
 
@@ -62,16 +69,6 @@ class _ArtistScreenContentState extends ConsumerState<ArtistScreenContent> {
     ref.invalidate(getPerformingArtistTracksProvider);
     ref.invalidate(getArtistTracksProvider);
     _disabledTrackFilters.clear();
-  }
-
-  // Function to update the genre filter
-  // Pass null in order to reset the filter
-  void updateGenreFilter(BaseItemDto? genre) {
-    setState(() {
-      // We also clear the disabledTrackFilters
-      _disabledTrackFilters.clear();
-      currentGenreFilter = genre;
-    });
   }
 
   @override
@@ -94,7 +91,7 @@ class _ArtistScreenContentState extends ConsumerState<ArtistScreenContent> {
               getArtistTracksSectionProvider(
                 artist: widget.parent,
                 libraryFilter: widget.library,
-                genreFilter: currentGenreFilter,
+                genreFilter: controller.value.genreFilter?.id,
               ),
             )
             .valueOrNull ??
@@ -104,7 +101,7 @@ class _ArtistScreenContentState extends ConsumerState<ArtistScreenContent> {
           getArtistAlbumsProvider(
             artist: widget.parent,
             libraryFilter: widget.library,
-            genreFilter: currentGenreFilter,
+            genreFilter: controller.value.genreFilter?.id,
           ),
         )
         .valueOrNull;
@@ -113,7 +110,7 @@ class _ArtistScreenContentState extends ConsumerState<ArtistScreenContent> {
           getPerformingArtistAlbumsProvider(
             artist: widget.parent,
             libraryFilter: widget.library,
-            genreFilter: currentGenreFilter,
+            genreFilter: controller.value.genreFilter?.id,
           ),
         )
         .valueOrNull;
@@ -122,7 +119,7 @@ class _ArtistScreenContentState extends ConsumerState<ArtistScreenContent> {
           getPerformingArtistTracksProvider(
             artist: widget.parent,
             libraryFilter: widget.library,
-            genreFilter: currentGenreFilter,
+            genreFilter: controller.value.genreFilter?.id,
           ),
         )
         .valueOrNull;
@@ -130,7 +127,7 @@ class _ArtistScreenContentState extends ConsumerState<ArtistScreenContent> {
       getArtistTracksProvider(
         artist: widget.parent,
         libraryFilter: widget.library,
-        genreFilter: currentGenreFilter,
+        genreFilter: controller.value.genreFilter?.id,
       ).future,
     );
 
@@ -155,7 +152,7 @@ class _ArtistScreenContentState extends ConsumerState<ArtistScreenContent> {
         context: context,
         typeSelected: clickedCuratedItemSelectionType,
         messageFor: BaseItemDtoType.artist,
-        hasGenreFilter: (currentGenreFilter != null),
+        hasGenreFilter: (controller.value.genreFilter != null),
       );
       // When we've sent the message, we should reset the clicked value
       // so that we don't send it again on next state refresh
@@ -182,7 +179,12 @@ class _ArtistScreenContentState extends ConsumerState<ArtistScreenContent> {
             // This is the total height of the widget we use as a
             // FlexibleSpaceBar. We add the toolbar height ([kToolbarHeight]) since the widget
             // should appear below the appbar.
-            expandedHeight: kToolbarHeight + 125 + 24 + 100,
+            expandedHeight:
+                kToolbarHeight +
+                125 +
+                24 +
+                100 +
+                (controller.value.filters.isNotEmpty ? SortAndFilterRow.height + 10 : 0),
             leading: FinampAppBarBackButton(),
             centerTitle: false,
             pinned: true,
@@ -190,8 +192,7 @@ class _ArtistScreenContentState extends ConsumerState<ArtistScreenContent> {
               parentItem: widget.parent,
               allTracks: allTracks,
               albumCount: albumArtistAlbums.length,
-              genreFilter: currentGenreFilter,
-              updateGenreFilter: updateGenreFilter,
+              controller: controller,
             ),
             actions: [
               FavoriteButton(item: widget.parent),
@@ -205,8 +206,8 @@ class _ArtistScreenContentState extends ConsumerState<ArtistScreenContent> {
                     ),
                   ),
                   children: allChildren,
-                  downloadDisabled: (currentGenreFilter != null),
-                  customTooltip: (currentGenreFilter != null)
+                  downloadDisabled: disableDownloads,
+                  customTooltip: disableDownloads
                       ? AppLocalizations.of(context)!.downloadButtonDisabledGenreFilterTooltip
                       : null,
                 ),
@@ -231,7 +232,7 @@ class _ArtistScreenContentState extends ConsumerState<ArtistScreenContent> {
                         childrenForQueue: topTracks,
                         tracksText: type.toLocalisedSectionTitle(context, artistCuratedItemSelectionType),
                         isOnArtistScreen: true,
-                        genreFilter: currentGenreFilter,
+                        genreFilter: controller.value.genreFilter,
                         includeFilterRow: true,
                         customFilterOrder: artistCuratedItemSectionFilterOrder,
                         selectedFilter: artistCuratedItemSelectionType,

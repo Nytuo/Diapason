@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:collection/collection.dart';
 import 'package:finamp/components/Buttons/cta_medium.dart';
 import 'package:finamp/components/MusicScreen/item_card.dart';
 import 'package:finamp/l10n/app_localizations.dart';
+import 'package:finamp/services/item_by_id_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,8 +45,7 @@ class MusicScreenTabView extends ConsumerStatefulWidget {
   final bool allowTrackGestures;
   final SortAndFilterConfiguration sortAndFilterConfiguration;
 
-  BaseItemDto? get genreFilter =>
-      sortAndFilterConfiguration.filters.firstWhereOrNull((x) => x.type == ItemFilterType.genreFilter)?.extraBaseItem;
+  BaseItemDto? get genreFilter => sortAndFilterConfiguration.genreFilter;
 
   @override
   ConsumerState<MusicScreenTabView> createState() => _MusicScreenTabViewState();
@@ -286,9 +285,10 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
                                   // when the tabBar was filtered and we only have the tracks tab,
                                   // we can allow Dismiss gestures in the track list
                                   allowDismiss: widget.allowTrackGestures,
-                                  genreFilter: widget.genreFilter,
                                   isOnGenreScreen: (widget.genreFilter != null) ? true : false,
-                                  parentItem: widget.genreFilter,
+                                  parentItem: widget.genreFilter != null
+                                      ? ref.watch(itemByIdProvider(widget.genreFilter!.id)).value
+                                      : null,
                                   forceAlbumArtists: (widget.sortAndFilterConfiguration.sortBy == SortBy.albumArtist),
                                   adaptiveAdditionalInfoSortBy: widget.sortAndFilterConfiguration.sortBy,
                                   // since we can't re-create the current random sorting, we simply pass the pre-sorted tracks along

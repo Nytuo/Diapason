@@ -20,7 +20,7 @@ Future<(List<BaseItemDto>, CuratedItemSelectionType, Set<CuratedItemSelectionTyp
   Ref ref, {
   required BaseItemDto artist,
   BaseItemDto? libraryFilter,
-  BaseItemDto? genreFilter,
+  BaseItemId? genreFilter,
 }) async {
   final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
   final bool isOffline = ref.watch(finampSettingsProvider.isOffline);
@@ -150,7 +150,7 @@ Future<List<BaseItemDto>> getArtistAlbums(
   Ref ref, {
   required BaseItemDto artist,
   BaseItemDto? libraryFilter,
-  BaseItemDto? genreFilter,
+  BaseItemId? genreFilter,
   SortBy sortBy = SortBy.premiereDate,
   SortOrder sortOrder = SortOrder.ascending,
 }) async {
@@ -196,7 +196,7 @@ Future<List<BaseItemDto>> getPerformingArtistAlbums(
   Ref ref, {
   required BaseItemDto artist,
   BaseItemDto? libraryFilter,
-  BaseItemDto? genreFilter,
+  BaseItemId? genreFilter,
   SortBy sortBy = SortBy.premiereDate,
   SortOrder sortOrder = SortOrder.ascending,
 }) async {
@@ -242,7 +242,7 @@ Future<List<BaseItemDto>> getPerformingArtistTracks(
   Ref ref, {
   required BaseItemDto artist,
   BaseItemDto? libraryFilter,
-  BaseItemDto? genreFilter,
+  BaseItemId? genreFilter,
   bool onlyFavorites = false,
 }) async {
   final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
@@ -293,7 +293,7 @@ Future<List<BaseItemDto>> getArtistTracks(
   Ref ref, {
   required BaseItemDto artist,
   BaseItemDto? libraryFilter,
-  BaseItemDto? genreFilter,
+  BaseItemId? genreFilter,
   bool onlyFavorites = false,
 }) async {
   final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();

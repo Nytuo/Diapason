@@ -26,6 +26,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 
 import '../../services/music_screen_provider.dart';
+import '../MusicScreen/sort_and_filter_row.dart';
 
 typedef BaseItemDtoCallback = void Function(BaseItemDto item);
 
@@ -39,30 +40,36 @@ class AlbumScreenContent extends ConsumerStatefulWidget {
   ConsumerState<AlbumScreenContent> createState() => _AlbumScreenContentState();
 }
 
-StreamSubscription<void>? _listener;
-
 class _AlbumScreenContentState extends ConsumerState<AlbumScreenContent> {
-  BaseItemDto? currentGenreFilter;
+  late SortAndFilterController sortAndFilterController;
+
+  bool get disableDownloads => sortAndFilterController.value.filters.isNotEmpty;
+
+  StreamSubscription<void>? _listener;
 
   @override
   void initState() {
-    currentGenreFilter = widget.genreFilter;
-    super.initState();
-  }
-
-  // Function to update the genre filter
-  // Pass null in order to reset the filter
-  void updateGenreFilter(BaseItemDto? genre) {
-    setState(() {
-      currentGenreFilter = genre;
+    if (widget.genreFilter != null) {
+      sortAndFilterController = SortAndFilterController(
+        configuration: ref
+            .read(sortAndFilterConfigFromSettingsProvider(null))
+            .copyWith(genreFilter: widget.genreFilter),
+      );
+    } else {
+      sortAndFilterController = SortAndFilterController.trackSettings(tabType: null);
+    }
+    _listener = musicScreenRefreshStream.stream.listen((_) {
+      setState(() {});
     });
+    sortAndFilterController.addListener(() => setState(() {}));
+    super.initState();
   }
 
   @override
   void dispose() {
     super.dispose();
+    sortAndFilterController.dispose();
     _listener?.cancel();
-    _listener = null;
   }
 
   @override
@@ -78,7 +85,7 @@ class _AlbumScreenContentState extends ConsumerState<AlbumScreenContent> {
     final parentIsPlaylist = BaseItemDtoType.fromItem(widget.parent) == BaseItemDtoType.playlist;
 
     final tracksAsync = parentIsPlaylist
-        ? ref.watch(getSortedPlaylistTracksProvider(widget.parent, genreFilter: currentGenreFilter))
+        ? ref.watch(getSortedPlaylistTracksProvider(widget.parent, sortAndFilterController.value))
         : ref.watch(getAlbumOrPlaylistTracksProvider(widget.parent));
     final (allTracks, playableTracks) = tracksAsync.valueOrNull ?? (null, null);
     final isLoading = allTracks == null;
@@ -96,11 +103,6 @@ class _AlbumScreenContentState extends ConsumerState<AlbumScreenContent> {
         displayChildren.removeWhere((element) => element.id == item.id);
       });
     }
-
-    _listener?.cancel();
-    _listener = musicScreenRefreshStream.stream.listen((_) {
-      setState(() {});
-    });
 
     List<List<BaseItemDto>> childrenPerDisc = [];
     // if not in playlist, try splitting up tracks by disc numbers
@@ -132,8 +134,8 @@ class _AlbumScreenContentState extends ConsumerState<AlbumScreenContent> {
                 DownloadButton(
                   item: downloadStub,
                   children: displayChildren,
-                  downloadDisabled: (currentGenreFilter != null),
-                  customTooltip: (currentGenreFilter != null)
+                  downloadDisabled: disableDownloads,
+                  customTooltip: disableDownloads
                       ? AppLocalizations.of(context)!.downloadButtonDisabledGenreFilterTooltip
                       : null,
                 ),
@@ -147,7 +149,7 @@ class _AlbumScreenContentState extends ConsumerState<AlbumScreenContent> {
 
             return SliverAppBar(
               title: (!parentIsPlaylist) ? Text(widget.parent.name ?? AppLocalizations.of(context)!.unknownName) : null,
-              expandedHeight: kToolbarHeight + 125 + 18 + 100 + (parentIsPlaylist ? 40 : 0),
+              expandedHeight: kToolbarHeight + 125 + 18 + 100 + (parentIsPlaylist ? SortAndFilterRow.height + 10 : 0),
               // collapsedHeight: kToolbarHeight + 125 + 80,
               leading: FinampAppBarBackButton(),
               pinned: true,
@@ -156,8 +158,7 @@ class _AlbumScreenContentState extends ConsumerState<AlbumScreenContent> {
               flexibleSpace: AlbumScreenContentFlexibleSpaceBar(
                 parentItem: widget.parent,
                 items: queueChildren,
-                genreFilter: currentGenreFilter,
-                updateGenreFilter: updateGenreFilter,
+                controller: sortAndFilterController,
               ),
               actions: actions,
             );

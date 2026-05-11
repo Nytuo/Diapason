@@ -256,9 +256,9 @@ class DefaultSettings {
   static const previousTracksPersistenceMode = PreviousTracksPersistenceMode.persistent;
   static final homeScreenConfiguration = FinampHomeScreenConfiguration(
     actions: [
-      FinampQuickActions.shuffleTracks,
-      FinampQuickActions.browseRecentQueues,
-      FinampQuickActions.playRandomTrack,
+      QuickActionConfig(action: FinampQuickActions.shuffleTracks),
+      QuickActionConfig(action: FinampQuickActions.browseRecentQueues),
+      QuickActionConfig(action: FinampQuickActions.surpriseMe),
     ],
     sections: [
       HomeScreenSectionConfiguration.fromPreset(HomeScreenSectionPresetType.favoriteTracks),
@@ -1804,6 +1804,9 @@ enum DownloadItemStatus {
 /// The type of a BaseItemDto as determined from its type field.
 /// Enumerated by Isar, do not modify order or delete existing entries
 enum BaseItemDtoType {
+  // TODO we should probably only have the types we care about
+  // track, album, artist, playlist, library, collection.
+  // Others should map to one if close enough, else throw.
   noItem(null, true, null, null),
   album("MusicAlbum", false, [track], DownloadItemType.collection),
   artist("MusicArtist", true, [album, track], DownloadItemType.collection),
@@ -1878,8 +1881,8 @@ enum BaseItemDtoType {
     switch (item) {
       case AlbumDisc():
         return BaseItemDtoType.fromItem(item.parent);
-      case BaseItemDto():
-        return BaseItemDtoType.fromItem(item);
+      case PlayableBaseItem():
+        return BaseItemDtoType.fromItem(item.item);
     }
   }
 }
@@ -2042,8 +2045,8 @@ class QueueItemSource {
     switch (playableItem) {
       case AlbumDisc():
         return QueueItemSource.fromBaseItem(playableItem.parent, type: type, nameType: nameType);
-      case BaseItemDto():
-        return QueueItemSource.fromBaseItem(playableItem, type: type, nameType: nameType);
+      case PlayableBaseItem():
+        return QueueItemSource.fromBaseItem(playableItem.item, type: type, nameType: nameType);
     }
   }
 
@@ -4142,7 +4145,7 @@ enum HomeScreenSectionType {
   }
 }
 
-@JsonSerializable(converters: [BaseItemIdConverter()])
+@JsonSerializable(converters: [BaseItemIdConverter()], includeIfNull: false)
 @HiveType(typeId: 114)
 class HomeScreenSectionConfiguration {
   @HiveField(0)
@@ -4361,6 +4364,7 @@ class HomeScreenSectionConfiguration {
         )!.homeScreenSectionPresetForgottenFavoriteTracksTitle,
         HomeScreenSectionPresetType.recentQueues => "Recent Queues*",
       };
+
   String getDescription(BuildContext context) => presetType != null
       ? getDescriptionForPreset(context: context, presetType: presetType!)
       : toLocalisedString(context);
@@ -4508,16 +4512,18 @@ enum FinampQuickActions {
   @HiveField(8)
   surpriseMe,
   @HiveField(9)
-  //TODO to support this, we need to support passing item IDs to the action configuration somehow
   playSpecificItem;
   //TODO support album/artist shuffle (requires queue support)
+
+  bool get editable => switch (this) {
+    FinampQuickActions.playSpecificItem => true,
+    _ => false,
+  };
 
   /// Human-readable version of the [FinampQuickActionType]
   @override
   @Deprecated("Use toLocalisedString when possible")
   String toString() => _humanReadableName(this);
-
-  String toLocalisedString(BuildContext context) => _humanReadableLocalisedName(this, context);
 
   String _humanReadableName(FinampQuickActions quickAction) {
     switch (quickAction) {
@@ -4541,31 +4547,6 @@ enum FinampQuickActions {
         return "Play Specific Item";
       case FinampQuickActions.surpriseMe:
         return "Surprise Me";
-    }
-  }
-
-  String _humanReadableLocalisedName(FinampQuickActions quickAction, BuildContext context) {
-    switch (quickAction) {
-      case FinampQuickActions.shuffleTracks:
-        return "Shuffle Tracks*";
-      case FinampQuickActions.browseRecentQueues:
-        return "Recent Queues*";
-      case FinampQuickActions.browsePlaybackHistory:
-        return "Playback History*";
-      case FinampQuickActions.playRandomAlbum:
-        return "Random Album*";
-      case FinampQuickActions.playRandomTrack:
-        return "Random Track*";
-      case FinampQuickActions.playRandomFavoriteItem:
-        return "Random Favorite*";
-      case FinampQuickActions.playMostRecentQueue:
-        return "Last Queue*";
-      case FinampQuickActions.configureOutput:
-        return "Configure Output*";
-      case FinampQuickActions.playSpecificItem:
-        return "Play <Item>*";
-      case FinampQuickActions.surpriseMe:
-        return "Surprise Me*";
     }
   }
 
@@ -4618,7 +4599,7 @@ class FinampHomeScreenConfiguration {
   const FinampHomeScreenConfiguration({required this.actions, required this.sections});
 
   @HiveField(0)
-  final List<FinampQuickActions> actions;
+  final List<QuickActionConfig> actions;
 
   @HiveField(1)
   final List<HomeScreenSectionConfiguration> sections;
@@ -4635,7 +4616,7 @@ class FinampHomeScreenConfiguration {
 
   // implement copyWith
   FinampHomeScreenConfiguration copyWith({
-    List<FinampQuickActions>? actions,
+    List<QuickActionConfig>? actions,
     List<HomeScreenSectionConfiguration>? sections,
   }) {
     return FinampHomeScreenConfiguration(actions: actions ?? this.actions, sections: sections ?? this.sections);
@@ -4687,6 +4668,21 @@ class ItemFilter {
     return jsonEncode(toJson());
   }
 
+  String getName(BuildContext context) {
+    switch (type) {
+      case ItemFilterType.isFavorite:
+      case ItemFilterType.isFullyDownloaded:
+      case ItemFilterType.isUnplayed:
+        return type.name;
+      case ItemFilterType.genreFilter:
+        return "Genre:* ${extraBaseItem.name}";
+      case ItemFilterType.startsWithCharacter:
+        return "Starting with:* $extraString";
+      case ItemFilterType.searchTerm:
+        return "Search:* $extraString";
+    }
+  }
+
   @override
   bool operator ==(Object other) {
     return other is ItemFilter && other.type == type && other.extras == extras;
@@ -4712,27 +4708,41 @@ class SortAndFilterConfiguration {
 
   factory SortAndFilterConfiguration.fromJson(Map<String, dynamic> json) => _$SortAndFilterConfigurationFromJson(json);
 
+  BaseItemDto? get genreFilter => filters.firstWhereOrNull((x) => x.type == ItemFilterType.genreFilter)?.extraBaseItem;
+
   SortAndFilterConfiguration copyWith({
     SortBy? sortBy,
     SortOrder? sortOrder,
     Set<ItemFilter>? filters,
-    Set<ItemFilter>? additionalFilters,
+    BaseItemDto? genreFilter,
+    bool? favoriteFilter,
   }) {
+    final processedFilters = filters ?? this.filters.toSet();
+    if (genreFilter != null) {
+      processedFilters.removeWhere((x) => x.type == ItemFilterType.genreFilter);
+      processedFilters.add(ItemFilter(type: ItemFilterType.genreFilter, extras: genreFilter));
+    }
+    if (favoriteFilter != null) {
+      processedFilters.removeWhere((x) => x.type == ItemFilterType.genreFilter);
+      if (favoriteFilter) {
+        processedFilters.add(ItemFilter(type: ItemFilterType.isFavorite));
+      }
+    }
     return SortAndFilterConfiguration(
       sortBy: sortBy ?? this.sortBy,
       sortOrder: sortOrder ?? this.sortOrder,
-      filters: (filters ?? this.filters.toSet()).union(additionalFilters ?? {}),
+      filters: processedFilters,
     );
   }
 
-  SortAndFilterConfiguration resolve({
-    required bool isOffline,
-    required bool inPlaylist,
-    BaseItemDto? genreFilter,
-    String? searchQuery,
-  }) {
+  static const defaultSort = SortAndFilterConfiguration(
+    sortBy: SortBy.defaultOrder,
+    sortOrder: SortOrder.ascending,
+    filters: {},
+  );
+
+  SortAndFilterConfiguration resolve({required bool isOffline, required bool inPlaylist, String? searchQuery}) {
     final newFilters = filters.union({
-      if (genreFilter != null) ItemFilter(type: ItemFilterType.genreFilter, extras: genreFilter),
       if (searchQuery != null) ItemFilter(type: ItemFilterType.searchTerm, extras: searchQuery),
     });
     var newSortBy = sortBy;
@@ -4767,5 +4777,54 @@ class SortAndFilterConfiguration {
       filtersHash ^= filter.hashCode;
     }
     return Object.hash(sortBy, sortOrder, filtersHash);
+  }
+}
+
+@HiveType(typeId: 121)
+@JsonSerializable(converters: [BaseItemIdConverter()], includeIfNull: false)
+class QuickActionConfig {
+  @HiveField(0)
+  final FinampQuickActions action;
+  @HiveField(1)
+  final BaseItemId? itemId;
+  @HiveField(2)
+  final String? itemName;
+
+  const QuickActionConfig({required this.action, this.itemId, this.itemName});
+
+  String getTitle(BuildContext context) => _humanReadableLocalisedName(action, context);
+
+  String _humanReadableLocalisedName(FinampQuickActions quickAction, BuildContext context) {
+    switch (quickAction) {
+      case FinampQuickActions.shuffleTracks:
+        return "Shuffle Tracks*";
+      case FinampQuickActions.browseRecentQueues:
+        return "Recent Queues*";
+      case FinampQuickActions.browsePlaybackHistory:
+        return "Playback History*";
+      case FinampQuickActions.playRandomAlbum:
+        return "Random Album*";
+      case FinampQuickActions.playRandomTrack:
+        return "Random Track*";
+      case FinampQuickActions.playRandomFavoriteItem:
+        return "Random Favorite*";
+      case FinampQuickActions.playMostRecentQueue:
+        return "Last Queue*";
+      case FinampQuickActions.configureOutput:
+        return "Configure Output*";
+      case FinampQuickActions.playSpecificItem:
+        return "Play ${itemName ?? "<Item>"}*";
+      case FinampQuickActions.surpriseMe:
+        return "Surprise Me*";
+    }
+  }
+
+  factory QuickActionConfig.fromJson(Map<String, dynamic> json) => _$QuickActionConfigFromJson(json);
+
+  Map<String, dynamic> toJson() => _$QuickActionConfigToJson(this);
+
+  @override
+  String toString() {
+    return jsonEncode(toJson());
   }
 }

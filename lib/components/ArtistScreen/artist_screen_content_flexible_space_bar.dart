@@ -1,15 +1,11 @@
 import 'dart:async';
 
+import 'package:finamp/components/MusicScreen/sort_and_filter_row.dart';
 import 'package:finamp/menus/components/playbackActions/playback_action_row.dart';
-import 'package:finamp/menus/components/playbackActions/playback_actions.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/queue_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
 
 import '../../models/jellyfin_models.dart';
-import '../../services/audio_service_helper.dart';
 import '../album_image.dart';
 import 'artist_item_info.dart';
 
@@ -32,15 +28,13 @@ class ArtistScreenContentFlexibleSpaceBar extends ConsumerWidget {
     required this.parentItem,
     required this.allTracks,
     required this.albumCount,
-    this.genreFilter,
-    this.updateGenreFilter,
+    required this.controller,
   });
 
   final BaseItemDto parentItem;
   final Future<List<BaseItemDto>?> allTracks;
   final int albumCount;
-  final BaseItemDto? genreFilter;
-  final void Function(BaseItemDto?)? updateGenreFilter;
+  final SortAndFilterController controller;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -67,8 +61,7 @@ class ArtistScreenContentFlexibleSpaceBar extends ConsumerWidget {
                             item: parentItem,
                             itemTracks: snapshot.data?.length ?? 0,
                             itemAlbums: albumCount,
-                            genreFilter: genreFilter,
-                            updateGenreFilter: updateGenreFilter,
+                            updateGenreFilter: controller.updateGenreFilter,
                           );
                         },
                       ),
@@ -76,7 +69,24 @@ class ArtistScreenContentFlexibleSpaceBar extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 10),
-                PlaybackActionRow(compactLayout: true, item: parentItem, popContext: false, genreFilter: genreFilter),
+                ValueListenableBuilder(
+                  valueListenable: controller,
+                  builder: (_, value, _) {
+                    return Column(
+                      children: [
+                        PlaybackActionRow(
+                          compactLayout: true,
+                          item: PlayableBaseItem(item: parentItem, sortConfig: value),
+                          popContext: false,
+                        ),
+                        if (value.filters.isNotEmpty) ...[
+                          SizedBox(height: 10),
+                          SortAndFilterRow.removeOnly(controller: controller),
+                        ],
+                      ],
+                    );
+                  },
+                ),
               ],
             ),
           ),

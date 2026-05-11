@@ -12,7 +12,7 @@ part of 'music_screen_provider.dart';
 // **************************************************************************
 
 String _$loadHomeSectionItemsHash() =>
-    r'fc063f7f06280ec5a198e40dbdd931a7a571d184';
+    r'8d2f2ccf262a2d3992d878ee753eced25cf071b8';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -215,7 +215,7 @@ class _LoadHomeSectionItemsProviderElement
   int get limit => (origin as LoadHomeSectionItemsProvider).limit;
 }
 
-String _$globalSearchHash() => r'057ef140bb3c4fe404840a933a9cce8281c51846';
+String _$globalSearchHash() => r'629baea3ff8943df78747a6e6804455125ae7136';
 
 /// See also [globalSearch].
 @ProviderFor(globalSearch)
@@ -227,7 +227,7 @@ class GlobalSearchFamily extends Family<AsyncValue<List<BaseItemDto>>> {
   const GlobalSearchFamily();
 
   /// See also [globalSearch].
-  GlobalSearchProvider call(String searchTerm, {bool includeTracks = false}) {
+  GlobalSearchProvider call(String searchTerm, {required bool includeTracks}) {
     return GlobalSearchProvider(searchTerm, includeTracks: includeTracks);
   }
 
@@ -257,7 +257,7 @@ class GlobalSearchFamily extends Family<AsyncValue<List<BaseItemDto>>> {
 class GlobalSearchProvider
     extends AutoDisposeFutureProvider<List<BaseItemDto>> {
   /// See also [globalSearch].
-  GlobalSearchProvider(String searchTerm, {bool includeTracks = false})
+  GlobalSearchProvider(String searchTerm, {required bool includeTracks})
     : this._internal(
         (ref) => globalSearch(
           ref as GlobalSearchRef,

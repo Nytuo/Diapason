@@ -14,6 +14,7 @@ import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/services/audio_service_helper.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:finamp/services/finamp_user_helper.dart';
+import 'package:finamp/services/item_by_id_provider.dart';
 import 'package:finamp/services/jellyfin_api_helper.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -37,9 +38,7 @@ class MusicScreen extends ConsumerStatefulWidget {
   // Optional parameters for genre and tab filtering
   final HomeScreenSectionConfiguration? singleTabConfig;
 
-  BaseItemDto? get genreFilter => singleTabConfig?.sortAndFilterConfiguration.filters
-      .firstWhereOrNull((x) => x.type == ItemFilterType.genreFilter)
-      ?.extraBaseItem;
+  BaseItemDto? get genreFilter => singleTabConfig?.sortAndFilterConfiguration.genreFilter;
 
   bool get showHeader => singleTabConfig == null;
 
@@ -122,11 +121,15 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
         tooltip: AppLocalizations.of(context)!.shuffleAll,
         onPressed: () async {
           try {
+            BaseItemDto? genreFilter;
+            if (widget.genreFilter != null) {
+              genreFilter = await ref.read(itemByIdProvider(widget.genreFilter!.id).future);
+            }
             await _audioServiceHelper.shuffleAll(
-              onlyShowFavorites: (sortAndFilterControllerMap[currentTab]!.configuration.filters.any(
+              onlyShowFavorites: sortAndFilterControllerMap[currentTab]!.configuration.filters.any(
                 (filter) => filter.type == ItemFilterType.isFavorite,
-              )),
-              genreFilter: widget.genreFilter,
+              ),
+              genreFilter: genreFilter,
             );
           } catch (e) {
             GlobalSnackbar.error(e);
@@ -274,14 +277,6 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
                     // TODO should overridden config respond to going offline?
                     ? SortAndFilterController(configuration: widget.singleTabConfig!.sortAndFilterConfiguration)
                     : SortAndFilterController.trackSettings(tabType: contentTabType);
-                final genreFilter =
-                    (widget.genreFilter != null &&
-                        (tabType.itemType == BaseItemDtoType.track ||
-                            tabType.itemType == BaseItemDtoType.album ||
-                            tabType.itemType == BaseItemDtoType.artist ||
-                            tabType.itemType == BaseItemDtoType.playlist))
-                    ? widget.genreFilter
-                    : null;
                 return Column(
                   children: [
                     SortAndFilterRow(tabType: contentTabType, controller: sortAndFilterControllerMap[contentTabType]!),
@@ -305,7 +300,6 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
                                 isOffline: ref.watch(finampSettingsProvider.isOffline),
                                 inPlaylist: false,
                                 searchQuery: searchQuery,
-                                genreFilter: genreFilter,
                               ),
                             );
                           },

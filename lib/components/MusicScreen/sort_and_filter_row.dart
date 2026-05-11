@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:collection/collection.dart';
 import 'package:finamp/components/Buttons/cta_medium.dart';
 import 'package:finamp/components/Buttons/simple_button.dart';
@@ -67,6 +69,8 @@ class SortAndFilterController extends ValueNotifier<SortAndFilterConfiguration> 
     }
   }
 
+  void updateGenreFilter(BaseItemDto? genre) => value = value.copyWith(genreFilter: genre);
+
   @override
   void dispose() {
     _settingsListener?.close();
@@ -105,7 +109,17 @@ class SortAndFilterRow extends ConsumerWidget {
 
   final bool forPlaylistTracks;
 
-  const SortAndFilterRow({super.key, required this.tabType, required this.controller, this.forPlaylistTracks = false});
+  final bool removeOnly;
+
+  static double get height => (Platform.isIOS || Platform.isAndroid) ? 30 : 26;
+
+  const SortAndFilterRow({super.key, required this.tabType, required this.controller, this.forPlaylistTracks = false})
+    : removeOnly = false;
+
+  const SortAndFilterRow.removeOnly({super.key, required this.controller})
+    : tabType = TabContentType.tracks,
+      forPlaylistTracks = false,
+      removeOnly = true;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -115,6 +129,7 @@ class SortAndFilterRow extends ConsumerWidget {
         tabType: tabType,
         forPlaylistTracks: forPlaylistTracks,
         controller: controller,
+        removeOnly: removeOnly,
       );
       return SafeArea(
         top: false,
@@ -139,10 +154,10 @@ class SortAndFilterRow extends ConsumerWidget {
                       return LayoutBuilder(
                         builder: (context, constraints) {
                           final filerButtonWidth = 52.0;
-                          final maxChipWidth = 125.0;
+                          final minimumMaxChipWidth = 125.0;
                           final chipSpacing = 2.0;
-                          final maxChips = ((constraints.maxWidth - filerButtonWidth) / (maxChipWidth + chipSpacing))
-                              .floor();
+                          final maxChips =
+                              ((constraints.maxWidth - filerButtonWidth) / (minimumMaxChipWidth + chipSpacing)).floor();
                           final showChips = maxChips >= activeFilterCount && activeFilterCount > 0;
                           return Row(
                             spacing: chipSpacing,
@@ -163,9 +178,13 @@ class SortAndFilterRow extends ConsumerWidget {
                               if (showChips)
                                 ...activeFilters.map(
                                   (filter) => ConstrainedBox(
-                                    constraints: BoxConstraints(maxWidth: maxChipWidth),
+                                    constraints: BoxConstraints(
+                                      // Cap chip width to prevent unusually long ones from causing overflow.
+                                      // If showChips, this is guaranteed to be at least minimumMaxChipWidth
+                                      maxWidth: (constraints.maxWidth - filerButtonWidth) / activeFilterCount,
+                                    ),
                                     child: SimpleButton(
-                                      text: filter.type.name,
+                                      text: filter.getName(context),
                                       icon: TablerIcons.x,
                                       iconColor: TextTheme.of(context).bodyMedium?.color?.withOpacity(0.7),
                                       backgroundColor: ColorScheme.of(context).primary.withOpacity(0.1),
@@ -188,31 +207,32 @@ class SortAndFilterRow extends ConsumerWidget {
                     },
                   ),
                 ),
-                ValueListenableBuilder(
-                  valueListenable: controller,
-                  builder: (context, value, child) {
-                    final config = value.resolve(
-                      isOffline: ref.watch(finampSettingsProvider.isOffline),
-                      inPlaylist: forPlaylistTracks,
-                    );
-                    return SimpleButton(
-                      // TODO the way that values ascend as you go down the page but we show an up arrow is confusing.
-                      // Is there a way to resolve this in a more intuitive manner?  What do other programs do?
-                      icon: config.sortOrder == SortOrder.ascending
-                          ? TablerIcons.sort_ascending
-                          : TablerIcons.sort_descending,
-                      text: config.sortBy.toLocalisedString(context),
-                      onPressed: () => controller.updateConfiguration(
-                        controller.value.copyWith(
-                          sortOrder: config.sortOrder == SortOrder.ascending
-                              ? SortOrder.descending
-                              : SortOrder.ascending,
+                if (!removeOnly)
+                  ValueListenableBuilder(
+                    valueListenable: controller,
+                    builder: (context, value, child) {
+                      final config = value.resolve(
+                        isOffline: ref.watch(finampSettingsProvider.isOffline),
+                        inPlaylist: forPlaylistTracks,
+                      );
+                      return SimpleButton(
+                        // TODO the way that values ascend as you go down the page but we show an up arrow is confusing.
+                        // Is there a way to resolve this in a more intuitive manner?  What do other programs do?
+                        icon: config.sortOrder == SortOrder.ascending
+                            ? TablerIcons.sort_ascending
+                            : TablerIcons.sort_descending,
+                        text: config.sortBy.toLocalisedString(context),
+                        onPressed: () => controller.updateConfiguration(
+                          controller.value.copyWith(
+                            sortOrder: config.sortOrder == SortOrder.ascending
+                                ? SortOrder.descending
+                                : SortOrder.ascending,
+                          ),
                         ),
-                      ),
-                      onPressedSecondary: showMenu,
-                    );
-                  },
-                ),
+                        onPressedSecondary: showMenu,
+                      );
+                    },
+                  ),
                 // FilterMenuButton(
                 //   tabType: tabType,
                 //   filterOverride: filterOverride,
@@ -241,6 +261,7 @@ Future<void> showSortAndFilterMenu(
   required TabContentType tabType,
   required bool forPlaylistTracks,
   required SortAndFilterController controller,
+  bool removeOnly = false,
 }) async {
   return await showThemedBottomSheet<void>(
     context: context,
@@ -251,6 +272,7 @@ Future<void> showSortAndFilterMenu(
         tabType: tabType,
         forPlaylistTracks: forPlaylistTracks,
         controller: controller,
+        removeOnly: removeOnly,
       );
     },
   );
@@ -269,6 +291,7 @@ class SortAndFilterMenu extends ConsumerStatefulWidget {
     required this.tabType,
     required this.forPlaylistTracks,
     required this.controller,
+    required this.removeOnly,
   });
 
   final ScrollBuilder childBuilder;
@@ -276,6 +299,7 @@ class SortAndFilterMenu extends ConsumerStatefulWidget {
   final TabContentType tabType;
   final bool forPlaylistTracks;
   final SortAndFilterController controller;
+  final bool removeOnly;
 
   @override
   ConsumerState<SortAndFilterMenu> createState() => _SortAndFilterMenuState();
@@ -283,6 +307,14 @@ class SortAndFilterMenu extends ConsumerStatefulWidget {
 
 class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu> with TickerProviderStateMixin {
   late SortAndFilterConfiguration currentConfig;
+
+  static const toggalableFilterTypes = [
+    ItemFilterType.isFavorite,
+    ItemFilterType.isFullyDownloaded,
+    ItemFilterType.isUnplayed,
+  ];
+  Set<ItemFilter> get excessFilters =>
+      currentConfig.filters.whereNot((x) => toggalableFilterTypes.contains(x.type)).toSet();
 
   @override
   void initState() {
@@ -297,7 +329,36 @@ class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu> with Tick
 
   @override
   Widget build(BuildContext context) {
-    final menuEntries = _getMenuEntries(context);
+    final List<Widget> menuEntries;
+    if (widget.removeOnly) {
+      menuEntries = [
+        SizedBox(height: 20.0),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          spacing: 4.0,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 4.0),
+              child: Text("Filters*", style: Theme.of(context).textTheme.bodyMedium),
+            ),
+            ...excessFilters.map((filter) => _makeExcessFilterTile(ref, filter)),
+          ],
+        ),
+        SizedBox(height: 32.0),
+        CTAMedium(
+          text: "Apply*",
+          icon: TablerIcons.check,
+          onPressed: () {
+            widget.controller.updateConfiguration(currentConfig);
+            Navigator.of(context).pop();
+          },
+        ),
+      ];
+    } else {
+      menuEntries = _getMenuEntries(context);
+    }
+
     // Actual height was 490, bump to 520 for extra bottom padding and wiggle room on element sizes
     final stackHeight = 520.0;
 
@@ -340,7 +401,9 @@ class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu> with Tick
             selectedIcon: currentConfig.sortBy.getIcon(),
             onSelected: (sortBy) {
               if (sortBy != null) {
-                currentConfig = currentConfig.copyWith(sortBy: sortBy);
+                setState(() {
+                  currentConfig = currentConfig.copyWith(sortBy: sortBy);
+                });
               }
             },
           ),
@@ -370,7 +433,9 @@ class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu> with Tick
             selectedIcon: currentConfig.sortOrder.getIcon(),
             onSelected: (sortOrder) {
               if (sortOrder != null) {
-                currentConfig = currentConfig.copyWith(sortOrder: sortOrder);
+                setState(() {
+                  currentConfig = currentConfig.copyWith(sortOrder: sortOrder);
+                });
               }
             },
           ),
@@ -387,75 +452,9 @@ class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu> with Tick
             child: Text("Filters*", style: Theme.of(context).textTheme.bodyMedium),
           ),
           ...ItemFilterType.values
-              .whereNot(
-                (x) => [
-                  ItemFilterType.startsWithCharacter,
-                  ItemFilterType.genreFilter,
-                  ItemFilterType.searchTerm,
-                ].contains(x),
-              )
-              .map(
-                (option) => ToggleableListTile(
-                  title: option.name,
-                  leading: Padding(
-                    padding: const EdgeInsets.only(left: 16.0),
-                    child: Icon(switch (option) {
-                      ItemFilterType.isFavorite => TablerIcons.heart,
-                      ItemFilterType.isFullyDownloaded => TablerIcons.download,
-                      ItemFilterType.startsWithCharacter => TablerIcons.sort_ascending,
-                      ItemFilterType.genreFilter => TablerIcons.tag,
-                      ItemFilterType.searchTerm => TablerIcons.list_search,
-                      ItemFilterType.isUnplayed => TablerIcons.headphones_off,
-                    }),
-                  ),
-                  trailing: SizedBox.shrink(),
-                  enabled: switch (option) {
-                    ItemFilterType.isFullyDownloaded => ref.watch(finampSettingsProvider.isOffline),
-                    _ => true,
-                  },
-                  state: switch (option) {
-                    ItemFilterType.isFavorite => currentConfig.filters.contains(
-                      ItemFilter(type: ItemFilterType.isFavorite),
-                    ),
-                    ItemFilterType.isFullyDownloaded => currentConfig.filters.contains(
-                      ItemFilter(type: ItemFilterType.isFullyDownloaded),
-                    ),
-                    ItemFilterType.startsWithCharacter => throw UnimplementedError(),
-                    ItemFilterType.genreFilter => throw UnimplementedError(),
-                    ItemFilterType.searchTerm => throw UnimplementedError(),
-                    ItemFilterType.isUnplayed => currentConfig.filters.contains(
-                      ItemFilter(type: ItemFilterType.isUnplayed),
-                    ),
-                  },
-                  onToggle: (currentState) async {
-                    final newFilters = Set<ItemFilter>.from(currentConfig.filters);
-                    if (currentState) {
-                      newFilters.removeWhere((filter) => filter.type == option);
-                    } else {
-                      switch (option) {
-                        case ItemFilterType.isFavorite:
-                          newFilters.add(ItemFilter(type: ItemFilterType.isFavorite));
-                          break;
-                        case ItemFilterType.isFullyDownloaded:
-                          newFilters.add(ItemFilter(type: ItemFilterType.isFullyDownloaded));
-                          break;
-                        case ItemFilterType.startsWithCharacter:
-                          throw UnimplementedError();
-                        case ItemFilterType.genreFilter:
-                          throw UnimplementedError();
-                        case ItemFilterType.searchTerm:
-                          throw UnimplementedError();
-                        case ItemFilterType.isUnplayed:
-                          newFilters.add(ItemFilter(type: ItemFilterType.isUnplayed));
-                          break;
-                      }
-                    }
-                    setState(() {
-                      currentConfig = currentConfig.copyWith(filters: newFilters);
-                    });
-                  },
-                ),
-              ),
+              .where((x) => toggalableFilterTypes.contains(x))
+              .map((option) => _makeFilterTile(ref, option)),
+          ...excessFilters.map((filter) => _makeExcessFilterTile(ref, filter)),
         ],
       ),
       SizedBox(height: 32.0),
@@ -468,6 +467,97 @@ class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu> with Tick
         },
       ),
     ];
+  }
+
+  Widget _makeFilterTile(WidgetRef ref, ItemFilterType option) {
+    return ToggleableListTile(
+      title: option.name,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 16.0),
+        child: Icon(switch (option) {
+          ItemFilterType.isFavorite => TablerIcons.heart,
+          ItemFilterType.isFullyDownloaded => TablerIcons.download,
+          ItemFilterType.startsWithCharacter => TablerIcons.sort_ascending,
+          ItemFilterType.genreFilter => TablerIcons.tag,
+          ItemFilterType.searchTerm => TablerIcons.list_search,
+          ItemFilterType.isUnplayed => TablerIcons.headphones_off,
+        }),
+      ),
+      trailing: SizedBox.shrink(),
+      enabled: switch (option) {
+        ItemFilterType.isFullyDownloaded => ref.watch(finampSettingsProvider.isOffline),
+        _ => true,
+      },
+      state: switch (option) {
+        ItemFilterType.isFavorite => currentConfig.filters.contains(ItemFilter(type: ItemFilterType.isFavorite)),
+        ItemFilterType.isFullyDownloaded => currentConfig.filters.contains(
+          ItemFilter(type: ItemFilterType.isFullyDownloaded),
+        ),
+        ItemFilterType.startsWithCharacter => throw UnimplementedError(),
+        ItemFilterType.genreFilter => throw UnimplementedError(),
+        ItemFilterType.searchTerm => throw UnimplementedError(),
+        ItemFilterType.isUnplayed => currentConfig.filters.contains(ItemFilter(type: ItemFilterType.isUnplayed)),
+      },
+      onToggle: (currentState) async {
+        final newFilters = Set<ItemFilter>.from(currentConfig.filters);
+        if (currentState) {
+          newFilters.removeWhere((filter) => filter.type == option);
+        } else {
+          switch (option) {
+            case ItemFilterType.isFavorite:
+              newFilters.add(ItemFilter(type: ItemFilterType.isFavorite));
+              break;
+            case ItemFilterType.isFullyDownloaded:
+              newFilters.add(ItemFilter(type: ItemFilterType.isFullyDownloaded));
+              break;
+            case ItemFilterType.startsWithCharacter:
+              throw UnimplementedError();
+            case ItemFilterType.genreFilter:
+              throw UnimplementedError();
+            case ItemFilterType.searchTerm:
+              throw UnimplementedError();
+            case ItemFilterType.isUnplayed:
+              newFilters.add(ItemFilter(type: ItemFilterType.isUnplayed));
+              break;
+          }
+        }
+        setState(() {
+          currentConfig = currentConfig.copyWith(filters: newFilters);
+        });
+      },
+    );
+  }
+
+  Widget _makeExcessFilterTile(WidgetRef ref, ItemFilter filter) {
+    return ToggleableListTile(
+      title: filter.type.name,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 16.0),
+        child: Icon(switch (filter.type) {
+          ItemFilterType.isFavorite => TablerIcons.heart,
+          ItemFilterType.isFullyDownloaded => TablerIcons.download,
+          ItemFilterType.startsWithCharacter => TablerIcons.sort_ascending,
+          ItemFilterType.genreFilter => TablerIcons.tag,
+          ItemFilterType.searchTerm => TablerIcons.list_search,
+          ItemFilterType.isUnplayed => TablerIcons.headphones_off,
+        }),
+      ),
+      trailing: Icon(TablerIcons.x),
+      enabled: true,
+      state: true,
+      onToggle: (currentState) async {
+        final newFilters = Set<ItemFilter>.from(currentConfig.filters);
+        if (currentState) {
+          newFilters.removeWhere((x) => x.type == filter.type);
+        } else {
+          // The excess tile should be immediatly removed once toggled off
+          throw UnimplementedError();
+        }
+        setState(() {
+          currentConfig = currentConfig.copyWith(filters: newFilters);
+        });
+      },
+    );
   }
 
   // All track menu slivers, including headers
@@ -486,7 +576,7 @@ class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu> with Tick
           height: MenuMaskHeight(32.0),
           child: SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            sliver: SliverList.list(children: _getMenuEntries(context)),
+            sliver: SliverList.list(children: menuEntries),
           ),
         ),
       ),

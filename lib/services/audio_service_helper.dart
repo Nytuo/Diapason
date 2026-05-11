@@ -1,5 +1,6 @@
 import 'package:finamp/components/global_snackbar.dart';
 import 'package:finamp/models/jellyfin_models.dart';
+import 'package:finamp/services/radio_service_helper.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 
@@ -10,7 +11,6 @@ import 'finamp_settings_helper.dart';
 import 'finamp_user_helper.dart';
 import 'jellyfin_api_helper.dart';
 import 'queue_service.dart';
-import 'package:finamp/services/radio_service_helper.dart';
 
 /// Just some functions to make talking to AudioService a bit neater.
 class AudioServiceHelper {
@@ -31,7 +31,7 @@ class AudioServiceHelper {
       // way.
       items = (await _isarDownloader.getAllTracks(
         viewFilter: _finampUserHelper.currentUser?.currentView?.id,
-        genreFilter: genreFilter,
+        genreFilter: genreFilter?.id,
         onlyFavorites: onlyShowFavorites,
         nullableViewFilters: FinampSettingsHelper.finampSettings.showDownloadsWithUnknownLibrary,
       )).map((e) => e.baseItem!).toList();
@@ -47,7 +47,7 @@ class AudioServiceHelper {
         filters: onlyShowFavorites ? "IsFavorite" : null,
         limit: FinampSettingsHelper.finampSettings.trackShuffleItemCount,
         sortBy: "Random",
-        genreFilter: genreFilter,
+        genreFilter: genreFilter?.id,
       );
     }
 

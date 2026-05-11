@@ -307,7 +307,9 @@ Future<List<BaseItemDto>> generateRadioTracks(
     // Items originally in the currently playing source (or manually added)
     final originalQueue =
         (actualSeed != null
-                ? (await loadChildTracksFromBaseItem(baseItem: actualSeed)).map((item) => item).toList()
+                ? (await loadChildTracksFromBaseItem(
+                    item: PlayableBaseItem.defaultSort(actualSeed),
+                  )).map((item) => item).toList()
                 : <BaseItemDto>[])
             // if the queue is purely made up of radio modes (i.e. after using the "Start Radio" option in the menu), we don't filter out radio tracks
             .followedBy(
@@ -344,7 +346,9 @@ Future<List<BaseItemDto>> generateRadioTracks(
     // Items originally in the currently playing source (or manually added)
     final originalQueue =
         (actualSeed != null
-                ? (await loadChildTracksFromBaseItem(baseItem: actualSeed)).map((item) => item).toList()
+                ? (await loadChildTracksFromBaseItem(
+                    item: PlayableBaseItem.defaultSort(actualSeed),
+                  )).map((item) => item).toList()
                 : <BaseItemDto>[])
             // if the queue is purely made up of radio modes (i.e. after using the "Start Radio" option in the menu), we don't filter out radio tracks
             .followedBy(
@@ -612,7 +616,7 @@ Future<List<BaseItemDto>> generateRadioTracks(
         }
         _radioLogger.finer("Selected album '${selectedAlbum.name}' for album mix radio.");
         // load tracks from the selected album
-        final albumTracks = await loadChildTracksFromBaseItem(baseItem: selectedAlbum);
+        final albumTracks = await loadChildTracksFromBaseItem(item: PlayableBaseItem.defaultSort(selectedAlbum));
         // we add all tracks at once to preserve the album as a unit
         return albumTracks;
       } else {

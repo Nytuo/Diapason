@@ -28,7 +28,7 @@ Future<void> showModalAlbumMenu({
 }) async {
   final BaseItemDto baseItem = switch (item) {
     AlbumDisc() => item.parent,
-    BaseItemDto() => item,
+    PlayableBaseItem() => item.item,
   };
 
   // Normal menu entries, excluding headers
@@ -36,17 +36,17 @@ Future<void> showModalAlbumMenu({
     return [
       if (queueInfo != null) RestoreQueueMenuEntry(queueInfo: queueInfo),
       AddToPlaylistMenuEntry(item: item),
-      if (item is BaseItemDto) ...[
+      if (item is PlayableBaseItem) ...[
         // instant mixes from arbitrary collection of tracks is not supported
-        InstantMixMenuEntry(baseItem: item),
-        MixBuilderMenuEntry(baseItem: item),
+        InstantMixMenuEntry(baseItem: baseItem),
+        MixBuilderMenuEntry(baseItem: baseItem),
         // radio requires a [BaseItemDto] as the source
         StartRadioMenuEntry(baseItem: baseItem),
         // download system is not that flexible
-        AdaptiveDownloadLockDeleteMenuEntry(baseItem: item),
+        AdaptiveDownloadLockDeleteMenuEntry(baseItem: baseItem),
         // backend is not flexible too
-        ToggleFavoriteMenuEntry(baseItem: item),
-        DeleteFromServerMenuEntry(baseItem: item),
+        ToggleFavoriteMenuEntry(baseItem: baseItem),
+        DeleteFromServerMenuEntry(baseItem: baseItem),
       ],
     ];
   }

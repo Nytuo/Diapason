@@ -20,7 +20,6 @@ import 'package:finamp/screens/home_screen_settings_screen.dart';
 import 'package:finamp/screens/music_screen.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/item_by_id_provider.dart';
 import 'package:finamp/services/music_screen_provider.dart';
 import 'package:finamp/services/queue_service.dart';
 import 'package:finamp/services/quick_actions_service.dart';
@@ -118,11 +117,12 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
                       }
                       return HomeScreenQuickActionButton(
                         width: buttonWidth,
-                        text: action.toLocalisedString(context),
-                        label: action.getDescription(context),
-                        icon: action.getIcon(),
+                        text: action.getTitle(context),
+                        label: action.action.getDescription(context),
+                        icon: action.action.getIcon(),
                         vertical: buttonWidth == verticalButtonWidth,
                         onPressed: () async => QuickActionsService.handleAction(action, context),
+                        onSecondaryPressed: () => editQuickAction(context, index),
                       );
                     }).toList(),
                   ),
@@ -211,9 +211,7 @@ class HomeScreenSection extends ConsumerWidget {
       sliver: FinampSectionHeader(
         sticky: false,
         key: Key(sectionInfo.toString()),
-        title: sectionInfo.itemId != null
-            ? ref.watch(itemByIdProvider(sectionInfo.itemId!)).valueOrNull?.name ?? sectionInfo.getTitle(context)
-            : sectionInfo.getTitle(context),
+        title: sectionInfo.getTitle(context),
         headerPadding: EdgeInsets.only(left: viewPadding.left + 14.0, right: viewPadding.right + 20.0),
         contentPadding: EdgeInsets.zero,
         actions: (isOffline && !isDownloaded)
@@ -221,8 +219,7 @@ class HomeScreenSection extends ConsumerWidget {
             : [
                 // if (sectionInfo.presetType == HomeScreenSectionPresetType.//TODO)
                 //TODO download button
-                if (sectionInfo.type == HomeScreenSectionType.tabView &&
-                    sectionInfo.contentType == TabContentType.tracks)
+                if (sectionInfo.contentType == TabContentType.tracks)
                 //TODO use similar logic to [loadChildTracksFromShuffledGenreAlbums] for loading tracks from other tab types
                 //TODO for collections, try to recursively load tracks directly, Jellyfin can do that
                 ...[

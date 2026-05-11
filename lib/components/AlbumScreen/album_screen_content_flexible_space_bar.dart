@@ -20,41 +20,20 @@ enum AlbumMenuItems {
   shuffleToQueue,
 }
 
-class AlbumScreenContentFlexibleSpaceBar extends ConsumerStatefulWidget {
+class AlbumScreenContentFlexibleSpaceBar extends ConsumerWidget {
   const AlbumScreenContentFlexibleSpaceBar({
     super.key,
     required this.parentItem,
     required this.items,
-    this.genreFilter,
-    this.updateGenreFilter,
+    required this.controller,
   });
 
   final BaseItemDto parentItem;
   final List<BaseItemDto> items;
-  final BaseItemDto? genreFilter;
-  final void Function(BaseItemDto?)? updateGenreFilter;
+  final SortAndFilterController controller;
 
   @override
-  ConsumerState<AlbumScreenContentFlexibleSpaceBar> createState() => _AlbumScreenContentFlexibleSpaceBarState();
-}
-
-class _AlbumScreenContentFlexibleSpaceBarState extends ConsumerState<AlbumScreenContentFlexibleSpaceBar> {
-  late SortAndFilterController sortAndFilterController;
-
-  @override
-  void initState() {
-    super.initState();
-    sortAndFilterController = SortAndFilterController.trackSettings(tabType: null);
-  }
-
-  @override
-  void dispose() {
-    sortAndFilterController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return FlexibleSpaceBar(
       background: SafeArea(
         bottom: false,
@@ -67,33 +46,32 @@ class _AlbumScreenContentFlexibleSpaceBarState extends ConsumerState<AlbumScreen
               children: [
                 Row(
                   children: [
-                    SizedBox(height: 125, child: AlbumImage(item: widget.parentItem, tapToZoom: true)),
+                    SizedBox(height: 125, child: AlbumImage(item: parentItem, tapToZoom: true)),
                     const SizedBox(width: 4),
                     Expanded(
                       flex: 2,
                       child: ItemInfo(
-                        item: widget.parentItem,
-                        itemTracks: widget.items,
-                        genreFilter: widget.genreFilter,
-                        updateGenreFilter: widget.updateGenreFilter,
+                        item: parentItem,
+                        itemTracks: items,
+                        updateGenreFilter: controller.updateGenreFilter,
                       ),
                     ),
                   ],
                 ),
                 SizedBox(height: 10),
-                PlaybackActionRow(
-                  compactLayout: true,
-                  item: widget.parentItem,
-                  popContext: false,
-                  genreFilter: widget.genreFilter,
+                ValueListenableBuilder(
+                  valueListenable: controller,
+                  builder: (_, value, _) {
+                    return PlaybackActionRow(
+                      compactLayout: true,
+                      item: PlayableBaseItem(item: parentItem, sortConfig: value),
+                      popContext: false,
+                    );
+                  },
                 ),
-                if (BaseItemDtoType.fromItem(widget.parentItem) == BaseItemDtoType.playlist) ...[
+                if (BaseItemDtoType.fromItem(parentItem) == BaseItemDtoType.playlist) ...[
                   SizedBox(height: 10),
-                  SortAndFilterRow(
-                    tabType: TabContentType.tracks,
-                    forPlaylistTracks: true,
-                    controller: sortAndFilterController,
-                  ),
+                  SortAndFilterRow(tabType: TabContentType.tracks, forPlaylistTracks: true, controller: controller),
                 ],
               ],
             ),

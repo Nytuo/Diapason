@@ -55,6 +55,7 @@ class TrackListTile extends ConsumerWidget {
     /// the audio service at a certain index, such as when selecting the middle
     /// track in an album.  Will be -1 if we are offline and the track is not downloaded.
     this.index,
+
     this.parentItem,
 
     // if leading index number should be shown
@@ -74,7 +75,6 @@ class TrackListTile extends ConsumerWidget {
     this.isOnGenreScreen = false,
     this.allowDismiss = true,
     this.highlightCurrentTrack = true,
-    this.genreFilter,
     this.playbackProgress,
 
     /// Used to pass a source if the context isn't enough to determine it
@@ -95,7 +95,6 @@ class TrackListTile extends ConsumerWidget {
   final bool isOnGenreScreen;
   final bool allowDismiss;
   final bool highlightCurrentTrack;
-  final BaseItemDto? genreFilter;
   final double? playbackProgress;
   final QueueItemSource? source;
 
@@ -175,7 +174,8 @@ class TrackListTile extends ConsumerWidget {
             : FinampSettingsHelper.finampSettings.itemSwipeActionRightToLeft;
         return await onConfirmPlayableDismiss(
           followUpAction: followUpAction,
-          sourceItem: parentItem ?? item,
+          // This is only used as source, so sort doesn't matter.
+          sourceItem: PlayableBaseItem.defaultSort(parentItem ?? item),
           tracks: [item],
         );
       },
@@ -230,7 +230,7 @@ Future<bool> onConfirmPlayableDismiss({
 
   final sourceItemType = switch (sourceItem) {
     AlbumDisc() => "disc",
-    BaseItemDto() => BaseItemDtoType.fromPlayableItem(sourceItem).name,
+    PlayableBaseItem() => BaseItemDtoType.fromItem(sourceItem.item).name,
     null => source!.type.name,
   };
 
@@ -325,7 +325,7 @@ Widget buildSwipeActionBackground({
   ];
 
   return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+    padding: const EdgeInsets.symmetric(horizontal: 12.0),
     child: Row(children: direction == DismissDirection.startToEnd ? children : children.reversed.toList()),
   );
 }

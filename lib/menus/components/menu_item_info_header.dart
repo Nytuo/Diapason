@@ -28,13 +28,13 @@ Widget _getMenuHeaderForItemType({
 }) {
   return switch (item) {
     AlbumDisc() => AlbumInfo(item: item, condensed: condensed, features: features),
-    BaseItemDto() => switch (BaseItemDtoType.fromItem(item)) {
-      BaseItemDtoType.track => TrackInfo(item: item, condensed: condensed, features: features),
+    PlayableBaseItem(item: final baseItem) => switch (BaseItemDtoType.fromItem(baseItem)) {
+      BaseItemDtoType.track => TrackInfo(item: baseItem, condensed: condensed, features: features),
       BaseItemDtoType.album => AlbumInfo(item: item, condensed: condensed, features: features),
-      BaseItemDtoType.playlist => PlaylistInfo(item: item, condensed: condensed, features: features),
-      BaseItemDtoType.genre => GenreInfo(item: item, condensed: condensed, features: features),
-      BaseItemDtoType.artist => ArtistInfo(item: item, condensed: condensed, features: features),
-      _ => TrackInfo(item: item, condensed: condensed, features: features),
+      BaseItemDtoType.playlist => PlaylistInfo(item: baseItem, condensed: condensed, features: features),
+      BaseItemDtoType.genre => GenreInfo(item: baseItem, condensed: condensed, features: features),
+      BaseItemDtoType.artist => ArtistInfo(item: baseItem, condensed: condensed, features: features),
+      _ => TrackInfo(item: baseItem, condensed: condensed, features: features),
     },
   };
 }
@@ -78,19 +78,27 @@ class MenuItemInfoHeader extends ConsumerWidget {
   final List<MenuItemInfoHeaderFeatures> features;
 
   const MenuItemInfoHeader({
+    super.key,
     required this.item,
     this.features = const [MenuItemInfoHeaderFeatures.openItem, MenuItemInfoHeaderFeatures.addToPlaylistAndFavorite],
   }) : condensed = false;
 
-  const MenuItemInfoHeader.condensed({required this.item, this.features = const [MenuItemInfoHeaderFeatures.openItem]})
-    : condensed = true;
+  const MenuItemInfoHeader.condensed({
+    super.key,
+    required this.item,
+    this.features = const [MenuItemInfoHeaderFeatures.openItem],
+  }) : condensed = true;
 
   static const MenuMaskHeight defaultHeight = MenuMaskHeight(152.0);
   static const MenuMaskHeight condensedHeight = MenuMaskHeight(35.0);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return _getMenuHeaderForItemType(item: item, condensed: condensed, features: features);
+    return _getMenuHeaderForItemType(
+      item: PlayableBaseItem.defaultSort(item),
+      condensed: condensed,
+      features: features,
+    );
   }
 }
 
@@ -169,8 +177,8 @@ class AlbumInfo extends ConsumerWidget {
           item.tracks.first.parentIndexNumber!,
           baseItem.name ?? AppLocalizations.of(context)!.unknownName,
         );
-      case BaseItemDto():
-        baseItem = item;
+      case PlayableBaseItem():
+        baseItem = item.item;
         title = baseItem.name ?? AppLocalizations.of(context)!.unknownName;
     }
 

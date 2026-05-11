@@ -16,6 +16,8 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import '../services/finamp_settings_helper.dart';
+
 part 'jellyfin_models.g.dart';
 
 class BaseItemIdConverter extends JsonConverter<BaseItemId, String> {
@@ -1331,6 +1333,24 @@ class AlbumDisc implements PlayableItem {
   BaseItemDto parent;
 }
 
+class PlayableBaseItem implements PlayableItem {
+  PlayableBaseItem({required this.item, required this.sortConfig}) {
+    assert(
+      sortConfig.resolve(
+            isOffline: FinampSettingsHelper.finampSettings.isOffline,
+            inPlaylist: [BaseItemDtoType.album, BaseItemDtoType.playlist].contains(BaseItemDtoType.fromItem(item)),
+          ) ==
+          sortConfig,
+    );
+  }
+
+  factory PlayableBaseItem.defaultSort(BaseItemDto item) =>
+      PlayableBaseItem(item: item, sortConfig: SortAndFilterConfiguration.defaultSort);
+
+  BaseItemDto item;
+  SortAndFilterConfiguration sortConfig;
+}
+
 @JsonSerializable(
   fieldRename: FieldRename.pascal,
   explicitToJson: true,
@@ -1339,7 +1359,7 @@ class AlbumDisc implements PlayableItem {
   converters: [BaseItemIdConverter()],
 )
 @HiveType(typeId: 0)
-class BaseItemDto with RunTimeTickDuration implements PlayableItem {
+class BaseItemDto with RunTimeTickDuration {
   BaseItemDto({
     this.name,
     this.originalTitle,
@@ -2168,8 +2188,8 @@ class BaseItemDto with RunTimeTickDuration implements PlayableItem {
     switch (item) {
       case AlbumDisc():
         return item.parent;
-      case BaseItemDto():
-        return item;
+      case PlayableBaseItem():
+        return item.item;
     }
   }
 
@@ -2755,6 +2775,8 @@ class NameLongIdPair {
 
   factory NameLongIdPair.fromJson(Map<String, dynamic> json) => _$NameLongIdPairFromJson(json);
   Map<String, dynamic> toJson() => _$NameLongIdPairToJson(this);
+
+  factory NameLongIdPair.from(BaseItemDto item) => NameLongIdPair(name: item.name, id: item.id);
 }
 
 @JsonSerializable(fieldRename: FieldRename.pascal, explicitToJson: true, anyMap: true, includeIfNull: false)

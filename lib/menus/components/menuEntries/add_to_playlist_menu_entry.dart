@@ -32,7 +32,7 @@ class AddToPlaylistMenuEntry extends ConsumerWidget implements HideableMenuEntry
             context: context,
             items: switch (item) {
               AlbumDisc() => item.tracks,
-              BaseItemDto() => [item],
+              PlayableBaseItem() => [item.item],
             },
             parentPlaylist: inPlaylist ? queueItem!.source.item : null,
           );

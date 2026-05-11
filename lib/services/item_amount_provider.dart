@@ -60,13 +60,13 @@ Future<(int, BaseItemDtoType)> itemAmount(
           fullyDownloaded: ref.watch(finampSettingsProvider.onlyShowFullyDownloaded),
           viewFilter: library?.id,
           nullableViewFilters: ref.watch(finampSettingsProvider.showDownloadsWithUnknownLibrary),
-          genreFilter: baseItem,
+          genreFilter: baseItem.id,
         );
         itemCount = items.nonNulls.length;
       } else {
         var items = await jellyfinApiHelper.getItemsWithTotalRecordCount(
           parentItem: library,
-          genreFilter: baseItem,
+          genreFilter: baseItem.id,
           limit: 1,
           includeItemTypes: BaseItemDtoType.album.jellyfinName,
         );

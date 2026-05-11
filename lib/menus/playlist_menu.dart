@@ -27,11 +27,12 @@ Future<void> showModalPlaylistMenu({
   required BaseItemDto baseItem,
   FinampStorableQueueInfo? queueInfo,
 }) async {
+  final playableItem = PlayableBaseItem.defaultSort(baseItem);
   // Normal menu entries, excluding headers
   List<HideableMenuEntry> getMenuEntries(BuildContext context) {
     return [
       if (queueInfo != null) RestoreQueueMenuEntry(queueInfo: queueInfo),
-      AddToPlaylistMenuEntry(item: baseItem),
+      AddToPlaylistMenuEntry(item: playableItem),
       InstantMixMenuEntry(baseItem: baseItem),
       MixBuilderMenuEntry(baseItem: baseItem),
       StartRadioMenuEntry(baseItem: baseItem),
@@ -47,10 +48,10 @@ Future<void> showModalPlaylistMenu({
     final stackHeight = ThemedBottomSheet.calculateStackHeight(context: context, menuEntries: menuEntries);
 
     List<Widget> menu = [
-      SliverPersistentHeader(delegate: MenuItemInfoSliverHeader(item: baseItem), pinned: true),
+      SliverPersistentHeader(delegate: MenuItemInfoSliverHeader(item: playableItem), pinned: true),
       MenuMask(
         height: MenuItemInfoSliverHeader.defaultHeight,
-        child: SliverToBoxAdapter(child: PlaybackActionRow(item: baseItem)),
+        child: SliverToBoxAdapter(child: PlaybackActionRow(item: playableItem)),
       ),
       MenuMask(
         height: MenuItemInfoSliverHeader.defaultHeight,

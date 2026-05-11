@@ -189,6 +189,6 @@ bool queueItemInPlaylist(FinampQueueItem? queueItem) {
   }
   final baseItem = queueItem.baseItem;
   return [QueueItemSourceType.playlist, QueueItemSourceType.nextUpPlaylist].contains(queueItem.source.type) &&
-      baseItem?.playlistItemId != null &&
-      !playlistRemovalsCache.contains(queueItem.source.id + (baseItem?.playlistItemId ?? ""));
+      baseItem.playlistItemId != null &&
+      !playlistRemovalsCache.contains(queueItem.source.id + (baseItem.playlistItemId ?? ""));
 }

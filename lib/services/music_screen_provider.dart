@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:collection/collection.dart';
+import 'package:finamp/services/album_screen_provider.dart';
 import 'package:finamp/services/artist_content_provider.dart';
 import 'package:finamp/services/finamp_user_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -237,11 +238,12 @@ Future<List<BaseItemDto>?> loadHomeSectionItems(
           TabContentType.performingArtists => ArtistType.artist,
           _ => null,
         },
-        genreFilter: genreFilter?.extraBaseItem,
+        genreFilter: genreFilter?.extraBaseItem.id,
       );
     case HomeScreenSectionType.collection:
       // TODO should tabviews be collections with library parents?  Or does that just make our job harder?
-      final baseItem = await GetIt.instance<ProviderContainer>().read(itemByIdProvider(sectionInfo.itemId!).future);
+      // TODO we need to actually respect limit/offset for playback and display to work
+      final baseItem = await ref.watch(itemByIdProvider(sectionInfo.itemId!).future);
       if (baseItem == null) {
         return [];
       }
@@ -255,9 +257,7 @@ Future<List<BaseItemDto>?> loadHomeSectionItems(
               sectionInfo: HomeScreenSectionConfiguration(
                 type: HomeScreenSectionType.tabView,
                 contentType: TabContentType.tracks,
-                sortAndFilterConfiguration: sectionInfo.sortAndFilterConfiguration.copyWith(
-                  additionalFilters: {ItemFilter(type: ItemFilterType.genreFilter, extras: baseItem)},
-                ),
+                sortAndFilterConfiguration: sectionInfo.sortAndFilterConfiguration.copyWith(genreFilter: baseItem),
               ),
               library: library,
               startIndex: startIndex,
@@ -266,6 +266,10 @@ Future<List<BaseItemDto>?> loadHomeSectionItems(
           );
         case BaseItemDtoType.album:
         case BaseItemDtoType.playlist:
+          // Only show playable tracks in home screen sections
+          return ref
+              .watch(getSortedPlaylistTracksProvider(baseItem, sectionInfo.sortAndFilterConfiguration).future)
+              .then((x) => x.$2);
         case BaseItemDtoType.collection:
           return jellyfinApiHelper.getItems(
             parentItem: baseItem,
@@ -369,7 +373,7 @@ Future<List<BaseItemDto>?> loadHomeSectionItemsOffline({
           onlyFavorites: sectionInfo.sortAndFilterConfiguration.filters.any(
             (filter) => filter.type == ItemFilterType.isFavorite,
           ),
-          genreFilter: genreFilter?.extraBaseItem,
+          genreFilter: genreFilter?.extraBaseItem.id,
         );
       } else {
         offlineItems = await downloadsService.getAllCollections(
@@ -392,7 +396,7 @@ Future<List<BaseItemDto>?> loadHomeSectionItemsOffline({
             TabContentType.performingArtists => BaseItemDtoType.track,
             _ => null,
           },
-          genreFilter: sectionInfo.contentType == TabContentType.playlists ? null : genreFilter?.extraBaseItem,
+          genreFilter: sectionInfo.contentType == TabContentType.playlists ? null : genreFilter?.extraBaseItem.id,
         );
       }
       break;
@@ -608,7 +612,7 @@ List<BaseItemDto> filterItemsByGenreName(List<BaseItemDto> items, BaseItemDto ge
 }
 
 @riverpod
-Future<List<BaseItemDto>> globalSearch(Ref ref, String searchTerm, {bool includeTracks = false}) async {
+Future<List<BaseItemDto>> globalSearch(Ref ref, String searchTerm, {required bool includeTracks}) async {
   final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
   final baseFuture = jellyfinApiHelper.getItems(
     includeItemTypes: [

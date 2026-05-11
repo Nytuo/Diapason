@@ -1427,7 +1427,7 @@ class DownloadsSyncService {
               await _jellyfinApiData.getItems(
                 parentItem: (baseItemType == BaseItemDtoType.genre) ? collection.library! : item,
                 libraryFilter: (baseItemType == BaseItemDtoType.artist) ? collection.library! : null,
-                genreFilter: (baseItemType == BaseItemDtoType.genre) ? item : null,
+                genreFilter: (baseItemType == BaseItemDtoType.genre) ? item.id : null,
                 includeItemTypes: BaseItemDtoType.album.jellyfinName,
                 fields: fields,
               ) ??

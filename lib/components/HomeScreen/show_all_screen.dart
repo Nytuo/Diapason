@@ -167,11 +167,7 @@ class _ShowAllScreenState extends ConsumerState<ShowAllScreen> {
         scrolledUnderElevation: 0.0, // disable tint/shadow when content is scrolled under the app bar
         centerTitle: true,
         toolbarHeight: 53,
-        title: Text(
-          sectionInfo.itemId != null
-              ? ref.watch(itemByIdProvider(sectionInfo.itemId!)).valueOrNull?.name ?? sectionInfo.getTitle(context)
-              : sectionInfo.getTitle(context),
-        ),
+        title: Text(sectionInfo.getTitle(context)),
         leading: FinampAppBarBackButton(),
         actions: [],
       ),

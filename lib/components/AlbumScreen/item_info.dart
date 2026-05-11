@@ -12,11 +12,10 @@ import '../icon_and_text.dart';
 import '../print_duration.dart';
 
 class ItemInfo extends ConsumerWidget {
-  const ItemInfo({super.key, required this.item, required this.itemTracks, this.genreFilter, this.updateGenreFilter});
+  const ItemInfo({super.key, required this.item, required this.itemTracks, this.updateGenreFilter});
 
   final BaseItemDto item;
   final List<BaseItemDto> itemTracks;
-  final BaseItemDto? genreFilter;
   final void Function(BaseItemDto?)? updateGenreFilter;
 
   // TODO: see if there's a way to expand this column to the row that it's in
@@ -27,7 +26,7 @@ class ItemInfo extends ConsumerWidget {
     final trackCountString = (itemTracks.length == item.childCount || !isOffline)
         ? AppLocalizations.of(context)!.trackCount(itemTracksCount)
         : AppLocalizations.of(context)!.offlineTrackCount(item.childCount!, itemTracksCount);
-    final trackDurationString = (genreFilter == null && (itemTracks.length == item.childCount))
+    final trackDurationString = itemTracks.length == item.childCount
         ? "$trackCountString (${printDuration(item.runTimeTicksDuration())})"
         : "$trackCountString (${printDuration(itemTracks.map((t) => t.runTimeTicksDuration()).whereType<Duration>().fold<Duration>(Duration.zero, (sum, dur) => sum + dur))})";
 
@@ -64,7 +63,7 @@ class ItemInfo extends ConsumerWidget {
         Row(
           children: [
             Expanded(
-              child: GenreIconAndText(parent: item, genreFilter: genreFilter, updateGenreFilter: updateGenreFilter),
+              child: GenreIconAndText(parent: item, updateGenreFilter: updateGenreFilter),
             ),
           ],
         ),

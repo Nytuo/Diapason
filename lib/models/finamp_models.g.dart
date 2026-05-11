@@ -1641,7 +1641,7 @@ class FinampHomeScreenConfigurationAdapter
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return FinampHomeScreenConfiguration(
-      actions: (fields[0] as List).cast<FinampQuickActions>(),
+      actions: (fields[0] as List).cast<QuickActionConfig>(),
       sections: (fields[1] as List).cast<HomeScreenSectionConfiguration>(),
     );
   }
@@ -1736,6 +1736,46 @@ class SortAndFilterConfigurationAdapter
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is SortAndFilterConfigurationAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class QuickActionConfigAdapter extends TypeAdapter<QuickActionConfig> {
+  @override
+  final typeId = 121;
+
+  @override
+  QuickActionConfig read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return QuickActionConfig(
+      action: fields[0] as FinampQuickActions,
+      itemId: fields[1] as BaseItemId?,
+      itemName: fields[2] as String?,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, QuickActionConfig obj) {
+    writer
+      ..writeByte(3)
+      ..writeByte(0)
+      ..write(obj.action)
+      ..writeByte(1)
+      ..write(obj.itemId)
+      ..writeByte(2)
+      ..write(obj.itemName);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is QuickActionConfigAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
@@ -9508,14 +9548,20 @@ Map<String, dynamic> _$HomeScreenSectionConfigurationToJson(
   HomeScreenSectionConfiguration instance,
 ) => <String, dynamic>{
   'type': _$HomeScreenSectionTypeEnumMap[instance.type]!,
-  'itemId': _$JsonConverterToJson<String, BaseItemId>(
-    instance.itemId,
-    const BaseItemIdConverter().toJson,
-  ),
-  'contentType': _$TabContentTypeEnumMap[instance.contentType],
+  if (_$JsonConverterToJson<String, BaseItemId>(
+        instance.itemId,
+        const BaseItemIdConverter().toJson,
+      )
+      case final value?)
+    'itemId': value,
+  if (_$TabContentTypeEnumMap[instance.contentType] case final value?)
+    'contentType': value,
   'sortAndFilterConfiguration': instance.sortAndFilterConfiguration,
-  'customSectionTitle': instance.customSectionTitle,
-  'presetType': _$HomeScreenSectionPresetTypeEnumMap[instance.presetType],
+  if (instance.customSectionTitle case final value?)
+    'customSectionTitle': value,
+  if (_$HomeScreenSectionPresetTypeEnumMap[instance.presetType]
+      case final value?)
+    'presetType': value,
 };
 
 const _$HomeScreenSectionTypeEnumMap = {
@@ -9546,7 +9592,7 @@ FinampHomeScreenConfiguration _$FinampHomeScreenConfigurationFromJson(
   Map<String, dynamic> json,
 ) => FinampHomeScreenConfiguration(
   actions: (json['actions'] as List<dynamic>)
-      .map((e) => $enumDecode(_$FinampQuickActionsEnumMap, e))
+      .map((e) => QuickActionConfig.fromJson(e as Map<String, dynamic>))
       .toList(),
   sections: (json['sections'] as List<dynamic>)
       .map(
@@ -9559,23 +9605,8 @@ FinampHomeScreenConfiguration _$FinampHomeScreenConfigurationFromJson(
 Map<String, dynamic> _$FinampHomeScreenConfigurationToJson(
   FinampHomeScreenConfiguration instance,
 ) => <String, dynamic>{
-  'actions': instance.actions
-      .map((e) => _$FinampQuickActionsEnumMap[e]!)
-      .toList(),
+  'actions': instance.actions,
   'sections': instance.sections,
-};
-
-const _$FinampQuickActionsEnumMap = {
-  FinampQuickActions.shuffleTracks: 'shuffleTracks',
-  FinampQuickActions.browseRecentQueues: 'browseRecentQueues',
-  FinampQuickActions.browsePlaybackHistory: 'browsePlaybackHistory',
-  FinampQuickActions.playRandomAlbum: 'playRandomAlbum',
-  FinampQuickActions.playRandomTrack: 'playRandomTrack',
-  FinampQuickActions.playRandomFavoriteItem: 'playRandomFavoriteItem',
-  FinampQuickActions.playMostRecentQueue: 'playMostRecentQueue',
-  FinampQuickActions.configureOutput: 'configureOutput',
-  FinampQuickActions.surpriseMe: 'surpriseMe',
-  FinampQuickActions.playSpecificItem: 'playSpecificItem',
 };
 
 ItemFilter _$ItemFilterFromJson(Map<String, dynamic> json) => ItemFilter(
@@ -9638,4 +9669,39 @@ const _$SortByEnumMap = {
 const _$SortOrderEnumMap = {
   SortOrder.ascending: 'ascending',
   SortOrder.descending: 'descending',
+};
+
+QuickActionConfig _$QuickActionConfigFromJson(Map<String, dynamic> json) =>
+    QuickActionConfig(
+      action: $enumDecode(_$FinampQuickActionsEnumMap, json['action']),
+      itemId: _$JsonConverterFromJson<String, BaseItemId>(
+        json['itemId'],
+        const BaseItemIdConverter().fromJson,
+      ),
+      itemName: json['itemName'] as String?,
+    );
+
+Map<String, dynamic> _$QuickActionConfigToJson(QuickActionConfig instance) =>
+    <String, dynamic>{
+      'action': _$FinampQuickActionsEnumMap[instance.action]!,
+      if (_$JsonConverterToJson<String, BaseItemId>(
+            instance.itemId,
+            const BaseItemIdConverter().toJson,
+          )
+          case final value?)
+        'itemId': value,
+      if (instance.itemName case final value?) 'itemName': value,
+    };
+
+const _$FinampQuickActionsEnumMap = {
+  FinampQuickActions.shuffleTracks: 'shuffleTracks',
+  FinampQuickActions.browseRecentQueues: 'browseRecentQueues',
+  FinampQuickActions.browsePlaybackHistory: 'browsePlaybackHistory',
+  FinampQuickActions.playRandomAlbum: 'playRandomAlbum',
+  FinampQuickActions.playRandomTrack: 'playRandomTrack',
+  FinampQuickActions.playRandomFavoriteItem: 'playRandomFavoriteItem',
+  FinampQuickActions.playMostRecentQueue: 'playMostRecentQueue',
+  FinampQuickActions.configureOutput: 'configureOutput',
+  FinampQuickActions.surpriseMe: 'surpriseMe',
+  FinampQuickActions.playSpecificItem: 'playSpecificItem',
 };

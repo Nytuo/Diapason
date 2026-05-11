@@ -12,7 +12,7 @@ part of 'artist_content_provider.dart';
 // **************************************************************************
 
 String _$getArtistTracksSectionHash() =>
-    r'9c675d122606f23e44e6e7dbb81786f8d1a103ef';
+    r'cecb9ef9b91c1bd34cb61642ba9ff4653ebf95c7';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -58,7 +58,7 @@ class GetArtistTracksSectionFamily
   GetArtistTracksSectionProvider call({
     required BaseItemDto artist,
     BaseItemDto? libraryFilter,
-    BaseItemDto? genreFilter,
+    BaseItemId? genreFilter,
   }) {
     return GetArtistTracksSectionProvider(
       artist: artist,
@@ -107,7 +107,7 @@ class GetArtistTracksSectionProvider
   GetArtistTracksSectionProvider({
     required BaseItemDto artist,
     BaseItemDto? libraryFilter,
-    BaseItemDto? genreFilter,
+    BaseItemId? genreFilter,
   }) : this._internal(
          (ref) => getArtistTracksSection(
            ref as GetArtistTracksSectionRef,
@@ -142,7 +142,7 @@ class GetArtistTracksSectionProvider
 
   final BaseItemDto artist;
   final BaseItemDto? libraryFilter;
-  final BaseItemDto? genreFilter;
+  final BaseItemId? genreFilter;
 
   @override
   Override overrideWith(
@@ -221,7 +221,7 @@ mixin GetArtistTracksSectionRef
   BaseItemDto? get libraryFilter;
 
   /// The parameter `genreFilter` of this provider.
-  BaseItemDto? get genreFilter;
+  BaseItemId? get genreFilter;
 }
 
 class _GetArtistTracksSectionProviderElement
@@ -242,11 +242,11 @@ class _GetArtistTracksSectionProviderElement
   BaseItemDto? get libraryFilter =>
       (origin as GetArtistTracksSectionProvider).libraryFilter;
   @override
-  BaseItemDto? get genreFilter =>
+  BaseItemId? get genreFilter =>
       (origin as GetArtistTracksSectionProvider).genreFilter;
 }
 
-String _$getArtistAlbumsHash() => r'c07ad4fb27ffc34608fcfea506d1eb1742a3a190';
+String _$getArtistAlbumsHash() => r'20b473da839b6ef4876857bad8346f0a8e53e946';
 
 /// See also [getArtistAlbums].
 @ProviderFor(getArtistAlbums)
@@ -261,7 +261,7 @@ class GetArtistAlbumsFamily extends Family<AsyncValue<List<BaseItemDto>>> {
   GetArtistAlbumsProvider call({
     required BaseItemDto artist,
     BaseItemDto? libraryFilter,
-    BaseItemDto? genreFilter,
+    BaseItemId? genreFilter,
     SortBy sortBy = SortBy.premiereDate,
     SortOrder sortOrder = SortOrder.ascending,
   }) {
@@ -309,7 +309,7 @@ class GetArtistAlbumsProvider
   GetArtistAlbumsProvider({
     required BaseItemDto artist,
     BaseItemDto? libraryFilter,
-    BaseItemDto? genreFilter,
+    BaseItemId? genreFilter,
     SortBy sortBy = SortBy.premiereDate,
     SortOrder sortOrder = SortOrder.ascending,
   }) : this._internal(
@@ -352,7 +352,7 @@ class GetArtistAlbumsProvider
 
   final BaseItemDto artist;
   final BaseItemDto? libraryFilter;
-  final BaseItemDto? genreFilter;
+  final BaseItemId? genreFilter;
   final SortBy sortBy;
   final SortOrder sortOrder;
 
@@ -416,7 +416,7 @@ mixin GetArtistAlbumsRef on AutoDisposeFutureProviderRef<List<BaseItemDto>> {
   BaseItemDto? get libraryFilter;
 
   /// The parameter `genreFilter` of this provider.
-  BaseItemDto? get genreFilter;
+  BaseItemId? get genreFilter;
 
   /// The parameter `sortBy` of this provider.
   SortBy get sortBy;
@@ -436,7 +436,7 @@ class _GetArtistAlbumsProviderElement
   BaseItemDto? get libraryFilter =>
       (origin as GetArtistAlbumsProvider).libraryFilter;
   @override
-  BaseItemDto? get genreFilter =>
+  BaseItemId? get genreFilter =>
       (origin as GetArtistAlbumsProvider).genreFilter;
   @override
   SortBy get sortBy => (origin as GetArtistAlbumsProvider).sortBy;
@@ -445,7 +445,7 @@ class _GetArtistAlbumsProviderElement
 }
 
 String _$getPerformingArtistAlbumsHash() =>
-    r'73ed42c18c093d2f396c0d2e6bd81d57abf9f8e9';
+    r'1e56c4b4f33123e80495575c4663abc66ddf57b4';
 
 /// See also [getPerformingArtistAlbums].
 @ProviderFor(getPerformingArtistAlbums)
@@ -461,7 +461,7 @@ class GetPerformingArtistAlbumsFamily
   GetPerformingArtistAlbumsProvider call({
     required BaseItemDto artist,
     BaseItemDto? libraryFilter,
-    BaseItemDto? genreFilter,
+    BaseItemId? genreFilter,
     SortBy sortBy = SortBy.premiereDate,
     SortOrder sortOrder = SortOrder.ascending,
   }) {
@@ -509,7 +509,7 @@ class GetPerformingArtistAlbumsProvider
   GetPerformingArtistAlbumsProvider({
     required BaseItemDto artist,
     BaseItemDto? libraryFilter,
-    BaseItemDto? genreFilter,
+    BaseItemId? genreFilter,
     SortBy sortBy = SortBy.premiereDate,
     SortOrder sortOrder = SortOrder.ascending,
   }) : this._internal(
@@ -552,7 +552,7 @@ class GetPerformingArtistAlbumsProvider
 
   final BaseItemDto artist;
   final BaseItemDto? libraryFilter;
-  final BaseItemDto? genreFilter;
+  final BaseItemId? genreFilter;
   final SortBy sortBy;
   final SortOrder sortOrder;
 
@@ -618,7 +618,7 @@ mixin GetPerformingArtistAlbumsRef
   BaseItemDto? get libraryFilter;
 
   /// The parameter `genreFilter` of this provider.
-  BaseItemDto? get genreFilter;
+  BaseItemId? get genreFilter;
 
   /// The parameter `sortBy` of this provider.
   SortBy get sortBy;
@@ -639,7 +639,7 @@ class _GetPerformingArtistAlbumsProviderElement
   BaseItemDto? get libraryFilter =>
       (origin as GetPerformingArtistAlbumsProvider).libraryFilter;
   @override
-  BaseItemDto? get genreFilter =>
+  BaseItemId? get genreFilter =>
       (origin as GetPerformingArtistAlbumsProvider).genreFilter;
   @override
   SortBy get sortBy => (origin as GetPerformingArtistAlbumsProvider).sortBy;
@@ -649,7 +649,7 @@ class _GetPerformingArtistAlbumsProviderElement
 }
 
 String _$getPerformingArtistTracksHash() =>
-    r'15e37ec1c3590e4116e48bd864cd6929167064ad';
+    r'556a6774e7d9c8ed37a73215afc93069d3cc1965';
 
 /// See also [getPerformingArtistTracks].
 @ProviderFor(getPerformingArtistTracks)
@@ -665,7 +665,7 @@ class GetPerformingArtistTracksFamily
   GetPerformingArtistTracksProvider call({
     required BaseItemDto artist,
     BaseItemDto? libraryFilter,
-    BaseItemDto? genreFilter,
+    BaseItemId? genreFilter,
     bool onlyFavorites = false,
   }) {
     return GetPerformingArtistTracksProvider(
@@ -710,7 +710,7 @@ class GetPerformingArtistTracksProvider
   GetPerformingArtistTracksProvider({
     required BaseItemDto artist,
     BaseItemDto? libraryFilter,
-    BaseItemDto? genreFilter,
+    BaseItemId? genreFilter,
     bool onlyFavorites = false,
   }) : this._internal(
          (ref) => getPerformingArtistTracks(
@@ -749,7 +749,7 @@ class GetPerformingArtistTracksProvider
 
   final BaseItemDto artist;
   final BaseItemDto? libraryFilter;
-  final BaseItemDto? genreFilter;
+  final BaseItemId? genreFilter;
   final bool onlyFavorites;
 
   @override
@@ -811,7 +811,7 @@ mixin GetPerformingArtistTracksRef
   BaseItemDto? get libraryFilter;
 
   /// The parameter `genreFilter` of this provider.
-  BaseItemDto? get genreFilter;
+  BaseItemId? get genreFilter;
 
   /// The parameter `onlyFavorites` of this provider.
   bool get onlyFavorites;
@@ -829,14 +829,14 @@ class _GetPerformingArtistTracksProviderElement
   BaseItemDto? get libraryFilter =>
       (origin as GetPerformingArtistTracksProvider).libraryFilter;
   @override
-  BaseItemDto? get genreFilter =>
+  BaseItemId? get genreFilter =>
       (origin as GetPerformingArtistTracksProvider).genreFilter;
   @override
   bool get onlyFavorites =>
       (origin as GetPerformingArtistTracksProvider).onlyFavorites;
 }
 
-String _$getArtistTracksHash() => r'd2be55b297d7a374e51ca4aa2d9da18bb425c2b0';
+String _$getArtistTracksHash() => r'e320057db0e4e6cd086118512ace3a33e8dabe2e';
 
 /// See also [getArtistTracks].
 @ProviderFor(getArtistTracks)
@@ -851,7 +851,7 @@ class GetArtistTracksFamily extends Family<AsyncValue<List<BaseItemDto>>> {
   GetArtistTracksProvider call({
     required BaseItemDto artist,
     BaseItemDto? libraryFilter,
-    BaseItemDto? genreFilter,
+    BaseItemId? genreFilter,
     bool onlyFavorites = false,
   }) {
     return GetArtistTracksProvider(
@@ -896,7 +896,7 @@ class GetArtistTracksProvider
   GetArtistTracksProvider({
     required BaseItemDto artist,
     BaseItemDto? libraryFilter,
-    BaseItemDto? genreFilter,
+    BaseItemId? genreFilter,
     bool onlyFavorites = false,
   }) : this._internal(
          (ref) => getArtistTracks(
@@ -935,7 +935,7 @@ class GetArtistTracksProvider
 
   final BaseItemDto artist;
   final BaseItemDto? libraryFilter;
-  final BaseItemDto? genreFilter;
+  final BaseItemId? genreFilter;
   final bool onlyFavorites;
 
   @override
@@ -995,7 +995,7 @@ mixin GetArtistTracksRef on AutoDisposeFutureProviderRef<List<BaseItemDto>> {
   BaseItemDto? get libraryFilter;
 
   /// The parameter `genreFilter` of this provider.
-  BaseItemDto? get genreFilter;
+  BaseItemId? get genreFilter;
 
   /// The parameter `onlyFavorites` of this provider.
   bool get onlyFavorites;
@@ -1012,7 +1012,7 @@ class _GetArtistTracksProviderElement
   BaseItemDto? get libraryFilter =>
       (origin as GetArtistTracksProvider).libraryFilter;
   @override
-  BaseItemDto? get genreFilter =>
+  BaseItemId? get genreFilter =>
       (origin as GetArtistTracksProvider).genreFilter;
   @override
   bool get onlyFavorites => (origin as GetArtistTracksProvider).onlyFavorites;

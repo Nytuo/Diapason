@@ -17,7 +17,6 @@ class PlaybackActionRow extends ConsumerStatefulWidget {
     required this.item,
     this.popContext = true,
     this.compactLayout = false,
-    this.genreFilter,
     this.queueItem,
     this.source,
   });
@@ -25,7 +24,6 @@ class PlaybackActionRow extends ConsumerStatefulWidget {
   final PlayableItem item;
   final bool popContext;
   final bool compactLayout;
-  final BaseItemDto? genreFilter;
   final FinampQueueItem? queueItem;
   final QueueItemSource? source;
 
@@ -47,7 +45,6 @@ class _PlaybackActionRowState extends ConsumerState<PlaybackActionRow> {
       nextUpNotEmpty: !nextUpEmpty,
       popContext: widget.popContext,
       compactLayout: widget.compactLayout,
-      genreFilter: widget.genreFilter,
       preferPrependingToNextUp: ref.watch(finampSettingsProvider.preferNextUpPrepending),
       queueItem: widget.queueItem,
       source: widget.source,

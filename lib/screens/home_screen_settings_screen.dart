@@ -82,10 +82,7 @@ class QuickActionsSelector extends ConsumerWidget {
                     ColorScheme.of(context).primary.withOpacity(0.05),
                     ColorScheme.of(context).surface,
                   ),
-                  title: Padding(
-                    padding: const EdgeInsets.only(left: 4.0),
-                    child: Text(action.toLocalisedString(context)),
-                  ),
+                  title: Padding(padding: const EdgeInsets.only(left: 4.0), child: Text(action.getTitle(context))),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
                   visualDensity: VisualDensity(horizontal: -4, vertical: -4),
                   contentPadding: EdgeInsets.only(left: 6.0),
@@ -98,20 +95,16 @@ class QuickActionsSelector extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      SimpleButton.small(
-                        text: "Edit Action*",
-                        icon: TablerIcons.edit,
-                        onPressed: () async {
-                          final selectedAction = await showQuickActionPresetPickerMenu(
-                            context,
-                            editingQuickActionIndex: index,
-                          );
-                          if (selectedAction != null) {
-                            final newHomeScreenConfig = FinampSettingsHelper.finampSettings.homeScreenConfiguration
-                                .copyWith(actions: [...quickActions]..[index] = selectedAction);
-                            FinampSetters.setHomeScreenConfiguration(newHomeScreenConfig);
-                          }
-                        },
+                      Visibility(
+                        maintainAnimation: true,
+                        maintainSize: true,
+                        maintainState: true,
+                        visible: action.action.editable,
+                        child: SimpleButton.small(
+                          text: "Edit Action*",
+                          icon: TablerIcons.edit,
+                          onPressed: () => editQuickAction(context, index),
+                        ),
                       ),
                       SimpleButton.small(
                         text: "Remove Action*",
@@ -150,7 +143,7 @@ class QuickActionsSelector extends ConsumerWidget {
               text: "Add New Action*",
               icon: TablerIcons.plus,
               onPressed: () async {
-                final selectedAction = await showQuickActionPresetPickerMenu(context);
+                final selectedAction = await showQuickActionPresetPickerMenu(context, null);
                 if (selectedAction != null) {
                   final newHomeScreenConfig = FinampSettingsHelper.finampSettings.homeScreenConfiguration.copyWith(
                     actions: [...quickActions, selectedAction],
@@ -169,72 +162,171 @@ class QuickActionsSelector extends ConsumerWidget {
 
 const quickActionPickerMenuRouteName = "/quick-action-preset-picker-menu";
 
-Future<FinampQuickActions?> showQuickActionPresetPickerMenu(
-  BuildContext context, {
-  int? editingQuickActionIndex,
-}) async {
-  final List<Widget> menuItems = FinampQuickActions.values.map<Widget>((quickAction) {
-    return Consumer(
-      builder: (context, ref, child) {
-        final currentActions = ref.watch(finampSettingsProvider.homeScreenConfiguration).actions;
-        return ChoiceMenuOption(
-          title: quickAction.toLocalisedString(context),
-          description: quickAction.getDescription(context),
-          badges: [
-            // // similar mode is recommended
-            // if (preset == RadioMode.similar && radioModeOptionAvailabilityStatus.isAvailable)
-            //   Icon(TablerIcons.star, size: 14.0),
-          ],
-          enabled: true,
-          icon: quickAction.getIcon(),
-          isInactive: false,
-          isSelected: editingQuickActionIndex != null && currentActions[editingQuickActionIndex] == quickAction,
-          onSelect: () async {
-            //TODO ideally rebuild with check and then pop after delay
-            // FeedbackHelper.feedback(FeedbackType.selection);
-            // await Future<void>.delayed(const Duration(milliseconds: 400));
-            // Navigator.of(context).pop(preset);
-            if (context.mounted) {
-              FeedbackHelper.feedback(FeedbackType.selection);
-              Navigator.of(context).pop(quickAction);
-            }
-          },
-        );
-      },
+Future<void> editQuickAction(BuildContext context, int index) async {
+  if (!context.mounted) return;
+  final quickActions = FinampSettingsHelper.finampSettings.homeScreenConfiguration.actions;
+  final selectedAction = await showQuickActionPresetPickerMenu(context, quickActions[index]);
+  if (selectedAction != null) {
+    final newHomeScreenConfig = FinampSettingsHelper.finampSettings.homeScreenConfiguration.copyWith(
+      actions: [...quickActions]..[index] = selectedAction,
     );
-  }).toList();
+    FinampSetters.setHomeScreenConfiguration(newHomeScreenConfig);
+  }
+}
 
-  return await showThemedBottomSheet<FinampQuickActions?>(
+Future<QuickActionConfig?> showQuickActionPresetPickerMenu(BuildContext context, QuickActionConfig? initialValue) {
+  return showThemedBottomSheet<QuickActionConfig?>(
     context: context,
     routeName: quickActionPickerMenuRouteName,
     minDraggableHeight: 0.25,
-    buildSlivers: (context) {
-      var menu = [
-        SliverStickyHeader(
-          header: Padding(
-            padding: const EdgeInsets.only(top: 10.0, bottom: 8.0, left: 16.0, right: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 2.0,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.homeScreenQuickActionPickerMenuTitle,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ],
-            ),
-          ),
-          sliver: MenuMask(
-            height: MenuMaskHeight(36.0),
-            child: SliverList.list(children: menuItems),
-          ),
-        ),
-      ];
-      // header + menu entries
-      var stackHeight = 42.0 + menuItems.length * ((Platform.isAndroid || Platform.isIOS) ? 72.0 : 64.0);
-      return (stackHeight, menu);
+    buildWrapper: (context, _, buildChildren) {
+      return QuickActionConfigMenu(buildChildren: buildChildren, initialValue: initialValue);
     },
   );
+}
+
+class QuickActionConfigMenu extends ConsumerStatefulWidget {
+  final ScrollBuilder buildChildren;
+  final QuickActionConfig? initialValue;
+
+  const QuickActionConfigMenu({super.key, required this.buildChildren, this.initialValue});
+
+  @override
+  QuickActionConfigMenuState createState() => QuickActionConfigMenuState();
+}
+
+class QuickActionConfigMenuState extends ConsumerState<QuickActionConfigMenu> {
+  FinampQuickActions? selected;
+  final ValueNotifier<BaseItemDto?> notifier = ValueNotifier(null);
+
+  @override
+  void initState() {
+    if (widget.initialValue?.action.editable ?? false) {
+      selected = widget.initialValue?.action;
+    }
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> menuItems;
+    final double stackHeight;
+    if (selected == null) {
+      menuItems = _buildSelector();
+      // header + menu entries
+      stackHeight = 42.0 + menuItems.length * ((Platform.isAndroid || Platform.isIOS) ? 72.0 : 64.0);
+    } else {
+      final searchHeight = MediaQuery.sizeOf(context).height * 0.5;
+      menuItems = _buildItemSelector(height: searchHeight);
+      // header + menu entries
+      stackHeight = 42.0 + searchHeight;
+    }
+
+    final menu = [
+      SliverStickyHeader(
+        header: Padding(
+          padding: const EdgeInsets.only(top: 10.0, bottom: 8.0, left: 16.0, right: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 2.0,
+            children: [
+              Text(switch (selected) {
+                FinampQuickActions.playSpecificItem => "Select an item*",
+                _ => AppLocalizations.of(context)!.homeScreenQuickActionPickerMenuTitle,
+              }, style: Theme.of(context).textTheme.titleMedium),
+            ],
+          ),
+        ),
+        sliver: MenuMask(
+          height: MenuMaskHeight(36.0),
+          child: SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            sliver: SliverList.list(children: menuItems),
+          ),
+        ),
+      ),
+    ];
+    return widget.buildChildren(stackHeight, menu);
+  }
+
+  List<Widget> _buildSelector() {
+    return FinampQuickActions.values.map<Widget>((quickAction) {
+      return Consumer(
+        builder: (context, ref, child) {
+          return ChoiceMenuOption(
+            title: QuickActionConfig(action: quickAction).getTitle(context),
+            description: quickAction.getDescription(context),
+            badges: [
+              // // similar mode is recommended
+              // if (preset == RadioMode.similar && radioModeOptionAvailabilityStatus.isAvailable)
+              //   Icon(TablerIcons.star, size: 14.0),
+            ],
+            enabled: true,
+            icon: quickAction.getIcon(),
+            isInactive: false,
+            isSelected: quickAction == widget.initialValue?.action,
+            onSelect: () async {
+              //TODO ideally rebuild with check and then pop after delay
+              // FeedbackHelper.feedback(FeedbackType.selection);
+              // await Future<void>.delayed(const Duration(milliseconds: 400));
+              // Navigator.of(context).pop(preset);
+              if (quickAction.editable) {
+                setState(() {
+                  selected = quickAction;
+                });
+              } else {
+                if (context.mounted) {
+                  FeedbackHelper.feedback(FeedbackType.selection);
+                  Navigator.of(context).pop(QuickActionConfig(action: quickAction));
+                }
+              }
+            },
+          );
+        },
+      );
+    }).toList();
+  }
+
+  List<Widget> _buildItemSelector({required double height}) {
+    // This is currently the only editable type
+    assert(selected == FinampQuickActions.playSpecificItem);
+    return [
+      ChoiceMenuOption(
+        title: "Back*",
+        enabled: true,
+        icon: TablerIcons.chevron_left,
+        isInactive: false,
+        isSelected: false,
+        onSelect: () => setState(() {
+          selected = null;
+        }),
+      ),
+      GlobalSearchBox(notifier, height: height, initialItem: widget.initialValue?.itemId, showTracks: true),
+      SizedBox(height: 8.0),
+      ValueListenableBuilder(
+        valueListenable: notifier,
+        builder: (context, value, _) {
+          return CTAMedium(
+            text: "Save*",
+            icon: TablerIcons.device_floppy,
+            disabled: value == null,
+            onPressed: () {
+              if (context.mounted && value != null) {
+                FeedbackHelper.feedback(FeedbackType.selection);
+                Navigator.of(context).pop(
+                  QuickActionConfig(
+                    action: FinampQuickActions.playSpecificItem,
+                    itemId: value.id,
+                    itemName: value.name,
+                  ),
+                );
+              }
+            },
+          );
+        },
+      ),
+    ];
+  }
 }
 
 class HomeScreenSectionsSelector extends ConsumerWidget {
@@ -390,6 +482,7 @@ Future<HomeScreenSectionConfiguration?> showHomeScreenSectionConfigurationMenu(
 }
 
 Future<void> editHomeScreenSection(BuildContext context, int index) async {
+  if (!context.mounted) return;
   final sections = List.of(FinampSettingsHelper.finampSettings.homeScreenConfiguration.sections);
   final newSection = await showHomeScreenSectionConfigurationMenu(context, sections[index]);
   if (newSection != null) {
@@ -425,10 +518,11 @@ class HomeScreenSectionConfigurationMenu extends ConsumerStatefulWidget {
   ConsumerState<HomeScreenSectionConfigurationMenu> createState() => _HomeScreenSectionConfigurationMenuState();
 }
 
+// TODO we should probably build separate sub-widgets for tabview/collections?
 class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenSectionConfigurationMenu> {
   late HomeScreenSectionType selectedSectionType;
   late String sectionTitle;
-  BaseItemId? selectedCollectionId;
+  BaseItemDto? selectedCollection;
   late TabContentType? selectedContentType;
 
   late SortAndFilterController sortAndFilterController;
@@ -452,13 +546,17 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
             : "");
     searchListener.addListener(() {
       setState(() {
-        selectedCollectionId = searchListener.value?.id;
+        selectedCollection = searchListener.value;
         sectionTitle = searchListener.value?.name ?? "";
         if (searchListener.value != null) {
           switch (BaseItemDtoType.fromItem(searchListener.value!)) {
             case BaseItemDtoType.album:
-            case BaseItemDtoType.artist:
             case BaseItemDtoType.playlist:
+              selectedContentType = TabContentType.tracks;
+              if (searchListener.value!.id != widget.initialState.itemId) {
+                sortAndFilterController.value = ref.read(sortAndFilterConfigFromSettingsProvider(null));
+              }
+            case BaseItemDtoType.artist:
             case BaseItemDtoType.genre:
               selectedContentType = TabContentType.tracks;
             case BaseItemDtoType.collection:
@@ -470,9 +568,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
       });
     });
     selectedContentType = widget.initialState.contentType;
-    sortAndFilterController = SortAndFilterController(
-      configuration: widget.initialState.sortAndFilterConfiguration.copyWith(),
-    );
+    sortAndFilterController = SortAndFilterController(configuration: widget.initialState.sortAndFilterConfiguration);
   }
 
   @override
@@ -484,7 +580,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
   HomeScreenSectionConfiguration get currentSectionInfo => HomeScreenSectionConfiguration(
     type: selectedSectionType,
     customSectionTitle: sectionTitle == "" ? null : sectionTitle,
-    itemId: selectedSectionType == HomeScreenSectionType.collection ? selectedCollectionId : null,
+    itemId: selectedSectionType == HomeScreenSectionType.collection ? selectedCollection?.id : null,
     contentType: selectedSectionType != HomeScreenSectionType.queues ? selectedContentType : null,
     sortAndFilterConfiguration: sortAndFilterController.configuration,
   );
@@ -505,7 +601,12 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
   Widget build(BuildContext context) {
     // Normal track menu entries, excluding headers
     final menuEntries = [
-      SectionPreview(sectionInfo: currentSectionInfo, customTitle: sectionTitle),
+      ValueListenableBuilder(
+        valueListenable: sortAndFilterController,
+        builder: (_, _, _) {
+          return SectionPreview(sectionInfo: currentSectionInfo, customTitle: sectionTitle);
+        },
+      ),
       SizedBox(height: 16.0),
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -525,6 +626,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
               if (selectedActionType != null) {
                 setState(() {
                   selectedSectionType = selectedActionType;
+                  selectedContentType = null;
                 });
               }
             },
@@ -551,6 +653,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
                       : HomeScreenSectionConfigurationMenu.initialSheetExtent) *
                   0.25,
               initialItem: widget.initialState.itemId,
+              showTracks: false,
             ),
           ],
         ),
@@ -628,7 +731,16 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
             padding: const EdgeInsets.only(left: 4.0),
             child: Text("Sort By*", style: Theme.of(context).textTheme.bodyMedium),
           ),
-          SortAndFilterRow(tabType: selectedContentType ?? TabContentType.tracks, controller: sortAndFilterController),
+          SortAndFilterRow(
+            tabType: selectedContentType ?? TabContentType.tracks,
+            controller: sortAndFilterController,
+            forPlaylistTracks:
+                selectedCollection != null &&
+                [
+                  BaseItemDtoType.album,
+                  BaseItemDtoType.playlist,
+                ].contains(BaseItemDtoType.fromItem(selectedCollection!)),
+          ),
         ],
       ),
       SizedBox(height: 24.0),
@@ -793,12 +905,10 @@ class SectionPreview extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hasTitle = ((customTitle ?? "") != "") || sectionInfo.itemId != null || sectionInfo.presetType != null;
+    final hasTitle = ((customTitle ?? "") != "") || sectionInfo.presetType != null;
 
     final sectionTitle = ((customTitle ?? "") != "")
         ? customTitle!
-        : sectionInfo.itemId != null
-        ? ref.watch(itemByIdProvider(sectionInfo.itemId!)).valueOrNull?.name ?? sectionInfo.getTitle(context)
         : (sectionInfo.presetType != null ? sectionInfo.getTitle(context) : "Preview*");
 
     return Column(
@@ -825,11 +935,18 @@ class SectionPreview extends ConsumerWidget {
 }
 
 class GlobalSearchBox extends ConsumerStatefulWidget {
-  const GlobalSearchBox(this.notifier, {super.key, required this.height, this.initialItem});
+  const GlobalSearchBox(
+    this.notifier, {
+    super.key,
+    required this.height,
+    this.initialItem,
+    required bool this.showTracks,
+  });
 
   final ValueNotifier<BaseItemDto?> notifier;
   final BaseItemId? initialItem;
   final double height;
+  final bool showTracks;
 
   @override
   ConsumerState<GlobalSearchBox> createState() => _GlobalSearchBoxState();
@@ -907,7 +1024,7 @@ class _GlobalSearchBoxState extends ConsumerState<GlobalSearchBox> {
       return SizedBox.shrink();
     }
 
-    final items = ref.watch(globalSearchProvider(searchTerm));
+    final items = ref.watch(globalSearchProvider(searchTerm, includeTracks: widget.showTracks));
 
     if (items.isLoading) {
       return Text("Loading!*");

@@ -69,9 +69,9 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
     Color inactiveTabTextColor = AtContrast.getContrastiveTintedTextColor(onBackground: inactiveTabBackgroundColor);
 
     final statusIcon = ref.watch(finampSettingsProvider.isOffline)
-        ? TablerIcons.plug_connected_x
+        ? TablerIcons.cloud_off
         : ref.watch(FinampUserHelper.finampCurrentUserProvider).valueOrNull?.isLocal ?? false
-        ? TablerIcons.server_bolt
+        ? TablerIcons.wifi
         : null; // hide icon by default (remote connection)
 
     return Column(

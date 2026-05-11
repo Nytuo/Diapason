@@ -1316,7 +1316,7 @@ class DownloadsService {
   Future<List<BaseItemDto>> getCollectionTracks(
     BaseItemDto item, {
     bool playable = true,
-    BaseItemDto? genreFilter,
+    BaseItemId? genreFilter,
     bool onlyFavorites = false,
   }) async {
     List<int> favoriteIds = [];
@@ -1343,8 +1343,7 @@ class DownloadsService {
         .optional(
           genreFilter != null,
           (q) => q.infoFor(
-            (q) =>
-                q.info((q) => q.isarIdEqualTo(DownloadStub.getHash(genreFilter!.id.raw, DownloadItemType.collection))),
+            (q) => q.info((q) => q.isarIdEqualTo(DownloadStub.getHash(genreFilter!.raw, DownloadItemType.collection))),
           ),
         );
 
@@ -1371,7 +1370,7 @@ class DownloadsService {
     BaseItemId? viewFilter,
     bool nullableViewFilters = true,
     bool onlyFavorites = false,
-    BaseItemDto? genreFilter,
+    BaseItemId? genreFilter,
   }) {
     List<int> favoriteIds = [];
     if (onlyFavorites) {
@@ -1394,7 +1393,7 @@ class DownloadsService {
         // Returns items that have a certain genreId assigned
         .optional(
           genreFilter != null,
-          (q) => q.info((q) => q.isarIdEqualTo(DownloadStub.getHash(genreFilter!.id.raw, DownloadItemType.collection))),
+          (q) => q.info((q) => q.isarIdEqualTo(DownloadStub.getHash(genreFilter!.raw, DownloadItemType.collection))),
         )
         .optional(
           viewFilter != null,
@@ -1451,7 +1450,7 @@ class DownloadsService {
     bool onlyFavorites = false,
     BaseItemDtoType? infoForType,
     ArtistType? artistType,
-    BaseItemDto? genreFilter,
+    BaseItemId? genreFilter,
   }) {
     List<int> favoriteIds = [];
     List<int> libraryFilteredIds = [];
@@ -1510,8 +1509,7 @@ class DownloadsService {
         .optional(
           genreFilter != null,
           (q) => q.infoFor(
-            (q) =>
-                q.info((q) => q.isarIdEqualTo(DownloadStub.getHash(genreFilter!.id.raw, DownloadItemType.collection))),
+            (q) => q.info((q) => q.isarIdEqualTo(DownloadStub.getHash(genreFilter!.raw, DownloadItemType.collection))),
           ),
         )
         .optional(

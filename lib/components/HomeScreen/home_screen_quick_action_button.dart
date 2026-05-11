@@ -9,6 +9,7 @@ class HomeScreenQuickActionButton extends StatelessWidget {
   final double width;
   final bool vertical;
   final void Function() onPressed;
+  final void Function()? onSecondaryPressed;
   final bool disabled;
 
   const HomeScreenQuickActionButton({
@@ -19,6 +20,7 @@ class HomeScreenQuickActionButton extends StatelessWidget {
     required this.width,
     this.vertical = false,
     required this.onPressed,
+    this.onSecondaryPressed,
     this.disabled = false,
   });
 
@@ -62,27 +64,42 @@ class HomeScreenQuickActionButton extends StatelessWidget {
       container: true,
       child: SizedBox(
         width: width,
-        child: FilledButton(
-          onPressed: disabled
+        child: GestureDetector(
+          onLongPress: disabled || onSecondaryPressed == null
               ? null
               : () {
                   FeedbackHelper.feedback(FeedbackType.selection);
-                  onPressed();
+                  onSecondaryPressed!();
                 },
-          style: ButtonStyle(
-            shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(isDesktop ? 8 : 12)),
+          onSecondaryTap: disabled || onSecondaryPressed == null
+              ? null
+              : () {
+                  FeedbackHelper.feedback(FeedbackType.selection);
+                  onSecondaryPressed!();
+                },
+          child: FilledButton(
+            onPressed: disabled
+                ? null
+                : () {
+                    FeedbackHelper.feedback(FeedbackType.selection);
+                    onPressed();
+                  },
+
+            style: ButtonStyle(
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(isDesktop ? 8 : 12)),
+              ),
+              padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
+                EdgeInsets.symmetric(horizontal: 8, vertical: isDesktop ? 16 : 8),
+              ),
+              backgroundColor: WidgetStateProperty.all<Color>(
+                Theme.brightnessOf(context) == Brightness.dark
+                    ? accentColor.withOpacity(disabled ? 0.05 : 0.15)
+                    : Color.alphaBlend(accentColor.withOpacity(0.2), Colors.white).withOpacity(disabled ? 0.5 : 1.0),
+              ),
             ),
-            padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
-              EdgeInsets.symmetric(horizontal: 8, vertical: isDesktop ? 16 : 8),
-            ),
-            backgroundColor: WidgetStateProperty.all<Color>(
-              Theme.brightnessOf(context) == Brightness.dark
-                  ? accentColor.withOpacity(disabled ? 0.05 : 0.15)
-                  : Color.alphaBlend(accentColor.withOpacity(0.2), Colors.white).withOpacity(disabled ? 0.5 : 1.0),
-            ),
+            child: buttonContent,
           ),
-          child: buttonContent,
         ),
       ),
     );

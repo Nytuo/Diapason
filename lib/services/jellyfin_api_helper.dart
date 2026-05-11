@@ -15,6 +15,7 @@ import 'package:http/io_client.dart' as http;
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
+
 import '../models/finamp_models.dart';
 import '../models/jellyfin_models.dart';
 import 'downloads_service.dart';
@@ -122,7 +123,7 @@ class JellyfinApiHelper {
     String? fields,
     bool? recursive,
     ArtistType? artistType,
-    BaseItemDto? genreFilter,
+    BaseItemId? genreFilter,
     bool? isFavorite,
 
     /// The record index to start at. All items with a lower index will be
@@ -179,7 +180,7 @@ class JellyfinApiHelper {
     String? fields,
     bool? recursive,
     ArtistType? artistType,
-    BaseItemDto? genreFilter,
+    BaseItemId? genreFilter,
     bool? isFavorite,
     int? startIndex,
     int? limit,
@@ -218,7 +219,7 @@ class JellyfinApiHelper {
     String? fields,
     bool? recursive,
     ArtistType? artistType,
-    BaseItemDto? genreFilter,
+    BaseItemId? genreFilter,
     bool? isFavorite,
     int? startIndex,
     int? limit,
@@ -271,7 +272,7 @@ class JellyfinApiHelper {
             sortOrder: sortOrder,
             searchTerm: searchTerm,
             filters: filters,
-            genreIds: genreFilter?.id.raw,
+            genreIds: genreFilter?.raw,
             startIndex: startIndex,
             limit: limit,
             userId: currentUserId,
@@ -287,7 +288,7 @@ class JellyfinApiHelper {
             sortOrder: sortOrder,
             searchTerm: searchTerm,
             filters: filters,
-            genreIds: genreFilter?.id.raw,
+            genreIds: genreFilter?.raw,
             startIndex: startIndex,
             limit: limit,
             fields: fields,
@@ -312,7 +313,7 @@ class JellyfinApiHelper {
             searchTerm: searchTerm,
             filters: filters,
             albumIds: albumIds?.join(","),
-            genreIds: genreFilter?.id.raw,
+            genreIds: genreFilter?.raw,
             startIndex: startIndex,
             limit: limit,
             fields: fields,
@@ -332,7 +333,7 @@ class JellyfinApiHelper {
             searchTerm: searchTerm,
             filters: filters,
             albumIds: albumIds?.join(","),
-            genreIds: genreFilter?.id.raw,
+            genreIds: genreFilter?.raw,
             startIndex: startIndex,
             limit: limit,
             fields: fields,
@@ -381,7 +382,7 @@ class JellyfinApiHelper {
           searchTerm: searchTerm,
           filters: filters,
           albumIds: albumIds?.join(","),
-          genreIds: genreFilter?.id.raw,
+          genreIds: genreFilter?.raw,
           startIndex: startIndex,
           limit: limit,
           ids: itemIds?.join(","),
