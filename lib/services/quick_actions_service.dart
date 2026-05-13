@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:finamp/components/global_snackbar.dart';
 import 'package:finamp/menus/output_menu.dart';
 import 'package:finamp/models/finamp_models.dart';
@@ -44,20 +45,25 @@ class QuickActionsService {
       case FinampQuickActions.playRandomFavoriteItem:
         await audioServiceHelper.playRandomItem(favoritesOnly: true);
         break;
-      case FinampQuickActions.playMostRecentQueue:
+      case FinampQuickActions.playPreviousQueue:
         {
+          final currentQueue = queueService.getQueue();
+          final currentQueueSource = currentQueue.trackCount == 0 ? null : currentQueue.source;
           final queuesBox = Hive.box<FinampStorableQueueInfo>("Queues");
           var queueMap = queuesBox.toMap();
-          // queueMap.remove("latest");
-          // var queueList = queueMap.values.toList();
-          // queueList.sort((x, y) => y.creation - x.creation);
-          final latestQueue = queueMap["latest"];
-          if (latestQueue == null) {
-            GlobalSnackbar.message((context) => "No recent queue found to play.*");
+          var queueList = queueMap.values.toList();
+          queueList.sort((x, y) => y.creation - x.creation);
+          // We will define the previous queue as the latest real stored queue with a different source.
+          // This should hopefully make the button more useful by avoiding loading different versions of the
+          // same queue from previous app sessions.  If the user wants one of those for some reason, they can just
+          // use the full queue restore screen.
+          final previousQueue = queueList.firstWhereOrNull((x) => x.source != currentQueueSource && x.trackCount > 0);
+          if (previousQueue == null) {
+            GlobalSnackbar.message((context) => "No previous queue found to play.*");
             return;
           }
           queueService.archiveSavedQueue();
-          await queueService.loadSavedQueue(latestQueue).catchError(GlobalSnackbar.error);
+          await queueService.loadSavedQueue(previousQueue).catchError(GlobalSnackbar.error);
         }
         break;
       case FinampQuickActions.configureOutput:

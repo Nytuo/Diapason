@@ -1011,7 +1011,7 @@ class SectionPreview extends ConsumerWidget {
         ),
         sectionInfo != null
             ? HomeScreenSectionContent(sectionInfo: sectionInfo!)
-            : Center(child: Text("Current config is not valid.*")),
+            : SizedBox(height: 120, child: Center(child: Text("Current config is not valid.*"))),
       ],
     );
   }

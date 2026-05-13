@@ -342,7 +342,6 @@ Future<List<BaseItemDto>?> loadHomeSectionItemsOffline({
       FinampUserHelper.finampCurrentUserProvider.select((value) => value?.currentView?.id),
     );
     if (libraryId == null) {
-      print("RRRRRRRRRRRRRRRRRRR no library!");
       return [];
     }
   }

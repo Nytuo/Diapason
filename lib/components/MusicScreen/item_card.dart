@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:finamp/components/MusicScreen/item_wrapper.dart';
-import 'package:finamp/components/QueueRestoreScreen/queue_restore_tile.dart';
 import 'package:finamp/components/album_image.dart';
 import 'package:finamp/components/global_snackbar.dart';
 import 'package:finamp/l10n/app_localizations.dart';
@@ -14,6 +13,8 @@ import 'package:finamp/services/queue_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+
+import '../../services/item_by_id_provider.dart';
 
 const double _itemCollectionCardTextSpacing = 6;
 const double _queuesSectionWidth = 160;
@@ -141,13 +142,13 @@ class HomeScreenQueueTile extends ConsumerWidget {
     final queueService = GetIt.instance<QueueService>();
     int remainingTracks = info.trackCount - info.previousTracks.length;
 
-    BaseItemDto? track = ref.watch(trackProvider(info.currentTrack)).value;
+    BaseItemDto? track = info.currentTrack == null ? null : ref.watch(itemByIdProvider(info.currentTrack!)).value;
 
     QueueItemSource source = info.source;
     if (source.wantsItem) {
       // BaseItemId uses String equals, the linter is mistaken.
       // ignore: provider_parameters
-      final sourceItem = ref.watch(trackProvider(BaseItemId(source.id))).value;
+      final sourceItem = ref.watch(itemByIdProvider(BaseItemId(source.id))).value;
       if (sourceItem != null) {
         source = source.withItem(sourceItem);
       }
@@ -159,7 +160,6 @@ class HomeScreenQueueTile extends ConsumerWidget {
         width: _queuesSectionWidth,
         // height: _queuesSectionHeight,
         child: GestureDetector(
-          // TODO add right click handler
           onSecondaryTap: () => {
             if (source.item != null) {openItemMenu(context: context, item: source.item!, queueInfo: info)},
           },
@@ -249,7 +249,7 @@ double calculateItemCollectionCardHeight({
     (sectionInfo == null && itemType != null) || (sectionInfo != null && itemType == null),
     "Exactly one of sectionInfo or itemType must be provided",
   );
-  final actualItemType = itemType ?? sectionInfo?.contentType?.itemType ?? BaseItemDtoType.album;
+  final actualItemType = itemType ?? sectionInfo?.contentType.itemType ?? BaseItemDtoType.album;
   return switch (sectionInfo?.type) {
     HomeScreenSectionType.queues => _queuesSectionHeight,
     _ =>

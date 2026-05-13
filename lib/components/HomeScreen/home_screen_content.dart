@@ -14,6 +14,7 @@ import 'package:finamp/components/finamp_icon.dart';
 import 'package:finamp/components/finamp_section_header.dart';
 import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/menus/components/icon_button_with_semantics.dart';
+import 'package:finamp/menus/home_section_menu.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
 import 'package:finamp/screens/home_screen_settings_screen.dart';
@@ -322,10 +323,7 @@ class HomeScreenSection extends ConsumerWidget {
             Navigator.pushNamed(context, ShowAllScreen.routeName, arguments: sectionInfo);
           }
         },
-        onSecondaryTap: () => editHomeScreenSection(
-          context,
-          FinampSettingsHelper.finampSettings.homeScreenConfiguration.sections.indexOf(sectionInfo),
-        ),
+        onSecondaryTap: () => showModalHomeSectionMenu(context: context, section: sectionInfo),
         onDismiss: (followUpAction) async {
           final source = QueueItemSource.rawId(
             type: QueueItemSourceType.homeScreenSection,

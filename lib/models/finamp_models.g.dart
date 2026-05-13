@@ -3566,7 +3566,7 @@ class FinampQuickActionsAdapter extends TypeAdapter<FinampQuickActions> {
       case 5:
         return FinampQuickActions.playRandomFavoriteItem;
       case 6:
-        return FinampQuickActions.playMostRecentQueue;
+        return FinampQuickActions.playPreviousQueue;
       case 7:
         return FinampQuickActions.configureOutput;
       case 8:
@@ -3593,7 +3593,7 @@ class FinampQuickActionsAdapter extends TypeAdapter<FinampQuickActions> {
         writer.writeByte(4);
       case FinampQuickActions.playRandomFavoriteItem:
         writer.writeByte(5);
-      case FinampQuickActions.playMostRecentQueue:
+      case FinampQuickActions.playPreviousQueue:
         writer.writeByte(6);
       case FinampQuickActions.configureOutput:
         writer.writeByte(7);
@@ -9688,7 +9688,7 @@ const _$FinampQuickActionsEnumMap = {
   FinampQuickActions.playRandomAlbum: 'playRandomAlbum',
   FinampQuickActions.playRandomTrack: 'playRandomTrack',
   FinampQuickActions.playRandomFavoriteItem: 'playRandomFavoriteItem',
-  FinampQuickActions.playMostRecentQueue: 'playMostRecentQueue',
+  FinampQuickActions.playPreviousQueue: 'playPreviousQueue',
   FinampQuickActions.configureOutput: 'configureOutput',
   FinampQuickActions.surpriseMe: 'surpriseMe',
   FinampQuickActions.playSpecificItem: 'playSpecificItem',

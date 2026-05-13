@@ -4435,7 +4435,7 @@ class HomeScreenSectionConfiguration {
   String _humanReadableLocalisedName(HomeScreenSectionConfiguration homeScreenSectionInfo, BuildContext context) {
     switch (homeScreenSectionInfo.type) {
       case HomeScreenSectionType.tabView:
-        return "${homeScreenSectionInfo.sortAndFilterConfiguration.filters.map((filter) => filter.extras != null ? "${filter.type.name} (${filter.extras})" : filter.type.name).join(", ")} ${homeScreenSectionInfo.contentType.toLocalisedString(context) ?? "Tab View"} ${homeScreenSectionInfo.sortAndFilterConfiguration.sortBy.toLocalisedString(context)} ${homeScreenSectionInfo.sortAndFilterConfiguration.sortOrder == SortOrder.ascending ? "↑" : "↓"}*";
+        return "${homeScreenSectionInfo.sortAndFilterConfiguration.filters.map((filter) => filter.extras != null ? "${filter.type.name} (${filter.extras})" : filter.type.name).join(", ")} ${homeScreenSectionInfo.contentType.toLocalisedString(context)} ${homeScreenSectionInfo.sortAndFilterConfiguration.sortBy.toLocalisedString(context)} ${homeScreenSectionInfo.sortAndFilterConfiguration.sortOrder == SortOrder.ascending ? "↑" : "↓"}*";
       case HomeScreenSectionType.collection:
         return "Collection*";
       case HomeScreenSectionType.queues:
@@ -4510,7 +4510,7 @@ enum FinampQuickActions {
   @HiveField(5)
   playRandomFavoriteItem,
   @HiveField(6)
-  playMostRecentQueue,
+  playPreviousQueue,
   @HiveField(7)
   configureOutput,
   @HiveField(8)
@@ -4543,8 +4543,8 @@ enum FinampQuickActions {
         return "Play Random Track";
       case FinampQuickActions.playRandomFavoriteItem:
         return "Play Random Favorite";
-      case FinampQuickActions.playMostRecentQueue:
-        return "Play Most Recent Queue";
+      case FinampQuickActions.playPreviousQueue:
+        return "Play Previous Queue";
       case FinampQuickActions.configureOutput:
         return "Configure Output";
       case FinampQuickActions.playSpecificItem:
@@ -4570,8 +4570,8 @@ enum FinampQuickActions {
         return "Starts continuous radio from a random track*";
       case FinampQuickActions.playRandomFavoriteItem:
         return "Starts playback from a random favorite item*";
-      case FinampQuickActions.playMostRecentQueue:
-        return "Restores and plays your most recent queue*";
+      case FinampQuickActions.playPreviousQueue:
+        return "Restores and plays your most recent archived queue*";
       case FinampQuickActions.configureOutput:
         return "Opens output device configuration*";
       case FinampQuickActions.playSpecificItem:
@@ -4589,7 +4589,7 @@ enum FinampQuickActions {
       FinampQuickActions.playRandomAlbum => TablerIcons.album,
       FinampQuickActions.playRandomTrack => TablerIcons.music,
       FinampQuickActions.playRandomFavoriteItem => TablerIcons.heart_question,
-      FinampQuickActions.playMostRecentQueue => TablerIcons.restore,
+      FinampQuickActions.playPreviousQueue => TablerIcons.restore,
       FinampQuickActions.configureOutput => TablerIcons.device_speaker,
       FinampQuickActions.playSpecificItem => TablerIcons.music_pin,
       FinampQuickActions.surpriseMe => TablerIcons.radio,
@@ -4818,8 +4818,8 @@ class QuickActionConfig {
         return "Random Track*";
       case FinampQuickActions.playRandomFavoriteItem:
         return "Random Favorite*";
-      case FinampQuickActions.playMostRecentQueue:
-        return "Last Queue*";
+      case FinampQuickActions.playPreviousQueue:
+        return "Previous Queue*";
       case FinampQuickActions.configureOutput:
         return "Configure Output*";
       case FinampQuickActions.playSpecificItem:
