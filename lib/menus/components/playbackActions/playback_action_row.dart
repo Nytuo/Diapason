@@ -1,7 +1,7 @@
 import 'package:finamp/menus/components/playbackActions/playback_action_page_indicator.dart';
 import 'package:finamp/menus/components/playbackActions/playback_actions.dart';
 import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
+import 'package:finamp/models/music_models.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:finamp/services/queue_service.dart';
 import 'package:flutter/cupertino.dart';
@@ -18,14 +18,12 @@ class PlaybackActionRow extends ConsumerStatefulWidget {
     this.popContext = true,
     this.compactLayout = false,
     this.queueItem,
-    this.source,
   });
 
-  final PlayableItem item;
+  final FinampPlayable item;
   final bool popContext;
   final bool compactLayout;
   final FinampQueueItem? queueItem;
-  final QueueItemSource? source;
 
   @override
   ConsumerState<PlaybackActionRow> createState() => _PlaybackActionRowState();
@@ -47,7 +45,6 @@ class _PlaybackActionRowState extends ConsumerState<PlaybackActionRow> {
       compactLayout: widget.compactLayout,
       preferPrependingToNextUp: ref.watch(finampSettingsProvider.preferNextUpPrepending),
       queueItem: widget.queueItem,
-      source: widget.source,
     );
 
     // initial page for regular playback action row

@@ -15,6 +15,7 @@ import 'package:finamp/menus/components/menu_item_info_header.dart';
 import 'package:finamp/menus/components/playbackActions/playback_action_row.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
+import 'package:finamp/models/music_models.dart';
 import 'package:flutter/material.dart';
 
 const Duration playlistMenuDefaultAnimationDuration = Duration(milliseconds: 750);
@@ -27,7 +28,7 @@ Future<void> showModalPlaylistMenu({
   required BaseItemDto baseItem,
   FinampStorableQueueInfo? queueInfo,
 }) async {
-  final playableItem = PlayableBaseItem.defaultSort(baseItem);
+  final playableItem = Playlist.fromItem(baseItem);
   // Normal menu entries, excluding headers
   List<HideableMenuEntry> getMenuEntries(BuildContext context) {
     return [

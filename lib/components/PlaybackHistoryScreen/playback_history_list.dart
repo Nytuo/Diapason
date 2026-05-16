@@ -4,7 +4,7 @@ import 'package:finamp/services/datetime_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
-import '../../services/music_screen_provider.dart';
+import '../../models/music_models.dart';
 import '../../services/playback_history_service.dart';
 import '../padded_custom_scrollview.dart';
 
@@ -37,12 +37,18 @@ class PlaybackHistoryList extends StatelessWidget {
                     item: group.value[actualIndex].item.baseItem,
                     highlightCurrentTrack: groupIndex == 0 && index == 0, // only highlight first track
                     playbackProgress: group.value[actualIndex].playPercentage,
-                    fetchChildren: () {
-                      return PlayableSlice(
-                        items: group.value.map((x) => x.item.baseItem).toList().reversed.toList(),
-                        startingIndex: index,
-                      );
-                    },
+                    // TODO better queue source
+                    parentPlayable: PrecalculatedPlayable(
+                      source: QueueItemSource.rawId(
+                        type: QueueItemSourceType.unknown,
+                        name: QueueItemSourceName(
+                          type: QueueItemSourceNameType.preTranslated,
+                          pretranslatedName: "Playback History*",
+                        ),
+                        id: "playback-history",
+                      ),
+                      tracks: group.value.map((x) => x.item.baseItem).toList().reversed.toList(),
+                    ),
                   );
 
                   return index == 0

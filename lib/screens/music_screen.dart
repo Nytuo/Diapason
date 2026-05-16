@@ -10,11 +10,13 @@ import 'package:finamp/components/now_playing_bar.dart';
 import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/menus/music_screen_drawer.dart';
 import 'package:finamp/models/finamp_models.dart';
+import 'package:finamp/models/music_models.dart';
 import 'package:finamp/services/audio_service_helper.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:finamp/services/finamp_user_helper.dart';
 import 'package:finamp/services/item_by_id_provider.dart';
 import 'package:finamp/services/jellyfin_api_helper.dart';
+import 'package:finamp/services/music_screen_provider.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -54,6 +56,18 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
 
   final _audioServiceHelper = GetIt.instance<AudioServiceHelper>();
   final _jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
+
+  QueueItemSource get musicScreenSource => QueueItemSource.rawId(
+    type: ref.watch(finampSettingsProvider.onlyShowFavorites)
+        ? QueueItemSourceType.favorites
+        : QueueItemSourceType.allTracks,
+    name: QueueItemSourceName(
+      type: ref.watch(finampSettingsProvider.onlyShowFavorites)
+          ? QueueItemSourceNameType.yourLikes
+          : QueueItemSourceNameType.shuffleAll,
+    ),
+    id: "shuffleAll",
+  );
 
   void _stopSearching() {
     setState(() {
@@ -174,8 +188,6 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    // TODO maybe allow showing collection so we can remove other showAll screen.
-    assert(widget.singleTabConfig == null || widget.singleTabConfig!.type == HomeScreenSectionType.tabView);
     if (_tabController == null) {
       _buildTabController();
     }
@@ -256,7 +268,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
                   : AlwaysScrollableScrollPhysics(),
               dragStartBehavior: DragStartBehavior.down,
               children: sortedTabs.map((tabType) {
-                if (tabType == ContentType.home) {
+                if (tabType == ContentType.home && widget.singleTabConfig == null) {
                   return HomeScreenContent(refresh: refreshMap[tabType]);
                 }
                 final contentTabType = tabType == ContentType.genericArtists
@@ -268,9 +280,34 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
                         contentType: contentTabType,
                       )
                     : SortAndFilterController.trackSettings(contentTabType);
+
+                FinampDisplayable<FinampUnpagedPlayable>? displayable;
+                if (widget.singleTabConfig != null) {
+                  displayable = ref.watch(resolveSectionProvider(widget.singleTabConfig!)).value;
+                  // TODO we need to inject the sortConfig into the non-musicScreenPlayable
+                  // TODO precache resolved sections?  Or remove baked in item somehow?  Or save items into home screen settings?
+                  if (displayable == null) {
+                    return SizedBox.shrink();
+                  }
+                } else {
+                  displayable = MusicScreenPlayable(
+                    tab: contentTabType,
+                    library: currentLibraryPlaceholder,
+                    // TODO better queue source?
+                    source: musicScreenSource,
+                    sortConfig: ref
+                        .watch(resolveSortProvider(sortAndFilterControllerMap[contentTabType]!))
+                        .copyWith(searchQuery: searchQuery),
+                  );
+                }
+
                 return Column(
                   children: [
-                    SortAndFilterRow(tabType: contentTabType, controller: sortAndFilterControllerMap[contentTabType]!),
+                    if (displayable is FinampSortable)
+                      SortAndFilterRow(
+                        tabType: contentTabType,
+                        controller: sortAndFilterControllerMap[contentTabType]!,
+                      ),
                     ArtistTypeSelectionRow(
                       tabType: tabType,
                       defaultArtistType: ref.watch(finampSettingsProvider.defaultArtistType),
@@ -280,12 +317,9 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
                       // Prevent track highlight background from showing on header
                       child: Material(
                         child: MusicScreenTabView(
-                          tabContentType: contentTabType,
                           refresh: refreshMap[tabType],
                           allowTrackGestures: widget.singleTabConfig != null,
-                          sortAndFilterConfiguration: ref
-                              .watch(resolveSortProvider(sortAndFilterControllerMap[contentTabType]!))
-                              .copyWith(searchQuery: searchQuery),
+                          displayable: displayable,
                         ),
                       ),
                     ),

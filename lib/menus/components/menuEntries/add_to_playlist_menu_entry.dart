@@ -3,13 +3,14 @@ import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/menus/components/menuEntries/menu_entry.dart';
 import 'package:finamp/menus/playlist_actions_menu.dart';
 import 'package:finamp/models/finamp_models.dart';
+import 'package:finamp/models/music_models.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 
 class AddToPlaylistMenuEntry extends ConsumerWidget implements HideableMenuEntry {
-  final PlayableItem item;
+  final FinampPlayable item;
   final FinampQueueItem? queueItem;
 
   const AddToPlaylistMenuEntry({super.key, required this.item, this.queueItem});
@@ -31,8 +32,9 @@ class AddToPlaylistMenuEntry extends ConsumerWidget implements HideableMenuEntry
             context: context,
             items: switch (item) {
               AlbumDisc() => item.tracks,
-              PlayableBaseItem() => [item.item],
-              HomeScreenPlayable() => throw UnimplementedError(),
+              // TODO is this a bad idea?  Could we get other strange item types like AlbumDisc that need handling?
+              FinampPlayableItem() => [item.item],
+              _ => throw UnsupportedError("Cannot add $item to playlist - invalid type"),
             },
             parentPlaylist: inPlaylist ? queueItem!.source.item : null,
           );

@@ -9,6 +9,7 @@ import 'package:finamp/components/favorite_button.dart';
 import 'package:finamp/components/finamp_app_bar_back_button.dart';
 import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/menus/components/playbackActions/playback_action_row.dart';
+import 'package:finamp/models/music_models.dart';
 import 'package:finamp/screens/music_screen.dart';
 import 'package:finamp/services/finamp_user_helper.dart';
 import 'package:finamp/services/genre_screen_provider.dart';
@@ -286,11 +287,7 @@ class _GenreScreenContentState extends ConsumerState<GenreScreenContent> {
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 10)),
         SliverToBoxAdapter(
-          child: PlaybackActionRow(
-            compactLayout: true,
-            item: PlayableBaseItem.defaultSort(widget.parent),
-            popContext: false,
-          ),
+          child: PlaybackActionRow(compactLayout: true, item: GenericPlayableItem(widget.parent), popContext: false),
         ),
         if (!isLoading)
           ...genreItemSectionsOrder.map((type) {

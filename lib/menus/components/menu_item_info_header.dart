@@ -9,6 +9,7 @@ import 'package:finamp/components/themed_bottom_sheet.dart';
 import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
+import 'package:finamp/models/music_models.dart';
 import 'package:finamp/screens/album_screen.dart';
 import 'package:finamp/screens/artist_screen.dart';
 import 'package:finamp/screens/genre_screen.dart';
@@ -25,13 +26,13 @@ const double infoHeaderFullInternalHeight = 140.0;
 const double infoHeaderCondensedInternalHeight = 80.0;
 
 Widget _getMenuHeaderForItemType({
-  required PlayableItem item,
+  required FinampDisplayableOrPlayable item,
   required bool condensed,
   required List<MenuItemInfoHeaderFeatures> features,
 }) {
   return switch (item) {
     AlbumDisc() => AlbumInfo(item: item, condensed: condensed, features: features),
-    PlayableBaseItem(item: final baseItem) => switch (BaseItemDtoType.fromItem(baseItem)) {
+    FinampPlayableItem(item: final baseItem) => switch (BaseItemDtoType.fromItem(baseItem)) {
       BaseItemDtoType.track => TrackInfo(item: baseItem, condensed: condensed, features: features),
       BaseItemDtoType.album => AlbumInfo(item: item, condensed: condensed, features: features),
       BaseItemDtoType.playlist => PlaylistInfo(item: baseItem, condensed: condensed, features: features),
@@ -39,14 +40,30 @@ Widget _getMenuHeaderForItemType({
       BaseItemDtoType.artist => ArtistInfo(item: baseItem, condensed: condensed, features: features),
       _ => TrackInfo(item: baseItem, condensed: condensed, features: features),
     },
-    HomeScreenPlayable() => HomeSectionInfo(config: item.config, item: item.item),
+    MusicScreenPlayable(sortConfig: final config, library: final library, tab: final content) => HomeSectionInfo(
+      config: HomeScreenSectionConfiguration(
+        type: HomeScreenSectionType.tabView,
+        itemId: library,
+        contentType: content,
+        sortAndFilterConfiguration: config,
+      ),
+    ),
+    LatestQueues() => HomeSectionInfo(
+      config: HomeScreenSectionConfiguration(
+        type: HomeScreenSectionType.queues,
+        itemId: currentLibraryPlaceholder,
+        contentType: ContentType.home,
+        sortAndFilterConfiguration: SortAndFilterConfiguration.defaultSort,
+      ),
+    ),
+    _ => throw UnsupportedError("Cannot show menu header for $item"),
   };
 }
 
 enum MenuItemInfoHeaderFeatures { openItem, addToPlaylistAndFavorite }
 
 class MenuItemInfoSliverHeader extends SliverPersistentHeaderDelegate {
-  final PlayableItem item;
+  final FinampDisplayableOrPlayable item;
   final bool condensed;
   final List<MenuItemInfoHeaderFeatures> features;
 
@@ -77,7 +94,7 @@ class MenuItemInfoSliverHeader extends SliverPersistentHeaderDelegate {
 }
 
 class MenuItemInfoHeader extends ConsumerWidget {
-  final BaseItemDto item;
+  final FinampDisplayableOrPlayable item;
   final bool condensed;
   final List<MenuItemInfoHeaderFeatures> features;
 
@@ -98,11 +115,7 @@ class MenuItemInfoHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return _getMenuHeaderForItemType(
-      item: PlayableBaseItem.defaultSort(item),
-      condensed: condensed,
-      features: features,
-    );
+    return _getMenuHeaderForItemType(item: item, condensed: condensed, features: features);
   }
 }
 
@@ -164,7 +177,7 @@ class TrackInfo extends ConsumerWidget {
 class AlbumInfo extends ConsumerWidget {
   const AlbumInfo({super.key, required this.item, required this.condensed, required this.features});
 
-  final PlayableItem item;
+  final FinampDisplayableOrPlayable item;
   final bool condensed;
   final List<MenuItemInfoHeaderFeatures> features;
 
@@ -176,16 +189,16 @@ class AlbumInfo extends ConsumerWidget {
 
     switch (item) {
       case AlbumDisc():
-        baseItem = item.parent;
+        baseItem = item.item;
         title = AppLocalizations.of(context)!.discOfAlbum(
           item.tracks.first.parentIndexNumber!,
           baseItem.name ?? AppLocalizations.of(context)!.unknownName,
         );
-      case PlayableBaseItem():
+      case Album():
         baseItem = item.item;
         title = baseItem.name ?? AppLocalizations.of(context)!.unknownName;
-      case HomeScreenPlayable():
-        throw UnimplementedError();
+      case _:
+        throw UnsupportedError("Unexpected type $item in album info header");
     }
 
     return ItemInfo(

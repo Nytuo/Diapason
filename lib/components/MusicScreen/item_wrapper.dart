@@ -10,6 +10,7 @@ import 'package:finamp/menus/playlist_menu.dart';
 import 'package:finamp/menus/track_menu.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
+import 'package:finamp/models/music_models.dart';
 import 'package:finamp/screens/album_screen.dart';
 import 'package:finamp/screens/artist_screen.dart';
 import 'package:finamp/screens/genre_screen.dart';
@@ -184,7 +185,7 @@ void openItemMenu({
       await showModalTrackMenu(context: context, item: item, queueInfo: queueInfo);
       break;
     case BaseItemDtoType.album:
-      await showModalAlbumMenu(context: context, item: PlayableBaseItem.defaultSort(item), queueInfo: queueInfo);
+      await showModalAlbumMenu(context: context, item: Album.fromItem(item), queueInfo: queueInfo);
       break;
     default:
       // Do nothing for unsupported item types

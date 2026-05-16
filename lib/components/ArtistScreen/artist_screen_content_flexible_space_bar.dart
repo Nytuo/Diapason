@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:finamp/components/MusicScreen/sort_and_filter_row.dart';
 import 'package:finamp/menus/components/playbackActions/playback_action_row.dart';
+import 'package:finamp/models/music_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../models/finamp_models.dart';
 import '../../models/jellyfin_models.dart';
 import '../album_image.dart';
 import 'artist_item_info.dart';
@@ -76,7 +76,7 @@ class ArtistScreenContentFlexibleSpaceBar extends ConsumerWidget {
                   children: [
                     PlaybackActionRow(
                       compactLayout: true,
-                      item: PlayableBaseItem(item: parentItem, sortConfig: sortConfig),
+                      item: GenericPlayableItem(parentItem, sortConfig: sortConfig),
                       popContext: false,
                     ),
                     if (sortConfig.filters.isNotEmpty) ...[

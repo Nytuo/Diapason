@@ -15,6 +15,8 @@ import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
 import 'package:flutter/material.dart';
 
+import '../models/music_models.dart';
+
 const Duration artistMenuDefaultAnimationDuration = Duration(milliseconds: 750);
 const Curve artistMenuDefaultInCurve = Curves.easeOutCubic;
 const Curve artistMenuDefaultOutCurve = Curves.easeInCubic;
@@ -25,7 +27,7 @@ Future<void> showModalArtistMenu({
   required BaseItemDto baseItem,
   FinampStorableQueueInfo? queueInfo,
 }) async {
-  final playableItem = PlayableBaseItem.defaultSort(baseItem);
+  final playableItem = GenericPlayableItem.defaultSort(baseItem);
   // Normal menu entries, excluding headers
   List<HideableMenuEntry> getMenuEntries(BuildContext context) {
     return [

@@ -15,6 +15,8 @@ import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
 import 'package:flutter/material.dart';
 
+import '../models/music_models.dart';
+
 const Duration genreMenuDefaultAnimationDuration = Duration(milliseconds: 750);
 const Curve genreMenuDefaultInCurve = Curves.easeOutCubic;
 const Curve genreMenuDefaultOutCurve = Curves.easeInCubic;
@@ -25,7 +27,7 @@ Future<void> showModalGenreMenu({
   required BaseItemDto baseItem,
   FinampStorableQueueInfo? queueInfo,
 }) async {
-  final playableItem = PlayableBaseItem.defaultSort(baseItem);
+  final playableItem = GenericPlayableItem.defaultSort(baseItem);
   // Normal menu entries, excluding headers
   List<HideableMenuEntry> getMenuEntries(BuildContext context) {
     return [

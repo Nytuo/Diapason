@@ -8,7 +8,6 @@ import 'package:audio_service/audio_service.dart';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:bits/bits.dart';
 import 'package:collection/collection.dart';
-import 'package:finamp/components/MusicScreen/sort_and_filter_row.dart';
 import 'package:finamp/components/global_snackbar.dart';
 import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/services/finamp_user_helper.dart';
@@ -30,6 +29,7 @@ import '../builders/annotations.dart';
 import '../services/finamp_settings_helper.dart';
 import 'jellyfin_models.dart';
 import 'migration_adapters.dart';
+import 'music_models.dart';
 
 part 'finamp_models.g.dart';
 
@@ -1918,14 +1918,11 @@ enum BaseItemDtoType {
   }
 
   // TODO stopgap solution until snackbars fate is decided
-  static BaseItemDtoType fromPlayableItem(PlayableItem item) {
+  static BaseItemDtoType? fromPlayableItem(FinampPlayable item) {
     switch (item) {
-      case AlbumDisc():
-        return BaseItemDtoType.fromItem(item.parent);
-      case PlayableBaseItem():
-        return BaseItemDtoType.fromItem(item.item);
-      case HomeScreenPlayable():
-        return BaseItemDtoType.unknown;
+      case FinampPlayableItem(): return BaseItemDtoType.fromItem(item.item);
+      case _:
+        return null;
     }
   }
 }
@@ -2080,7 +2077,7 @@ class QueueItemSource {
     this.contextNormalizationGain,
   });
 
-  factory QueueItemSource.fromPlayableItem(
+  /*factory QueueItemSource.fromPlayableItem(
     PlayableItem playableItem, {
     QueueItemSourceType? type,
     QueueItemSourceNameType? nameType,
@@ -2102,7 +2099,7 @@ class QueueItemSource {
           id: playableItem.config.toLocalisedString(context),
         );
     }
-  }
+  }*/
 
   factory QueueItemSource.fromBaseItem(
     BaseItemDto baseItem, {
@@ -4199,13 +4196,13 @@ enum HomeScreenSectionType {
   }
 }
 
-@JsonSerializable(converters: [BaseItemIdConverter()], includeIfNull: false)
+@JsonSerializable(converters: [LibraryOrItemIdConverter()], includeIfNull: false)
 @HiveType(typeId: 114)
 class HomeScreenSectionConfiguration {
   @HiveField(0)
   final HomeScreenSectionType type;
   @HiveField(1)
-  final BaseItemId itemId;
+  final LibraryOrItemId itemId;
   @HiveField(2)
   final ContentType contentType; //TODO make this a list?
   @HiveField(3)
@@ -4814,6 +4811,14 @@ class SortAndFilterConfiguration {
     filters: {},
   );
 
+  static SortAndFilterConfiguration defaultForItem(BaseItemDto item) {
+    if ([BaseItemDtoType.album, BaseItemDtoType.playlist].contains(BaseItemDtoType.fromItem(item))) {
+      return defaultInAlbumSort;
+    } else {
+      return defaultSort;
+    }
+  }
+
   /*SortAndFilterConfiguration resolve({required bool isOffline, String? searchQuery}) {
     final newFilters = filters.union({
       if (searchQuery != null) ItemFilter(type: ItemFilterType.searchTerm, extras: searchQuery),
@@ -4844,12 +4849,7 @@ class SortAndFilterConfiguration {
 
   @override
   int get hashCode {
-    int filtersHash = 0;
-    // Just XOR hashes to get order independence.  Unlikely to cause collisions.
-    for (var filter in filters) {
-      filtersHash ^= filter.hashCode;
-    }
-    return Object.hash(sortBy, sortOrder, filtersHash);
+    return Object.hash(sortBy, sortOrder, Object.hashAllUnordered(filters));
   }
 }
 
@@ -4900,53 +4900,4 @@ class QuickActionConfig {
   String toString() {
     return jsonEncode(toJson());
   }
-}
-
-// Here because sealed class works inside one file only
-sealed class PlayableItem {}
-
-class AlbumDisc implements PlayableItem {
-  AlbumDisc({required this.parent, required this.tracks}) {
-    assert(
-      tracks.every((e) {
-        return e.parentIndexNumber == tracks.first.parentIndexNumber;
-      }),
-    );
-  }
-
-  List<BaseItemDto> tracks;
-  BaseItemDto parent;
-}
-
-class PlayableBaseItem implements PlayableItem {
-  PlayableBaseItem({required this.item, required this.sortConfig}) {
-    assert(() {
-      ContentType type = [BaseItemDtoType.album, BaseItemDtoType.playlist].contains(BaseItemDtoType.fromItem(item))
-          ? ContentType.inPlaylist
-          : ContentType.tracks;
-      final controller = SortAndFilterController(startingConfig: sortConfig, contentType: type);
-      final resolvedConfig = GetIt.instance<ProviderContainer>().read(resolveSortProvider(controller));
-      return sortConfig == resolvedConfig;
-    }());
-  }
-
-  factory PlayableBaseItem.defaultSort(BaseItemDto item) => PlayableBaseItem(
-    item: item,
-    sortConfig: switch (BaseItemDtoType.fromItem(item)) {
-      BaseItemDtoType.album => SortAndFilterConfiguration.defaultInAlbumSort,
-      BaseItemDtoType.playlist => SortAndFilterConfiguration.defaultInAlbumSort,
-      _ => SortAndFilterConfiguration.defaultSort,
-    },
-  );
-
-  BaseItemDto item;
-  SortAndFilterConfiguration sortConfig;
-}
-
-class HomeScreenPlayable implements PlayableItem {
-  HomeScreenPlayable({required this.config, this.item});
-
-  final HomeScreenSectionConfiguration config;
-
-  final BaseItemDto? item;
 }

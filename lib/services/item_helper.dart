@@ -15,7 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 
 import 'music_screen_provider.dart';
-
+/*
 Future<List<BaseItemDto>> loadChildTracks({required PlayableItem item, bool shuffleGenreAlbums = false}) {
   switch (item) {
     case AlbumDisc():
@@ -37,8 +37,13 @@ Future<List<BaseItemDto>> loadChildTracks({required PlayableItem item, bool shuf
           .then((x) => x ?? <BaseItemDto>[]);
   }
 }
+*/
 
-Future<List<BaseItemDto>> loadChildTracksFromBaseItem({required PlayableBaseItem item}) async {
+// TODO remove this and use getSliceProvider for all cases.
+Future<List<BaseItemDto>> loadChildTracksFromBaseItem({
+  required BaseItemDto item,
+  required SortAndFilterConfiguration sortConfig,
+}) async {
   final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
   final finampUserHelper = GetIt.instance<FinampUserHelper>();
   final settings = FinampSettingsHelper.finampSettings;
@@ -47,27 +52,27 @@ Future<List<BaseItemDto>> loadChildTracksFromBaseItem({required PlayableBaseItem
   final Future<List<BaseItemDto>?> newItemsFuture;
 
   if (settings.isOffline) {
-    newItemsFuture = loadChildTracksOffline(item: item);
+    newItemsFuture = loadChildTracksOffline(item: item, sortConfig: sortConfig);
   } else {
-    switch (BaseItemDtoType.fromItem(item.item)) {
+    switch (BaseItemDtoType.fromItem(item)) {
       case BaseItemDtoType.track:
-        newItemsFuture = Future.value([item.item]);
+        newItemsFuture = Future.value([item]);
         break;
       case BaseItemDtoType.album:
         newItemsFuture = ref
-            .read(getAlbumOrPlaylistTracksProvider(item.item).future)
+            .read(getAlbumOrPlaylistTracksProvider(item).future)
             .then((value) => value.$2); // get playable tracks
       case BaseItemDtoType.playlist:
         newItemsFuture = ref
-            .read(getSortedPlaylistTracksProvider(item.item, item.sortConfig).future)
+            .read(getSortedPlaylistTracksProvider(item, sortConfig).future)
             .then((value) => value.$2); // get playable tracks
         break;
       case BaseItemDtoType.artist:
         newItemsFuture = ref.read(
           getArtistTracksProvider(
-            artist: item.item,
+            artist: item,
             libraryFilter: finampUserHelper.currentUser?.currentView,
-            genreFilter: item.sortConfig.genreFilter?.id,
+            genreFilter: sortConfig.genreFilter?.id,
           ).future,
         );
         break;
@@ -76,17 +81,17 @@ Future<List<BaseItemDto>> loadChildTracksFromBaseItem({required PlayableBaseItem
           parentItem: finampUserHelper.currentUser?.currentView,
           includeItemTypes: [BaseItemDtoType.track.jellyfinName].join(","),
           limit: FinampSettingsHelper.finampSettings.trackShuffleItemCount,
-          genreFilter: item.sortConfig.genreFilter?.id,
+          genreFilter: sortConfig.genreFilter?.id,
           sortBy: "Random", // important, as we load limited tracks and otherwise would always get the same
         );
         break;
       default:
         newItemsFuture = jellyfinApiHelper.getItems(
-          parentItem: item.item,
+          parentItem: item,
           includeItemTypes: [BaseItemDtoType.track.jellyfinName].join(","),
           sortBy: "ParentIndexNumber,IndexNumber,SortName",
           sortOrder: null,
-          genreFilter: item.sortConfig.genreFilter?.id,
+          genreFilter: sortConfig.genreFilter?.id,
           // filters: settings.onlyShowFavorites ? "IsFavorite" : null,
         );
     }
@@ -96,12 +101,12 @@ Future<List<BaseItemDto>> loadChildTracksFromBaseItem({required PlayableBaseItem
 
   if (newItems == null) {
     GlobalSnackbar.message(
-      (scaffold) => AppLocalizations.of(scaffold)!.couldNotLoad(BaseItemDtoType.fromItem(item.item).name),
+      (scaffold) => AppLocalizations.of(scaffold)!.couldNotLoad(BaseItemDtoType.fromItem(item).name),
     );
     return [];
   }
 
-  if (BaseItemDtoType.fromItem(item.item) == BaseItemDtoType.artist) {
+  if (BaseItemDtoType.fromItem(item) == BaseItemDtoType.artist) {
     return sortArtistTracks(newItems);
   }
 
@@ -120,21 +125,25 @@ List<BaseItemDto> groupItems({
   return albums.flattened.toList();
 }
 
-Future<List<BaseItemDto>?> loadChildTracksOffline({required PlayableBaseItem item, int? limit}) async {
+Future<List<BaseItemDto>?> loadChildTracksOffline({
+  required BaseItemDto item,
+  int? limit,
+  required SortAndFilterConfiguration sortConfig,
+}) async {
   final downloadsService = GetIt.instance<DownloadsService>();
   final finampUserHelper = GetIt.instance<FinampUserHelper>();
   final settings = FinampSettingsHelper.finampSettings;
 
   List<BaseItemDto> items;
 
-  switch (BaseItemDtoType.fromItem(item.item)) {
+  switch (BaseItemDtoType.fromItem(item)) {
     case BaseItemDtoType.track:
-      items = [item.item];
+      items = [item];
       break;
     case BaseItemDtoType.genre:
       items = (await downloadsService.getAllTracks(
         viewFilter: finampUserHelper.currentUser?.currentView?.id,
-        genreFilter: item.item.id,
+        genreFilter: item.id,
         nullableViewFilters: settings.showDownloadsWithUnknownLibrary,
       )).map((e) => e.baseItem!).toList();
       items.shuffle();
@@ -144,24 +153,20 @@ Future<List<BaseItemDto>?> loadChildTracksOffline({required PlayableBaseItem ite
       break;
     case BaseItemDtoType.playlist:
       items = await GetIt.instance<ProviderContainer>()
-          .read(getSortedPlaylistTracksProvider(item.item, item.sortConfig).future)
+          .read(getSortedPlaylistTracksProvider(item, sortConfig).future)
           .then((value) => value.$2); // get playable tracks
     case BaseItemDtoType.artist:
       items = await GetIt.instance<ProviderContainer>().read(
         getArtistTracksProvider(
-          artist: item.item,
+          artist: item,
           libraryFilter: finampUserHelper.currentUser?.currentView,
-          genreFilter: item.sortConfig.genreFilter?.id,
+          genreFilter: sortConfig.genreFilter?.id,
         ).future,
       );
       items = sortArtistTracks(items);
       break;
     default:
-      items = await downloadsService.getCollectionTracks(
-        item.item,
-        playable: true,
-        genreFilter: item.sortConfig.genreFilter?.id,
-      );
+      items = await downloadsService.getCollectionTracks(item, playable: true, genreFilter: sortConfig.genreFilter?.id);
       break;
   }
 

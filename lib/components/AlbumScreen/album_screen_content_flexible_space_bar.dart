@@ -4,6 +4,7 @@ import 'package:finamp/components/album_image.dart';
 import 'package:finamp/menus/components/playbackActions/playback_action_row.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
+import 'package:finamp/models/music_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -63,7 +64,9 @@ class AlbumScreenContentFlexibleSpaceBar extends ConsumerWidget {
                 SizedBox(height: 10),
                 PlaybackActionRow(
                   compactLayout: true,
-                  item: PlayableBaseItem(item: parentItem, sortConfig: sortConfig),
+                  item: BaseItemDtoType.fromItem(parentItem) == BaseItemDtoType.playlist
+                      ? Playlist.fromItem(parentItem, sortConfig: sortConfig)
+                      : Album.fromItem(parentItem),
                   popContext: false,
                 ),
                 if (BaseItemDtoType.fromItem(parentItem) == BaseItemDtoType.playlist) ...[

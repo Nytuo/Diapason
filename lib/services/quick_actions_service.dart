@@ -2,7 +2,6 @@ import 'package:collection/collection.dart';
 import 'package:finamp/components/global_snackbar.dart';
 import 'package:finamp/menus/output_menu.dart';
 import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
 import 'package:finamp/screens/playback_history_screen.dart';
 import 'package:finamp/screens/queue_restore_screen.dart';
 import 'package:finamp/services/audio_service_helper.dart';
@@ -76,7 +75,10 @@ class QuickActionsService {
           GlobalSnackbar.message((_) => "Failed to load item '${action.itemName}*'");
         } else {
           await queueService.startPlayback(
-            items: await loadChildTracks(item: PlayableBaseItem.defaultSort(item)),
+            items: await loadChildTracksFromBaseItem(
+              item: item,
+              sortConfig: SortAndFilterConfiguration.defaultForItem(item),
+            ),
             // TODO quick-action specific source?
             source: QueueItemSource.fromBaseItem(item),
             order: FinampPlaybackOrder.linear,

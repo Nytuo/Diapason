@@ -1,8 +1,9 @@
-import 'dart:async';
+/*import 'dart:async';
 
 import 'package:finamp/components/MusicScreen/music_screen_tab_view.dart' show MusicRefreshCallback;
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
+import 'package:finamp/models/music_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -63,12 +64,12 @@ class _ShowAllScreenState extends ConsumerState<ShowAllScreen> {
     ref.read(pageControl.notifier).refresh();
   }
 
-  HomeScreenSectionConfiguration? _sectionInfoCache;
-  HomeScreenSectionConfiguration get sectionInfo =>
-      _sectionInfoCache ?? ModalRoute.of(context)!.settings.arguments as HomeScreenSectionConfiguration;
+  FinampDisplayable? _sectionInfoCache;
+  FinampDisplayable get sectionInfo =>
+      _sectionInfoCache ?? ModalRoute.of(context)!.settings.arguments as FinampDisplayable;
 
-  MusicScreenContentProvider get pageControl {
-    return musicScreenContentProvider(MusicScreenRequest.home(config: sectionInfo));
+  PagedContentProvider get pageControl {
+    return pagedContentProvider(sectionInfo);
   }
 
   @override
@@ -103,44 +104,35 @@ class _ShowAllScreenState extends ConsumerState<ShowAllScreen> {
       ),
     );
 
-    var content = PagedListView<int, BaseItemDto>.separated(
+    var content = PagedListView<int, FinampPlayable>.separated(
       state: ref.watch(pageControl),
       fetchNextPage: () {
         ref.read(pageControl.notifier).newPage();
       },
       scrollController: controller,
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      builderDelegate: PagedChildBuilderDelegate<BaseItemDto>(
+      builderDelegate: PagedChildBuilderDelegate<FinampPlayable>(
         itemBuilder: (context, item, index) {
-          final source = QueueItemSource.rawId(
-            type: QueueItemSourceType.homeScreenSection,
-            name: QueueItemSourceName(
-              type: QueueItemSourceNameType.homeScreenSection,
-              localizationParameter: sectionInfo.presetType?.name,
-              pretranslatedName: sectionInfo.getTitle(context),
-            ),
-            id: sectionInfo.toLocalisedString(context),
-          );
           return AutoScrollTag(
             key: ValueKey(index),
             controller: controller,
             index: index,
-            child: BaseItemDtoType.fromItem(item) == BaseItemDtoType.track
-                ? TrackListTile(
-                    key: ValueKey(item.id),
-                    item: item,
-                    index: index,
-                    // when the tabBar was filtered and we only have the tracks tab,
-                    // we can allow Dismiss gestures in the track list
-                    parentItem: sectionInfo.itemId != null
-                        ? ref.watch(itemByIdProvider(sectionInfo.itemId!)).value
-                        : null,
-                    source: source,
-                    fetchChildren: () {
-                      return ref.read(pageControl.notifier).loadSlice(index);
-                    },
-                  )
-                : ItemWrapper(item: item, source: source, isGrid: false),
+            child: switch(item){
+              Track() => TrackListTile(
+                key: ValueKey(item.item.id),
+                item: item.item,
+                index: index,
+                // when the tabBar was filtered and we only have the tracks tab,
+                // we can allow Dismiss gestures in the track list
+                parentItem: item.source.item,
+                source: item.source,
+                fetchChildren: () {
+                  return ref.read(pageControl.notifier).loadSlice(index);
+                },
+              ),
+            FinampPlayableItem() => ItemWrapper(item: item.item, source: item.source, isGrid: false),
+            _ => throw UnsupportedError("Unsupported playable item $item"),
+            }
           );
         },
         firstPageProgressIndicatorBuilder: (_) => const FirstPageProgressIndicator(),
@@ -163,7 +155,7 @@ class _ShowAllScreenState extends ConsumerState<ShowAllScreen> {
         scrolledUnderElevation: 0.0, // disable tint/shadow when content is scrolled under the app bar
         centerTitle: true,
         toolbarHeight: 53,
-        title: Text(sectionInfo.getTitle(context)),
+        title: Text(sectionInfo.),
         leading: FinampAppBarBackButton(),
         actions: [],
       ),
@@ -172,3 +164,4 @@ class _ShowAllScreenState extends ConsumerState<ShowAllScreen> {
     );
   }
 }
+*/

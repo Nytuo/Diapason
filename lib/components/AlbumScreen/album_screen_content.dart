@@ -25,7 +25,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 
-import '../../services/music_screen_provider.dart';
+import '../../models/music_models.dart';
 import '../MusicScreen/sort_and_filter_row.dart';
 
 typedef BaseItemDtoCallback = void Function(BaseItemDto item);
@@ -182,18 +182,18 @@ class _AlbumScreenContentState extends ConsumerState<AlbumScreenContent> {
                 OverflowMenuButton(
                   onPressed: () => showModalAlbumMenu(
                     context: context,
-                    item: AlbumDisc(parent: widget.parent, tracks: childrenOfThisDisc),
+                    item: AlbumDisc(widget.parent, tracks: childrenOfThisDisc),
                   ),
                   label: AppLocalizations.of(context)!.moreActionsOnAlbumDisc,
                 ),
               ],
               onTap: () => showModalAlbumMenu(
                 context: context,
-                item: AlbumDisc(parent: widget.parent, tracks: childrenOfThisDisc),
+                item: AlbumDisc(widget.parent, tracks: childrenOfThisDisc),
               ),
               onDismiss: (followUpAction) => onConfirmPlayableDismiss(
                 followUpAction: followUpAction,
-                sourceItem: AlbumDisc(parent: widget.parent, tracks: childrenOfThisDisc),
+                sourceItem: AlbumDisc(widget.parent, tracks: childrenOfThisDisc),
                 tracks: childrenOfThisDisc,
               ),
               sectionContentSliver: TracksSliverList(
@@ -299,7 +299,6 @@ class _TracksSliverListState extends ConsumerState<TracksSliverList> {
         return TrackListTile(
           key: ValueKey(item.id),
           item: item,
-          fetchChildren: () => PlayableSlice(items: widget.childrenForQueue, startingIndex: indexOffset),
           index: indexOffset,
           showIndex: item.albumId == widget.parent.id,
           showCover: item.albumId != widget.parent.id || ref.watch(finampSettingsProvider.showCoversOnAlbumScreen),
@@ -310,11 +309,15 @@ class _TracksSliverListState extends ConsumerState<TracksSliverList> {
               widget.onRemoveFromList!(item);
             }
           },
-          isInPlaylist: BaseItemDtoType.fromItem(widget.parent) == BaseItemDtoType.playlist,
           isOnArtistScreen: widget.isOnArtistScreen,
           isOnGenreScreen: widget.isOnGenreScreen,
           forceAlbumArtists: widget.forceAlbumArtists,
           adaptiveAdditionalInfoSortBy: widget.adaptiveAdditionalInfoSortBy,
+          // TODO should we be passing and leveraging a proper parent playable?
+          parentPlayable: PrecalculatedPlayable(
+            source: QueueItemSource.fromBaseItem(widget.parent),
+            tracks: widget.childrenForQueue,
+          ),
         );
       }, childCount: widget.childrenForList.length),
     );

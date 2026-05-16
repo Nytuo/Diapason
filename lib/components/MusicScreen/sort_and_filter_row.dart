@@ -42,12 +42,12 @@ abstract class SortAndFilterController {
 
   SortAndFilterConfiguration _getValue(Ref ref);
 
-  SortAndFilterConfiguration _resolveInternal(Ref ref, SortAndFilterConfiguration config) {
+  static SortAndFilterConfiguration resolveOffline(Ref ref, ContentType type, SortAndFilterConfiguration config) {
     // PlayCount and Last Played are not representative in Offline Mode
     // so we disable it and overwrite it with the Sort Name if it was selected
     if (ref.watch(finampSettingsProvider.isOffline) &&
         (config.sortBy == SortBy.playCount || config.sortBy == SortBy.datePlayed)) {
-      if (_type == ContentType.inPlaylist) {
+      if (type == ContentType.inPlaylist) {
         return config.copyWith(sortBy: SortBy.defaultOrder);
       } else {
         return config.copyWith(sortBy: SortBy.sortName);
@@ -94,7 +94,7 @@ class StaticSortAndFilterController extends SortAndFilterController {
     if (skipResolving) {
       return _config;
     } else {
-      return _resolveInternal(ref, _config);
+      return SortAndFilterController.resolveOffline(ref, _type, _config);
     }
   }
 }
@@ -134,8 +134,9 @@ class TrackingSortAndFilterController extends SortAndFilterController {
   SortAndFilterConfiguration _getValue(Ref ref) {
     _notifier.addListener(ref.invalidateSelf);
     ref.onDispose(() => _notifier.removeListener(ref.invalidateSelf));
-    return _resolveInternal(
+    return SortAndFilterController.resolveOffline(
       ref,
+      _type,
       _config.copyWith(
         sortBy: ref.watch(finampSettingsProvider.tabSortBy(_type)),
         sortOrder: ref.watch(finampSettingsProvider.tabSortOrder(_type)),

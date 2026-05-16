@@ -18,9 +18,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 
+import '../../models/music_models.dart';
 import '../../services/downloads_service.dart';
 import '../../services/finamp_settings_helper.dart';
-import '../../services/music_screen_provider.dart';
 import '../../services/queue_service.dart';
 import '../../services/theme_provider.dart';
 import '../album_image.dart';
@@ -46,10 +46,8 @@ class TrackListTile extends ConsumerWidget {
     super.key,
     required this.item,
 
-    /// Fetch children that are related to this list tile, such as the other tracks in
-    /// the album. This is used to give the audio service all the tracks for the
-    /// item.
-    required this.fetchChildren,
+    /// The parent item which will be played with starting index [index] on tap.
+    required this.parentPlayable,
 
     /// Index of the track in whatever parent this widget is in. Used to start
     /// the audio service at a certain index, such as when selecting the middle
@@ -68,21 +66,15 @@ class TrackListTile extends ConsumerWidget {
     this.adaptiveAdditionalInfoSortBy,
     this.forceAlbumArtists = false,
 
-    /// Whether this widget is being displayed in a playlist. If true, will show
-    /// the remove from playlist button.
-    this.isInPlaylist = false,
     this.isOnArtistScreen = false,
     this.isOnGenreScreen = false,
     this.allowDismiss = true,
     this.highlightCurrentTrack = true,
     this.playbackProgress,
-
-    /// Used to pass a source if the context isn't enough to determine it
-    this.source,
   });
 
   final BaseItemDto item;
-  final FutureOr<PlayableSlice?> Function() fetchChildren;
+  final FinampPlayable parentPlayable;
   final int? index;
   final bool showIndex;
   final bool showCover;
@@ -90,13 +82,11 @@ class TrackListTile extends ConsumerWidget {
   final VoidCallback? onRemoveFromList;
   final bool forceAlbumArtists;
   final SortBy? adaptiveAdditionalInfoSortBy;
-  final bool isInPlaylist;
   final bool isOnArtistScreen;
   final bool isOnGenreScreen;
   final bool allowDismiss;
   final bool highlightCurrentTrack;
   final double? playbackProgress;
-  final QueueItemSource? source;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -116,7 +106,15 @@ class TrackListTile extends ConsumerWidget {
 
       if (!playable) return;
 
-      final slice = await fetchChildren();
+      PlayableSlice? slice;
+      switch (parentPlayable) {
+        case FinampUnpagedPlayable():
+          slice = await ref.watch(getPlayerSliceProvider(item: parentPlayable, startingOffset: index!).future);
+        case FinampPagedPlayable():
+          if (index != null) {
+            slice = await ref.watch(getPlayerSliceProvider(item: parentPlayable, startingOffset: index!).future);
+          }
+      }
 
       if (slice != null) {
         // start linear playback of album from the given index
@@ -125,9 +123,8 @@ class TrackListTile extends ConsumerWidget {
           startingIndex: slice.startingIndex,
           order: FinampPlaybackOrder.linear,
           // TODO correctly account for music screen source
-          source:
-              source ??
-              QueueItemSource.rawId(
+          source: slice.source,
+          /*QueueItemSource.rawId(
                 type: isInPlaylist
                     ? QueueItemSourceType.playlist
                     : isOnArtistScreen
@@ -151,7 +148,7 @@ class TrackListTile extends ConsumerWidget {
                 contextNormalizationGain: (isInPlaylist || isOnArtistScreen || isOnGenreScreen)
                     ? null
                     : parentItem?.normalizationGain,
-              ),
+              ),*/
         );
       }
     }
@@ -164,7 +161,6 @@ class TrackListTile extends ConsumerWidget {
       showArtists: (forceAlbumArtists || parentItem?.isArtist != true),
       forceAlbumArtists: forceAlbumArtists,
       adaptiveAdditionalInfoSortBy: adaptiveAdditionalInfoSortBy,
-      isInPlaylist: isInPlaylist,
       highlightCurrentTrack: highlightCurrentTrack,
       onRemoveFromList: onRemoveFromList,
       onTap: trackListTileOnTap,
@@ -175,7 +171,7 @@ class TrackListTile extends ConsumerWidget {
         return await onConfirmPlayableDismiss(
           followUpAction: followUpAction,
           // This is only used as source, so sort doesn't matter.
-          sourceItem: PlayableBaseItem.defaultSort(parentItem ?? item),
+          sourceItem: GenericPlayableItem.defaultSort(parentItem ?? item),
           tracks: [item],
         );
       },
@@ -217,86 +213,35 @@ IconData getSwipeActionIcon(ItemSwipeActions action) {
 
 Future<bool> onConfirmPlayableDismiss({
   required ItemSwipeActions followUpAction,
-  PlayableItem? sourceItem,
-  QueueItemSource? source,
+  required FinampPlayable sourceItem,
   required List<BaseItemDto> tracks,
 }) async {
-  assert(
-    (sourceItem != null || source != null) && !(sourceItem != null && source != null),
-    "Exactly one of sourceItem or source must be provided.",
-  );
   final queueService = GetIt.instance<QueueService>();
   final context = GlobalSnackbar.materialAppScaffoldKey.currentContext!;
 
   final sourceItemType = switch (sourceItem) {
     AlbumDisc() => "disc",
-    PlayableBaseItem() => BaseItemDtoType.fromItem(sourceItem.item).name,
-    HomeScreenPlayable() => sourceItem.config.getTitle(context),
-    null => source!.type.name,
+    FinampPlayableItem() => BaseItemDtoType.fromItem(sourceItem.item).name,
+    _ => sourceItem.source.name.getLocalized(context),
   };
 
   switch (followUpAction) {
     case ItemSwipeActions.addToNextUp:
-      unawaited(
-        queueService.addToNextUp(
-          items: tracks,
-          source:
-              source ??
-              QueueItemSource.rawId(
-                type: QueueItemSourceType.nextUp,
-                name: QueueItemSourceName(
-                  type: QueueItemSourceNameType.preTranslated,
-                  pretranslatedName: AppLocalizations.of(context)!.queue,
-                ),
-                id: BaseItemDto.fromPlayableItem(sourceItem!).id.raw,
-                item: BaseItemDto.fromPlayableItem(sourceItem),
-              ),
-        ),
-      );
+      unawaited(queueService.addToNextUp(items: tracks, source: sourceItem.source));
       GlobalSnackbar.message(
         (scaffold) => AppLocalizations.of(scaffold)!.confirmAddToNextUp(sourceItemType),
         isConfirmation: true,
       );
       break;
     case ItemSwipeActions.playNext:
-      unawaited(
-        queueService.addNext(
-          items: tracks,
-          source:
-              source ??
-              QueueItemSource.rawId(
-                type: QueueItemSourceType.nextUp,
-                name: QueueItemSourceName(
-                  type: QueueItemSourceNameType.preTranslated,
-                  pretranslatedName: AppLocalizations.of(context)!.queue,
-                ),
-                id: BaseItemDto.fromPlayableItem(sourceItem!).id.raw,
-                item: BaseItemDto.fromPlayableItem(sourceItem),
-              ),
-        ),
-      );
+      unawaited(queueService.addNext(items: tracks, source: sourceItem.source));
       GlobalSnackbar.message(
         (scaffold) => AppLocalizations.of(scaffold)!.confirmPlayNext(sourceItemType),
         isConfirmation: true,
       );
       break;
     case ItemSwipeActions.addToQueue:
-      unawaited(
-        queueService.addToQueue(
-          items: tracks,
-          source:
-              source ??
-              QueueItemSource.rawId(
-                type: QueueItemSourceType.queue,
-                name: QueueItemSourceName(
-                  type: QueueItemSourceNameType.preTranslated,
-                  pretranslatedName: AppLocalizations.of(context)!.queue,
-                ),
-                id: BaseItemDto.fromPlayableItem(sourceItem!).id.raw,
-                item: BaseItemDto.fromPlayableItem(sourceItem),
-              ),
-        ),
-      );
+      unawaited(queueService.addToQueue(items: tracks, source: sourceItem.source));
       GlobalSnackbar.message(
         (scaffold) => AppLocalizations.of(scaffold)!.confirmAddToQueue(sourceItemType),
         isConfirmation: true,
@@ -378,7 +323,6 @@ class QueueListTile extends StatelessWidget {
       parentItem: parentItem,
       listIndex: listIndex,
       actualIndex: item.indexNumber,
-      isInPlaylist: isInPlaylist,
       highlightCurrentTrack: highlightCurrentTrack,
       onRemoveFromList: onRemoveFromList,
       // This must be in ListTile instead of parent GestureDetector to
@@ -423,7 +367,6 @@ class EditListTile extends StatelessWidget {
       baseItem: item,
       listIndex: listIndex,
       actualIndex: item.indexNumber,
-      isInPlaylist: false,
       highlightCurrentTrack: false,
       onRemoveFromList: onRemoveOrRestore,
       onTap: onTap,
@@ -453,7 +396,6 @@ class TrackListItem extends ConsumerWidget {
   final bool showArtists;
   final bool forceAlbumArtists;
   final SortBy? adaptiveAdditionalInfoSortBy;
-  final bool isInPlaylist;
   final bool highlightCurrentTrack;
   final Widget leftSwipeBackground;
   final Widget rightSwipeBackground;
@@ -474,7 +416,6 @@ class TrackListItem extends ConsumerWidget {
     required this.features,
     this.parentItem,
     this.queueItem,
-    this.isInPlaylist = false,
     this.showArtists = true,
     this.forceAlbumArtists = false,
     this.adaptiveAdditionalInfoSortBy,
@@ -535,7 +476,6 @@ class TrackListItem extends ConsumerWidget {
             await showModalTrackMenu(
               context: context,
               item: baseItem,
-              isInPlaylist: isInPlaylist,
               parentItem: parentItem,
               onRemoveFromList: onRemoveFromList,
               confirmPlaylistRemoval: false,

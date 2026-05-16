@@ -28,7 +28,17 @@ class BaseItemIdConverter extends JsonConverter<BaseItemId, String> {
   String toJson(BaseItemId object) => object.raw;
 }
 
-extension type BaseItemId._(String raw) {
+class LibraryOrItemIdConverter extends JsonConverter<LibraryOrItemId, String> {
+  const LibraryOrItemIdConverter();
+
+  @override
+  LibraryOrItemId fromJson(String json) => LibraryOrItemId(json);
+
+  @override
+  String toJson(LibraryOrItemId object) => object.raw;
+}
+
+extension type BaseItemId._(String raw) implements LibraryOrItemId {
   /// Construct a BaseItemDto id from a raw string.  Please be sure you have a valid ID before using, and
   /// if you might not, consider the invalid ID's scope and if you can use an alternative, such as null
   const BaseItemId(this.raw);
@@ -36,9 +46,17 @@ extension type BaseItemId._(String raw) {
   String operator +(BaseItemId other) => raw + other.raw;
 }
 
+extension type LibraryOrItemId._(String raw) {
+  /// Construct a BaseItemDto id from a raw string.  Please be sure you have a valid ID before using, and
+  /// if you might not, consider the invalid ID's scope and if you can use an alternative, such as null
+  const LibraryOrItemId(this.raw);
+
+  String operator +(LibraryOrItemId other) => raw + other.raw;
+}
+
 // These get saved into home screen configuration and cannot be modified.
-const BaseItemId allLibraryPlaceholder = BaseItemId("finamp-all-libraries-placeholder");
-const BaseItemId currentLibraryPlaceholder = BaseItemId("finamp-current-library-placeholder");
+const LibraryOrItemId allLibraryPlaceholder = LibraryOrItemId("finamp-all-libraries-placeholder");
+const LibraryOrItemId currentLibraryPlaceholder = LibraryOrItemId("finamp-current-library-placeholder");
 
 /// An abstract class to implement converting runTimeTicks into a duration.
 /// Ideally, we'd hold runTimeTicks here, but that would break offline storage
@@ -2150,17 +2168,6 @@ class BaseItemDto with RunTimeTickDuration {
     }
 
     return name!.toLowerCase();
-  }
-
-  static BaseItemDto fromPlayableItem(PlayableItem item) {
-    switch (item) {
-      case AlbumDisc():
-        return item.parent;
-      case PlayableBaseItem():
-        return item.item;
-      case HomeScreenPlayable():
-        throw UnimplementedError();
-    }
   }
 
   factory BaseItemDto.fromJson(Map<String, dynamic> json) => _$BaseItemDtoFromJson(json);

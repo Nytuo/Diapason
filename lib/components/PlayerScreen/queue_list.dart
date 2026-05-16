@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:audio_service/audio_service.dart';
-import 'package:collection/collection.dart';
 import 'package:finamp/components/AddToPlaylistScreen/add_to_playlist_button.dart';
 import 'package:finamp/components/AlbumScreen/track_list_tile.dart';
 import 'package:finamp/components/Buttons/finamp_extended_floating_action_button.dart';
@@ -933,7 +932,6 @@ class _CurrentTrackState extends ConsumerState<CurrentTrack> {
                                       showModalTrackMenu(
                                         context: context,
                                         item: currentTrackBaseItem,
-                                        isInPlaylist: queueItemInPlaylist(currentTrack),
                                         parentItem: currentTrack?.source.item,
                                         confirmPlaylistRemoval: true,
                                         showQueueActions: true,

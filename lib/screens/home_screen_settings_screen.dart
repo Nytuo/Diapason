@@ -374,21 +374,7 @@ class HomeScreenSectionsSelector extends ConsumerWidget {
                     ColorScheme.of(context).primary.withOpacity(0.05),
                     ColorScheme.of(context).surface,
                   ),
-                  title: Padding(
-                    padding: const EdgeInsets.only(left: 4.0),
-                    child: section.itemId != null
-                        ? FutureBuilder(
-                            future: ref.watch(itemByIdProvider(section.itemId!).future).then((item) => item?.name),
-                            builder: (context, asyncSnapshot) {
-                              if (asyncSnapshot.data == null) {
-                                return Text(section.getTitle(context));
-                              }
-                              final itemName = asyncSnapshot.data!;
-                              return Text("${section.getTitle(context)} '$itemName'*");
-                            },
-                          )
-                        : Text(section.getTitle(context)),
-                  ),
+                  title: Padding(padding: const EdgeInsets.only(left: 4.0), child: Text(section.getTitle(context))),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
                   visualDensity: VisualDensity(horizontal: -4, vertical: -4),
                   contentPadding: EdgeInsets.only(left: 6.0),
@@ -528,7 +514,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
   // TODO the tab types should probably just be separate widgets.
 
   String tabTitle = "";
-  BaseItemId selectedLibrary = currentLibraryPlaceholder;
+  LibraryOrItemId selectedLibrary = currentLibraryPlaceholder;
   ContentType tabContent = ContentType.tracks;
   StaticSortAndFilterController tabSortController = StaticSortAndFilterController(
     startingConfig: SortAndFilterConfiguration.defaultSort,
@@ -713,7 +699,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
                       : HomeScreenSectionConfigurationMenu.initialSheetExtent) *
                   0.25,
               initialItem: widget.initialState.type == HomeScreenSectionType.collection
-                  ? widget.initialState.itemId
+                  ? widget.initialState.itemId as BaseItemId
                   : null,
               showTracks: false,
             ),
@@ -763,9 +749,9 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
             Consumer(
               builder: (_, ref, _) {
                 final views = ref.watch(JellyfinApiHelper.viewsProvider).value;
-                return FinampSettingsDropdown<BaseItemId?>(
+                return FinampSettingsDropdown<LibraryOrItemId?>(
                   dropdownItems: [
-                    DropdownMenuEntry<BaseItemId?>(
+                    DropdownMenuEntry<LibraryOrItemId?>(
                       value: currentLibraryPlaceholder,
                       label: "Current library*",
                       leadingIcon: const Icon(TablerIcons.bolt),

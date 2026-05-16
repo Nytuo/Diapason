@@ -9,7 +9,6 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
 import 'package:finamp/color_schemes.g.dart';
 import 'package:finamp/components/Buttons/cta_medium.dart';
-import 'package:finamp/components/HomeScreen/show_all_screen.dart';
 import 'package:finamp/gen/assets.gen.dart';
 import 'package:finamp/hive_registrar.g.dart';
 import 'package:finamp/l10n/app_localizations.dart';
@@ -346,7 +345,7 @@ Future<void> _setupOSIntegration() async {
       backgroundColor: Colors.transparent,
       skipTaskbar: false,
       titleBarStyle: TitleBarStyle.normal,
-      minimumSize: Size(400, 250),
+      minimumSize: Size(336, 607),
     );
     unawaited(
       WindowManager.instance.waitUntilReadyToShow(windowOptions, () async {
@@ -451,14 +450,9 @@ void _migrateHomescreen() {
 
   var changed = false;
 
-  if (!finampSettings.tabOrder.contains(TabContentType.home)) {
-    finampSettings.tabOrder = [
-      TabContentType.home,
-      ...finampSettings.tabOrder.whereNot((e) => e == TabContentType.home),
-    ];
-    finampSettings.showTabs[TabContentType.home] = true;
-    finampSettings.tabSortBy[TabContentType.home] = SortBy.defaultOrder;
-    finampSettings.tabSortOrder[TabContentType.home] = SortOrder.ascending;
+  if (!finampSettings.tabOrder.contains(ContentType.home)) {
+    finampSettings.tabOrder = [ContentType.home, ...finampSettings.tabOrder.whereNot((e) => e == ContentType.home)];
+    finampSettings.showTabs[ContentType.home] = true;
 
     // we set this here because it's a non-constant value
     finampSettings.homeScreenConfiguration = DefaultSettings.homeScreenConfiguration;
@@ -466,15 +460,35 @@ void _migrateHomescreen() {
     changed = true;
   }
 
-  if (!finampSettings.tabSortBy.keys.contains(TabContentType.performingArtists)) {
-    finampSettings.tabSortBy[TabContentType.performingArtists] =
-        finampSettings.tabSortBy[TabContentType.genericArtists] ?? SortBy.defaultOrder;
-    finampSettings.tabSortOrder[TabContentType.performingArtists] =
-        finampSettings.tabSortOrder[TabContentType.genericArtists] ?? SortOrder.ascending;
-    finampSettings.tabSortBy[TabContentType.albumArtists] =
-        finampSettings.tabSortBy[TabContentType.genericArtists] ?? SortBy.defaultOrder;
-    finampSettings.tabSortOrder[TabContentType.albumArtists] =
-        finampSettings.tabSortOrder[TabContentType.genericArtists] ?? SortOrder.ascending;
+  if (!finampSettings.tabOrder.contains(ContentType.albumArtists)) {
+    finampSettings.tabOrder.add(ContentType.albumArtists);
+
+    changed = true;
+  }
+
+  if (!finampSettings.tabOrder.contains(ContentType.performingArtists)) {
+    finampSettings.tabOrder.add(ContentType.performingArtists);
+
+    changed = true;
+  }
+
+  if (!finampSettings.tabSortBy.keys.contains(ContentType.performingArtists)) {
+    finampSettings.tabSortBy[ContentType.performingArtists] =
+        finampSettings.tabSortBy[ContentType.genericArtists] ?? SortAndFilterConfiguration.defaultSort.sortBy;
+    finampSettings.tabSortOrder[ContentType.performingArtists] =
+        finampSettings.tabSortOrder[ContentType.genericArtists] ?? SortAndFilterConfiguration.defaultSort.sortOrder;
+    finampSettings.tabSortBy[ContentType.albumArtists] =
+        finampSettings.tabSortBy[ContentType.genericArtists] ?? SortAndFilterConfiguration.defaultSort.sortBy;
+    finampSettings.tabSortOrder[ContentType.albumArtists] =
+        finampSettings.tabSortOrder[ContentType.genericArtists] ?? SortAndFilterConfiguration.defaultSort.sortOrder;
+    changed = true;
+  }
+
+  if (!finampSettings.tabSortBy.keys.contains(ContentType.inPlaylist)) {
+    finampSettings.tabSortBy[ContentType.inPlaylist] =
+        finampSettings.playlistTracksSortBy ?? SortAndFilterConfiguration.defaultInAlbumSort.sortBy;
+    finampSettings.tabSortOrder[ContentType.inPlaylist] =
+        finampSettings.playlistTracksSortOrder ?? SortAndFilterConfiguration.defaultInAlbumSort.sortOrder;
     changed = true;
   }
 
@@ -491,14 +505,14 @@ void _migrateSortOptions() {
   var changed = false;
 
   if (finampSettings.tabSortBy.isEmpty) {
-    for (var type in TabContentType.values) {
+    for (var type in ContentType.values) {
       finampSettings.tabSortBy[type] = finampSettings.sortBy;
     }
     changed = true;
   }
 
   if (finampSettings.tabSortOrder.isEmpty) {
-    for (var type in TabContentType.values) {
+    for (var type in ContentType.values) {
       finampSettings.tabSortOrder[type] = finampSettings.sortOrder;
     }
     changed = true;
@@ -844,7 +858,7 @@ class FinampApp extends ConsumerWidget {
         AccessibilitySettingsScreen.routeName: (context) => const AccessibilitySettingsScreen(),
         PlaylistEditScreen.routeName: (context) =>
             PlaylistEditScreen(playlist: ModalRoute.settingsOf(context)!.arguments as BaseItemDto),
-        ShowAllScreen.routeName: (context) => const ShowAllScreen(),
+        //ShowAllScreen.routeName: (context) => const ShowAllScreen(),
       },
       initialRoute: SplashScreen.routeName,
       navigatorObservers: [SplitScreenNavigatorObserver(), KeepScreenOnObserver()],

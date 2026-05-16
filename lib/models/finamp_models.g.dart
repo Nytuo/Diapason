@@ -1594,7 +1594,7 @@ class HomeScreenSectionConfigurationAdapter
     };
     return HomeScreenSectionConfiguration(
       type: fields[0] as HomeScreenSectionType,
-      itemId: fields[1] as BaseItemId,
+      itemId: fields[1] as LibraryOrItemId,
       contentType: fields[2] as ContentType,
       sortAndFilterConfiguration: fields[3] as SortAndFilterConfiguration,
       customSectionTitle: fields[4] as String?,
@@ -9538,7 +9538,7 @@ HomeScreenSectionConfiguration _$HomeScreenSectionConfigurationFromJson(
   Map<String, dynamic> json,
 ) => HomeScreenSectionConfiguration(
   type: $enumDecode(_$HomeScreenSectionTypeEnumMap, json['type']),
-  itemId: const BaseItemIdConverter().fromJson(json['itemId'] as String),
+  itemId: const LibraryOrItemIdConverter().fromJson(json['itemId'] as String),
   contentType: $enumDecode(_$ContentTypeEnumMap, json['contentType']),
   sortAndFilterConfiguration: SortAndFilterConfiguration.fromJson(
     json['sortAndFilterConfiguration'] as Map<String, dynamic>,
@@ -9554,7 +9554,7 @@ Map<String, dynamic> _$HomeScreenSectionConfigurationToJson(
   HomeScreenSectionConfiguration instance,
 ) => <String, dynamic>{
   'type': _$HomeScreenSectionTypeEnumMap[instance.type]!,
-  'itemId': const BaseItemIdConverter().toJson(instance.itemId),
+  'itemId': const LibraryOrItemIdConverter().toJson(instance.itemId),
   'contentType': _$ContentTypeEnumMap[instance.contentType]!,
   'sortAndFilterConfiguration': instance.sortAndFilterConfiguration,
   if (instance.customSectionTitle case final value?)

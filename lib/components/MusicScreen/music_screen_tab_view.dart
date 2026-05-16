@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:finamp/components/Buttons/cta_medium.dart';
 import 'package:finamp/components/MusicScreen/item_card.dart';
 import 'package:finamp/l10n/app_localizations.dart';
+import 'package:finamp/models/music_models.dart';
 import 'package:finamp/services/item_by_id_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -15,7 +16,6 @@ import 'package:scroll_to_index/scroll_to_index.dart';
 
 import '../../models/finamp_models.dart';
 import '../../models/jellyfin_models.dart';
-import '../../services/audio_service_helper.dart';
 import '../../services/downloads_service.dart';
 import '../../services/finamp_settings_helper.dart';
 import '../../services/music_screen_provider.dart';
@@ -29,21 +29,25 @@ import 'item_wrapper.dart';
 final musicScreenRefreshStream = StreamController<void>.broadcast();
 
 class MusicScreenTabView extends ConsumerStatefulWidget {
-  const MusicScreenTabView({
-    super.key,
-    required this.tabContentType,
-    this.refresh,
-    this.allowTrackGestures = false,
-    required this.sortAndFilterConfiguration,
-  });
+  const MusicScreenTabView({super.key, required this.displayable, this.refresh, this.allowTrackGestures = false});
 
-  final ContentType tabContentType;
+  // TODO does it even make sense to allow things this generic?  How much simplification would going from this to
+  // moving everythign that isn't an actual music screen back out of here?
+  final FinampDisplayable<FinampUnpagedPlayable> displayable;
   final MusicRefreshCallback? refresh;
 
   final bool allowTrackGestures;
-  final SortAndFilterConfiguration sortAndFilterConfiguration;
 
-  BaseItemDto? get genreFilter => sortAndFilterConfiguration.genreFilter;
+  SortAndFilterConfiguration get sortConfig => displayable is FinampSortable
+      ? (displayable as FinampSortable).sortConfig
+      : displayable is FinampPlayableItem
+      ? SortAndFilterConfiguration.defaultForItem((displayable as FinampPlayableItem).item)
+      : SortAndFilterConfiguration.defaultSort;
+
+  ContentType? get contentType => switch (displayable) {
+    MusicScreenPlayable(tab: var tab) => tab,
+    _ => null,
+  };
 
   @override
   ConsumerState<MusicScreenTabView> createState() => _MusicScreenTabViewState();
@@ -109,17 +113,22 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
     //TODO use binary search to improve performance for already loaded pages
     final state = ref.read(pageControl);
     final itemList = state.items ?? [];
-    SortBy? tabSortBy = FinampSettingsHelper.finampSettings.tabSortBy[widget.tabContentType];
-    bool reversed = FinampSettingsHelper.finampSettings.tabSortOrder[widget.tabContentType] == SortOrder.descending;
+    SortBy? tabSortBy = widget.sortConfig.sortBy;
+    bool reversed = widget.sortConfig.sortOrder == SortOrder.descending;
     for (var i = 0; i < itemList.length; i++) {
       String sortName;
-      switch (tabSortBy) {
-        case SortBy.albumArtist:
-          sortName = itemList[i].albumArtist ?? "";
-          break;
-        default:
-          sortName = itemList[i].nameForSorting ?? "";
-          break;
+      if (itemList[i] is FinampPlayableItem) {
+        final item = (itemList[i] as FinampPlayableItem).item;
+        switch (tabSortBy) {
+          case SortBy.albumArtist:
+            sortName = item.albumArtist ?? "";
+            break;
+          default:
+            sortName = item.nameForSorting ?? "";
+            break;
+        }
+      } else {
+        sortName = itemList[i].source.name.getLocalized(context);
       }
       if (sortName.isEmpty) continue; // assume empty names are at the start
       int itemCodePoint = sortName.toLowerCase().codeUnitAt(0);
@@ -199,9 +208,7 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
     // TODO test error cases?
   }
 
-  MusicScreenContentProvider get pageControl => musicScreenContentProvider(
-    MusicScreenRequest(filter: widget.sortAndFilterConfiguration, tabType: widget.tabContentType),
-  );
+  PagedContentProvider get pageControl => pagedContentProvider(widget.displayable);
 
   @override
   Widget build(BuildContext context) {
@@ -221,9 +228,9 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          if (widget.genreFilter != null && widget.tabContentType != ContentType.genres)
+          if (widget.sortConfig.genreFilter != null && widget.contentType != ContentType.genres)
             Text(
-              AppLocalizations.of(context)!.genreNoItems(widget.tabContentType.name),
+              AppLocalizations.of(context)!.genreNoItems(widget.contentType?.name ?? ""),
               style: TextStyle(fontSize: 16),
               textAlign: TextAlign.center,
             )
@@ -249,11 +256,12 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
     final itemPadding = calculateItemCollectionCardWidth(ref).$2;
     var tabContent =
         ref.watch(finampSettingsProvider.contentViewType) == ContentViewType.list ||
-            widget.tabContentType == ContentType.tracks
+            widget.contentType == ContentType.tracks ||
+            widget.contentType == null
         ? SafeArea(
             top: false,
             bottom: false,
-            child: PagedListView<int, BaseItemDto>.separated(
+            child: PagedListView<int, FinampUnpagedPlayable>.separated(
               state: ref.watch(pageControl),
               fetchNextPage: () {
                 ref.read(pageControl.notifier).newPage();
@@ -261,7 +269,7 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
               scrollController: controller,
               physics: _DeferredLoadingAlwaysScrollableScrollPhysics(tabState: this),
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              builderDelegate: PagedChildBuilderDelegate<BaseItemDto>(
+              builderDelegate: PagedChildBuilderDelegate<FinampUnpagedPlayable>(
                 itemBuilder: (context, item, index) {
                   // Use right padding inherited from fast scroller minus
                   // built-in icon padding
@@ -275,38 +283,35 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
                           key: ValueKey(index),
                           controller: controller,
                           index: index,
-                          child: widget.tabContentType == ContentType.tracks
+                          child: item is Track
                               ? TrackListTile(
-                                  key: ValueKey(item.id),
-                                  item: item,
+                                  key: ValueKey(item.item.id),
+                                  item: item.item,
                                   index: index,
                                   // when the tabBar was filtered and we only have the tracks tab,
                                   // we can allow Dismiss gestures in the track list
                                   allowDismiss: widget.allowTrackGestures,
-                                  isOnGenreScreen: (widget.genreFilter != null) ? true : false,
-                                  parentItem: widget.genreFilter != null
-                                      ? ref.watch(itemByIdProvider(widget.genreFilter!.id)).value
+                                  isOnGenreScreen: (widget.sortConfig.genreFilter != null) ? true : false,
+                                  parentItem: widget.sortConfig.genreFilter != null
+                                      ? ref.watch(itemByIdProvider(widget.sortConfig.genreFilter!.id)).value
                                       : null,
-                                  forceAlbumArtists: (widget.sortAndFilterConfiguration.sortBy == SortBy.albumArtist),
-                                  adaptiveAdditionalInfoSortBy: widget.sortAndFilterConfiguration.sortBy,
-                                  // since we can't re-create the current random sorting, we simply pass the pre-sorted tracks along
-                                  // only done in offline mode since online mode doesn't support playing the tab contents in order anyway
-                                  fetchChildren: () async {
-                                    if (FinampSettingsHelper.finampSettings.startInstantMixForIndividualTracks) {
-                                      final audioServiceHelper = GetIt.instance<AudioServiceHelper>();
-                                      await audioServiceHelper.startInstantMixForItem(item);
-                                      return null;
-                                    }
-                                    return ref.read(pageControl.notifier).loadSlice(index);
-                                  },
+                                  forceAlbumArtists: (widget.sortConfig.sortBy == SortBy.albumArtist),
+                                  adaptiveAdditionalInfoSortBy: widget.sortConfig.sortBy,
+                                  parentPlayable: ref.watch(finampSettingsProvider.startInstantMixForIndividualTracks)
+                                      ? InstantMix(item.item)
+                                      : widget.displayable is FinampPlayable
+                                      ? (widget.displayable as FinampPlayable)
+                                      : item,
                                 )
-                              : ItemWrapper(
-                                  key: ValueKey(item.id),
-                                  item: item,
-                                  genreFilter: widget.genreFilter,
-                                  adaptiveAdditionalInfoSortBy: widget.sortAndFilterConfiguration.sortBy,
+                              : item is FinampPlayableItem
+                              ? ItemWrapper(
+                                  key: ValueKey(item.item.id),
+                                  item: item.item,
+                                  genreFilter: widget.sortConfig.genreFilter,
+                                  adaptiveAdditionalInfoSortBy: widget.sortConfig.sortBy,
                                   showFavoriteIconOnlyWhenFilterDisabled: true,
-                                ),
+                                )
+                              : Text("Unknown item type!"),
                         );
                       },
                     ),
@@ -321,7 +326,8 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
               separatorBuilder: (context, index) => const SizedBox.shrink(),
             ),
           )
-        : PagedGridView(
+        : PagedGridView<int, FinampUnpagedPlayable>(
+            // If we made it here, we must be in a non-track music screen, so pageControl should only return FinampPlayableItem
             state: ref.watch(pageControl),
             fetchNextPage: () {
               ref.read(pageControl.notifier).newPage();
@@ -339,25 +345,26 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
             showNoMoreItemsIndicatorAsGridChild: false,
             scrollController: controller,
             physics: _DeferredLoadingAlwaysScrollableScrollPhysics(tabState: this),
-            builderDelegate: PagedChildBuilderDelegate<BaseItemDto>(
+            builderDelegate: PagedChildBuilderDelegate<FinampUnpagedPlayable>(
               itemBuilder: (context, item, index) {
-                return CachedBuilder(
-                  key: ValueKey(item.id),
-                  cacheKey: (item.id, index),
+                return SizedBox.shrink();
+                /*return CachedBuilder(
+                  key: ValueKey(item.item.id),
+                  cacheKey: (item.item.id, index),
                   builder: (context) {
                     return AutoScrollTag(
                       key: ValueKey(index),
                       controller: controller,
                       index: index,
                       child: ItemWrapper(
-                        key: ValueKey(item.id),
-                        item: item,
+                        key: ValueKey(item.item.id),
+                        item: item.item,
                         isGrid: true,
-                        genreFilter: widget.genreFilter,
+                        genreFilter: widget.sortConfig.genreFilter,
                       ),
                     );
                   },
-                );
+                );*/
               },
               firstPageProgressIndicatorBuilder: (_) => const FirstPageProgressIndicator(),
               newPageProgressIndicatorBuilder: (_) => const NewPageProgressIndicator(),
@@ -367,7 +374,7 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
               ),
               invisibleItemsThreshold: 70,
             ),
-            gridDelegate: MusicScreenGridLayout(ref: ref, contentType: widget.tabContentType),
+            gridDelegate: MusicScreenGridLayout(ref: ref, contentType: widget.contentType!),
           );
 
     var showFastScroller = ref.watch(finampSettingsProvider.showFastScroller);
@@ -375,12 +382,11 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
       onRefresh: () async => _refresh(),
       child:
           showFastScroller &&
-              (widget.sortAndFilterConfiguration.sortBy == SortBy.sortName ||
-                  widget.sortAndFilterConfiguration.sortBy == SortBy.albumArtist)
+              (widget.sortConfig.sortBy == SortBy.sortName || widget.sortConfig.sortBy == SortBy.albumArtist)
           ? AlphabetList(
               callback: scrollToLetter,
               scrollController: controller,
-              sortOrder: widget.sortAndFilterConfiguration.sortOrder,
+              sortOrder: widget.sortConfig.sortOrder,
               child: tabContent,
             )
           : tabContent,

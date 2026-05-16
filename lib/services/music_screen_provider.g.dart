@@ -12,7 +12,7 @@ part of 'music_screen_provider.dart';
 // **************************************************************************
 
 String _$loadHomeSectionItemsHash() =>
-    r'7ced0081ad3af099e90b6f7907b783854c2180d7';
+    r'24de9f6513fa6baf359f8993c0ec7c4118fdfd96';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -336,33 +336,168 @@ class _GlobalSearchProviderElement
   bool get includeTracks => (origin as GlobalSearchProvider).includeTracks;
 }
 
-String _$musicScreenContentHash() =>
-    r'50a35f666a76d306e1b1182b6e14eca72d943ae1';
+String _$resolveSectionHash() => r'd61817efc0c34b2eea67198902b718bdcf14ed52';
 
-abstract class _$MusicScreenContent
-    extends BuildlessAutoDisposeNotifier<PagingState<int, BaseItemDto>> {
-  late final MusicScreenRequest request;
+/// See also [resolveSection].
+@ProviderFor(resolveSection)
+const resolveSectionProvider = ResolveSectionFamily();
 
-  PagingState<int, BaseItemDto> build(MusicScreenRequest request);
-}
+/// See also [resolveSection].
+class ResolveSectionFamily
+    extends Family<AsyncValue<FinampDisplayable<FinampUnpagedPlayable>>> {
+  /// See also [resolveSection].
+  const ResolveSectionFamily();
 
-/// See also [MusicScreenContent].
-@ProviderFor(MusicScreenContent)
-const musicScreenContentProvider = MusicScreenContentFamily();
-
-/// See also [MusicScreenContent].
-class MusicScreenContentFamily extends Family<PagingState<int, BaseItemDto>> {
-  /// See also [MusicScreenContent].
-  const MusicScreenContentFamily();
-
-  /// See also [MusicScreenContent].
-  MusicScreenContentProvider call(MusicScreenRequest request) {
-    return MusicScreenContentProvider(request);
+  /// See also [resolveSection].
+  ResolveSectionProvider call(HomeScreenSectionConfiguration section) {
+    return ResolveSectionProvider(section);
   }
 
   @override
-  MusicScreenContentProvider getProviderOverride(
-    covariant MusicScreenContentProvider provider,
+  ResolveSectionProvider getProviderOverride(
+    covariant ResolveSectionProvider provider,
+  ) {
+    return call(provider.section);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'resolveSectionProvider';
+}
+
+/// See also [resolveSection].
+class ResolveSectionProvider
+    extends
+        AutoDisposeFutureProvider<FinampDisplayable<FinampUnpagedPlayable>> {
+  /// See also [resolveSection].
+  ResolveSectionProvider(HomeScreenSectionConfiguration section)
+    : this._internal(
+        (ref) => resolveSection(ref as ResolveSectionRef, section),
+        from: resolveSectionProvider,
+        name: r'resolveSectionProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$resolveSectionHash,
+        dependencies: ResolveSectionFamily._dependencies,
+        allTransitiveDependencies:
+            ResolveSectionFamily._allTransitiveDependencies,
+        section: section,
+      );
+
+  ResolveSectionProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.section,
+  }) : super.internal();
+
+  final HomeScreenSectionConfiguration section;
+
+  @override
+  Override overrideWith(
+    FutureOr<FinampDisplayable<FinampUnpagedPlayable>> Function(
+      ResolveSectionRef provider,
+    )
+    create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: ResolveSectionProvider._internal(
+        (ref) => create(ref as ResolveSectionRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        section: section,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<FinampDisplayable<FinampUnpagedPlayable>>
+  createElement() {
+    return _ResolveSectionProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ResolveSectionProvider && other.section == section;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, section.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin ResolveSectionRef
+    on AutoDisposeFutureProviderRef<FinampDisplayable<FinampUnpagedPlayable>> {
+  /// The parameter `section` of this provider.
+  HomeScreenSectionConfiguration get section;
+}
+
+class _ResolveSectionProviderElement
+    extends
+        AutoDisposeFutureProviderElement<
+          FinampDisplayable<FinampUnpagedPlayable>
+        >
+    with ResolveSectionRef {
+  _ResolveSectionProviderElement(super.provider);
+
+  @override
+  HomeScreenSectionConfiguration get section =>
+      (origin as ResolveSectionProvider).section;
+}
+
+String _$pagedContentHash() => r'9418d48d798668070a04d576da6155a95d2afc6e';
+
+abstract class _$PagedContent
+    extends
+        BuildlessAutoDisposeNotifier<PagingState<int, FinampUnpagedPlayable>> {
+  late final FinampDisplayable<FinampUnpagedPlayable> request;
+
+  PagingState<int, FinampUnpagedPlayable> build(
+    FinampDisplayable<FinampUnpagedPlayable> request,
+  );
+}
+
+/// See also [PagedContent].
+@ProviderFor(PagedContent)
+const pagedContentProvider = PagedContentFamily();
+
+/// See also [PagedContent].
+class PagedContentFamily
+    extends Family<PagingState<int, FinampUnpagedPlayable>> {
+  /// See also [PagedContent].
+  const PagedContentFamily();
+
+  /// See also [PagedContent].
+  PagedContentProvider call(FinampDisplayable<FinampUnpagedPlayable> request) {
+    return PagedContentProvider(request);
+  }
+
+  @override
+  PagedContentProvider getProviderOverride(
+    covariant PagedContentProvider provider,
   ) {
     return call(provider.request);
   }
@@ -379,32 +514,32 @@ class MusicScreenContentFamily extends Family<PagingState<int, BaseItemDto>> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'musicScreenContentProvider';
+  String? get name => r'pagedContentProvider';
 }
 
-/// See also [MusicScreenContent].
-class MusicScreenContentProvider
+/// See also [PagedContent].
+class PagedContentProvider
     extends
         AutoDisposeNotifierProviderImpl<
-          MusicScreenContent,
-          PagingState<int, BaseItemDto>
+          PagedContent,
+          PagingState<int, FinampUnpagedPlayable>
         > {
-  /// See also [MusicScreenContent].
-  MusicScreenContentProvider(MusicScreenRequest request)
+  /// See also [PagedContent].
+  PagedContentProvider(FinampDisplayable<FinampUnpagedPlayable> request)
     : this._internal(
-        () => MusicScreenContent()..request = request,
-        from: musicScreenContentProvider,
-        name: r'musicScreenContentProvider',
+        () => PagedContent()..request = request,
+        from: pagedContentProvider,
+        name: r'pagedContentProvider',
         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
             ? null
-            : _$musicScreenContentHash,
-        dependencies: MusicScreenContentFamily._dependencies,
+            : _$pagedContentHash,
+        dependencies: PagedContentFamily._dependencies,
         allTransitiveDependencies:
-            MusicScreenContentFamily._allTransitiveDependencies,
+            PagedContentFamily._allTransitiveDependencies,
         request: request,
       );
 
-  MusicScreenContentProvider._internal(
+  PagedContentProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -414,20 +549,20 @@ class MusicScreenContentProvider
     required this.request,
   }) : super.internal();
 
-  final MusicScreenRequest request;
+  final FinampDisplayable<FinampUnpagedPlayable> request;
 
   @override
-  PagingState<int, BaseItemDto> runNotifierBuild(
-    covariant MusicScreenContent notifier,
+  PagingState<int, FinampUnpagedPlayable> runNotifierBuild(
+    covariant PagedContent notifier,
   ) {
     return notifier.build(request);
   }
 
   @override
-  Override overrideWith(MusicScreenContent Function() create) {
+  Override overrideWith(PagedContent Function() create) {
     return ProviderOverride(
       origin: this,
-      override: MusicScreenContentProvider._internal(
+      override: PagedContentProvider._internal(
         () => create()..request = request,
         from: from,
         name: null,
@@ -441,16 +576,16 @@ class MusicScreenContentProvider
 
   @override
   AutoDisposeNotifierProviderElement<
-    MusicScreenContent,
-    PagingState<int, BaseItemDto>
+    PagedContent,
+    PagingState<int, FinampUnpagedPlayable>
   >
   createElement() {
-    return _MusicScreenContentProviderElement(this);
+    return _PagedContentProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is MusicScreenContentProvider && other.request == request;
+    return other is PagedContentProvider && other.request == request;
   }
 
   @override
@@ -464,24 +599,24 @@ class MusicScreenContentProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin MusicScreenContentRef
-    on AutoDisposeNotifierProviderRef<PagingState<int, BaseItemDto>> {
+mixin PagedContentRef
+    on AutoDisposeNotifierProviderRef<PagingState<int, FinampUnpagedPlayable>> {
   /// The parameter `request` of this provider.
-  MusicScreenRequest get request;
+  FinampDisplayable<FinampUnpagedPlayable> get request;
 }
 
-class _MusicScreenContentProviderElement
+class _PagedContentProviderElement
     extends
         AutoDisposeNotifierProviderElement<
-          MusicScreenContent,
-          PagingState<int, BaseItemDto>
+          PagedContent,
+          PagingState<int, FinampUnpagedPlayable>
         >
-    with MusicScreenContentRef {
-  _MusicScreenContentProviderElement(super.provider);
+    with PagedContentRef {
+  _PagedContentProviderElement(super.provider);
 
   @override
-  MusicScreenRequest get request =>
-      (origin as MusicScreenContentProvider).request;
+  FinampDisplayable<FinampUnpagedPlayable> get request =>
+      (origin as PagedContentProvider).request;
 }
 
 // ignore_for_file: type=lint

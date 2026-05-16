@@ -1,6 +1,6 @@
-import 'dart:math';
-
 import 'package:collection/collection.dart';
+import 'package:finamp/components/global_snackbar.dart';
+import 'package:finamp/models/music_models.dart';
 import 'package:finamp/services/album_screen_provider.dart';
 import 'package:finamp/services/artist_content_provider.dart';
 import 'package:finamp/services/finamp_user_helper.dart';
@@ -20,69 +20,38 @@ part 'music_screen_provider.g.dart';
 
 const musicScreenPageSize = 100;
 const homeScreenSectionItemLimit = 20;
-const slicePretracks = 20;
-
-final class MusicScreenRequest {
-  MusicScreenRequest({required SortAndFilterConfiguration filter, required ContentType tabType})
-    : config = HomeScreenSectionConfiguration(
-        type: HomeScreenSectionType.tabView,
-        contentType: tabType,
-        sortAndFilterConfiguration: filter,
-        itemId: currentLibraryPlaceholder,
-      );
-
-  final HomeScreenSectionConfiguration config;
-
-  MusicScreenRequest.home({required this.config});
-
-  @override
-  bool operator ==(Object other) {
-    return other is MusicScreenRequest && other.config == config;
-  }
-
-  @override
-  int get hashCode => config.hashCode;
-}
-
-class PlayableSlice {
-  const PlayableSlice({required this.items, required this.startingIndex});
-  final List<BaseItemDto> items;
-  final int startingIndex;
-}
 
 @riverpod
-class MusicScreenContent extends _$MusicScreenContent {
-  int _pageCount = 0;
-  List<LoadHomeSectionItemsProvider> _dependencies = [];
+class PagedContent extends _$PagedContent {
+  List<int> _pageSizes = [];
+  List<FutureProvider<List<FinampUnpagedPlayable>>> _dependencies = [];
 
   @override
-  PagingState<int, BaseItemDto> build(MusicScreenRequest request) {
-    final List<List<BaseItemDto>> pages = [];
+  PagingState<int, FinampUnpagedPlayable> build(FinampDisplayable<FinampUnpagedPlayable> request) {
+    final List<List<FinampUnpagedPlayable>> pages = [];
     final List<int> keys = [];
-    final List<LoadHomeSectionItemsProvider> providers = [];
+    final List<FutureProvider<List<FinampUnpagedPlayable>>> providers = [];
     bool isLoading = false;
     bool hasNextPage = true;
     Object? error;
 
     int offset = 0;
-    for (int i = 0; i < _pageCount; i++) {
-      // Use small initial page to potentially reuse existing items
-      // TODO maybe check exists instead?  Make home screen provider use full size pages?
-      // Does using small pages actually decrease home screen loading times?
-      int pageSize = i == 0 ? homeScreenSectionItemLimit : musicScreenPageSize;
-      final itemsProviderInstance = loadHomeSectionItemsProvider(
-        sectionInfo: request.config,
-        startIndex: offset,
-        limit: pageSize,
-      );
-      providers.add(itemsProviderInstance);
+    for (int i = 0; i < _pageSizes.length; i++) {
+      final provider = switch (request) {
+        FinampUnpagedDisplayable() => getChildrenProvider(request),
+        FinampPagedDisplayable() => getPagedChildrenProvider(
+          PageRequest(item: request, startingIndex: offset, limit: _pageSizes[i]),
+        ),
+      };
+      providers.add(provider);
 
-      final page = ref.watch(itemsProviderInstance).unwrapPrevious();
+      final page = ref.watch(provider).unwrapPrevious();
+
       if (page is AsyncData) {
         if (page.value != null) {
           pages.add(page.value!);
           keys.add(offset);
-          if (page.value!.length < pageSize) {
+          if (page.value!.length < _pageSizes[i]) {
             hasNextPage = false;
           }
         }
@@ -98,7 +67,12 @@ class MusicScreenContent extends _$MusicScreenContent {
       } else if (page is AsyncError) {
         error = page.error;
       }
-      offset += pageSize;
+      offset += _pageSizes[i];
+
+      if (request is FinampUnpagedDisplayable) {
+        hasNextPage = false;
+        break;
+      }
     }
 
     _dependencies = providers;
@@ -116,14 +90,24 @@ class MusicScreenContent extends _$MusicScreenContent {
     // The pagination tends to generate multiple requests at once, so block all but the initial one.  The exception is
     // while loading the first, undersized page, we allow a second request through immediately to potentially finish
     // loading a proper page's worth faster.
-    if (!state.isLoading || _pageCount < 2) {
-      _pageCount++;
+    if (!state.isLoading || _pageSizes.length < 2) {
+      _pageSizes.add(musicScreenPageSize);
+      ref.invalidateSelf();
+    }
+  }
+
+  void fetchHomeScreenItems() {
+    // The pagination tends to generate multiple requests at once, so block all but the initial one.  The exception is
+    // while loading the first, undersized page, we allow a second request through immediately to potentially finish
+    // loading a proper page's worth faster.
+    if (_pageSizes.isEmpty) {
+      _pageSizes.add(homeScreenSectionItemLimit);
       ref.invalidateSelf();
     }
   }
 
   void refresh() {
-    _pageCount = 0;
+    _pageSizes = [];
     ref.invalidateSelf();
     // Delay invalidation of page providers until after we stop depending on them
     // to avoid immediate rebuild of all.
@@ -138,32 +122,38 @@ class MusicScreenContent extends _$MusicScreenContent {
   // TODO optimize for fast response, like play all on home screen?
   // Maybe we add a followup Future to PlayableSlice, and if we already have the starting item in cache (we should)
   // then immediately return a slice with the rest in that future for the caller to add to queue later.
-  Future<PlayableSlice> loadSlice(int startingIndex) async {
+  Future<List<FinampUnpagedPlayable>> loadSlice(int startingIndex, int limit) async {
+    // capture local request for type casting
+    final request = this.request;
     // TODO wait for current active loads to complete.  Do error response?
     final preCached = state.items ?? [];
-    final doLoads = state.hasNextPage;
+    // hasNextPage should always be false if we have any items from a non-pagable, but lets make extra sure.
+    final doLoads = state.hasNextPage && (request is FinampUnpagedDisplayable || preCached.isEmpty);
 
-    final queueEndTarget = startingIndex + FinampSettingsHelper.finampSettings.trackShuffleItemCount;
-    final queueStartOffset = max(startingIndex - slicePretracks, 0);
-    final queuePretracks = startingIndex - queueStartOffset;
+    final queueEndTarget = startingIndex + limit;
     if (preCached.length >= queueEndTarget) {
-      return PlayableSlice(items: preCached.slice(queueStartOffset, queueEndTarget), startingIndex: queuePretracks);
+      return preCached.slice(startingIndex, queueEndTarget);
     }
-    List<BaseItemDto> items = [];
-    if (queueStartOffset < preCached.length) {
-      items = preCached.slice(queueStartOffset);
+    List<FinampUnpagedPlayable> items = [];
+    if (startingIndex < preCached.length) {
+      items = preCached.slice(startingIndex);
     }
 
     if (!doLoads) {
-      return PlayableSlice(items: items, startingIndex: queuePretracks);
+      return items;
     }
-    final loadStartOffset = queueStartOffset + items.length;
+
+    final loadStartOffset = startingIndex + items.length;
     final loadSize = queueEndTarget - loadStartOffset;
     // TODO paginate?
-    final loadedItems = await ref.read(
-      loadHomeSectionItemsProvider(sectionInfo: request.config, startIndex: loadStartOffset, limit: loadSize).future,
-    );
-    return PlayableSlice(items: items + (loadedItems ?? []), startingIndex: queuePretracks);
+    // TODO insert these pages into the page list?
+    final provider = switch (request) {
+      FinampUnpagedDisplayable() => getChildrenProvider(request),
+      FinampPagedDisplayable() => getPagedChildrenProvider(
+        PageRequest(item: request, startingIndex: startingIndex, limit: loadSize),
+      ),
+    };
+    return await ref.read(provider.future);
   }
 }
 
@@ -182,18 +172,22 @@ Future<List<BaseItemDto>?> loadHomeSectionItems(
 
   switch (sectionInfo.type) {
     case HomeScreenSectionType.tabView:
-      BaseItemId? libraryId = sectionInfo.itemId;
-      if (libraryId == allLibraryPlaceholder) {
+      BaseItemId libraryId;
+      if (sectionInfo.itemId == allLibraryPlaceholder) {
         throw UnimplementedError();
-      }
-      if (libraryId == currentLibraryPlaceholder) {
-        libraryId = ref.watch<BaseItemId?>(
+      } else if (sectionInfo.itemId == currentLibraryPlaceholder) {
+        final nullableLibraryId = ref.watch<BaseItemId?>(
           FinampUserHelper.finampCurrentUserProvider.select((value) => value?.currentView?.id),
         );
+        if (nullableLibraryId == null) {
+          return [];
+        } else {
+          libraryId = nullableLibraryId;
+        }
+      } else {
+        libraryId = sectionInfo.itemId as BaseItemId;
       }
-      if (libraryId == null) {
-        return [];
-      }
+
       // TODO refactor so we only need to provide the id?
       final library = await ref.watch(itemByIdProvider(libraryId).future);
       if (library == null) {
@@ -244,7 +238,7 @@ Future<List<BaseItemDto>?> loadHomeSectionItems(
     case HomeScreenSectionType.collection:
       // TODO should tabviews be collections with library parents?  Or does that just make our job harder?
       // TODO we need to actually respect limit/offset for playback and display to work
-      final baseItem = await ref.watch(itemByIdProvider(sectionInfo.itemId!).future);
+      final baseItem = await ref.watch(itemByIdProvider(sectionInfo.itemId! as BaseItemId).future);
       if (baseItem == null) {
         return [];
       }
@@ -334,16 +328,18 @@ Future<List<BaseItemDto>?> loadHomeSectionItemsOffline({
     (x) => x.type == ItemFilterType.genreFilter,
   );
 
-  BaseItemId? libraryId = sectionInfo.itemId;
-  if (libraryId == allLibraryPlaceholder) {
+  BaseItemId? libraryId;
+  if (sectionInfo.itemId == allLibraryPlaceholder) {
     libraryId = null;
-  } else if (libraryId == currentLibraryPlaceholder) {
+  } else if (sectionInfo.itemId == currentLibraryPlaceholder) {
     libraryId = ref.watch<BaseItemId?>(
       FinampUserHelper.finampCurrentUserProvider.select((value) => value?.currentView?.id),
     );
     if (libraryId == null) {
       return [];
     }
+  } else {
+    libraryId = sectionInfo.itemId as BaseItemId;
   }
 
   switch (sectionInfo.type) {
@@ -426,7 +422,7 @@ Future<List<BaseItemDto>?> loadHomeSectionItemsOffline({
       break;
     case HomeScreenSectionType.collection:
       // TODO rearrange stuff.  This is all copied from online version except collection handling.
-      final baseItem = ref.watch(itemByIdProvider(sectionInfo.itemId!)).valueOrNull;
+      final baseItem = ref.watch(itemByIdProvider(libraryId!)).valueOrNull;
       if (baseItem == null) {
         return [];
       }
@@ -618,7 +614,7 @@ List<BaseItemDto> sortItems(List<BaseItemDto> itemsToSort, SortBy? sortBy, SortO
 // There are scenarios where cached provider-data might return a shuffled resultset, I guess,
 // so this function should definitely sort all artist tracks always the same
 List<BaseItemDto> sortArtistTracks(List<BaseItemDto> items) {
-  int compareNullable<T extends Comparable>(T? a, T? b, {bool nullsFirst = false}) {
+  int compareNullable<T extends Comparable<dynamic>>(T? a, T? b, {bool nullsFirst = false}) {
     if (a == null && b == null) return 0;
     if (a == null) return nullsFirst ? -1 : 1;
     if (b == null) return nullsFirst ? 1 : -1;
@@ -716,4 +712,76 @@ Future<List<BaseItemDto>> globalSearch(Ref ref, String searchTerm, {required boo
     }
   }
   return out;
+}
+
+@Riverpod(keepAlive: true)
+Future<FinampDisplayable<FinampUnpagedPlayable>> resolveSection(Ref ref, HomeScreenSectionConfiguration section) async {
+  final context = GlobalSnackbar.materialAppScaffoldKey.currentContext!;
+  switch (section.type) {
+    case HomeScreenSectionType.tabView:
+      final source = QueueItemSource.rawId(
+        type: QueueItemSourceType.homeScreenSection,
+        name: QueueItemSourceName(
+          type: QueueItemSourceNameType.homeScreenSection,
+          localizationParameter: section.presetType?.name,
+          pretranslatedName: section.getTitle(context),
+        ),
+        id: section.toLocalisedString(context),
+      );
+      return MusicScreenPlayable(
+        tab: section.contentType,
+        library: section.itemId,
+        source: source,
+        sortConfig: section.sortAndFilterConfiguration,
+      );
+    case HomeScreenSectionType.collection:
+      final item = await ref.watch(itemByIdProvider(section.itemId as BaseItemId).future);
+      // TODO better source
+      if (item == null) {
+        return PrecalculatedPlayable(
+          source: QueueItemSource(
+            type: QueueItemSourceType.unknown,
+            name: QueueItemSourceName(
+              type: QueueItemSourceNameType.preTranslated,
+              pretranslatedName: "Error loading home section*",
+            ),
+            id: section.itemId as BaseItemId,
+          ),
+          tracks: [],
+        );
+      }
+      final source = QueueItemSource.rawId(
+        type: QueueItemSourceType.homeScreenSection,
+        name: QueueItemSourceName(
+          type: QueueItemSourceNameType.homeScreenSection,
+          localizationParameter: section.presetType?.name,
+          pretranslatedName: section.getTitle(context),
+        ),
+        item: item,
+        id: section.toLocalisedString(context),
+      );
+      switch (BaseItemDtoType.fromItem(item)) {
+        case BaseItemDtoType.album:
+          return Album(item, source: source);
+        case BaseItemDtoType.playlist:
+          return Playlist(item, source: source, sortConfig: section.sortAndFilterConfiguration);
+        case BaseItemDtoType.noItem:
+        case BaseItemDtoType.artist:
+        case BaseItemDtoType.genre:
+        case BaseItemDtoType.track:
+        case BaseItemDtoType.library:
+        case BaseItemDtoType.folder:
+        case BaseItemDtoType.musicVideo:
+        case BaseItemDtoType.audioBook:
+        case BaseItemDtoType.tvEpisode:
+        case BaseItemDtoType.video:
+        case BaseItemDtoType.movie:
+        case BaseItemDtoType.trailer:
+        case BaseItemDtoType.collection:
+        case BaseItemDtoType.unknown:
+          throw UnimplementedError();
+      }
+    case HomeScreenSectionType.queues:
+      return LatestQueues();
+  }
 }

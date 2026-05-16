@@ -14,6 +14,7 @@ import 'package:finamp/menus/components/menu_item_info_header.dart';
 import 'package:finamp/menus/components/playbackActions/playback_action_row.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
+import 'package:finamp/models/music_models.dart';
 import 'package:flutter/material.dart';
 
 const Duration albumMenuDefaultAnimationDuration = Duration(milliseconds: 750);
@@ -23,13 +24,13 @@ const albumMenuRouteName = "/album-menu";
 
 Future<void> showModalAlbumMenu({
   required BuildContext context,
-  required PlayableItem item,
+  required FinampPlayable item,
   FinampStorableQueueInfo? queueInfo,
 }) async {
   final BaseItemDto baseItem = switch (item) {
-    AlbumDisc() => item.parent,
-    PlayableBaseItem() => item.item,
-    HomeScreenPlayable() => throw UnimplementedError(),
+    AlbumDisc() => item.item,
+    Album() => item.item,
+    _ => throw UnsupportedError("Cannot show album menu for item $item"),
   };
 
   // Normal menu entries, excluding headers
@@ -37,7 +38,7 @@ Future<void> showModalAlbumMenu({
     return [
       if (queueInfo != null) RestoreQueueMenuEntry(queueInfo: queueInfo),
       AddToPlaylistMenuEntry(item: item),
-      if (item is PlayableBaseItem) ...[
+      if (item is Album) ...[
         // instant mixes from arbitrary collection of tracks is not supported
         InstantMixMenuEntry(baseItem: baseItem),
         MixBuilderMenuEntry(baseItem: baseItem),
