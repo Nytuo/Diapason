@@ -281,13 +281,20 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
                       )
                     : SortAndFilterController.trackSettings(contentTabType);
 
-                FinampDisplayable<FinampUnpagedPlayable>? displayable;
+                FinampDisplayable? displayable;
                 if (widget.singleTabConfig != null) {
                   displayable = ref.watch(resolveSectionProvider(widget.singleTabConfig!)).value;
                   // TODO we need to inject the sortConfig into the non-musicScreenPlayable
                   // TODO precache resolved sections?  Or remove baked in item somehow?  Or save items into home screen settings?
                   if (displayable == null) {
                     return SizedBox.shrink();
+                  }
+                  if (displayable is FinampSortable) {
+                    displayable = displayable.copyWith(
+                      ref
+                          .watch(resolveSortProvider(sortAndFilterControllerMap[contentTabType]!))
+                          .copyWith(searchQuery: searchQuery),
+                    );
                   }
                 } else {
                   displayable = MusicScreenPlayable(

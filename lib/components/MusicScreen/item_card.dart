@@ -17,8 +17,8 @@ import 'package:get_it/get_it.dart';
 import '../../services/item_by_id_provider.dart';
 
 const double _itemCollectionCardTextSpacing = 6;
-const double _queuesSectionWidth = 160;
-const double _queuesSectionHeight = 84;
+const double queuesHomeSectionWidth = 160;
+const double queuesHomeSectionHeight = 84;
 
 /// Card content for items. You probably shouldn't use this widget directly,
 /// use ItemWrapper instead.
@@ -157,7 +157,7 @@ class HomeScreenQueueTile extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 6.0),
       child: SizedBox(
-        width: _queuesSectionWidth,
+        width: queuesHomeSectionWidth,
         // height: _queuesSectionHeight,
         child: GestureDetector(
           onSecondaryTap: () => {
@@ -251,7 +251,7 @@ double calculateItemCollectionCardHeight({
   );
   final actualItemType = itemType ?? sectionInfo?.contentType.itemType ?? BaseItemDtoType.album;
   return switch (sectionInfo?.type) {
-    HomeScreenSectionType.queues => _queuesSectionHeight,
+    HomeScreenSectionType.queues => queuesHomeSectionHeight,
     _ =>
       calculateItemCollectionCardWidth(ref).$1 +
           (ref.watch(finampSettingsProvider.showTextOnGridView) || sectionInfo != null

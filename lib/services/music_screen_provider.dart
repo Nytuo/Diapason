@@ -1,11 +1,16 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:finamp/components/global_snackbar.dart';
+import 'package:finamp/extensions/list.dart';
 import 'package:finamp/models/music_models.dart';
 import 'package:finamp/services/album_screen_provider.dart';
 import 'package:finamp/services/artist_content_provider.dart';
 import 'package:finamp/services/finamp_user_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -14,6 +19,7 @@ import '../models/jellyfin_models.dart';
 import 'downloads_service.dart';
 import 'finamp_settings_helper.dart';
 import 'item_by_id_provider.dart';
+import 'item_helper.dart';
 import 'jellyfin_api_helper.dart';
 
 part 'music_screen_provider.g.dart';
@@ -24,32 +30,81 @@ const homeScreenSectionItemLimit = 20;
 @riverpod
 class PagedContent extends _$PagedContent {
   List<int> _pageSizes = [];
-  List<FutureProvider<List<FinampUnpagedPlayable>>> _dependencies = [];
+  List<ProviderBase<Object?>> _dependencies = [];
 
   @override
-  PagingState<int, FinampUnpagedPlayable> build(FinampDisplayable<FinampUnpagedPlayable> request) {
-    final List<List<FinampUnpagedPlayable>> pages = [];
+  PagingState<int, FinampDisplayableOrPlayable> build(FinampDisplayable<FinampDisplayableOrPlayable> request) {
+    switch (request) {
+      case FinampUnpagedDisplayable():
+        return _buildUnpaged(request);
+      case MusicScreenPlayable<FinampPlayableItem>():
+        return _buildPaged(request);
+    }
+  }
+
+  PagingState<int, FinampDisplayableOrPlayable> _buildUnpaged(FinampUnpagedDisplayable request) {
+    if (_pageSizes.isEmpty) {
+      return PagingState(pages: null, keys: null, isLoading: false, hasNextPage: true, error: null);
+    }
+    final provider = getChildrenProvider(item: request);
+    final page = ref.watch(provider).unwrapPrevious();
+
+    List<FinampDisplayableOrPlayable>? output;
+    bool isLoading = false;
+    bool hasNextPage = true;
+    Object? error;
+
+    if (page is AsyncData) {
+      if (page.value != null) {
+        output = page.value!;
+        hasNextPage = false;
+      }
+    } else if (page is AsyncLoading) {
+      /*if (page.value != null) {
+          pages.add(page.value!);
+          keys.add(offset);
+          if (page.value!.length < pageSize) {
+            hasNextPage = false;
+          }
+        }*/
+      isLoading = true;
+    } else if (page is AsyncError) {
+      error = page.error;
+    }
+
+    _dependencies = [provider];
+
+    return PagingState(
+      pages: output == null ? null : [output],
+      keys: output == null ? null : [0],
+      isLoading: isLoading,
+      hasNextPage: hasNextPage,
+      error: error,
+    );
+  }
+
+  PagingState<int, FinampDisplayableOrPlayable> _buildPaged(MusicScreenPlayable<FinampPlayableItem> request) {
+    final List<List<FinampDisplayableOrPlayable>> pages = [];
     final List<int> keys = [];
-    final List<FutureProvider<List<FinampUnpagedPlayable>>> providers = [];
+    final List<LoadHomeSectionItemsProvider> providers = [];
     bool isLoading = false;
     bool hasNextPage = true;
     Object? error;
 
     int offset = 0;
     for (int i = 0; i < _pageSizes.length; i++) {
-      final provider = switch (request) {
-        FinampUnpagedDisplayable() => getChildrenProvider(request),
-        FinampPagedDisplayable() => getPagedChildrenProvider(
-          PageRequest(item: request, startingIndex: offset, limit: _pageSizes[i]),
-        ),
-      };
+      final provider = loadHomeSectionItemsProvider(
+        sectionInfo: request.section,
+        startIndex: offset,
+        limit: _pageSizes[i],
+      );
       providers.add(provider);
 
       final page = ref.watch(provider).unwrapPrevious();
 
       if (page is AsyncData) {
         if (page.value != null) {
-          pages.add(page.value!);
+          pages.add(page.value!.map((x) => request.buildChild(x)).toList());
           keys.add(offset);
           if (page.value!.length < _pageSizes[i]) {
             hasNextPage = false;
@@ -68,11 +123,6 @@ class PagedContent extends _$PagedContent {
         error = page.error;
       }
       offset += _pageSizes[i];
-
-      if (request is FinampUnpagedDisplayable) {
-        hasNextPage = false;
-        break;
-      }
     }
 
     _dependencies = providers;
@@ -86,12 +136,12 @@ class PagedContent extends _$PagedContent {
     );
   }
 
-  void newPage() {
+  void newPage({int pageSize = musicScreenPageSize}) {
     // The pagination tends to generate multiple requests at once, so block all but the initial one.  The exception is
     // while loading the first, undersized page, we allow a second request through immediately to potentially finish
     // loading a proper page's worth faster.
     if (!state.isLoading || _pageSizes.length < 2) {
-      _pageSizes.add(musicScreenPageSize);
+      _pageSizes.add(pageSize);
       ref.invalidateSelf();
     }
   }
@@ -122,7 +172,7 @@ class PagedContent extends _$PagedContent {
   // TODO optimize for fast response, like play all on home screen?
   // Maybe we add a followup Future to PlayableSlice, and if we already have the starting item in cache (we should)
   // then immediately return a slice with the rest in that future for the caller to add to queue later.
-  Future<List<FinampUnpagedPlayable>> loadSlice(int startingIndex, int limit) async {
+  Future<List<FinampDisplayableOrPlayable>> loadSlice(int startingIndex, int limit) async {
     // capture local request for type casting
     final request = this.request;
     // TODO wait for current active loads to complete.  Do error response?
@@ -134,7 +184,7 @@ class PagedContent extends _$PagedContent {
     if (preCached.length >= queueEndTarget) {
       return preCached.slice(startingIndex, queueEndTarget);
     }
-    List<FinampUnpagedPlayable> items = [];
+    List<FinampDisplayableOrPlayable> items = [];
     if (startingIndex < preCached.length) {
       items = preCached.slice(startingIndex);
     }
@@ -145,18 +195,26 @@ class PagedContent extends _$PagedContent {
 
     final loadStartOffset = startingIndex + items.length;
     final loadSize = queueEndTarget - loadStartOffset;
-    // TODO paginate?
-    // TODO insert these pages into the page list?
-    final provider = switch (request) {
-      FinampUnpagedDisplayable() => getChildrenProvider(request),
-      FinampPagedDisplayable() => getPagedChildrenProvider(
-        PageRequest(item: request, startingIndex: startingIndex, limit: loadSize),
-      ),
-    };
-    return await ref.read(provider.future);
+
+    // TODO break request up into pages?
+    newPage(pageSize: loadSize);
+
+    ProviderSubscription? sub;
+    Completer<List<FinampDisplayableOrPlayable>?> waitForPage = Completer();
+    sub = GetIt.instance<ProviderContainer>().listen<PagingState<int, FinampDisplayableOrPlayable>>(
+      pagedContentProvider(request),
+      (_, value) {
+        if (!value.isLoading) {
+          waitForPage.complete(value.items);
+          sub?.close();
+        }
+      },
+    );
+    return (await waitForPage.future ?? []).safeSliceByLength(startingIndex, limit);
   }
 }
 
+// TODO this should take a MusicScreenPlayable.  Maybe return them too?  Also, why is this keepAlive?
 @Riverpod(keepAlive: true)
 Future<List<BaseItemDto>?> loadHomeSectionItems(
   Ref ref, {
@@ -277,6 +335,7 @@ Future<List<BaseItemDto>?> loadHomeSectionItems(
           return ref
               .watch(getSortedPlaylistTracksProvider(baseItem, sectionInfo.sortAndFilterConfiguration).future)
               .then((x) => x.$2);
+        // TODO make real collection provider when removing collection section type code in refactor.
         case BaseItemDtoType.collection:
           return jellyfinApiHelper.getItems(
             parentItem: baseItem,
@@ -715,7 +774,7 @@ Future<List<BaseItemDto>> globalSearch(Ref ref, String searchTerm, {required boo
 }
 
 @Riverpod(keepAlive: true)
-Future<FinampDisplayable<FinampUnpagedPlayable>> resolveSection(Ref ref, HomeScreenSectionConfiguration section) async {
+Future<FinampDisplayable<FinampPlayable>> resolveSection(Ref ref, HomeScreenSectionConfiguration section) async {
   final context = GlobalSnackbar.materialAppScaffoldKey.currentContext!;
   switch (section.type) {
     case HomeScreenSectionType.tabView:
@@ -750,6 +809,7 @@ Future<FinampDisplayable<FinampUnpagedPlayable>> resolveSection(Ref ref, HomeScr
           tracks: [],
         );
       }
+      // source for collections has item added, otherwise all 3 sources are identical
       final source = QueueItemSource.rawId(
         type: QueueItemSourceType.homeScreenSection,
         name: QueueItemSourceName(
@@ -782,6 +842,153 @@ Future<FinampDisplayable<FinampUnpagedPlayable>> resolveSection(Ref ref, HomeScr
           throw UnimplementedError();
       }
     case HomeScreenSectionType.queues:
-      return LatestQueues();
+      final source = QueueItemSource.rawId(
+        type: QueueItemSourceType.homeScreenSection,
+        name: QueueItemSourceName(
+          type: QueueItemSourceNameType.homeScreenSection,
+          localizationParameter: section.presetType?.name,
+          pretranslatedName: section.getTitle(context),
+        ),
+        id: section.toLocalisedString(context),
+      );
+      return LatestQueues(sortConfig: section.sortAndFilterConfiguration, source: source);
+  }
+}
+
+@riverpod
+Future<PlayableSlice> getPlayerSlice(
+  Ref ref, {
+  required FinampPlayable item,
+  required int startingOffset,
+  int? limit,
+}) async {
+  switch (item) {
+    case FinampUnpagedPlayable<Track>():
+      final items = (await ref.watch(getChildTracksProvider(item: item).future)).map((x) => x.item).toList();
+      return PlayableSlice(
+        items: items,
+        startingIndex: startingOffset,
+        source: item.source,
+        shuffleState: SliceShuffleState.linear,
+      );
+    case Track():
+      return PlayableSlice(
+        items: [item.item],
+        startingIndex: 0,
+        source: item.source,
+        shuffleState: SliceShuffleState.linear,
+      );
+    case InstantMix():
+      throw UnsupportedError("Music screen should not be including instant mix.");
+    case MusicScreenPlayable<FinampPlayableItem>():
+      bool hardLimit = true;
+      if (limit == null) {
+        limit = ref.watch(finampSettingsProvider.trackShuffleItemCount);
+        hardLimit = false;
+      }
+      int preTracks = 0;
+      // If we are working directly with tracks, add some extra to flesh out the previous tracks section
+      // TODO merge all this into _getPagedchildTracks so we can get pretracks in other scenarios?
+      if (item is MusicScreenPlayable<Track>) {
+        preTracks = min(min(20, (limit! / 10.0).ceil()), startingOffset);
+      }
+
+      final items = await _getPagedChildTracks(
+        ref,
+        item: item,
+        startingChild: startingOffset - preTracks,
+        trackLimit: limit! + preTracks,
+        hardLimit: hardLimit,
+      );
+
+      return PlayableSlice(
+        items: items,
+        startingIndex: preTracks,
+        source: item.source,
+        shuffleState: SliceShuffleState.linear,
+      );
+    case PlayableQueue():
+      // TODO: add special queue slice
+      throw UnimplementedError();
+  }
+}
+
+Future<List<BaseItemDto>> _getPagedChildTracks(
+  Ref ref, {
+  required MusicScreenPlayable<FinampPlayableItem> item,
+  required int startingChild,
+  required int trackLimit,
+  required bool hardLimit,
+}) async {
+  // Drop normal child size by half to reduce the odds of undershooting.  Clamps to a minimum expected child size of one.
+  int childLimit = (trackLimit / min(1.0, item.normalChildSize / 2.0)).ceil();
+  final pager = ref.read(pagedContentProvider(item).notifier);
+  final children = await pager.loadSlice(startingChild, childLimit);
+  final output = <BaseItemDto>[];
+  for (final rawChild in children) {
+    // We require a MusicScreenPlayable<FinampPlayableItem> as input, so all children are guaranteed to be FinampPlayableItems.
+    final child = rawChild as FinampPlayableItem;
+    switch (child) {
+      case FinampUnpagedDisplayable<Track> unpagged:
+        final tracks = await getChildTracks(ref, item: unpagged);
+        output.addAll(tracks.map((x) => x.item));
+      case Track track:
+        output.add(track.item);
+      case InstantMix():
+        throw UnsupportedError("Music screen should not be including instant mix.");
+    }
+    if (output.length > trackLimit) {
+      break;
+    }
+  }
+  return output.slice(0, hardLimit ? min(trackLimit, output.length) : null);
+}
+
+@riverpod
+Future<List<Track>> getChildTracks(Ref ref, {required FinampUnpagedDisplayable<Track> item}) async {
+  switch (item) {
+    case Album():
+      final items = await ref.watch(getAlbumOrPlaylistTracksProvider(item.item).future);
+      // TODO handle playable vs non-playable tracks better.  Maybe track + playableTrack types?
+      return items.$2.map((baseItem) => Track(baseItem, source: item.source)).toList();
+    case AlbumDisc():
+      return item.tracks.map((baseItem) => Track(baseItem, source: item.source)).toList();
+    case PrecalculatedPlayable():
+      return item.tracks.map((baseItem) => Track(baseItem, source: item.source)).toList();
+    case Playlist():
+      final items = await ref.watch(getSortedPlaylistTracksProvider(item.item, item.sortConfig).future);
+      return items.$2.map((baseItem) => Track(baseItem, source: item.source)).toList();
+    case GenericPlayableItem():
+      final items = await loadChildTracksFromBaseItem(item: item.item, sortConfig: item.sortConfig);
+      return items.map((baseItem) => Track(baseItem, source: item.source)).toList();
+  }
+}
+
+@riverpod
+Future<List<FinampDisplayableOrPlayable>> getChildren(
+  Ref ref, {
+  required FinampUnpagedDisplayable<FinampDisplayableOrPlayable> item,
+}) async {
+  switch (item) {
+    case FinampUnpagedDisplayable<Track>():
+      // TODO figure out how to get refreshing working for non MusicScreenPlayables
+      // Maybe we could have a refresh provider that takes a DisplayableOrPlayable and gets watched by everyone?
+      return await ref.watch(getChildTracksProvider(item: item).future);
+    case LatestQueues():
+      final queuesBox = Hive.box<FinampStorableQueueInfo>("Queues");
+      var queueMap = queuesBox.toMap();
+      queueMap.remove("latest");
+      var queueList = queueMap.values.toList();
+      queueList.sort((x, y) {
+        return switch (item.sortConfig.sortBy) {
+          SortBy.dateCreated || SortBy.datePlayed => x.creation.compareTo(y.creation),
+          // SortBy.runtime => x.runtime.compareTo(y.runtime), //TODO add support for sorting by runtime
+          _ => 0,
+        };
+      });
+      if (item.sortConfig.sortOrder == SortOrder.descending) {
+        queueList = queueList.reversed.toList();
+      }
+      return queueList.map((x) => PlayableQueue(queue: x, source: item.source)).toList();
   }
 }

@@ -336,7 +336,7 @@ class _GlobalSearchProviderElement
   bool get includeTracks => (origin as GlobalSearchProvider).includeTracks;
 }
 
-String _$resolveSectionHash() => r'd61817efc0c34b2eea67198902b718bdcf14ed52';
+String _$resolveSectionHash() => r'94bd87d79ab08e981994d91875420dc5bfcc938d';
 
 /// See also [resolveSection].
 @ProviderFor(resolveSection)
@@ -344,7 +344,7 @@ const resolveSectionProvider = ResolveSectionFamily();
 
 /// See also [resolveSection].
 class ResolveSectionFamily
-    extends Family<AsyncValue<FinampDisplayable<FinampUnpagedPlayable>>> {
+    extends Family<AsyncValue<FinampDisplayable<FinampPlayable>>> {
   /// See also [resolveSection].
   const ResolveSectionFamily();
 
@@ -377,8 +377,7 @@ class ResolveSectionFamily
 
 /// See also [resolveSection].
 class ResolveSectionProvider
-    extends
-        AutoDisposeFutureProvider<FinampDisplayable<FinampUnpagedPlayable>> {
+    extends FutureProvider<FinampDisplayable<FinampPlayable>> {
   /// See also [resolveSection].
   ResolveSectionProvider(HomeScreenSectionConfiguration section)
     : this._internal(
@@ -408,7 +407,7 @@ class ResolveSectionProvider
 
   @override
   Override overrideWith(
-    FutureOr<FinampDisplayable<FinampUnpagedPlayable>> Function(
+    FutureOr<FinampDisplayable<FinampPlayable>> Function(
       ResolveSectionRef provider,
     )
     create,
@@ -428,8 +427,7 @@ class ResolveSectionProvider
   }
 
   @override
-  AutoDisposeFutureProviderElement<FinampDisplayable<FinampUnpagedPlayable>>
-  createElement() {
+  FutureProviderElement<FinampDisplayable<FinampPlayable>> createElement() {
     return _ResolveSectionProviderElement(this);
   }
 
@@ -450,16 +448,13 @@ class ResolveSectionProvider
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 mixin ResolveSectionRef
-    on AutoDisposeFutureProviderRef<FinampDisplayable<FinampUnpagedPlayable>> {
+    on FutureProviderRef<FinampDisplayable<FinampPlayable>> {
   /// The parameter `section` of this provider.
   HomeScreenSectionConfiguration get section;
 }
 
 class _ResolveSectionProviderElement
-    extends
-        AutoDisposeFutureProviderElement<
-          FinampDisplayable<FinampUnpagedPlayable>
-        >
+    extends FutureProviderElement<FinampDisplayable<FinampPlayable>>
     with ResolveSectionRef {
   _ResolveSectionProviderElement(super.provider);
 
@@ -468,15 +463,432 @@ class _ResolveSectionProviderElement
       (origin as ResolveSectionProvider).section;
 }
 
-String _$pagedContentHash() => r'9418d48d798668070a04d576da6155a95d2afc6e';
+String _$getPlayerSliceHash() => r'1de5e2f4e92b5b4f27a7ce8cbc9e639919d5798f';
+
+/// See also [getPlayerSlice].
+@ProviderFor(getPlayerSlice)
+const getPlayerSliceProvider = GetPlayerSliceFamily();
+
+/// See also [getPlayerSlice].
+class GetPlayerSliceFamily extends Family<AsyncValue<PlayableSlice>> {
+  /// See also [getPlayerSlice].
+  const GetPlayerSliceFamily();
+
+  /// See also [getPlayerSlice].
+  GetPlayerSliceProvider call({
+    required FinampPlayable item,
+    required int startingOffset,
+    int? limit,
+  }) {
+    return GetPlayerSliceProvider(
+      item: item,
+      startingOffset: startingOffset,
+      limit: limit,
+    );
+  }
+
+  @override
+  GetPlayerSliceProvider getProviderOverride(
+    covariant GetPlayerSliceProvider provider,
+  ) {
+    return call(
+      item: provider.item,
+      startingOffset: provider.startingOffset,
+      limit: provider.limit,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'getPlayerSliceProvider';
+}
+
+/// See also [getPlayerSlice].
+class GetPlayerSliceProvider extends AutoDisposeFutureProvider<PlayableSlice> {
+  /// See also [getPlayerSlice].
+  GetPlayerSliceProvider({
+    required FinampPlayable item,
+    required int startingOffset,
+    int? limit,
+  }) : this._internal(
+         (ref) => getPlayerSlice(
+           ref as GetPlayerSliceRef,
+           item: item,
+           startingOffset: startingOffset,
+           limit: limit,
+         ),
+         from: getPlayerSliceProvider,
+         name: r'getPlayerSliceProvider',
+         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+             ? null
+             : _$getPlayerSliceHash,
+         dependencies: GetPlayerSliceFamily._dependencies,
+         allTransitiveDependencies:
+             GetPlayerSliceFamily._allTransitiveDependencies,
+         item: item,
+         startingOffset: startingOffset,
+         limit: limit,
+       );
+
+  GetPlayerSliceProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.item,
+    required this.startingOffset,
+    required this.limit,
+  }) : super.internal();
+
+  final FinampPlayable item;
+  final int startingOffset;
+  final int? limit;
+
+  @override
+  Override overrideWith(
+    FutureOr<PlayableSlice> Function(GetPlayerSliceRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: GetPlayerSliceProvider._internal(
+        (ref) => create(ref as GetPlayerSliceRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        item: item,
+        startingOffset: startingOffset,
+        limit: limit,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<PlayableSlice> createElement() {
+    return _GetPlayerSliceProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is GetPlayerSliceProvider &&
+        other.item == item &&
+        other.startingOffset == startingOffset &&
+        other.limit == limit;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, item.hashCode);
+    hash = _SystemHash.combine(hash, startingOffset.hashCode);
+    hash = _SystemHash.combine(hash, limit.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin GetPlayerSliceRef on AutoDisposeFutureProviderRef<PlayableSlice> {
+  /// The parameter `item` of this provider.
+  FinampPlayable get item;
+
+  /// The parameter `startingOffset` of this provider.
+  int get startingOffset;
+
+  /// The parameter `limit` of this provider.
+  int? get limit;
+}
+
+class _GetPlayerSliceProviderElement
+    extends AutoDisposeFutureProviderElement<PlayableSlice>
+    with GetPlayerSliceRef {
+  _GetPlayerSliceProviderElement(super.provider);
+
+  @override
+  FinampPlayable get item => (origin as GetPlayerSliceProvider).item;
+  @override
+  int get startingOffset => (origin as GetPlayerSliceProvider).startingOffset;
+  @override
+  int? get limit => (origin as GetPlayerSliceProvider).limit;
+}
+
+String _$getChildTracksHash() => r'e08a547da56b302f527e86e0cf1cd3b3a312930f';
+
+/// See also [getChildTracks].
+@ProviderFor(getChildTracks)
+const getChildTracksProvider = GetChildTracksFamily();
+
+/// See also [getChildTracks].
+class GetChildTracksFamily extends Family<AsyncValue<List<Track>>> {
+  /// See also [getChildTracks].
+  const GetChildTracksFamily();
+
+  /// See also [getChildTracks].
+  GetChildTracksProvider call({required FinampUnpagedDisplayable<Track> item}) {
+    return GetChildTracksProvider(item: item);
+  }
+
+  @override
+  GetChildTracksProvider getProviderOverride(
+    covariant GetChildTracksProvider provider,
+  ) {
+    return call(item: provider.item);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'getChildTracksProvider';
+}
+
+/// See also [getChildTracks].
+class GetChildTracksProvider extends AutoDisposeFutureProvider<List<Track>> {
+  /// See also [getChildTracks].
+  GetChildTracksProvider({required FinampUnpagedDisplayable<Track> item})
+    : this._internal(
+        (ref) => getChildTracks(ref as GetChildTracksRef, item: item),
+        from: getChildTracksProvider,
+        name: r'getChildTracksProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$getChildTracksHash,
+        dependencies: GetChildTracksFamily._dependencies,
+        allTransitiveDependencies:
+            GetChildTracksFamily._allTransitiveDependencies,
+        item: item,
+      );
+
+  GetChildTracksProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.item,
+  }) : super.internal();
+
+  final FinampUnpagedDisplayable<Track> item;
+
+  @override
+  Override overrideWith(
+    FutureOr<List<Track>> Function(GetChildTracksRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: GetChildTracksProvider._internal(
+        (ref) => create(ref as GetChildTracksRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        item: item,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<List<Track>> createElement() {
+    return _GetChildTracksProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is GetChildTracksProvider && other.item == item;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, item.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin GetChildTracksRef on AutoDisposeFutureProviderRef<List<Track>> {
+  /// The parameter `item` of this provider.
+  FinampUnpagedDisplayable<Track> get item;
+}
+
+class _GetChildTracksProviderElement
+    extends AutoDisposeFutureProviderElement<List<Track>>
+    with GetChildTracksRef {
+  _GetChildTracksProviderElement(super.provider);
+
+  @override
+  FinampUnpagedDisplayable<Track> get item =>
+      (origin as GetChildTracksProvider).item;
+}
+
+String _$getChildrenHash() => r'75836cd4556f8f96adb219a3d76051785011e052';
+
+/// See also [getChildren].
+@ProviderFor(getChildren)
+const getChildrenProvider = GetChildrenFamily();
+
+/// See also [getChildren].
+class GetChildrenFamily
+    extends Family<AsyncValue<List<FinampDisplayableOrPlayable>>> {
+  /// See also [getChildren].
+  const GetChildrenFamily();
+
+  /// See also [getChildren].
+  GetChildrenProvider call({
+    required FinampUnpagedDisplayable<FinampDisplayableOrPlayable> item,
+  }) {
+    return GetChildrenProvider(item: item);
+  }
+
+  @override
+  GetChildrenProvider getProviderOverride(
+    covariant GetChildrenProvider provider,
+  ) {
+    return call(item: provider.item);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'getChildrenProvider';
+}
+
+/// See also [getChildren].
+class GetChildrenProvider
+    extends AutoDisposeFutureProvider<List<FinampDisplayableOrPlayable>> {
+  /// See also [getChildren].
+  GetChildrenProvider({
+    required FinampUnpagedDisplayable<FinampDisplayableOrPlayable> item,
+  }) : this._internal(
+         (ref) => getChildren(ref as GetChildrenRef, item: item),
+         from: getChildrenProvider,
+         name: r'getChildrenProvider',
+         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+             ? null
+             : _$getChildrenHash,
+         dependencies: GetChildrenFamily._dependencies,
+         allTransitiveDependencies:
+             GetChildrenFamily._allTransitiveDependencies,
+         item: item,
+       );
+
+  GetChildrenProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.item,
+  }) : super.internal();
+
+  final FinampUnpagedDisplayable<FinampDisplayableOrPlayable> item;
+
+  @override
+  Override overrideWith(
+    FutureOr<List<FinampDisplayableOrPlayable>> Function(
+      GetChildrenRef provider,
+    )
+    create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: GetChildrenProvider._internal(
+        (ref) => create(ref as GetChildrenRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        item: item,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<List<FinampDisplayableOrPlayable>>
+  createElement() {
+    return _GetChildrenProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is GetChildrenProvider && other.item == item;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, item.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin GetChildrenRef
+    on AutoDisposeFutureProviderRef<List<FinampDisplayableOrPlayable>> {
+  /// The parameter `item` of this provider.
+  FinampUnpagedDisplayable<FinampDisplayableOrPlayable> get item;
+}
+
+class _GetChildrenProviderElement
+    extends AutoDisposeFutureProviderElement<List<FinampDisplayableOrPlayable>>
+    with GetChildrenRef {
+  _GetChildrenProviderElement(super.provider);
+
+  @override
+  FinampUnpagedDisplayable<FinampDisplayableOrPlayable> get item =>
+      (origin as GetChildrenProvider).item;
+}
+
+String _$pagedContentHash() => r'3202e502dfee476b63af1a2b24ee7b802b3b1193';
 
 abstract class _$PagedContent
     extends
-        BuildlessAutoDisposeNotifier<PagingState<int, FinampUnpagedPlayable>> {
-  late final FinampDisplayable<FinampUnpagedPlayable> request;
+        BuildlessAutoDisposeNotifier<
+          PagingState<int, FinampDisplayableOrPlayable>
+        > {
+  late final FinampDisplayable<FinampDisplayableOrPlayable> request;
 
-  PagingState<int, FinampUnpagedPlayable> build(
-    FinampDisplayable<FinampUnpagedPlayable> request,
+  PagingState<int, FinampDisplayableOrPlayable> build(
+    FinampDisplayable<FinampDisplayableOrPlayable> request,
   );
 }
 
@@ -486,12 +898,14 @@ const pagedContentProvider = PagedContentFamily();
 
 /// See also [PagedContent].
 class PagedContentFamily
-    extends Family<PagingState<int, FinampUnpagedPlayable>> {
+    extends Family<PagingState<int, FinampDisplayableOrPlayable>> {
   /// See also [PagedContent].
   const PagedContentFamily();
 
   /// See also [PagedContent].
-  PagedContentProvider call(FinampDisplayable<FinampUnpagedPlayable> request) {
+  PagedContentProvider call(
+    FinampDisplayable<FinampDisplayableOrPlayable> request,
+  ) {
     return PagedContentProvider(request);
   }
 
@@ -522,10 +936,10 @@ class PagedContentProvider
     extends
         AutoDisposeNotifierProviderImpl<
           PagedContent,
-          PagingState<int, FinampUnpagedPlayable>
+          PagingState<int, FinampDisplayableOrPlayable>
         > {
   /// See also [PagedContent].
-  PagedContentProvider(FinampDisplayable<FinampUnpagedPlayable> request)
+  PagedContentProvider(FinampDisplayable<FinampDisplayableOrPlayable> request)
     : this._internal(
         () => PagedContent()..request = request,
         from: pagedContentProvider,
@@ -549,10 +963,10 @@ class PagedContentProvider
     required this.request,
   }) : super.internal();
 
-  final FinampDisplayable<FinampUnpagedPlayable> request;
+  final FinampDisplayable<FinampDisplayableOrPlayable> request;
 
   @override
-  PagingState<int, FinampUnpagedPlayable> runNotifierBuild(
+  PagingState<int, FinampDisplayableOrPlayable> runNotifierBuild(
     covariant PagedContent notifier,
   ) {
     return notifier.build(request);
@@ -577,7 +991,7 @@ class PagedContentProvider
   @override
   AutoDisposeNotifierProviderElement<
     PagedContent,
-    PagingState<int, FinampUnpagedPlayable>
+    PagingState<int, FinampDisplayableOrPlayable>
   >
   createElement() {
     return _PagedContentProviderElement(this);
@@ -600,22 +1014,25 @@ class PagedContentProvider
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 mixin PagedContentRef
-    on AutoDisposeNotifierProviderRef<PagingState<int, FinampUnpagedPlayable>> {
+    on
+        AutoDisposeNotifierProviderRef<
+          PagingState<int, FinampDisplayableOrPlayable>
+        > {
   /// The parameter `request` of this provider.
-  FinampDisplayable<FinampUnpagedPlayable> get request;
+  FinampDisplayable<FinampDisplayableOrPlayable> get request;
 }
 
 class _PagedContentProviderElement
     extends
         AutoDisposeNotifierProviderElement<
           PagedContent,
-          PagingState<int, FinampUnpagedPlayable>
+          PagingState<int, FinampDisplayableOrPlayable>
         >
     with PagedContentRef {
   _PagedContentProviderElement(super.provider);
 
   @override
-  FinampDisplayable<FinampUnpagedPlayable> get request =>
+  FinampDisplayable<FinampDisplayableOrPlayable> get request =>
       (origin as PagedContentProvider).request;
 }
 

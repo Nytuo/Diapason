@@ -585,7 +585,12 @@ class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 2.0,
-            children: [Text("Sort & Filter*", style: Theme.of(context).textTheme.titleMedium)],
+            children: [
+              Text(
+                widget.removeOnly ? "Remove Filters*" : "Sort & Filter*",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ],
           ),
         ),
         sliver: MenuMask(

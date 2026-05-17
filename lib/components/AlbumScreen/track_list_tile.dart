@@ -21,6 +21,7 @@ import 'package:get_it/get_it.dart';
 import '../../models/music_models.dart';
 import '../../services/downloads_service.dart';
 import '../../services/finamp_settings_helper.dart';
+import '../../services/music_screen_provider.dart';
 import '../../services/queue_service.dart';
 import '../../services/theme_provider.dart';
 import '../album_image.dart';
@@ -66,8 +67,6 @@ class TrackListTile extends ConsumerWidget {
     this.adaptiveAdditionalInfoSortBy,
     this.forceAlbumArtists = false,
 
-    this.isOnArtistScreen = false,
-    this.isOnGenreScreen = false,
     this.allowDismiss = true,
     this.highlightCurrentTrack = true,
     this.playbackProgress,
@@ -82,8 +81,6 @@ class TrackListTile extends ConsumerWidget {
   final VoidCallback? onRemoveFromList;
   final bool forceAlbumArtists;
   final SortBy? adaptiveAdditionalInfoSortBy;
-  final bool isOnArtistScreen;
-  final bool isOnGenreScreen;
   final bool allowDismiss;
   final bool highlightCurrentTrack;
   final double? playbackProgress;
@@ -106,25 +103,18 @@ class TrackListTile extends ConsumerWidget {
 
       if (!playable) return;
 
-      PlayableSlice? slice;
-      switch (parentPlayable) {
-        case FinampUnpagedPlayable():
-          slice = await ref.watch(getPlayerSliceProvider(item: parentPlayable, startingOffset: index!).future);
-        case FinampPagedPlayable():
-          if (index != null) {
-            slice = await ref.watch(getPlayerSliceProvider(item: parentPlayable, startingOffset: index!).future);
-          }
-      }
+      PlayableSlice slice = await ref.watch(
+        getPlayerSliceProvider(item: parentPlayable, startingOffset: index!).future,
+      );
 
-      if (slice != null) {
-        // start linear playback of album from the given index
-        await queueService.startPlayback(
-          items: slice.items,
-          startingIndex: slice.startingIndex,
-          order: FinampPlaybackOrder.linear,
-          // TODO correctly account for music screen source
-          source: slice.source,
-          /*QueueItemSource.rawId(
+      // start linear playback of album from the given index
+      await queueService.startPlayback(
+        items: slice.items,
+        startingIndex: slice.startingIndex,
+        order: FinampPlaybackOrder.linear,
+        // TODO correctly account for music screen source
+        source: slice.source,
+        /*QueueItemSource.rawId(
                 type: isInPlaylist
                     ? QueueItemSourceType.playlist
                     : isOnArtistScreen
@@ -149,8 +139,7 @@ class TrackListTile extends ConsumerWidget {
                     ? null
                     : parentItem?.normalizationGain,
               ),*/
-        );
-      }
+      );
     }
 
     return TrackListItem(

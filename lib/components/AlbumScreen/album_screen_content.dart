@@ -232,18 +232,15 @@ class TracksSliverList extends ConsumerStatefulWidget {
     this.onRemoveFromList,
     this.forceAlbumArtists = false,
     this.adaptiveAdditionalInfoSortBy,
-    this.isOnArtistScreen = false,
-    this.isOnGenreScreen = false,
   });
 
   final List<BaseItemDto> childrenForList;
   final List<BaseItemDto> childrenForQueue;
+  // TODO switch this to a playable
   final BaseItemDto parent;
   final BaseItemDtoCallback? onRemoveFromList;
   final bool forceAlbumArtists;
   final SortBy? adaptiveAdditionalInfoSortBy;
-  final bool isOnArtistScreen;
-  final bool isOnGenreScreen;
 
   @override
   ConsumerState<TracksSliverList> createState() => _TracksSliverListState();
@@ -309,8 +306,6 @@ class _TracksSliverListState extends ConsumerState<TracksSliverList> {
               widget.onRemoveFromList!(item);
             }
           },
-          isOnArtistScreen: widget.isOnArtistScreen,
-          isOnGenreScreen: widget.isOnGenreScreen,
           forceAlbumArtists: widget.forceAlbumArtists,
           adaptiveAdditionalInfoSortBy: widget.adaptiveAdditionalInfoSortBy,
           // TODO should we be passing and leveraging a proper parent playable?

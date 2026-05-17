@@ -192,8 +192,6 @@ class _TracksSectionState extends ConsumerState<TracksSection> {
                     childrenForQueue: widget.childrenForQueue!,
                     adaptiveAdditionalInfoSortBy: widget.selectedFilter?.getSortBy(),
                     parent: widget.parent,
-                    isOnArtistScreen: widget.isOnArtistScreen,
-                    isOnGenreScreen: widget.isOnGenreScreen,
                   )
                 else
                   SliverToBoxAdapter(

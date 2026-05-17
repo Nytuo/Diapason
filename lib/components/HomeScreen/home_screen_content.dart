@@ -28,7 +28,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:hive_ce/hive.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:logging/logging.dart';
 
 final _homeScreenLogger = Logger("HomeScreen");
@@ -274,38 +274,21 @@ class HomeScreenSection extends ConsumerWidget {
                       label: AppLocalizations.of(context)!.playButtonLabel,
                       icon: TablerIcons.player_play,
                     ),
-                  if (sectionInfo.contentType.itemType == BaseItemDtoType.track)
-                    IconButtonWithSemantics(
-                      onPressed: () async {
-                        // TODO setup shuffle path new new slicer
-                        final source = QueueItemSource.rawId(
-                          type: QueueItemSourceType.homeScreenSection,
-                          name: QueueItemSourceName(
-                            type: QueueItemSourceNameType.homeScreenSection,
-                            localizationParameter: sectionInfo.presetType?.name,
-                            pretranslatedName: sectionInfo.getTitle(context),
-                          ),
-                          id: sectionInfo.toLocalisedString(context),
-                        );
-                        // no need to optimize item fetching here, since the order doesn't matter and the provider doesn't support "skipping" tracks, so all [trackShuffleItemCount] items will be loaded anyway
-                        // TODO do the append + filter here if randomized section?
-
-                        final items = await ref.read(
-                          loadHomeSectionItemsProvider(
-                            sectionInfo: sectionInfo,
-                            startIndex: 0,
-                            limit: FinampSettingsHelper.finampSettings.trackShuffleItemCount,
-                          ).future,
-                        );
-                        await GetIt.instance<QueueService>().startPlayback(
-                          items: items ?? [],
-                          source: source,
-                          order: FinampPlaybackOrder.shuffled,
-                        );
-                      },
-                      label: AppLocalizations.of(context)!.shuffleButtonLabel,
-                      icon: TablerIcons.arrows_shuffle,
-                    ),
+                  IconButtonWithSemantics(
+                    onPressed: () async {
+                      final queueService = GetIt.instance<QueueService>();
+                      final playable = sectionDisplayable as FinampPlayable;
+                      // TODO better shuffling?  need to think about shuffle all versus shuffle first
+                      // TODO restore gradual queue buildup?
+                      await queueService.startPlayback(
+                        items: (await ref.read(getPlayerSliceProvider(item: playable, startingOffset: 0).future)).items,
+                        source: playable.source,
+                        order: FinampPlaybackOrder.linear,
+                      );
+                    },
+                    label: AppLocalizations.of(context)!.shuffleButtonLabel,
+                    icon: TablerIcons.arrows_shuffle,
+                  ),
                 ],
                 ShowAllButton(
                   label: "Show All*",
@@ -352,95 +335,74 @@ class HomeScreenSectionContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    //!!! remove the preset type to allow matching the provider content based just on its media properties
     bool isOffline = ref.watch(finampSettingsProvider.isOffline);
-    AsyncValue<List<dynamic>?> items;
-    switch (sectionInfo.type) {
-      case HomeScreenSectionType.queues:
-        {
-          final queuesBox = Hive.box<FinampStorableQueueInfo>("Queues");
-          var queueMap = queuesBox.toMap();
-          queueMap.remove("latest");
-          var queueList = queueMap.values.toList();
-          queueList.sort((x, y) {
-            return switch (sectionInfo.sortAndFilterConfiguration.sortBy) {
-              SortBy.dateCreated || SortBy.datePlayed => x.creation.compareTo(y.creation),
-              // SortBy.runtime => x.runtime.compareTo(y.runtime), //TODO add support for sorting by runtime
-              _ => 0,
-            };
-          });
-          if (sectionInfo.sortAndFilterConfiguration.sortOrder == SortOrder.descending) {
-            queueList = queueList.reversed.toList();
-          }
-          items = AsyncValue.data(queueList);
-        }
-        break;
-      case HomeScreenSectionType.tabView:
-      case HomeScreenSectionType.collection:
-        items = ref
-            .watch(
-              loadHomeSectionItemsProvider(sectionInfo: sectionInfo, startIndex: 0, limit: homeScreenSectionItemLimit),
-            )
-            .unwrapPrevious();
+
+    final asyncDisplayable = ref.watch(resolveSectionProvider(sectionInfo));
+    if (asyncDisplayable.isLoading) {
+      return _buildHorizontalSkeletonLoader(ref);
+    } else if (asyncDisplayable.hasError) {
+      _homeScreenLogger.severe("Error resolving library: ${asyncDisplayable.error}", asyncDisplayable.error);
+      return Center(child: Text("Failed to load section.", maxLines: 1));
+    } else if (asyncDisplayable.value == null) {
+      return isOffline
+          ? const Center(child: Text("Section contents not downloaded.*", maxLines: 1))
+          : const Center(child: Text("Failed to load section - missing item.*", maxLines: 1));
     }
-    final source = QueueItemSource.rawId(
-      type: QueueItemSourceType.homeScreenSection,
-      name: QueueItemSourceName(
-        type: QueueItemSourceNameType.homeScreenSection,
-        localizationParameter: sectionInfo.presetType?.name,
-        pretranslatedName: sectionInfo.getTitle(context),
-      ),
-      id: sectionInfo.toLocalisedString(context),
-    );
-    return switch (items) {
-      AsyncData(:final value) => switch (value) {
-        null => _buildHorizontalSkeletonLoader(ref),
-        [] =>
-          isOffline
-              ? const Center(child: Text("Section contents not downloaded.*", maxLines: 1))
-              : const Center(child: Text("No items available.*", maxLines: 1)),
-        _ => SizedBox(
-          height: calculateItemCollectionCardHeight(ref: ref, sectionInfo: sectionInfo, itemType: null),
-          child: ScrollConfiguration(
-            behavior: ScrollConfiguration.of(context).copyWith(dragDevices: PointerDeviceKind.values.toSet()),
-            child: ListView.separated(
-              addAutomaticKeepAlives: true,
-              scrollDirection: Axis.horizontal,
-              itemCount: value.length + 1,
-              itemBuilder: (context, rawIndex) {
-                if (rawIndex == 0) {
-                  return SizedBox(width: 4.0); // initial padding, + separator
-                }
-                final index = rawIndex - 1;
-                switch (sectionInfo.type) {
-                  case HomeScreenSectionType.queues:
-                    final queueInfo = value[index] as FinampStorableQueueInfo;
-                    return HomeScreenQueueTile(key: ValueKey(queueInfo.creation), info: queueInfo);
-                  case HomeScreenSectionType.tabView:
-                  case HomeScreenSectionType.collection:
-                    final item = value[index] as BaseItemDto;
-                    return ItemWrapper(
-                      key: ValueKey(item.id),
-                      item: item,
-                      isGrid: true,
-                      forceText: true,
-                      interactive: interactive,
-                      source: source,
-                    );
-                }
-              },
-              separatorBuilder: (context, index) => const SizedBox(width: 8, height: 1),
-            ),
+    final displayable = asyncDisplayable.value!;
+
+    final pageState = ref.watch(pagedContentProvider(displayable));
+    final items = pageState.items;
+    if (items == null) {
+      if (pageState.isLoading) {
+        return _buildHorizontalSkeletonLoader(ref);
+      } else if (pageState.error != null) {
+        _homeScreenLogger.severe("Error loading items: ${pageState.error}", pageState.error);
+        return Center(child: Text("Failed to load items.", maxLines: 1));
+      } else {
+        ref.read(pagedContentProvider(displayable).notifier).fetchHomeScreenItems();
+        return _buildHorizontalSkeletonLoader(ref);
+      }
+    } else if (items.isEmpty) {
+      return isOffline
+          ? const Center(child: Text("Section contents not downloaded.*", maxLines: 1))
+          : const Center(child: Text("No items available.*", maxLines: 1));
+    } else {
+      return SizedBox(
+        height: calculateItemCollectionCardHeight(ref: ref, sectionInfo: sectionInfo, itemType: null),
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(dragDevices: PointerDeviceKind.values.toSet()),
+          child: ListView.separated(
+            addAutomaticKeepAlives: true,
+            scrollDirection: Axis.horizontal,
+            itemCount: items.length + 1,
+            itemBuilder: (context, rawIndex) {
+              if (rawIndex == 0) {
+                return SizedBox(width: 4.0); // initial padding, + separator
+              }
+              final index = rawIndex - 1;
+              switch (items[index]) {
+                case FinampPlayableItem item:
+                  return ItemWrapper(
+                    key: ValueKey(item.item.id),
+                    item: item.item,
+                    isGrid: true,
+                    forceText: true,
+                    interactive: interactive,
+                    source: displayable.source,
+                  );
+                case PlayableQueue queue:
+                  return HomeScreenQueueTile(key: ValueKey(queue.queue.creation), info: queue.queue);
+                case LatestQueues():
+                case PrecalculatedPlayable():
+                case MusicScreenPlayable<FinampPlayableItem>():
+                  throw UnsupportedError("Unexpected item ${items[index]} in home screen section");
+              }
+            },
+            separatorBuilder: (context, index) => const SizedBox(width: 8, height: 1),
           ),
         ),
-        // _ => _buildHorizontalSkeletonLoader(),
-      },
-      AsyncError(:final error) => () {
-        _homeScreenLogger.severe("Error loading items: $error", error);
-        return Center(child: Text("Failed to load items.", maxLines: 1));
-      }(),
-      _ => _buildHorizontalSkeletonLoader(ref),
-    };
+      );
+    }
   }
 
   Widget _buildHorizontalSkeletonLoader(WidgetRef ref) {
@@ -448,6 +410,9 @@ class HomeScreenSectionContent extends ConsumerWidget {
     final skeletonBaseColor = Theme.brightnessOf(ref.context) == Brightness.light
         ? Colors.grey.shade300
         : Colors.grey.shade800;
+    final skeletonOverlay = Theme.brightnessOf(ref.context) == Brightness.light
+        ? Colors.grey.shade400
+        : Colors.grey.shade700;
     return SizedBox(
       height: calculateItemCollectionCardHeight(ref: ref, sectionInfo: sectionInfo, itemType: null),
       child: ListView.separated(
@@ -457,7 +422,18 @@ class HomeScreenSectionContent extends ConsumerWidget {
           if (index == 0) {
             return SizedBox(width: 4.0); // initial padding, + separator
           }
-          final cardWidth = calculateItemCollectionCardWidth(ref).$1;
+          final double cardWidth;
+          final double cardHeight;
+          final bool showText;
+          if (sectionInfo.type == HomeScreenSectionType.queues) {
+            cardWidth = queuesHomeSectionWidth;
+            cardHeight = queuesHomeSectionHeight;
+            showText = false;
+          } else {
+            cardWidth = calculateItemCollectionCardWidth(ref).$1;
+            cardHeight = calculateItemCollectionCardWidth(ref).$1;
+            showText = true;
+          }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -471,19 +447,19 @@ class HomeScreenSectionContent extends ConsumerWidget {
                     children: [
                       Container(
                         width: cardWidth,
-                        height: cardWidth,
+                        height: cardHeight,
                         decoration: BoxDecoration(color: skeletonBaseColor, borderRadius: BorderRadius.circular(8)),
                       ),
                       Opacity(
                         opacity: opacity * 0.7,
                         child: Container(
                           width: cardWidth,
-                          height: cardWidth,
+                          height: cardHeight,
                           decoration: BoxDecoration(
                             gradient: RadialGradient(
                               center: Alignment.center,
                               radius: 3.0,
-                              colors: [Colors.white.withOpacity(0.4), Colors.transparent],
+                              colors: [skeletonOverlay, Colors.transparent],
                               stops: const [0.1, 1.0],
                             ),
                             borderRadius: BorderRadius.circular(8),
@@ -494,7 +470,7 @@ class HomeScreenSectionContent extends ConsumerWidget {
                   );
                 },
               ),
-              if (FinampSettingsHelper.finampSettings.showTextOnGridView) ...[
+              if (showText) ...[
                 SizedBox(height: 4),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2.0),
