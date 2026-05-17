@@ -551,7 +551,7 @@
     "@downloadTranscodeEnableTitle": {
         "description": "Title for Enable Transcoded Downloads dropdown"
     },
-    "downloadBitrate": "Bitrate de Descarga",
+    "downloadBitrate": "Taxa de Bits de Descarga",
     "@downloadBitrate": {
         "description": "Title for Download Bitrate settings slider"
     },
@@ -875,7 +875,7 @@
     "@showNullLibraryItemsSubtitle": {
         "description": "Description of setting that shows tracks/albums from an unknown library in all libraries when on, or in no libraries when off."
     },
-    "maxConcurrentDownloads": "Máximo de Descargas simultâneas",
+    "maxConcurrentDownloads": "Máximo de Transferências em Simultâneo",
     "@maxConcurrentDownloads": {
         "description": "Title of setting controlling max concurrent downloads."
     },
@@ -1059,7 +1059,7 @@
         "description": "Title for the switch that toggles if tapping a track on the tracks tab will start an instant mix of that track instead of just playing a single track."
     },
     "startInstantMixForIndividualTracksSwitchSubtitle": "Quando ativado, tocar numa faixa na aba de faixas irá começar uma mistura instantânea dessa faixa, em vez de apenas tocar uma única faixa.",
-    "repairComplete": "Reparação dos Descargas completa.",
+    "repairComplete": "Reparação das Descargas completa.",
     "@repairComplete": {
         "description": "Message displayed after download repair completes."
     },
@@ -1100,7 +1100,7 @@
     "@onlyShowFullyDownloaded": {
         "description": "Tooltip for button that hides all partially downloaded albums"
     },
-    "filesystemFull": "Descargas em falta não podem ser completados. O sistema de ficheiros está cheio.",
+    "filesystemFull": "Descargas em falta não podem ser completadas. O sistema de ficheiros está cheio.",
     "@filesystemFull": {
         "description": "Message shown when a download cannot complete due to the filesystem being full."
     },
@@ -1121,7 +1121,7 @@
     "@showNullLibraryItemsTitle": {
         "description": "Title of setting that shows tracks/albums from an unknown library in all libraries when on, or in no libraries when off."
     },
-    "maxConcurrentDownloadsLabel": "{count} Descargas simultâneas",
+    "maxConcurrentDownloadsLabel": "{count} Descargas Simultâneas",
     "@maxConcurrentDownloadsLabel": {
         "description": "Label of values on max concurrent downloads slider",
         "placeholders": {
@@ -1134,7 +1134,7 @@
     "@reportQueueToServerSubtitle": {
         "description": "Description of the setting that toggles reporting of the current queue to the Jellyfin server"
     },
-    "maxConcurrentDownloadsSubtitle": "Aumentar o número de descargas simultâneos pode permitir aumento de descargas, mas pode também causar falhas se o ficheiro for muito grande ou causar atrasos excessivos em alguns casos.",
+    "maxConcurrentDownloadsSubtitle": "Aumentar o número de transferências em simultâneo pode permitir aumento das descargas nos bastidores, mas pode também causar falhas se o ficheiro for muito grande ou causar atrasos excessivos em alguns casos.",
     "@maxConcurrentDownloadsSubtitle": {
         "description": "Description of setting controlling max concurrent downloads."
     },
@@ -1185,7 +1185,7 @@
     "prioritizePlayerCoverSubtitle": "Priorizar mostrar uma capa de álbum maior no ecrã do reprodutor. Controladores não críticos serão escondidos mais agressivamente em ecrãs mais pequenos.",
     "showArtistChipImageSubtitle": "Afeta a visualização das imagens de artista, tais como as do ecrã do reprodutor.",
     "removeFromPlaylistConfirm": "Remover",
-    "trackOfflineFavoritesSubtitle": "Isto permite mostrar os favoritos com estados mais atualizados quando offline.   Não descarga ficheiros adicionais.",
+    "trackOfflineFavoritesSubtitle": "Isto permite mostrar os favoritos com estados mais atualizados quando offline.   Não descarrega ficheiros adicionais.",
     "allPlaylistsInfoSetting": "Descarregar Metadados da Lista de Reprodução",
     "addPlaylistSubheader": "Adicionar itens a uma lista de reprodução",
     "@addPlaylistSubheader": {
@@ -1292,7 +1292,7 @@
     },
     "resetToDefaults": "Reiniciar para predefinições",
     "moreInfo": "Mais Informação",
-    "downloadsWorkersSetting": "Contagem de processos que descargam",
+    "downloadsWorkersSetting": "Contagem de Processos que fazem Descarga",
     "@downloadsWorkersSetting": {
         "description": "Title of setting controlling download worker count."
     },
@@ -1304,7 +1304,7 @@
     "@preferQuickSyncSwitch": {
         "description": "Title of setting that skips completed albums while syncing."
     },
-    "downloadsWorkersSettingSubtitle": "Quantidade de processos usados para sincronizar metadata e remover descargas. Aumentar este valor pode aumentar a velocidade de sincronização e remoção, especialmente quando a latência do servidor é alta, mas pode introduzir atraso.",
+    "downloadsWorkersSettingSubtitle": "Quantidade de processos usados para sincronizar metadados e remover descargas. Aumentar este valor pode aumentar a velocidade de sincronização e remoção, especialmente quando a latência do servidor é alta, mas pode introduzir atraso.",
     "@downloadsWorkersSettingSubtitle": {
         "description": "Description of setting controlling download worker count."
     },
@@ -2138,7 +2138,7 @@
     "@autoReloadQueueTitle": {
         "description": "Title for the setting that controls if the queue is automatically reloaded when the source changes"
     },
-    "downloadSizeWarningCutoff": "Corte do Aviso de Tamanho do Descarga",
+    "downloadSizeWarningCutoff": "Corte do Aviso de Tamanho de Descarga",
     "@downloadSizeWarningCutoff": {
         "description": "Title for the setting controlling when to warn about a large download"
     },
