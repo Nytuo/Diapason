@@ -756,10 +756,7 @@ class TrackListItemTile extends ConsumerWidget {
     final String artistsString;
     if (forceAlbumArtists || (baseItem.artists?.isEmpty ?? true)) {
       artistsString =
-          baseItem.albumArtists
-              ?.sortedBy((e) => e.name ?? '')
-              .map((e) => e.name)
-              .joinNonNull(", ") ??
+          baseItem.albumArtists?.sortedBy((e) => e.name ?? '').map((e) => e.name).joinNonNull(", ") ??
           AppLocalizations.of(context)!.unknownArtist;
     } else {
       artistsString =

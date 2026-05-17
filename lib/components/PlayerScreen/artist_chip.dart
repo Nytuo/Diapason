@@ -42,7 +42,9 @@ class ArtistChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final artists = ((artistType == ArtistType.albumArtist) ? baseItem?.albumArtists : baseItem?.artistItems) ?? [];
-    final filteredArtists = {for (var artist in artists) artist.id: artist}.values.sortedBy((e) => e.name ?? '').toList();
+    final filteredArtists = {
+      for (var artist in artists) artist.id: artist,
+    }.values.sortedBy((e) => e.name ?? '').toList();
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),

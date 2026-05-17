@@ -286,7 +286,10 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
       switch (tabSortBy) {
         case SortBy.albumArtist:
           final artists = item.albumArtists as List<NameIdPair>?;
-          return removeDiacritics(artists?.sortedBy((e) => e.name ?? '').map((e) => e.name ?? '').join(", ") ?? item.albumArtist ?? "") as String;
+          return removeDiacritics(
+                artists?.sortedBy((e) => e.name ?? '').map((e) => e.name ?? '').join(", ") ?? item.albumArtist ?? "",
+              )
+              as String;
         default:
           return removeDiacritics(item.nameForSorting ?? "") as String;
       }
@@ -296,9 +299,7 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
       final sortName = getSortName(item).toLowerCase();
       if (sortName.isEmpty) return false;
       final itemCodePoint = sortName.codeUnitAt(0);
-      return reversed
-          ? itemCodePoint <= codePointToScrollTo
-          : itemCodePoint >= codePointToScrollTo;
+      return reversed ? itemCodePoint <= codePointToScrollTo : itemCodePoint >= codePointToScrollTo;
     });
 
     if (targetIndex != -1) {
