@@ -15,6 +15,8 @@ import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 
+import '../../extensions/localizations.dart';
+
 abstract class SortAndFilterController {
   SortAndFilterController._({required ContentType contentType, required SortAndFilterConfiguration startingConfig})
     : _notifier = ValueNotifier<_SortControllerState>(_SortControllerState(startingConfig, contentType));
@@ -356,7 +358,7 @@ class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu> {
           children: [
             Padding(
               padding: const EdgeInsets.only(left: 4.0),
-              child: Text("Filters*", style: Theme.of(context).textTheme.bodyMedium),
+              child: Text(context.l10n.filters, style: Theme.of(context).textTheme.bodyMedium),
             ),
             ...excessFilters.map((filter) => _makeExcessFilterTile(ref, filter)),
           ],
@@ -401,7 +403,7 @@ class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu> {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 4.0),
-            child: Text("Sort By*", style: Theme.of(context).textTheme.bodyMedium),
+            child: Text(context.l10n.sortBy, style: Theme.of(context).textTheme.bodyMedium),
           ),
           FinampSettingsDropdown<SortBy>(
             dropdownItems: sortOptions
@@ -433,7 +435,7 @@ class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu> {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 4.0),
-            child: Text("Order*", style: Theme.of(context).textTheme.bodyMedium),
+            child: Text(context.l10n.sortOrder, style: Theme.of(context).textTheme.bodyMedium),
           ),
           FinampSettingsDropdown<SortOrder>(
             dropdownItems: SortOrder.values
@@ -465,7 +467,7 @@ class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu> {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 4.0),
-            child: Text("Filters*", style: Theme.of(context).textTheme.bodyMedium),
+            child: Text(context.l10n.filters, style: Theme.of(context).textTheme.bodyMedium),
           ),
           ...ItemFilterType.values
               .where((x) => toggalableFilterTypes.contains(x))
@@ -587,7 +589,7 @@ class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu> {
             spacing: 2.0,
             children: [
               Text(
-                widget.removeOnly ? "Remove Filters*" : "Sort & Filter*",
+                widget.removeOnly ? context.l10n.removeFilters : context.l10n.sortFilter,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ],

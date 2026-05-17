@@ -21,6 +21,8 @@ import 'package:get_it/get_it.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:simple_gesture_detector/simple_gesture_detector.dart';
 
+import '../../extensions/localizations.dart';
+
 class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWidget {
   final List<ContentType> sortedTabs;
   final TabController? tabController;
@@ -194,7 +196,7 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
                   ),
                   if (!Platform.isIOS && !Platform.isAndroid)
                     IconButtonWithSemantics(
-                      label: "Refresh*",
+                      label: context.l10n.refresh,
                       icon: TablerIcons.refresh,
                       iconSize: 28.0,
                       onPressed: () {
@@ -202,7 +204,7 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
                       },
                     ),
                   IconButtonWithSemantics(
-                    label: "Search*",
+                    label: context.l10n.search,
                     icon: TablerIcons.search,
                     iconSize: 28.0,
                     onPressed: () {
@@ -213,7 +215,7 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
                   ),
                 ],
                 IconButtonWithSemantics(
-                  label: "Menu*",
+                  label: context.l10n.globalMenu,
                   icon: TablerIcons.dots,
                   iconSize: 28.0,
                   onPressed: () {

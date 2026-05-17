@@ -312,7 +312,9 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
                               adaptiveAdditionalInfoSortBy: widget.sortConfig.sortBy,
                               showFavoriteIconOnlyWhenFilterDisabled: true,
                             ),
-                            _ => Text("Unsupported type $item"),
+                            PlayableQueue() => throw UnimplementedError(),
+                            LatestQueues() || PrecalculatedPlayable() || MusicScreenPlayable<FinampPlayableItem>() =>
+                              throw UnsupportedError("Unsupported type $item"),
                           },
                         );
                       },

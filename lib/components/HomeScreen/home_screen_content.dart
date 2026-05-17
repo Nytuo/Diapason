@@ -31,6 +31,8 @@ import 'package:get_it/get_it.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:logging/logging.dart';
 
+import '../../extensions/localizations.dart';
+
 final _homeScreenLogger = Logger("HomeScreen");
 
 class HomeScreenContent extends ConsumerStatefulWidget {
@@ -137,7 +139,7 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
                 child: ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: 200),
                   child: BalancedText(
-                    "Looking for something else?",
+                    context.l10n.lookingForSomethingElse,
                     textAlign: TextAlign.center,
                     style: TextTheme.of(context).bodySmall,
                   ),
@@ -167,7 +169,7 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
                 child: ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: 200),
                   child: BalancedText(
-                    "Built with ♥ by the Finamp contributors.",
+                    context.l10n.builtWithByTheFinampContributors,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 12, color: TextTheme.of(context).bodySmall?.color?.withOpacity(0.6)),
                   ),
@@ -291,7 +293,7 @@ class HomeScreenSection extends ConsumerWidget {
                   ),
                 ],
                 ShowAllButton(
-                  label: "Show All*",
+                  label: context.l10n.showAll,
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute<MusicScreen>(builder: (context) => MusicScreen(singleTabConfig: sectionInfo)),
@@ -342,11 +344,11 @@ class HomeScreenSectionContent extends ConsumerWidget {
       return _buildHorizontalSkeletonLoader(ref);
     } else if (asyncDisplayable.hasError) {
       _homeScreenLogger.severe("Error resolving library: ${asyncDisplayable.error}", asyncDisplayable.error);
-      return Center(child: Text("Failed to load section.", maxLines: 1));
+      return Center(child: Text(context.l10n.failedToLoadSection, maxLines: 1));
     } else if (asyncDisplayable.value == null) {
       return isOffline
-          ? const Center(child: Text("Section contents not downloaded.*", maxLines: 1))
-          : const Center(child: Text("Failed to load section - missing item.*", maxLines: 1));
+          ? Center(child: Text(context.l10n.sectionContentsNotDownloaded, maxLines: 1))
+          : Center(child: Text(context.l10n.failedToLoadSectionMissingItem, maxLines: 1));
     }
     final displayable = asyncDisplayable.value!;
 
@@ -357,15 +359,15 @@ class HomeScreenSectionContent extends ConsumerWidget {
         return _buildHorizontalSkeletonLoader(ref);
       } else if (pageState.error != null) {
         _homeScreenLogger.severe("Error loading items: ${pageState.error}", pageState.error);
-        return Center(child: Text("Failed to load items.", maxLines: 1));
+        return Center(child: Text(context.l10n.errorLoadingItems, maxLines: 1));
       } else {
         ref.read(pagedContentProvider(displayable).notifier).fetchHomeScreenItems();
         return _buildHorizontalSkeletonLoader(ref);
       }
     } else if (items.isEmpty) {
       return isOffline
-          ? const Center(child: Text("Section contents not downloaded.*", maxLines: 1))
-          : const Center(child: Text("No items available.*", maxLines: 1));
+          ? Center(child: Text(context.l10n.sectionContentsNotDownloaded, maxLines: 1))
+          : Center(child: Text(context.l10n.noItemsAvailable, maxLines: 1));
     } else {
       return SizedBox(
         height: calculateItemCollectionCardHeight(ref: ref, sectionInfo: sectionInfo, itemType: null),

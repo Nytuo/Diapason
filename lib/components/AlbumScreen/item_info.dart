@@ -7,6 +7,7 @@ import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../extensions/localizations.dart';
 import '../../models/jellyfin_models.dart';
 import '../icon_and_text.dart';
 import '../print_duration.dart';
@@ -42,7 +43,7 @@ class ItemInfo extends ConsumerWidget {
           Padding(
             padding: EdgeInsets.only(left: 6, right: 6, top: 0, bottom: 6),
             child: Text(
-              item.name ?? "Unknown Playlist",
+              item.name ?? context.l10n.unknownName,
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontSize: Theme.of(context).textTheme.titleMedium!.fontSize! + 1),

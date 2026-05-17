@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 
+import '../../../extensions/localizations.dart';
 import 'menu_entry.dart';
 
 class EditHomeSectionMenuEntry extends ConsumerWidget implements HideableMenuEntry {
@@ -25,7 +26,7 @@ class EditHomeSectionMenuEntry extends ConsumerWidget implements HideableMenuEnt
       visible: activeIndex >= 0,
       child: MenuEntry(
         icon: TablerIcons.edit,
-        title: "Edit section*",
+        title: context.l10n.editSection,
         onTap: () {
           if (context.mounted) {
             Navigator.of(context).pop();

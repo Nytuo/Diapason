@@ -1,12 +1,13 @@
-import 'package:finamp/components/finamp_icon.dart';
+import 'package:finamp/components/MusicScreen/offline_mode_status_label.dart';
 import 'package:finamp/components/MusicScreen/offline_mode_switch_list_tile.dart';
 import 'package:finamp/components/MusicScreen/view_list_tile.dart';
+import 'package:finamp/components/finamp_icon.dart';
 import 'package:finamp/components/themed_bottom_sheet.dart';
+import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
 import 'package:finamp/screens/downloads_screen.dart';
 import 'package:finamp/screens/logs_screen.dart';
-import 'package:finamp/components/MusicScreen/offline_mode_status_label.dart';
 import 'package:finamp/screens/playback_history_screen.dart';
 import 'package:finamp/screens/queue_restore_screen.dart';
 import 'package:finamp/screens/settings_screen.dart';
@@ -16,13 +17,12 @@ import 'package:finamp/services/finamp_user_helper.dart';
 import 'package:finamp/services/jellyfin_api_helper.dart';
 import 'package:finamp/services/server_info_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:finamp/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_sticky_header/flutter_sticky_header.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+
+import '../extensions/localizations.dart';
 
 const finampMainMenuRouteName = "/main-menu";
 
@@ -30,7 +30,6 @@ Future<void> showFinampMainMenu({required BuildContext context}) async {
   FeedbackHelper.feedback(FeedbackType.selection);
 
   final finampUserHelper = GetIt.instance<FinampUserHelper>();
-  final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
 
   await showThemedBottomSheet<void>(
     context: context,
@@ -204,7 +203,7 @@ class MusicScreenDrawer extends ConsumerWidget {
                             future: jellyfinApiHelper.loadServerPublicInfo(),
                             builder: (context, snapshot) {
                               if (!snapshot.hasData) {
-                                return Text("Connected*");
+                                return Text(context.l10n.connected);
                               }
                               final PublicSystemInfoResult serverInfo = snapshot.data!;
                               return Text.rich(

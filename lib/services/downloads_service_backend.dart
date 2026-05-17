@@ -403,7 +403,8 @@ class IsarTaskQueue implements TaskQueue {
     return true;
   }
 
-  /// Remove a download task from this queue and cancel any active download.
+  /// Remove a download task from this queue and
+  /// cancel any active download.
   Future<void> remove(DownloadItem item) async {
     if (item.state == DownloadItemState.enqueued || item.state == DownloadItemState.downloading) {
       _isar.writeTxnSync(() {

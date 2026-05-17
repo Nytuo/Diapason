@@ -21,6 +21,13 @@ void errorSnackbar(dynamic error, BuildContext context) => GlobalSnackbar.error(
 class GlobalSnackbar {
   static final GlobalKey<ScaffoldMessengerState> materialAppScaffoldKey = LabeledGlobalKey("MaterialApp Scaffold");
   static final GlobalKey<NavigatorState> materialAppNavigatorKey = LabeledGlobalKey("MaterialApp Navigator");
+  static AppLocalizations? get l10n {
+    final context = materialAppNavigatorKey.currentContext;
+    if (context != null && context.mounted) {
+      return AppLocalizations.of(context);
+    }
+    return null;
+  }
 
   static final _logger = Logger("GlobalSnackbar");
 

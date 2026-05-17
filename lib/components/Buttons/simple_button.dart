@@ -1,6 +1,8 @@
 import 'package:finamp/services/feedback_helper.dart';
 import 'package:flutter/material.dart';
 
+import '../../extensions/localizations.dart';
+
 enum IconPosition { start, end }
 
 class SimpleButton extends StatelessWidget {
@@ -79,7 +81,7 @@ class SimpleButton extends StatelessWidget {
     ];
 
     return Tooltip(
-      message: disabled ? "$text (Disabled)" : text,
+      message: disabled ? context.l10n.tooltipDisabled(text) : text,
       child: GestureDetector(
         onLongPress: () {
           if (onPressedSecondary != null) {

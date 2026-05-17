@@ -239,8 +239,6 @@
   "@offlineMode": {},
   "onlineMode": "Online Mode",
   "@onlineMode": {},
-  "sortOrder": "Sort order",
-  "@sortOrder": {},
   "sortBy": "Sort by",
   "@sortBy": {},
   "title": "Title",
@@ -3339,5 +3337,217 @@
   "homeScreenSectionPresetForgottenFavoriteTracksDescription": "Liked tracks which you least recently played",
   "@homeScreenSectionPresetForgottenFavoriteTracksDescription": {
     "description": "Description for the forgotten favorite tracks preset section, which can be added to the home screen"
+  },
+  "noExternalDirectories": "No external directories.",
+  "@noExternalDirectories": {
+    "description": "Message when the user tries to configure an Appdirectory external download directory but none are availible"
+  },
+  "nameRequired": "Name (required)",
+  "@nameRequired": {
+    "description": "Descriptor for the required name field when adding download locations."
+  },
+  "exteranlStorageTip": "If the path doesn't contain \"emulated\", it is proably external storage.",
+  "@exteranlStorageTip": {
+    "description": "Helper text in Appdirectory download location config form"
+  },
+  "tooltipDisabled": "{tip} (Disabled)",
+  "@tooltipDisabled": {
+    "placeholders": {
+      "tip": {
+        "type": "String"
+      }
+    },
+    "description": "Added to tooltips on disabled buttons"
+  },
+  "noDownloadsInLocation": "No downloads are currently present in this location.",
+  "@noDownloadsInLocation": {
+    "description": "Message when deleting a downloads location informing the user it is empty."
+  },
+  "deleteDownloadLocation": "Delete Location",
+  "@deleteDownloadLocation": {
+    "description": "Button for confirming deletion of deownload location"
+  },
+  "cannotDeleteLocation": "Cannot delete location",
+  "@cannotDeleteLocation": {
+    "description": "Message that a download location cannot currently be deleted."
+  },
+  "cannotDeleteLocationEplanation": "This location currently contains downloads and cannot be deleted.  Remove these downloads first:",
+  "@cannotDeleteLocationEplanation": {
+    "description": "Explanation that the download location cannot be deleted due to not being empty."
+  },
+  "search": "Search",
+  "@search": {
+    "description": "Tooltip for music screen search button"
+  },
+  "globalMenu": "Menu",
+  "@globalMenu": {
+    "description": "Tooltip for menu open button on music screen"
+  },
+  "lookingForSomethingElse": "Looking for something else?",
+  "@lookingForSomethingElse": {
+    "description": "Header for home screen customization button"
+  },
+  "builtWithByTheFinampContributors": "Built with ♥ by the Finamp contributors.",
+  "@builtWithByTheFinampContributors": {
+    "description": "Message in home screen footer"
+  },
+  "showAll": "Show All",
+  "@showAll": {
+    "description": "Tooltip for show all button on home screen sections"
+  },
+  "failedToLoadSection": "Failed to load section.",
+  "@failedToLoadSection": {
+    "description": "Message when an error is thrown while resolving home screen section"
+  },
+  "sectionContentsNotDownloaded": "Section contents not downloaded.",
+  "@sectionContentsNotDownloaded": {
+    "description": "Message when a home screen section has no items while offline"
+  },
+  "failedToLoadSectionMissingItem": "Failed to load section - missing item.",
+  "@failedToLoadSectionMissingItem": {
+    "description": "Message when the parent item of a home screen section is missing from the server"
+  },
+  "errorLoadingItems": "Error loading items.",
+  "@errorLoadingItems": {
+    "description": "Message when an error occurs while loading home screen section contents"
+  },
+  "noItemsAvailable": "No items available.",
+  "@noItemsAvailable": {
+    "description": "Message when a home screen section has no items while online"
+  },
+  "filters": "Filters",
+  "@filters": {
+    "description": "Label for filters in Sort & Filter menu"
+  },
+  "sortOrder": "Order",
+  "@sortOrder": {
+    "description": "Label for sort order in Sort & Filter menu"
+  },
+  "removeFilters": "Remove Filters",
+  "@removeFilters": {
+    "description": "Title for remove filters only variant of sort and filter menu"
+  },
+  "sortFilter": "Sort & Filter",
+  "@sortFilter": {
+    "description": "title for Sort & Filter menu"
+  },
+  "editSection": "Edit section",
+  "@editSection": {
+    "description": "Label for edit home section menu entry"
+  },
+  "connected": "Connected",
+  "@connected": {
+    "description": "Fallback for 'Connected to <server name>' message while server info is loaded"
+  },
+  "timerMinutes": "{minutes} min",
+  "@timerMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    },
+    "description": "Label for sleep timer duration slider"
+  },
+  "timerTracks": "{tracks} tracks",
+  "@timerTracks": {
+    "placeholders": {
+      "tracks": {
+        "type": "int"
+      }
+    },
+    "description": "Label for sleep timer track count slider"
+  },
+  "quickActionsSubtitle": "Select and reorder the quick actions displayed on the home screen.",
+  "@quickActionsSubtitle": {
+    "description": "Subtitle for quick actions edit menu"
+  },
+  "selectAnItem": "Select an item",
+  "@selectAnItem": {
+    "description": "Title for 'play specific item' quick action edit menu"
+  },
+  "sectionsMenu": "Sections",
+  "@sectionsMenu": {
+    "description": "Title for home screen sections edit menu"
+  },
+  "sectionMenuSubtitle": "Select and reorder the sections displayed on the home screen.*",
+  "@sectionMenuSubtitle": {
+    "description": "Subtitle for home screen sections edit menu"
+  },
+  "sectionType": "Section Type",
+  "@sectionType": {
+    "description": "Title for home screen section editor section type dropdown (tab view, collection, ect...)"
+  },
+  "featuredCollection": "Featured Collection",
+  "@featuredCollection": {
+    "description": "Title for home screen section editor collection selector"
+  },
+  "tabType": "Tab Type",
+  "@tabType": {
+    "description": "Title for home screen section editor tab type dropdown (albums, artists, ect...)"
+  },
+  "library": "Library",
+  "@library": {
+    "description": "Title for home screen section editor library selector dropdown"
+  },
+  "currentLibrary": "Current library",
+  "@currentLibrary": {
+    "description": "Title for dynamic current library option in home screen section editor library selector dropdown"
+  },
+  "loading": "Loading!",
+  "@loading": {
+    "description": "Message when items or libraries are loading in home screen section editor"
+  },
+  "sectionTitle": "Section Title",
+  "@sectionTitle": {
+    "description": "Title for custom section title editor in home screen section editor"
+  },
+  "egFavoriteTracks": "e.g. Favorite tracks",
+  "@egFavoriteTracks": {
+    "description": "Placeholder text in custom section title editor in home screen section editor"
+  },
+  "customSectionTitleRequired": "Please give the custom section a title",
+  "@customSectionTitleRequired": {
+    "description": "Message when a custom section title is needed in home screen section editor"
+  },
+  "editHomeScreenSection": "Edit Home Screen Section",
+  "@editHomeScreenSection": {
+    "description": "Title for home screen section editor menu"
+  },
+  "sectionConfigInvalid": "Current config is not valid.",
+  "@sectionConfigInvalid": {
+    "description": "Message in home screen section edit menu preview window when a valid preview cannot be generated"
+  },
+  "searchNotAvailibleWhileOffline": "Search not available while offline!",
+  "@searchNotAvailibleWhileOffline": {
+    "description": "Message in home screen section editor search widget when offline"
+  },
+  "noSearchResults": "No search results.",
+  "@noSearchResults": {
+    "description": "Message in home screen section editor search widget when no results are returned"
+  },
+  "collectionDropdownHint": "Choose a collection",
+  "@collectionDropdownHint": {
+    "description": "Hint for selector dropdown in home screen editor search widget"
+  },
+  "gridImageSizeTitle": "Grid Tile Size",
+  "@gridImageSizeTitle": {
+    "description": "Title of grid tile image size setting"
+  },
+  "gridImageSizeSubtitle": "Select the size of items in the grid*",
+  "@gridImageSizeSubtitle": {
+    "description": "Subtitle of grid tile image size setting"
+  },
+  "gridImageSizeLabel": "{sizeDescriptor} (currently {colCount} columns)",
+  "@gridImageSizeLabel": {
+    "placeholders": {
+      "sizeDescriptor": {
+        "type": "String",
+        "example": "Very Small"
+      },
+      "colCount": {
+        "type": "String"
+      }
+    },
+    "description": "Slider label in grid tile image size setting"
   }
 }

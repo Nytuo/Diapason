@@ -1,5 +1,6 @@
 import 'package:finamp/components/PlayerScreen/genre_chip.dart';
 import 'package:finamp/l10n/app_localizations.dart';
+import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -41,7 +42,7 @@ class ArtistItemInfo extends ConsumerWidget {
           iconData: TablerIcons.disc,
           textSpan: TextSpan(text: AppLocalizations.of(context)!.albumCount(itemAlbums)),
         ),
-        if (item.type != "MusicGenre" && item.genreItems != null)
+        if (BaseItemDtoType.fromItem(item) != BaseItemDtoType.genre && item.genreItems != null)
           GenreIconAndText(parent: item, updateGenreFilter: updateGenreFilter),
       ],
     );

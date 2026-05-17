@@ -24,6 +24,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 
+import '../extensions/localizations.dart';
+
 class HomeScreenSettingsScreen extends StatefulWidget {
   const HomeScreenSettingsScreen({super.key});
   static const routeName = "/settings/home-screen";
@@ -64,10 +66,7 @@ class QuickActionsSelector extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisSize: MainAxisSize.max,
         children: [
-          ListTile(
-            title: Text("Quick Actions*"),
-            subtitle: Text("Select and reorder the quick actions displayed on the home screen.*"),
-          ),
+          ListTile(title: Text(context.l10n.quickActions), subtitle: Text(context.l10n.quickActionsSubtitle)),
           ReorderableListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -232,7 +231,7 @@ class QuickActionConfigMenuState extends ConsumerState<QuickActionConfigMenu> {
             spacing: 2.0,
             children: [
               Text(switch (selected) {
-                FinampQuickActions.playSpecificItem => "Select an item*",
+                FinampQuickActions.playSpecificItem => context.l10n.selectAnItem,
                 _ => AppLocalizations.of(context)!.homeScreenQuickActionPickerMenuTitle,
               }, style: Theme.of(context).textTheme.titleMedium),
             ],
@@ -293,7 +292,7 @@ class QuickActionConfigMenuState extends ConsumerState<QuickActionConfigMenu> {
     assert(selected == FinampQuickActions.playSpecificItem);
     return [
       ChoiceMenuOption(
-        title: "Back*",
+        title: context.l10n.back,
         enabled: true,
         icon: TablerIcons.chevron_left,
         isInactive: false,
@@ -342,10 +341,7 @@ class HomeScreenSectionsSelector extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          ListTile(
-            title: Text("Sections*"),
-            subtitle: Text("Select and reorder the sections displayed on the home screen.*"),
-          ),
+          ListTile(title: Text(context.l10n.sectionsMenu), subtitle: Text(context.l10n.sectionMenuSubtitle)),
           ReorderableListView.builder(
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
@@ -663,7 +659,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 4.0),
-            child: Text("Section Type*", style: Theme.of(context).textTheme.bodyMedium),
+            child: Text(context.l10n.sectionType, style: Theme.of(context).textTheme.bodyMedium),
           ),
           FinampSettingsDropdown<HomeScreenSectionType>(
             dropdownItems: HomeScreenSectionType.values
@@ -689,7 +685,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
           children: [
             Padding(
               padding: const EdgeInsets.only(left: 4.0),
-              child: Text("Featured Collection*", style: Theme.of(context).textTheme.bodyMedium),
+              child: Text(context.l10n.featuredCollection, style: Theme.of(context).textTheme.bodyMedium),
             ),
             GlobalSearchBox(
               searchListener,
@@ -716,7 +712,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
           children: [
             Padding(
               padding: const EdgeInsets.only(left: 4.0),
-              child: Text("Tab Type*", style: Theme.of(context).textTheme.bodyMedium),
+              child: Text(context.l10n.tabType, style: Theme.of(context).textTheme.bodyMedium),
             ),
             FinampSettingsDropdown<ContentType>(
               dropdownItems: ContentType.values
@@ -745,7 +741,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
           children: [
             Padding(
               padding: const EdgeInsets.only(left: 4.0),
-              child: Text("Library*", style: Theme.of(context).textTheme.bodyMedium),
+              child: Text(context.l10n.library, style: Theme.of(context).textTheme.bodyMedium),
             ),
             Consumer(
               builder: (_, ref, _) {
@@ -754,11 +750,11 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
                   dropdownItems: [
                     DropdownMenuEntry<LibraryOrItemId?>(
                       value: currentLibraryPlaceholder,
-                      label: "Current library*",
+                      label: context.l10n.currentLibrary,
                       leadingIcon: const Icon(TablerIcons.bolt),
                     ),
                     if (views != null) ...views.map((e) => DropdownMenuEntry<BaseItemId?>(value: e.id, label: e.name!)),
-                    if (views == null) DropdownMenuEntry<BaseItemId?>(value: null, label: "Loading*"),
+                    if (views == null) DropdownMenuEntry<BaseItemId?>(value: null, label: context.l10n.loading),
                   ],
                   selectedValue: selectedLibrary,
                   onSelected: (selectedLibraryId) {
@@ -779,13 +775,13 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
               children: [
                 Padding(
                   padding: const EdgeInsets.only(left: 4.0),
-                  child: Text("Section Title*", style: Theme.of(context).textTheme.bodyMedium),
+                  child: Text(context.l10n.sectionTitle, style: Theme.of(context).textTheme.bodyMedium),
                 ),
                 TextField(
                   controller: TextEditingController(text: tabTitle)
                     ..selection = TextSelection.fromPosition(TextPosition(offset: tabTitle.length)),
                   decoration: InputDecoration(
-                    hintText: "e.g. Favorite tracks*",
+                    hintText: context.l10n.egFavoriteTracks,
                     filled: true,
                     fillColor: Color.alphaBlend(
                       ColorScheme.of(context).onSurface.withOpacity(0.1),
@@ -815,7 +811,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 4.0),
-            child: Text("Sort By*", style: Theme.of(context).textTheme.bodyMedium),
+            child: Text(context.l10n.sortBy, style: Theme.of(context).textTheme.bodyMedium),
           ),
           if (selectedSectionType != HomeScreenSectionType.queues)
             SortAndFilterRow(
@@ -829,7 +825,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
       SizedBox(height: 24.0),
       if (tabTitle == "" && selectedSectionType == HomeScreenSectionType.tabView)
         Text(
-          "Please give the custom section a title*",
+          context.l10n.customSectionTitleRequired,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.error),
         ),
       SizedBox(height: 8.0),
@@ -853,7 +849,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 2.0,
-            children: [Text("Edit Home Screen Section*", style: Theme.of(context).textTheme.titleMedium)],
+            children: [Text(context.l10n.editHomeScreenSection, style: Theme.of(context).textTheme.titleMedium)],
           ),
         ),
         sliver: MenuMask(
@@ -998,7 +994,7 @@ class SectionPreview extends ConsumerWidget {
         ),
         sectionInfo != null
             ? HomeScreenSectionContent(sectionInfo: sectionInfo!)
-            : SizedBox(height: 120, child: Center(child: Text("Current config is not valid.*"))),
+            : SizedBox(height: 120, child: Center(child: Text(context.l10n.sectionConfigInvalid))),
       ],
     );
   }
@@ -1042,7 +1038,7 @@ class _GlobalSearchBoxState extends ConsumerState<GlobalSearchBox> {
   @override
   Widget build(BuildContext context) {
     if (ref.watch(finampSettingsProvider.isOffline)) {
-      return Text("Search not availible while offline!*");
+      return Text(context.l10n.searchNotAvailibleWhileOffline);
     }
 
     return Column(
@@ -1091,11 +1087,11 @@ class _GlobalSearchBoxState extends ConsumerState<GlobalSearchBox> {
     final items = ref.watch(globalSearchProvider(searchTerm, includeTracks: widget.showTracks));
 
     if (items.isLoading) {
-      return Text("Loading!*");
+      return Text(context.l10n.loading);
     }
 
     if (items.value == null || items.value!.isEmpty) {
-      return Text("No search results.*");
+      return Text(context.l10n.noSearchResults);
     }
 
     final dropdownEntries = items.value!.map((collection) {
@@ -1124,7 +1120,7 @@ class _GlobalSearchBoxState extends ConsumerState<GlobalSearchBox> {
           width: constraints.maxWidth,
           menuHeight: widget.height,
           dropdownMenuEntries: dropdownEntries,
-          hintText: "Choose a Jellyfin collection*",
+          hintText: context.l10n.collectionDropdownHint,
           //errorText: collections.isEmpty ? "You don't have any Jellyfin collections yet*" : null,
           //initialSelection: selectedCollectionId,
           enableFilter: true,

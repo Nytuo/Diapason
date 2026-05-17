@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 
+import '../../extensions/localizations.dart';
 import '../../services/item_by_id_provider.dart';
 
 const double _itemCollectionCardTextSpacing = 6;
@@ -111,7 +112,7 @@ class _ItemCollectionCardText extends ConsumerWidget {
           alignment: onImage ? WrapAlignment.center : WrapAlignment.start,
           children: [
             Text(
-              item.name ?? "Unknown Name",
+              item.name ?? context.l10n.unknownName,
               overflow: TextOverflow.ellipsis,
               maxLines: 2,
               style: Theme.of(context).textTheme.bodySmall!.copyWith(fontWeight: FontWeight.w500),

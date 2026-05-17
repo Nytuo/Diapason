@@ -4,6 +4,7 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 
+import '../../extensions/localizations.dart';
 import '../../models/finamp_models.dart';
 import '../../models/jellyfin_models.dart';
 import '../../services/finamp_user_helper.dart';
@@ -32,7 +33,7 @@ class ViewListTile extends ConsumerWidget {
           ),
         ),
         title: Text(
-          view.name ?? "Unknown Name",
+          view.name ?? context.l10n.unknownName,
           semanticsLabel: "", // covered by SemanticsProperties
           style: TextStyle(color: currentViewId == view.id ? Theme.of(context).colorScheme.primary : null),
         ),

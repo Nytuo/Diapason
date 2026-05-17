@@ -21,6 +21,7 @@ import '../components/LayoutSettingsScreen/show_text_on_grid_view_selector.dart'
 import '../components/LayoutSettingsScreen/theme_selector.dart';
 import '../components/LayoutSettingsScreen/use_cover_as_background_toggle.dart';
 import '../components/finamp_app_bar_back_button.dart';
+import '../extensions/localizations.dart';
 import '../services/finamp_settings_helper.dart';
 import 'tabs_settings_screen.dart';
 
@@ -172,7 +173,7 @@ class _GridImageSizeSelectorState extends ConsumerState<GridImageSizeSelector> {
 
     return Column(
       children: [
-        ListTile(title: Text("Grid Tile Size*"), subtitle: Text("Select the size of items in the grid*")),
+        ListTile(title: Text(context.l10n.gridImageSizeTitle), subtitle: Text(context.l10n.gridImageSizeSubtitle)),
         Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -195,7 +196,7 @@ class _GridImageSizeSelectorState extends ConsumerState<GridImageSizeSelector> {
               autofocus: false,
               focusNode: FocusNode(skipTraversal: true, canRequestFocus: false),
             ),
-            Text("$sizeLabel (currently $numLabel columns)*", style: Theme.of(context).textTheme.titleLarge),
+            Text(context.l10n.gridImageSizeLabel(sizeLabel, numLabel), style: Theme.of(context).textTheme.titleLarge),
           ],
         ),
       ],
