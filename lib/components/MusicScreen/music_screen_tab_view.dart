@@ -282,17 +282,13 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
     SortBy? tabSortBy = FinampSettingsHelper.finampSettings.tabSortBy[widget.tabContentType];
     bool reversed = FinampSettingsHelper.finampSettings.tabSortOrder[widget.tabContentType] == SortOrder.descending;
 
-    String getSortName(dynamic item) {
-      switch (tabSortBy) {
-        case SortBy.albumArtist:
-          final artists = item.albumArtists as List<NameIdPair>?;
-          return removeDiacritics(
-                artists?.sortedBy((e) => e.name ?? '').map((e) => e.name ?? '').join(", ") ?? item.albumArtist ?? "",
-              )
-              as String;
-        default:
-          return removeDiacritics(item.nameForSorting ?? "") as String;
+    String getSortName(BaseItemDto item) {
+      if (tabSortBy == SortBy.albumArtist) {
+        final artists = item.albumArtists;
+        return removeDiacritics(artists?.sortedBy((e) => e.name ?? '').map((e) => e.name ?? '').join(", ") ?? item.albumArtist ?? "");
       }
+
+      return removeDiacritics(item.nameForSorting ?? "");
     }
 
     var targetIndex = itemList.indexWhere((item) {
