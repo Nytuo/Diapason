@@ -27,9 +27,9 @@
     "albums": "Albums",
     "artists": "Artistes",
     "genres": "Genres",
-    "playlists": "Listes de lectures",
+    "playlists": "Listes de lecture",
     "startMix": "Commencer un Mix",
-    "startMixNoTracksArtist": "Appuyer longuement sur un artiste pour l'ajouter ou le retirer du mix avant de commencer",
+    "startMixNoTracksArtist": "Appuyez longuement sur un artiste pour l'ajouter ou le retirer du mix avant de commencer",
     "@startMixNoTracksArtist": {
         "description": "Notification qui intervient quand l'utilisateur lance le mix instantané sans avoir sélectionné des artistes"
     },
@@ -281,7 +281,7 @@
     "bufferDuration": "Taille du tampon",
     "bufferDurationSubtitle": "Durée de la mise en mémoire tampon, en secondes. Un redémarrage est nécessaire.",
     "language": "Langue",
-    "confirm": "Confirmé",
+    "confirm": "Confirmer",
     "showUncensoredLogMessage": "Ce journal contient vos informations de connexion. Afficher tout de même ?",
     "resetTabs": "Réinitialiser les onglets",
     "noMusicLibrariesTitle": "Aucune bibliothèque musicale",
@@ -571,7 +571,7 @@
     "@playbackSpeedControlSetting": {
         "description": "Title of the visibility setting of the playback speed controls"
     },
-    "usernameValidationMissingUsername": "S’il vous plaît, entrez un identifiant",
+    "usernameValidationMissingUsername": "Merci d'entrer un identifiant",
     "@usernameValidationMissingUsername": {
         "description": "Error message that shows when the user submits a login without a username"
     },
@@ -579,7 +579,7 @@
     "@passwordHint": {
         "description": "Hint text for the password input field."
     },
-    "offlineTrackCountArtist": "{count,plural,=1{{count} titre} other{{count} titres}} telechargé(s)",
+    "offlineTrackCountArtist": "{count,plural,=1{{count} titre} other{{count} titres}} téléchargé(s)",
     "@offlineTrackCountArtist": {
         "placeholders": {
             "count": {
@@ -883,7 +883,7 @@
     "@periodicPlaybackSessionUpdateFrequency": {
         "description": "Label for the setting that controls how frequently (in seconds) the current playback session is reported to the Jellyfin server"
     },
-    "deleteDownloadsPrompt": "Êtes vous sûr de vouloir supprimer {itemType, select, album{album} playlist{playlist} artist{artist} genre{genre} track{track} library{library} other{item}} '{itemName}' de votre appareil ?",
+    "deleteDownloadsPrompt": "Êtes-vous sûr de vouloir supprimer {itemType, select, album{album} playlist{playlist} artist{artist} genre{genre} track{track} library{library} other{item}} '{itemName}' de votre appareil ?",
     "@deleteDownloadsPrompt": {
         "placeholders": {
             "itemName": {
@@ -1047,7 +1047,7 @@
     "@startInstantMixForIndividualTracksSwitchTitle": {
         "description": "Title for the switch that toggles if tapping a track on the tracks tab will start an instant mix of that track instead of just playing a single track."
     },
-    "downloadLibraryPrompt": "Êtes vous sûr de vouloir supprimer tous les téléchargements de la bibliothèque ''{libraryName}'' ?",
+    "downloadLibraryPrompt": "Êtes-vous sûr de vouloir supprimer tous les téléchargements de la bibliothèque ''{libraryName}'' ?",
     "@downloadLibraryPrompt": {
         "description": "Confirmation prompt before downloading entire library, which may be large.",
         "placeholders": {
@@ -1171,7 +1171,7 @@
     "@runRepairWarning": {
         "description": "Message shown when an error occurs during the downloads repair step of the Isar downloads migration, which requires a server connection."
     },
-    "connectionInterruptedBackgroundAndroid": "La connexion a été interrompue pendant le téléchargement en arrière plan. Cela est peut-être du à la configuration de votre système ou l'option 'Basse priorité en pause' est activée.",
+    "connectionInterruptedBackgroundAndroid": "La connexion a été interrompue pendant le téléchargement en arrière plan. Cela est peut-être dû à la configuration de votre système ou l'option 'Basse priorité en pause' est activée.",
     "@connectionInterruptedBackgroundAndroid": {
         "description": "Message shown when the connection is interrupted during a download while in the background on android. It advises checking OS settings, as they may cause background downloads to be blocked, or checking the  'Enter Low-Priority State on Pause' setting."
     },
@@ -1220,7 +1220,7 @@
             }
         }
     },
-    "connectionInterruptedBackground": "La connexion a été interrompue pendant le téléchargement en arrière plan. Cela est peut-être du à la configuration de votre système.",
+    "connectionInterruptedBackground": "La connexion a été interrompue pendant le téléchargement en arrière plan. Cela est peut-être dû à la configuration de votre système.",
     "@connectionInterruptedBackground": {
         "description": "Message shown when the connection is interrupted during a download while in the background. It advises checking OS settings, as they may cause background downloads to be blocked."
     },
@@ -1898,7 +1898,7 @@
     "@autoReloadQueueTitle": {
         "description": "Title for the setting that controls if the queue is automatically reloaded when the source changes"
     },
-    "audioFadeOutDurationSettingTitle": "Durée du fondu audio",
+    "audioFadeOutDurationSettingTitle": "Durée du fondu de sortie audio",
     "@audioFadeOutDurationSettingTitle": {
         "description": "Title for the audio fade-out duration setting."
     },
@@ -1938,7 +1938,7 @@
     "@autoReloadPromptReloadButton": {
         "description": "Button title for reloading the queue after network settings change"
     },
-    "audioFadeInDurationSettingTitle": "Durée du fondu audio",
+    "audioFadeInDurationSettingTitle": "Durée du fondu d'entrée audio",
     "@audioFadeInDurationSettingTitle": {
         "description": "Title for the audio fade-in duration setting."
     },
@@ -2148,7 +2148,7 @@
     },
     "logoutButtonSubtitle": "La connexion à un autre serveur supprimera les téléchargements existants",
     "none": "Aucun",
-    "sleepTimerRemainingTracks": "Mise en Veille {time,plural,=1{after this track} other{in {time} tracks}}",
+    "sleepTimerRemainingTracks": "Mise en Veille {time,plural,=1{après cette piste} other{dans {time} pistes}}",
     "@sleepTimerRemainingTracks": {
         "description": "Button label for sleep timer. {time} is the amount of minutes left.",
         "placeholders": {
