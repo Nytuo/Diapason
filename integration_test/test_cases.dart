@@ -37,6 +37,7 @@ void main() async {
       () async {
         // Login testing flag redirects file accesses to testing folder and clears it on startup.
         // Download base directories are not redirected, so loginTesting flag should be avoided on mobile.
+        // Note that this means mobile integration test runs will require manual file clearing outside of CI
         await app.main(integrationTesting: true, loginTesting: !(Platform.isAndroid || Platform.isIOS));
       },
       (e, stack) {
@@ -72,9 +73,13 @@ void main() async {
       expect(mainErrors!.length, equals(0));
       mainErrors = null;
 
-      // Save off initialized provider container so tests can create and attach descendants
-      // TODO could we get errors from background tasks also attaching to this when they need persistence?
-      // If we do, we could pass the container down main() instead of overwriting GetIt.
+      // The testing harness tries to clear out all the async code between tests, and runs all the cases in individual
+      // async contexts as part of this. I believe the expectation is that background services and realtime tasks will
+      // all be replaced with mockups, for more consistent and self-contained tests. But this code doesn't do that and
+      // has real persistent background services, so I've had errors occasionally showing up in earlier tests occasionally,
+      // and a bunch of strange issues with providers were occurring. Giving each test its own child ProviderContainer
+      // which inherits the global persistent providers from the original one set up in main seems to have solved those, but it's
+      // all still a bit mysterious.
       container = GetIt.instance<ProviderContainer>();
       GetIt.instance.unregister<ProviderContainer>();
       GetIt.instance.registerSingleton(ProviderContainer(parent: container));
