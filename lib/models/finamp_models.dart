@@ -413,7 +413,7 @@ class FinampSettings {
   bool androidStopForegroundOnPause;
 
   @HiveField(5)
-  @SettingsHelperMap("tabContentType", "value")
+  @SettingsHelperMap("tabContentType")
   Map<TabContentType, bool> showTabs;
 
   /// Used to remember if the user has set their music screen to favorites
@@ -469,11 +469,11 @@ class FinampSettings {
   bool disableGesture = DefaultSettings.disableGesture;
 
   @HiveField(20, defaultValue: <TabContentType, SortBy>{})
-  @SettingsHelperMap("tabContentType", "sortBy")
+  @SettingsHelperMap("tabContentType")
   Map<TabContentType, SortBy> tabSortBy;
 
   @HiveField(21, defaultValue: <TabContentType, SortOrder>{})
-  @SettingsHelperMap("tabContentType", "sortOrder")
+  @SettingsHelperMap("tabContentType")
   Map<TabContentType, SortOrder> tabSortOrder;
 
   @HiveField(22, defaultValue: DefaultSettings.tabOrder)
@@ -777,7 +777,7 @@ class FinampSettings {
   bool hasCompletedDownloadsFileOwnerMigration;
 
   @HiveField(122, defaultValue: DefaultSettings.tileAdditionalInfoType)
-  @SettingsHelperMap("tabContentType", "tileAdditionalInfoType")
+  @SettingsHelperMap("tabContentType")
   Map<TabContentType, TileAdditionalInfoType> tileAdditionalInfoType;
 
   @HiveField(123, defaultValue: DefaultSettings.rpcEnabled)
@@ -1331,9 +1331,9 @@ class DownloadStub {
     String id = collection.id;
     // Fetch localized name from default global context.
     String? name;
-    var context = GlobalSnackbar.materialAppScaffoldKey.currentContext;
-    if (context != null) {
-      name = collection.getName(context);
+    var loc = GlobalSnackbar.localizations;
+    if (loc != null) {
+      name = collection.getName2(loc);
     }
 
     return DownloadStub._build(
@@ -1566,7 +1566,6 @@ class DownloadItem extends DownloadStub {
         // Not all BaseItemDto are requested with mediaSources, mediaStreams or childCount.  Do not
         // overwrite with null if the new item does not have them.
         item.mediaSources ??= baseItem?.mediaSources;
-        item.mediaStreams ??= baseItem?.mediaStreams;
         item.sortName ??= baseItem?.sortName;
       }
       assert(
@@ -1995,9 +1994,7 @@ class QueueItemSource {
           ? QueueItemSourceName(type: nameType, localizationParameter: baseItem.name ?? "")
           : QueueItemSourceName(
               type: QueueItemSourceNameType.preTranslated,
-              pretranslatedName:
-                  baseItem.name ??
-                  AppLocalizations.of(GlobalSnackbar.materialAppScaffoldKey.currentContext!)!.placeholderSource,
+              pretranslatedName: baseItem.name ?? GlobalSnackbar.localizations?.placeholderSource ?? "Somewhere",
             ),
       id: baseItem.id,
       item: baseItem,
@@ -2098,33 +2095,35 @@ class QueueItemSourceName {
   @HiveField(2)
   final String? localizationParameter;
 
-  String getLocalized(BuildContext context) {
+  String getLocalized(BuildContext context) => getLocalized2(AppLocalizations.of(context)!);
+
+  String getLocalized2(AppLocalizations localizations) {
     switch (type) {
       case QueueItemSourceNameType.preTranslated:
         return pretranslatedName ?? "";
       case QueueItemSourceNameType.yourLikes:
-        return AppLocalizations.of(context)!.yourLikes;
+        return localizations.yourLikes;
       case QueueItemSourceNameType.shuffleAll:
-        return AppLocalizations.of(context)!.shuffleAllQueueSource;
+        return localizations.shuffleAllQueueSource;
       case QueueItemSourceNameType.mix:
-        return AppLocalizations.of(context)!.mix(localizationParameter ?? "");
+        return localizations.mix(localizationParameter ?? "");
       case QueueItemSourceNameType.instantMix:
-        return AppLocalizations.of(context)!.instantMix;
+        return localizations.instantMix;
       case QueueItemSourceNameType.nextUp:
-        return AppLocalizations.of(context)!.nextUp;
+        return localizations.nextUp;
       case QueueItemSourceNameType.tracksFormerNextUp:
-        return AppLocalizations.of(context)!.tracksFormerNextUp;
+        return localizations.tracksFormerNextUp;
       case QueueItemSourceNameType.savedQueue:
-        return AppLocalizations.of(context)!.savedQueue;
+        return localizations.savedQueue;
       case QueueItemSourceNameType.queue:
-        return AppLocalizations.of(context)!.queue;
+        return localizations.queue;
       case QueueItemSourceNameType.remoteClient:
         return "";
       case QueueItemSourceNameType.radio:
         if (localizationParameter != null) {
-          return AppLocalizations.of(context)!.radioForItem(localizationParameter!);
+          return localizations.radioForItem(localizationParameter!);
         } else {
-          return AppLocalizations.of(context)!.radio;
+          return localizations.radio;
         }
     }
   }
@@ -2621,14 +2620,14 @@ class FinampCollection {
     FinampCollectionType.collectionWithLibraryFilter => "Collection with Library Filter:${library!.id}:${item!.id}",
   };
 
-  String getName(BuildContext context) => switch (type) {
-    FinampCollectionType.favorites => AppLocalizations.of(context)!.finampCollectionNames("favorites"),
-    FinampCollectionType.allPlaylists => AppLocalizations.of(context)!.finampCollectionNames("allPlaylists"),
-    FinampCollectionType.latest5Albums => AppLocalizations.of(context)!.finampCollectionNames("fiveLatestAlbums"),
-    FinampCollectionType.libraryImages => AppLocalizations.of(context)!.cacheLibraryImagesName(library!.name ?? ""),
-    FinampCollectionType.allPlaylistsMetadata => AppLocalizations.of(
-      context,
-    )!.finampCollectionNames("allPlaylistsMetadata"),
+  String getName(BuildContext context) => getName2(AppLocalizations.of(context)!);
+
+  String getName2(AppLocalizations localizations) => switch (type) {
+    FinampCollectionType.favorites => localizations.finampCollectionNames("favorites"),
+    FinampCollectionType.allPlaylists => localizations.finampCollectionNames("allPlaylists"),
+    FinampCollectionType.latest5Albums => localizations.finampCollectionNames("fiveLatestAlbums"),
+    FinampCollectionType.libraryImages => localizations.cacheLibraryImagesName(library!.name ?? ""),
+    FinampCollectionType.allPlaylistsMetadata => localizations.finampCollectionNames("allPlaylistsMetadata"),
     FinampCollectionType.collectionWithLibraryFilter => item!.name ?? "Unkown Item",
   };
 
@@ -2819,6 +2818,17 @@ enum FinampTranscodingStreamingFormat {
 
   /// The container to use to transport the segments
   final String container;
+
+  int get sampleRate => switch (this) {
+    FinampTranscodingStreamingFormat.opusFragmentedMp4 => 48000,
+    FinampTranscodingStreamingFormat.flacFragmentedMp4 => 48000,
+    _ => 44100,
+  };
+
+  bool get lossless => switch (this) {
+    FinampTranscodingStreamingFormat.flacFragmentedMp4 => true,
+    _ => false,
+  };
 }
 
 @HiveType(typeId: 74)

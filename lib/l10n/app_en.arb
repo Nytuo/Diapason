@@ -3308,5 +3308,9 @@
   "androidGainDisabled": "Switching to gain effect fallback due to initialization error.",
   "@androidGainDisabled": {
     "description": "Message presented when the android gain effect fallback is enabled after an error occurs."
+  },
+  "losslessNoBitrate": "Not applicable to FLAC transcodes",
+  "@losslessNoBitrate": {
+    "description": "Settings text informing the user that transcoding bitrate does not apply to lossless transcodes."
   }
 }

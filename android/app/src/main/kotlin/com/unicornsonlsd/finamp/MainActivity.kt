@@ -1,7 +1,6 @@
 package com.unicornsonlsd.finamp
 
 import android.app.UiModeManager
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
@@ -19,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import android.os.Build
 
 
 class MainActivity : AudioServiceActivity() {
@@ -70,7 +70,15 @@ class MainActivity : AudioServiceActivity() {
             when (call.method) {
                 "setNativeThemeMode" -> {
                     val uiManager: UiModeManager =
-                        getApplicationContext().getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+                        applicationContext.getSystemService(UI_MODE_SERVICE) as UiModeManager
+
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                        // Only api >= 31 supports uiManager.setApplicationNightMode
+                        // There might be a way to set this on older versions of android, but
+                        // I don't feel like debugging that at the moment
+                        result.success(null)
+                        return@setMethodCallHandler
+                    }
                     val targetMode = call.argument<Int?>("targetMode")
                     when (targetMode) {
                         0 -> {

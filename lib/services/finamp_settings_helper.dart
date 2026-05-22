@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:finamp/components/confirmation_prompt_dialog.dart';
 import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/services/finamp_user_helper.dart';
