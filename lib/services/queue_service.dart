@@ -625,7 +625,7 @@ class QueueService {
       skipRadioCacheInvalidation: skipRadioCacheInvalidation,
     );
     _queueServiceLogger.info(
-      "Started playing '${GlobalSnackbar.materialAppScaffoldKey.currentContext != null ? source.name.getLocalized(GlobalSnackbar.materialAppScaffoldKey.currentContext!) : source.name.type}' (${source.type}) in order $order from index $startingIndex",
+      "Started playing '${GlobalSnackbar.localizations != null ? source.name.getLocalized2(GlobalSnackbar.localizations!) : source.name.type}' (${source.type}) in order $order from index $startingIndex",
     );
     _queueServiceLogger.info("Items for queue: [${items.map((e) => e.name).join(", ")}]");
   }
@@ -767,7 +767,7 @@ class QueueService {
       if (beginPlaying) {
         // only open the player screen if we actually start playing, otherwise it would open after startup + queue restore
         if (FinampSettingsHelper.finampSettings.autoExpandPlayerScreen) {
-          unawaited(NowPlayingBar.openPlayerScreen(GlobalSnackbar.materialAppNavigatorKey.currentContext!));
+          unawaited(NowPlayingBar.openPlayerScreen());
         }
       }
 
@@ -1408,7 +1408,7 @@ class QueueService {
 
     if (item.type == "Audio") {
       downloadedTrack = _downloadsService.getTrackDownload(item: item);
-      isDownloaded = downloadedTrack != null;
+      isDownloaded = downloadedTrack?.file != null;
     } else {
       downloadedCollection = await _downloadsService.getCollectionInfo(item: item);
       if (downloadedCollection != null) {
@@ -1448,7 +1448,7 @@ class QueueService {
       playable:
           isItemPlayable, // this dictates whether clicking on an item will try to play it or browse it in media browsers like Android Auto
       album: item.album,
-      artist: item.artists?.join(", ") ?? item.albumArtist,
+      artist: item.artists?.sortedBy((e) => e).join(", ") ?? item.albumArtist,
       title: item.name ?? "unknown",
       extras: {
         //!!! this ID has to be consistent across the transcoding URL and the playback reporting status, otherwise the server won't show that we're transcoding

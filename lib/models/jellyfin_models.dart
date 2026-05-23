@@ -1427,7 +1427,6 @@ class BaseItemDto with RunTimeTickDuration {
     this.albumArtist,
     this.albumArtists,
     this.seasonName,
-    this.mediaStreams,
     this.partCount,
     this.imageTags,
     this.backdropImageTags,
@@ -1814,9 +1813,10 @@ class BaseItemDto with RunTimeTickDuration {
   @HiveField(79)
   String? seasonName;
 
-  /// Gets or sets the media streams.
-  @HiveField(80)
-  List<MediaStream>? mediaStreams;
+  // Gets or sets the media streams.
+  // This field is removed in favor of mediaSources.first.mediaStreams.
+  //@HiveField(80)
+  //List<MediaStream>? mediaStreams;
 
   /// Gets or sets the part count.
   @HiveField(81)
@@ -2125,6 +2125,8 @@ class BaseItemDto with RunTimeTickDuration {
     }
     return null;
   }
+
+  List<MediaStream>? get mediaStreams => mediaSources?.firstOrNull?.mediaStreams;
 
   /// Whether or not the item is an artist
   bool get isArtist => type == "MusicArtist";

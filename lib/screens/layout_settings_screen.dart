@@ -22,6 +22,7 @@ import '../components/LayoutSettingsScreen/theme_selector.dart';
 import '../components/LayoutSettingsScreen/use_cover_as_background_toggle.dart';
 import '../components/finamp_app_bar_back_button.dart';
 import '../extensions/localizations.dart';
+import '../components/LayoutSettingsScreen/amoled_theme.dart';
 import '../services/finamp_settings_helper.dart';
 import 'tabs_settings_screen.dart';
 
@@ -83,6 +84,7 @@ class _LayoutSettingsScreenState extends ConsumerState<LayoutSettingsScreen> {
           ),
           const Divider(),
           const ThemeSelector(),
+          const AmoledTheme(),
           const UseMonochromeIcon(),
           const AccentColorSelector(),
           const AutomaticAccentColorSelector(),

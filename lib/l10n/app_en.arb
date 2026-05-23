@@ -657,6 +657,11 @@
   "@systemAccentColorHasPriorityInfo": {
     "description": "Text under the AccentColorTitle which is only visible when the system color is enabled since the system color will be prioritized over custom accent color"
   },
+  "amoledTheme": "Use AMOLED Theme",
+  "@amoledTheme": {
+    "description": "Toggles the dark color scheme between dark gray and pure black."
+  },
+  "amoledThemeSubtitle": "Replaces the dark color scheme with a pure black theme.",
   "useMonochromeIcon": "Use Monochrome Logo",
   "@useMonochromeIcon": {
     "description": "Toggles the Finamp icon between classic and it being monochromic. This does not change the outside-app-icon"
@@ -3634,5 +3639,21 @@
   "performingArtistFilter": "Albums (Appears on)",
   "albumArtistFilter": "Albums (Album Artist of)",
   "allTypes": "All Types",
-  "itemTypeFilterHeader": "Child Type"
+  "itemTypeFilterHeader": "Child Type",
+  "useAndroidGainEffectTitle": "Use Gain Effect",
+  "@useAndroidGainEffectTitle": {
+    "description": "Title for Android gain effect setting.  This setting is used to work around player errors on some devices."
+  },
+  "useAndroidGainEffectSubtitle": "Use native gain effect to control volume.  This is more flexible but breaks the player on some devices.  You shouldn't need to change this manually.  Requires app restart to apply.",
+  "@useAndroidGainEffectSubtitle": {
+    "description": "Subtitle for Android gain effect setting.  This setting is used to work around player errors on some devices."
+  },
+  "androidGainDisabled": "Switching to gain effect fallback due to initialization error.",
+  "@androidGainDisabled": {
+    "description": "Message presented when the android gain effect fallback is enabled after an error occurs."
+  },
+  "losslessNoBitrate": "Not applicable to FLAC transcodes",
+  "@losslessNoBitrate": {
+    "description": "Settings text informing the user that transcoding bitrate does not apply to lossless transcodes."
+  }
 }

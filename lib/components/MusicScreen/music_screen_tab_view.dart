@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:collection/collection.dart';
+
+import 'package:diacritic/diacritic.dart';
+
 import 'package:finamp/components/Buttons/cta_medium.dart';
 import 'package:finamp/components/MusicScreen/item_card.dart';
 import 'package:finamp/components/QueueRestoreScreen/queue_restore_tile.dart';
@@ -102,10 +106,6 @@ class _MusicScreenTabViewState extends ConsumerState<MusicScreenTabView>
 
     letterToSearch = letter;
     var codePointToScrollTo = letter.toLowerCase().codeUnitAt(0);
-
-    // Max code point is lower case z to increase the chance of seeing a character
-    // past the target but below the ignore point
-    final maxCodePoint = 'z'.codeUnitAt(0);
 
     if (letter == '#') {
       codePointToScrollTo = 0;

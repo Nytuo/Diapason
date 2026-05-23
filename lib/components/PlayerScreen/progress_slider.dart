@@ -54,6 +54,7 @@ class _ProgressSliderState extends State<ProgressSlider> {
             child: SliderTheme(
               data: SliderThemeData(trackHeight: 3.5, trackShape: CustomTrackShape()),
               child: StreamBuilder<ProgressState>(
+                initialData: progressState,
                 stream: progressStateStream,
                 builder: (context, snapshot) {
                   if (snapshot.data?.mediaItem == null) {
@@ -64,12 +65,19 @@ class _ProgressSliderState extends State<ProgressSlider> {
                     return widget.showPlaceholder
                         ? Column(
                             children: [
-                              Slider(
-                                value: 0,
-                                max: 1,
-                                onChanged: null,
-                                autofocus: false,
-                                focusNode: FocusNode(skipTraversal: true, canRequestFocus: false),
+                              SizedBox(
+                                height: 24.0,
+                                child: Stack(
+                                  children: [
+                                    Slider(
+                                      value: 0,
+                                      max: 1,
+                                      onChanged: null,
+                                      autofocus: false,
+                                      focusNode: FocusNode(skipTraversal: true, canRequestFocus: false),
+                                    ),
+                                  ],
+                                ),
                               ),
                               if (widget.showDuration) const _ProgressSliderDuration(position: Duration()),
                             ],

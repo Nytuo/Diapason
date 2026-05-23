@@ -154,11 +154,13 @@ class MusicScreenDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final finampUserHelper = GetIt.instance<FinampUserHelper>();
+    final colorScheme = ColorScheme.of(context);
     final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
     final FinampSettings? settings = ref.watch(finampSettingsProvider).value;
 
     return Drawer(
-      surfaceTintColor: Colors.white,
+      surfaceTintColor: colorScheme.surfaceTint,
+      backgroundColor: colorScheme.surface,
       child: SafeArea(
         bottom: false,
         child: ListTileTheme(

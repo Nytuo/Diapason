@@ -58,7 +58,7 @@ class _CustomDownloadLocationFormState extends State<CustomDownloadLocationForm>
                             IconButton(
                               icon: const Icon(Icons.folder),
                               onPressed: () async {
-                                String? newPath = await FilePicker.platform.getDirectoryPath();
+                                String? newPath = await FilePicker.getDirectoryPath();
 
                                 if (newPath != null) {
                                   setState(() {
