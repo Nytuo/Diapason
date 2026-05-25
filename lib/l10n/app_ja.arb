@@ -1735,5 +1735,9 @@
                 "type": "String"
             }
         }
+    },
+    "downloadsWorkersSetting": "ダウンロードワーカー数",
+    "@downloadsWorkersSetting": {
+        "description": "Title of setting controlling download worker count."
     }
 }
