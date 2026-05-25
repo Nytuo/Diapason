@@ -3003,5 +3003,9 @@
     "androidGainDisabled": "A mudar para efeito de ganho de recurso devido a erro de inicialização.",
     "@androidGainDisabled": {
         "description": "Message presented when the android gain effect fallback is enabled after an error occurs."
+    },
+    "losslessNoBitrate": "Não aplicável a transcodificações FLAC",
+    "@losslessNoBitrate": {
+        "description": "Settings text informing the user that transcoding bitrate does not apply to lossless transcodes."
     }
 }
