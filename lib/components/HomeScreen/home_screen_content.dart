@@ -305,17 +305,7 @@ class HomeScreenSection extends ConsumerWidget {
           ).push(MaterialPageRoute<MusicScreen>(builder: (context) => MusicScreen(singleTabConfig: sectionInfo)));
         },
         onSecondaryTap: () => showModalHomeSectionMenu(context: context, section: sectionInfo),
-        onDismiss: sectionInfo.contentType != ContentType.tracks
-            ? null
-            : (followUpAction) async {
-                final playable = sectionDisplayable as FinampPlayable;
-                final items = (await ref.read(getPlayerSliceProvider(item: playable, startingOffset: 0).future)).items;
-                return await onConfirmPlayableDismiss(
-                  followUpAction: followUpAction,
-                  tracks: items,
-                  sourceItem: playable,
-                );
-              },
+        onDismiss: null,
         sectionContentSliver: SliverToBoxAdapter(
           /* child: ShaderMask(
             shaderCallback: (bounds) {
