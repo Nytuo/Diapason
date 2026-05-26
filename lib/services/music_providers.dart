@@ -297,14 +297,14 @@ Future<List<Track>> getChildTracks(Ref ref, {required FinampUnpagedDisplayable<T
     case Album():
       final items = await ref.watch(getAlbumOrPlaylistTracksProvider(item.item).future);
       // TODO handle playable vs non-playable tracks better.  Maybe track + playableTrack types?
-      return items.$2.map((baseItem) => Track(baseItem, source: item.source)).toList();
+      return items.$2.map((baseItem) => Track(baseItem)).toList();
     case AlbumDisc():
-      return item.tracks.map((baseItem) => Track(baseItem, source: item.source)).toList();
+      return item.tracks.map((baseItem) => Track(baseItem)).toList();
     case PrecalculatedPlayable():
-      return item.tracks.map((baseItem) => Track(baseItem, source: item.source)).toList();
+      return item.tracks.map((baseItem) => Track(baseItem)).toList();
     case Playlist():
       final items = await ref.watch(getSortedPlaylistTracksProvider(item.item, item.sortConfig).future);
-      return items.$2.map((baseItem) => Track(baseItem, source: item.source)).toList();
+      return items.$2.map((baseItem) => Track(baseItem)).toList();
     /*case GenericPlayableItem():
       final items = await loadChildTracksFromBaseItem(item: item.item, sortConfig: item.sortConfig);
       return items.map((baseItem) => Track(baseItem, source: item.source)).toList();*/
@@ -318,7 +318,7 @@ Future<List<Track>> getChildTracks(Ref ref, {required FinampUnpagedDisplayable<T
           onlyFavorites: item.sortConfig.favoritesFilter,
         ).future,
       );
-      return children.map<Track>((child) => Track(child, source: item.source)).toList();
+      return children.map<Track>((child) => Track(child)).toList();
     case Genre<Track>():
       assert(item.type == GenreChildType.tracks);
       final sort = item.sortConfig.copyWithGenre(item.item);
@@ -359,7 +359,7 @@ Future<List<FinampPlayableDto>> getChildItems(
               sortOrder: item.sortConfig.sortOrder,
             ).future,
           );
-          return children.map<FinampPlayableDto>((child) => Album(child, source: item.source)).toList();
+          return children.map<FinampPlayableDto>((child) => Album.fromItem(child)).toList();
         case ArtistChildType.appearsOnAlbums:
           final children = await ref.watch(
             getPerformingArtistAlbumsProvider(
@@ -370,7 +370,7 @@ Future<List<FinampPlayableDto>> getChildItems(
               sortOrder: item.sortConfig.sortOrder,
             ).future,
           );
-          return children.map<FinampPlayableDto>((child) => Album(child, source: item.source)).toList();
+          return children.map<FinampPlayableDto>((child) => Album.fromItem(child)).toList();
       }
     case Genre<FinampPlayableDto>():
       assert(item.type != GenreChildType.tracks);

@@ -115,7 +115,7 @@ HomeDownloadInfo? getHomeDownloadInfo(
       if (type == BaseItemDtoType.collection) {
         // TODO implement collection downloads
         return null;
-      } else if (type == BaseItemDtoType.artist) {
+      } else if ([BaseItemDtoType.artist, BaseItemDtoType.genre].contains(type)) {
         return HomeDownloadInfo(
           stub: DownloadStub.fromFinampCollection(
             FinampCollection(

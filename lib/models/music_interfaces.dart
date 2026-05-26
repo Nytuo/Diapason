@@ -40,7 +40,7 @@ sealed class FinampPagedPlayable<ChildType extends FinampPlayable> extends Finam
 }
 
 sealed class FinampPlayableDto extends FinampPlayable {
-  const FinampPlayableDto(this.item, {required super.source});
+  FinampPlayableDto(this.item, {QueueItemSource? source}) : super(source: source ?? QueueItemSource.fromBaseItem(item));
 
   final BaseItemDto item;
 
@@ -48,7 +48,6 @@ sealed class FinampPlayableDto extends FinampPlayable {
   String get id => item.id.raw;
 
   factory FinampPlayableDto.fromItem(BaseItemDto item, {QueueItemSource? source, ResolvedSortConfig? sortOverride}) {
-    source ??= QueueItemSource.fromBaseItem(item);
     return switch (BaseItemDtoType.fromItem(item)) {
       BaseItemDtoType.album => Album(item, source: source),
       BaseItemDtoType.playlist => Playlist(

@@ -24,6 +24,8 @@ Map<PlaybackActionRowPage, Widget> getPlaybackActionPages({
   FinampQueueItem? queueItem,
 }) {
   final BaseItemDtoType? itemType = item is FinampPlayableDto ? BaseItemDtoType.fromItem(item.item) : null;
+  final canShuffleAlbums =
+      itemType == BaseItemDtoType.artist || itemType == BaseItemDtoType.genre || item is FinampDisplayable<Album>;
 
   if (itemType == BaseItemDtoType.track) {
     return {
@@ -62,7 +64,7 @@ Map<PlaybackActionRowPage, Widget> getPlaybackActionPages({
           if (itemType != BaseItemDtoType.genre)
             PlayPlaybackAction(item: item, popContext: popContext, compactLayout: compactLayout),
           ShufflePlaybackAction(item: item, itemType: itemType, popContext: popContext, compactLayout: compactLayout),
-          if (itemType == BaseItemDtoType.artist || itemType == BaseItemDtoType.genre)
+          if (canShuffleAlbums)
             ShuffleAlbumsPlaybackAction(
               item: item,
               itemType: itemType,
@@ -85,7 +87,7 @@ Map<PlaybackActionRowPage, Widget> getPlaybackActionPages({
               popContext: popContext,
               compactLayout: compactLayout,
             ),
-            if (itemType == BaseItemDtoType.artist || itemType == BaseItemDtoType.genre)
+            if (canShuffleAlbums)
               ShuffleAlbumsNextPlaybackAction(
                 item: item,
                 itemType: itemType,
@@ -108,7 +110,7 @@ Map<PlaybackActionRowPage, Widget> getPlaybackActionPages({
               popContext: popContext,
               compactLayout: compactLayout,
             ),
-            if (itemType == BaseItemDtoType.artist || itemType == BaseItemDtoType.genre)
+            if (canShuffleAlbums)
               ShuffleAlbumsToNextUpPlaybackAction(
                 item: item,
                 itemType: itemType,
@@ -130,7 +132,7 @@ Map<PlaybackActionRowPage, Widget> getPlaybackActionPages({
             popContext: popContext,
             compactLayout: compactLayout,
           ),
-          if (itemType == BaseItemDtoType.artist || itemType == BaseItemDtoType.genre)
+          if (canShuffleAlbums)
             ShuffleAlbumsToQueuePlaybackAction(
               item: item,
               itemType: itemType,

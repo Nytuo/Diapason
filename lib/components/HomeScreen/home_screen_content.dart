@@ -205,19 +205,18 @@ class HomeScreenSection extends ConsumerWidget {
         contentPadding: EdgeInsets.zero,
         actions: [
           if (sectionDisplayable is FinampPlayable) ...[
-            if (sectionInfo.sortAndFilterConfiguration.sortBy != SortBy.random)
-              IconButtonWithSemantics(
-                onPressed: () async {
-                  final queueService = GetIt.instance<QueueService>();
-                  final playable = sectionDisplayable as FinampPlayable;
-                  // TODO restore gradual queue buildup?
-                  await queueService.startPlayback(
-                    items: (await ref.read(getPlayerSliceProvider(item: playable, startingOffset: 0).future)).items,
-                    source: playable.source,
-                    order: FinampPlaybackOrder.linear,
-                  );
+            IconButtonWithSemantics(
+              onPressed: () async {
+                final queueService = GetIt.instance<QueueService>();
+                final playable = sectionDisplayable as FinampPlayable;
+                // TODO restore gradual queue buildup?
+                await queueService.startPlayback(
+                  items: (await ref.read(getPlayerSliceProvider(item: playable, startingOffset: 0).future)).items,
+                  source: playable.source,
+                  order: FinampPlaybackOrder.linear,
+                );
 
-                  /*
+                /*
                         final source = QueueItemSource.rawId(
                           type: QueueItemSourceType.homeScreenSection,
                           name: QueueItemSourceName(
@@ -259,23 +258,27 @@ class HomeScreenSection extends ConsumerWidget {
                                   .toList() ??
                               [],
                         );*/
-                },
-                label: AppLocalizations.of(context)!.playButtonLabel,
-                icon: TablerIcons.player_play,
-              ),
-            IconButtonWithSemantics(
-              onPressed: () async {
-                final queueService = GetIt.instance<QueueService>();
-                final playable = sectionDisplayable as FinampPlayable;
-                // TODO better shuffling?  need to think about shuffle all versus shuffle first
-                // TODO restore gradual queue buildup?
-                await queueService.startPlayback(
-                  items: (await ref.read(getPlayerSliceProvider(item: playable, startingOffset: 0).future)).items,
-                  source: playable.source,
-                  order: FinampPlaybackOrder.shuffled,
-                );
               },
-              label: AppLocalizations.of(context)!.shuffleButtonLabel,
+              label: AppLocalizations.of(context)!.playButtonLabel,
+              icon: TablerIcons.player_play,
+            ),
+            IconButtonWithSemantics(
+              onPressed: sectionInfo.sortAndFilterConfiguration.sortBy == SortBy.random
+                  ? null
+                  : () async {
+                      final queueService = GetIt.instance<QueueService>();
+                      final playable = sectionDisplayable as FinampPlayable;
+                      // TODO better shuffling?  need to think about shuffle all versus shuffle first
+                      // TODO restore gradual queue buildup?
+                      await queueService.startPlayback(
+                        items: (await ref.read(getPlayerSliceProvider(item: playable, startingOffset: 0).future)).items,
+                        source: playable.source,
+                        order: FinampPlaybackOrder.shuffled,
+                      );
+                    },
+              label: sectionInfo.sortAndFilterConfiguration.sortBy == SortBy.random
+                  ? context.l10n.alreadyRandomized
+                  : context.l10n.shuffleButtonLabel,
               icon: TablerIcons.arrows_shuffle,
             ),
           ],

@@ -19,11 +19,13 @@ part 'music_interfaces.dart';
 //
 
 class Track extends FinampPlayableDto {
-  Track(super.item, {required super.source}) {
+  Track(super.item, {super.source}) {
     if (BaseItemDtoType.fromItem(item) != BaseItemDtoType.track) {
       throw UnsupportedError("Wrong BaseItemDto type: ${item.type}");
     }
   }
+
+  factory Track.fromItem(BaseItemDto item) => Track(item, source: QueueItemSource.fromBaseItem(item));
 
   @override
   bool equalsHelper(Object other) {
@@ -35,7 +37,7 @@ class Track extends FinampPlayableDto {
 }
 
 class Album extends FinampPlayableDto implements FinampUnpagedPlayable<Track> {
-  Album(super.item, {required super.source}) {
+  Album(super.item, {super.source}) {
     if (BaseItemDtoType.fromItem(item) != BaseItemDtoType.album) {
       throw UnsupportedError("Wrong BaseItemDto type: ${item.type}");
     }
@@ -51,17 +53,14 @@ class Album extends FinampPlayableDto implements FinampUnpagedPlayable<Track> {
 }
 
 class Playlist extends _SortableItem<Track> {
-  Playlist(super.item, {required super.source, required super.sortConfig}) {
+  Playlist(super.item, {super.source, required super.sortConfig}) {
     if (BaseItemDtoType.fromItem(item) != BaseItemDtoType.playlist) {
       throw UnsupportedError("Wrong BaseItemDto type: ${item.type}");
     }
   }
 
-  factory Playlist.fromItem(BaseItemDto item, {ResolvedSortConfig? sortConfig}) => Playlist(
-    item,
-    source: QueueItemSource.fromBaseItem(item),
-    sortConfig: sortConfig ?? ResolvedSortConfig.defaultInAlbumSort,
-  );
+  factory Playlist.fromItem(BaseItemDto item) =>
+      Playlist(item, source: QueueItemSource.fromBaseItem(item), sortConfig: ResolvedSortConfig.defaultInAlbumSort);
 
   @override
   bool equalsHelper(Object other) => other is Playlist;
@@ -139,32 +138,17 @@ class MusicScreenPlayable<ChildType extends FinampPlayableDto> extends _Sortable
   FinampPlayableDto buildChild(BaseItemDto item) {
     switch (tab) {
       case ContentType.tracks:
-        return Track(item, source: source);
+        return Track.fromItem(item);
       case ContentType.albums:
-        return Album(item, source: source);
+        return Album.fromItem(item);
       case ContentType.playlists:
-        return Playlist(item, source: source, sortConfig: SortAndFilterConfiguration.defaultInAlbumSort);
+        return Playlist.fromItem(item);
       case ContentType.genres:
-        return Genre(
-          item,
-          source: source,
-          sortConfig: SortAndFilterConfiguration.defaultSort,
-          type: GenreChildType.tracks,
-        );
+        return Genre.fromItem(item);
       case ContentType.performingArtists:
-        return Artist(
-          item,
-          source: source,
-          sortConfig: SortAndFilterConfiguration.defaultSort,
-          type: ArtistChildType.appearsOnAlbums,
-        );
+        return Artist.fromItem(item);
       case ContentType.albumArtists:
-        return Artist(
-          item,
-          source: source,
-          sortConfig: SortAndFilterConfiguration.defaultSort,
-          type: ArtistChildType.albumsFromArtist,
-        );
+        return Artist.fromItem(item);
       case ContentType.home:
       case ContentType.genericArtists:
       case ContentType.inPlaylist:
@@ -275,6 +259,7 @@ class LatestQueues extends FinampSortable<PlayableQueue> implements FinampUnpage
 }
 
 class PlayableQueue extends FinampPlayable {
+  // Presumably, if we load a queue we use the original sources, so this doesn't really matter?
   PlayableQueue({required this.queue, required super.source});
 
   final FinampStorableQueueInfo queue;
@@ -322,17 +307,14 @@ class InstantMix extends FinampPlayableDto {
 }
 
 class JellyfinCollection extends _SortableItem<FinampPlayableDto> {
-  JellyfinCollection(super.item, {required super.source, required super.sortConfig}) {
+  JellyfinCollection(super.item, {super.source, required super.sortConfig}) {
     if (BaseItemDtoType.fromItem(item) != BaseItemDtoType.collection) {
       throw UnsupportedError("Wrong BaseItemDto type: ${item.type}");
     }
   }
 
-  factory JellyfinCollection.fromItem(BaseItemDto item, {ResolvedSortConfig? sortConfig}) => JellyfinCollection(
-    item,
-    source: QueueItemSource.fromBaseItem(item),
-    sortConfig: sortConfig ?? ResolvedSortConfig.defaultSort,
-  );
+  factory JellyfinCollection.fromItem(BaseItemDto item) =>
+      JellyfinCollection(item, source: QueueItemSource.fromBaseItem(item), sortConfig: ResolvedSortConfig.defaultSort);
 
   @override
   bool equalsHelper(Object other) => other is JellyfinCollection;
@@ -346,7 +328,7 @@ class JellyfinCollection extends _SortableItem<FinampPlayableDto> {
 }
 
 class Artist<ChildType extends FinampPlayableDto> extends _SortableItem<ChildType> {
-  Artist._(super.item, {required super.source, required super.sortConfig, required this.type}) {
+  Artist._(super.item, {super.source, required super.sortConfig, required this.type}) {
     if (BaseItemDtoType.fromItem(item) != BaseItemDtoType.artist) {
       throw UnsupportedError("Wrong BaseItemDto type: ${item.type}");
     }
@@ -356,7 +338,7 @@ class Artist<ChildType extends FinampPlayableDto> extends _SortableItem<ChildTyp
 
   factory Artist(
     BaseItemDto item, {
-    required QueueItemSource source,
+    QueueItemSource? source,
     required ResolvedSortConfig sortConfig,
     required ArtistChildType type,
   }) {
@@ -368,11 +350,11 @@ class Artist<ChildType extends FinampPlayableDto> extends _SortableItem<ChildTyp
     }
   }
 
-  factory Artist.fromItem(BaseItemDto item, {ResolvedSortConfig? sortConfig, ArtistChildType? type}) => Artist(
+  factory Artist.fromItem(BaseItemDto item) => Artist(
     item,
     source: QueueItemSource.fromBaseItem(item),
-    sortConfig: sortConfig ?? ResolvedSortConfig.defaultSort,
-    type: type ?? ArtistChildType.tracks,
+    sortConfig: ResolvedSortConfig.defaultSort,
+    type: ArtistChildType.tracks,
   );
 
   @override
@@ -388,7 +370,7 @@ class Artist<ChildType extends FinampPlayableDto> extends _SortableItem<ChildTyp
 enum ArtistChildType { tracks, albumsFromArtist, appearsOnAlbums }
 
 class Genre<ChildType extends FinampPlayableDto> extends _SortableItem<ChildType> {
-  Genre._(super.item, {required super.source, required super.sortConfig, required this.type}) {
+  Genre._(super.item, {super.source, required super.sortConfig, required this.type}) {
     if (BaseItemDtoType.fromItem(item) != BaseItemDtoType.genre) {
       throw UnsupportedError("Wrong BaseItemDto type: ${item.type}");
     }
@@ -398,7 +380,7 @@ class Genre<ChildType extends FinampPlayableDto> extends _SortableItem<ChildType
 
   factory Genre(
     BaseItemDto item, {
-    required QueueItemSource source,
+    QueueItemSource? source,
     required ResolvedSortConfig sortConfig,
     required GenreChildType type,
   }) {
@@ -414,11 +396,11 @@ class Genre<ChildType extends FinampPlayableDto> extends _SortableItem<ChildType
     }
   }
 
-  factory Genre.fromItem(BaseItemDto item, {ResolvedSortConfig? sortConfig, GenreChildType? type}) => Genre(
+  factory Genre.fromItem(BaseItemDto item) => Genre(
     item,
     source: QueueItemSource.fromBaseItem(item),
-    sortConfig: sortConfig ?? ResolvedSortConfig.defaultSort,
-    type: type ?? GenreChildType.tracks,
+    sortConfig: ResolvedSortConfig.defaultSort,
+    type: GenreChildType.tracks,
   );
 
   @override

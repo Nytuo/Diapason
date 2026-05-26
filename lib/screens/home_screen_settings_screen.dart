@@ -16,8 +16,8 @@ import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
 import 'package:finamp/services/feedback_helper.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
+import 'package:finamp/services/finamp_user_helper.dart';
 import 'package:finamp/services/item_by_id_provider.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
@@ -812,7 +812,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
               ),
               Consumer(
                 builder: (_, ref, _) {
-                  final views = ref.watch(JellyfinApiHelper.viewsProvider).value;
+                  final views = ref.watch(FinampUserHelper.finampCurrentUserProvider)?.views.values;
                   return FinampSettingsDropdown<LibraryOrItemId?>(
                     dropdownItems: [
                       DropdownMenuEntry<LibraryOrItemId?>(

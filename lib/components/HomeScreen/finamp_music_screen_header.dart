@@ -325,7 +325,7 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
                                       ),
                                     );
                                   }
-                                  if (userInfo.isLoading) {
+                                  if (userInfo.value == null) {
                                     return SizedBox(
                                       width: 24,
                                       height: 24,

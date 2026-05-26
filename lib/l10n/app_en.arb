@@ -3673,5 +3673,9 @@
   "homeRecentAlbumsDownloadWarning": "This will download the 5 latest albums on the server.  This will be updated and the excess downloads removed as new albums are added to the server in the future.",
   "@homeRecentAlbumsDownloadWarning": {
     "description": "Warning presented when pressing the download button on certain home screen sections.  This is shown because the behavior of the 5 latest albums download is not a 100% match to the home sections."
+  },
+  "alreadyRandomized": "This section is already presented in a random order",
+  "@alreadyRandomized": {
+    "description": "Tooltip for shuffle button on home screen sections using a random sort order, where it is disabled due to being unneeded"
   }
 }
