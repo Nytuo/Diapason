@@ -81,7 +81,7 @@ Future<List<BaseItemDto>> loadChildTracksFromBaseItem({
           parentItem: finampUserHelper.currentUser?.currentView,
           includeItemTypes: [BaseItemDtoType.track.jellyfinName].join(","),
           limit: FinampSettingsHelper.finampSettings.trackShuffleItemCount,
-          genreFilter: sortConfig.genreFilter?.id,
+          genreFilter: item.id,
           sortBy: "Random", // important, as we load limited tracks and otherwise would always get the same
         );
         break;
