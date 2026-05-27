@@ -4462,7 +4462,7 @@ class SortAndFilterConfiguration {
       processedFilters.add(ItemFilter(type: ItemFilterType.genreFilter, extras: genreFilter));
     }
     if (favoriteFilter != null) {
-      processedFilters.removeWhere((x) => x.type == ItemFilterType.genreFilter);
+      processedFilters.removeWhere((x) => x.type == ItemFilterType.isFavorite);
       if (favoriteFilter) {
         processedFilters.add(ItemFilter(type: ItemFilterType.isFavorite));
       }
