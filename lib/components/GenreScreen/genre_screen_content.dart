@@ -103,6 +103,7 @@ class _GenreScreenContentState extends ConsumerState<GenreScreenContent> {
               genreFilter: widget.parent,
             ),
           ),
+          hideArtistGenreFilters: true,
         ),
       ),
     );

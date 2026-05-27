@@ -21,6 +21,7 @@ import 'package:get_it/get_it.dart';
 
 import '../../extensions/localizations.dart';
 import '../../models/music_models.dart';
+import '../../services/audio_service_helper.dart';
 import '../../services/downloads_service.dart';
 import '../../services/finamp_settings_helper.dart';
 import '../../services/music_providers.dart';
@@ -104,6 +105,13 @@ class TrackListTile extends ConsumerWidget {
       final queueService = GetIt.instance<QueueService>();
 
       if (!playable) return;
+
+      if (parentPlayable case InstantMix mix) {
+        // TODO we should be handling this via slices
+        final audioServiceHelper = GetIt.instance<AudioServiceHelper>();
+        await audioServiceHelper.startInstantMixForItem(mix.item);
+        return;
+      }
 
       PlayableSlice slice = await ref.watch(
         getPlayerSliceProvider(item: parentPlayable, startingOffset: index!).future,

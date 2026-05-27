@@ -205,8 +205,7 @@ class PagedContent extends _$PagedContent {
   }
 }
 
-// TODO Why is this keepAlive?
-@Riverpod(keepAlive: true)
+@riverpod
 Future<List<BaseItemDto>?> loadHomeSectionItems(
   Ref ref, {
   required MusicScreenPlayable request,

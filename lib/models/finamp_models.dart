@@ -4369,6 +4369,11 @@ enum ItemFilterType {
   const ItemFilterType(this.extraType);
 
   final Type extraType;
+
+  bool get isArtistGenre => switch (this) {
+    genreFilter => true,
+    _ => false,
+  };
 }
 
 @JsonSerializable()

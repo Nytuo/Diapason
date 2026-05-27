@@ -178,24 +178,37 @@ class SortAndFilterRow extends ConsumerWidget {
   final SortAndFilterController controller;
 
   final bool removeOnly;
+  final bool hideArtistGenreFilters;
 
   static double get height => (Platform.isIOS || Platform.isAndroid) ? 30 : 26;
 
-  const SortAndFilterRow({super.key, required this.tabType, required this.controller}) : removeOnly = false;
+  const SortAndFilterRow({
+    super.key,
+    required this.tabType,
+    required this.controller,
+    this.hideArtistGenreFilters = false,
+  }) : removeOnly = false;
 
-  const SortAndFilterRow.removeOnly({super.key, required this.controller})
+  const SortAndFilterRow.removeOnly({super.key, required this.controller, this.hideArtistGenreFilters = false})
     : tabType = ContentType.tracks,
       removeOnly = true;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentConfig = ref.watch(resolveSortProvider(controller));
-    final activeFilters = currentConfig.filters;
+    final activeFilters = hideArtistGenreFilters
+        ? currentConfig.filters.whereNot((x) => x.type.isArtistGenre)
+        : currentConfig.filters;
     final int activeFilterCount = activeFilters.length;
     String statusText = context.l10n.activeFilterCount(activeFilterCount);
 
-    Future<void> showMenu() =>
-        showSortAndFilterMenu(context, tabType: tabType, controller: controller, removeOnly: removeOnly);
+    Future<void> showMenu() => showSortAndFilterMenu(
+      context,
+      tabType: tabType,
+      controller: controller,
+      removeOnly: removeOnly,
+      hideArtistGenreFilters: hideArtistGenreFilters,
+    );
     return SafeArea(
       top: false,
       bottom: false,
@@ -303,6 +316,7 @@ Future<void> showSortAndFilterMenu(
   required ContentType tabType,
   required SortAndFilterController controller,
   bool removeOnly = false,
+  bool hideArtistGenreFilters = false,
 }) async {
   return await showThemedBottomSheet<void>(
     context: context,
@@ -313,6 +327,7 @@ Future<void> showSortAndFilterMenu(
         tabType: tabType,
         controller: controller,
         removeOnly: removeOnly,
+        hideArtistGenreFilters: hideArtistGenreFilters,
       );
     },
   );
@@ -331,6 +346,7 @@ class SortAndFilterMenu extends ConsumerStatefulWidget {
     required this.tabType,
     required this.controller,
     required this.removeOnly,
+    required this.hideArtistGenreFilters,
   });
 
   final ScrollBuilder childBuilder;
@@ -338,6 +354,7 @@ class SortAndFilterMenu extends ConsumerStatefulWidget {
   final ContentType tabType;
   final SortAndFilterController controller;
   final bool removeOnly;
+  final bool hideArtistGenreFilters;
 
   @override
   ConsumerState<SortAndFilterMenu> createState() => _SortAndFilterMenuState();
@@ -351,8 +368,10 @@ class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu> {
     ItemFilterType.isFullyDownloaded,
     ItemFilterType.isUnplayed,
   ];
-  Set<ItemFilter> get excessFilters =>
-      currentConfig.filters.whereNot((x) => toggalableFilterTypes.contains(x.type)).toSet();
+  Set<ItemFilter> get excessFilters => currentConfig.filters
+      .whereNot((x) => toggalableFilterTypes.contains(x.type))
+      .whereNot((x) => widget.hideArtistGenreFilters && x.type.isArtistGenre)
+      .toSet();
 
   @override
   void initState() {

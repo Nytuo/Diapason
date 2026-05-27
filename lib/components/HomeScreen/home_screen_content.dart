@@ -44,7 +44,12 @@ class HomeScreenContent extends ConsumerStatefulWidget {
   ConsumerState<HomeScreenContent> createState() => _HomeScreenContentState();
 }
 
-class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
+class _HomeScreenContentState extends ConsumerState<HomeScreenContent>
+    with AutomaticKeepAliveClientMixin<HomeScreenContent> {
+  // tabs on the music screen should be kept alive
+  @override
+  bool get wantKeepAlive => true;
+
   void _refresh() async {
     for (var section in ref.watch(finampSettingsProvider.homeScreenConfiguration).sections) {
       final displayable = await ref.watch(resolveSectionProvider(section).future);
@@ -54,6 +59,7 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     widget.refresh?.callback = _refresh;
     return RefreshIndicator(
       onRefresh: () async => _refresh(),

@@ -29,10 +29,11 @@ import '../models/jellyfin_models.dart';
 final _musicScreenLogger = Logger("MusicScreen");
 
 class MusicScreen extends ConsumerStatefulWidget {
-  const MusicScreen({super.key, this.singleTabConfig, this.initialTab});
+  const MusicScreen({super.key, this.singleTabConfig, this.initialTab, this.hideArtistGenreFilters = false});
 
   /// The initial tab type to show. Can also be provided as an argument in a named route
   final ContentType? initialTab;
+  final bool hideArtistGenreFilters;
 
   static const routeName = "/music";
 
@@ -318,6 +319,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
                       SortAndFilterRow(
                         tabType: contentTabType,
                         controller: sortAndFilterControllerMap[contentTabType]!,
+                        hideArtistGenreFilters: widget.hideArtistGenreFilters,
                       ),
                     ArtistTypeSelectionRow(
                       tabType: tabType,
