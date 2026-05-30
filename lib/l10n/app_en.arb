@@ -3309,6 +3309,10 @@
   "@androidGainDisabled": {
     "description": "Message presented when the android gain effect fallback is enabled after an error occurs."
   },
+  "losslessNoBitrate": "Not applicable to FLAC transcodes",
+  "@losslessNoBitrate": {
+    "description": "Settings text informing the user that transcoding bitrate does not apply to lossless transcodes."
+  },
   "home": "Home",
   "@home": {
     "description": "Label for the home/main screen"

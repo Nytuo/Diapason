@@ -25,13 +25,6 @@ import 'item_helper.dart';
 import 'artist_content_provider.dart';
 import 'radio_service_helper.dart' as radio;
 
-/// Helper to access localized strings without a BuildContext.
-/// Uses the global scaffold key's context for localization.
-/// Safe to call after first frame — all CarPlay template setup is deferred via
-/// SchedulerBinding.addPostFrameCallback (see setupCarplay), which ensures the
-/// GlobalSnackbar context is available before any l10n access.
-AppLocalizations get _l10n => AppLocalizations.of(GlobalSnackbar.materialAppScaffoldKey.currentContext!)!;
-
 final _carPlayLogger = Logger("CarPlay");
 
 /// Maximum items to fetch from server for CarPlay lists.
@@ -206,7 +199,7 @@ class CarPlayHelper {
         type: QueueItemSourceType.allTracks,
         name: QueueItemSourceName(
           type: QueueItemSourceNameType.preTranslated,
-          pretranslatedName: sourceName ?? _l10n.tracks,
+          pretranslatedName: sourceName ?? GlobalSnackbar.localizations!.tracks,
         ),
         id: "carplay-tracks-${DateTime.now().millisecondsSinceEpoch}",
       ),
@@ -289,14 +282,14 @@ class CarPlayHelper {
     CPListSection quickActionsSection = CPListSection(
       items: [
         CPListItem(
-          text: _l10n.shuffleAll,
+          text: GlobalSnackbar.localizations!.shuffleAll,
           onPress: (complete, self) async {
             await shuffleAllTracks();
             complete();
           },
         ),
         CPListItem(
-          text: _l10n.startRadio,
+          text: GlobalSnackbar.localizations!.startRadio,
           onPress: (complete, self) async {
             await startRadio();
             complete();
@@ -308,14 +301,14 @@ class CarPlayHelper {
 
     final recentPlays = getRecentPlays(limit: 5);
     if (recentPlays.isNotEmpty) {
-      CPListSection recentPlaysSection = CPListSection(header: _l10n.recentlyPlayed, items: []);
+      CPListSection recentPlaysSection = CPListSection(header: GlobalSnackbar.localizations!.recentlyPlayed, items: []);
 
       for (final queueItem in recentPlays) {
         final baseItem = queueItem.baseItem;
 
         recentPlaysSection.items.add(
           CPListItem(
-            text: baseItem.name ?? _l10n.unknown,
+            text: baseItem.name ?? GlobalSnackbar.localizations!.unknown,
             detailText: baseItem.artists?.join(", ") ?? baseItem.albumArtist,
             image: _getCarPlayImageUri(baseItem),
             onPress: (complete, self) async {
@@ -329,7 +322,7 @@ class CarPlayHelper {
                     type: QueueItemSourceType.allTracks,
                     name: QueueItemSourceName(
                       type: QueueItemSourceNameType.preTranslated,
-                      pretranslatedName: baseItem.name ?? _l10n.tracks,
+                      pretranslatedName: baseItem.name ?? GlobalSnackbar.localizations!.tracks,
                     ),
                     id: baseItem.id,
                     item: baseItem,
@@ -352,12 +345,15 @@ class CarPlayHelper {
     final recentlyAdded = await getRecentlyAddedAlbums(limit: 3);
     _carPlayLogger.info("Got ${recentlyAdded.length} recently added albums");
     if (recentlyAdded.isNotEmpty) {
-      CPListSection recentlyAddedSection = CPListSection(header: _l10n.recentlyAdded, items: []);
+      CPListSection recentlyAddedSection = CPListSection(
+        header: GlobalSnackbar.localizations!.recentlyAdded,
+        items: [],
+      );
 
       for (final album in recentlyAdded) {
         recentlyAddedSection.items.add(
           CPListItem(
-            text: album.name ?? _l10n.unknownAlbum,
+            text: album.name ?? GlobalSnackbar.localizations!.unknownAlbum,
             detailText: album.albumArtist,
             image: _getCarPlayImageUri(album),
             onPress: (complete, self) async {
@@ -420,24 +416,24 @@ class CarPlayHelper {
         templates: [
           CPListTemplate(
             sections: homeSections,
-            title: _l10n.home,
-            emptyViewTitleVariants: [_l10n.home],
-            emptyViewSubtitleVariants: [_l10n.notAvailable],
+            title: GlobalSnackbar.localizations!.home,
+            emptyViewTitleVariants: [GlobalSnackbar.localizations!.home],
+            emptyViewSubtitleVariants: [GlobalSnackbar.localizations!.notAvailable],
             systemIcon: 'music.note.house',
             sectionIndexEnabled: false,
           ),
           CPListTemplate(
             sections: [],
-            title: _l10n.search,
-            emptyViewTitleVariants: [_l10n.voiceSearch],
-            emptyViewSubtitleVariants: [_l10n.carPlaySiriHint],
+            title: GlobalSnackbar.localizations!.search,
+            emptyViewTitleVariants: [GlobalSnackbar.localizations!.voiceSearch],
+            emptyViewSubtitleVariants: [GlobalSnackbar.localizations!.carPlaySiriHint],
             systemIcon: 'mic',
           ),
           CPListTemplate(
             sections: [librarySection],
-            title: _l10n.library,
-            emptyViewTitleVariants: [_l10n.library],
-            emptyViewSubtitleVariants: [_l10n.emptyFilteredListTitle],
+            title: GlobalSnackbar.localizations!.library,
+            emptyViewTitleVariants: [GlobalSnackbar.localizations!.library],
+            emptyViewSubtitleVariants: [GlobalSnackbar.localizations!.emptyFilteredListTitle],
             systemIcon: 'play.square.stack',
           ),
         ],
@@ -452,9 +448,9 @@ class CarPlayHelper {
     await FlutterCarplay.setRootTemplate(
       rootTemplate: CPListTemplate(
         sections: [],
-        title: _l10n.finamp,
-        emptyViewTitleVariants: [_l10n.login],
-        emptyViewSubtitleVariants: [_l10n.carPlayLoginPrompt],
+        title: GlobalSnackbar.localizations!.finamp,
+        emptyViewTitleVariants: [GlobalSnackbar.localizations!.login],
+        emptyViewSubtitleVariants: [GlobalSnackbar.localizations!.carPlayLoginPrompt],
         systemIcon: 'person.crop.circle.badge.exclamationmark',
       ),
     );
@@ -477,7 +473,7 @@ class CarPlayHelper {
 
       playlistSection.items.add(
         CPListItem(
-          text: _l10n.shuffleButtonLabel,
+          text: GlobalSnackbar.localizations!.shuffleButtonLabel,
           onPress: (complete, self) async {
             await playItem(parent, order: FinampPlaybackOrder.shuffled);
             complete();
@@ -488,7 +484,7 @@ class CarPlayHelper {
       mediaItems.asMap().forEach((index, item) {
         playlistSection.items.add(
           CPListItem(
-            text: item.name ?? _l10n.unknownName,
+            text: item.name ?? GlobalSnackbar.localizations!.unknownName,
             detailText: item.artists?.join(", ") ?? item.albumArtist,
             image: _getCarPlayImageUri(item),
             onPress: (complete, self) async {
@@ -541,7 +537,7 @@ class CarPlayHelper {
 
       final sections = _groupItemsIntoSections(mediaItems, (item, index) {
         return CPListItem(
-          text: item.name ?? _l10n.unknown,
+          text: item.name ?? GlobalSnackbar.localizations!.unknown,
           detailText: item.artists?.join(", ") ?? item.albumArtist,
           image: _getCarPlayImageUri(item),
           onPress: (complete, self) async {
@@ -589,11 +585,11 @@ class CarPlayHelper {
 
       final sections = _groupItemsIntoSections(tracks, (item, index) {
         return CPListItem(
-          text: item.name ?? _l10n.unknownName,
+          text: item.name ?? GlobalSnackbar.localizations!.unknownName,
           detailText: item.artists?.join(", ") ?? item.albumArtist,
           image: _getCarPlayImageUri(item),
           onPress: (complete, self) async {
-            await playTracksAsQueue(tracks, index: index, sourceName: _l10n.tracks);
+            await playTracksAsQueue(tracks, index: index, sourceName: GlobalSnackbar.localizations!.tracks);
             complete();
           },
         );
@@ -604,7 +600,7 @@ class CarPlayHelper {
         sections.first.items.insert(
           0,
           CPListItem(
-            text: _l10n.shuffleAll,
+            text: GlobalSnackbar.localizations!.shuffleAll,
             onPress: (complete, self) async {
               await shuffleAllTracks();
               complete();
@@ -648,7 +644,7 @@ class CarPlayHelper {
 
       final sections = _groupItemsIntoSections(artists, (item, index) {
         return CPListItem(
-          text: item.name ?? _l10n.unknownName,
+          text: item.name ?? GlobalSnackbar.localizations!.unknownName,
           onPress: (complete, self) async {
             await showArtistTemplate(item);
             complete();
@@ -674,7 +670,7 @@ class CarPlayHelper {
       _carPlayLogger.info("Loading artist template for ${parent.name}");
 
       CPListTemplate artistTemplate = CPListTemplate(sections: [], systemIcon: 'gear');
-      CPListSection artistAlbums = CPListSection(header: _l10n.albums, items: []);
+      CPListSection artistAlbums = CPListSection(header: GlobalSnackbar.localizations!.albums, items: []);
 
       _carPlayLogger.fine("Fetching albums for artist ${parent.name}");
       List<BaseItemDto> artistAlbumsList = await GetIt.instance<ProviderContainer>().read(
@@ -684,7 +680,7 @@ class CarPlayHelper {
 
       artistAlbums.items.add(
         CPListItem(
-          text: _l10n.shuffleAll,
+          text: GlobalSnackbar.localizations!.shuffleAll,
           onPress: (complete, self) async {
             final tracks = await GetIt.instance<ProviderContainer>().read(
               getArtistTracksProvider(artist: parent, libraryFilter: _finampUserHelper.currentUser?.currentView).future,
@@ -692,7 +688,7 @@ class CarPlayHelper {
             await playTracksAsQueue(
               tracks,
               order: FinampPlaybackOrder.shuffled,
-              sourceName: parent.name ?? _l10n.unknownName,
+              sourceName: parent.name ?? GlobalSnackbar.localizations!.unknownName,
             );
             complete();
           },
@@ -702,7 +698,7 @@ class CarPlayHelper {
       for (final item in artistAlbumsList) {
         artistAlbums.items.add(
           CPListItem(
-            text: item.name ?? _l10n.unknownName,
+            text: item.name ?? GlobalSnackbar.localizations!.unknownName,
             image: _getCarPlayImageUri(item),
             onPress: (complete, self) async {
               await showCollectionTracksTemplate(item);

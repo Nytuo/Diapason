@@ -65,8 +65,10 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl_standalone.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
+import 'package:path/path.dart' as path;
 import 'package:path/path.dart' as path_helper;
 import 'package:path_provider/path_provider.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:uuid/uuid.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:flutter_carplay/flutter_carplay.dart';
@@ -109,9 +111,17 @@ late DateTime startTime;
 
 final providerScopeKey = GlobalKey();
 
-void main() async {
-  // If the app has failed, this is set to true. If true, we don't attempt to run the main app since the error app has started.
-  bool hasFailed = false;
+Future<void> main({bool integrationTesting = false, bool loginTesting = false}) async {
+  if (loginTesting) {
+    // Note that download baseDirectories cannot be redirected, so use of this flag
+    // causes errors in downloader on mobile platforms
+    final data = await TestingPathProvider.baseDirectory();
+    PathProviderPlatform.instance = TestingPathProvider(data);
+    if (data.existsSync()) {
+      data.deleteSync(recursive: true);
+    }
+  }
+
   try {
     startTime = DateTime.now();
     await setupLogging();
@@ -146,14 +156,18 @@ void main() async {
     await _setupDiscordRpc();
     _mainLog.info("Setup Discord RPC");
   } catch (error, trace) {
-    hasFailed = true;
-    Logger("ErrorApp").severe(error, null, trace);
-    runApp(FinampErrorApp(error: error, trace: trace));
+    if (!integrationTesting) {
+      Logger("ErrorApp").severe(error, null, trace);
+      runApp(FinampErrorApp(error: error, trace: trace));
+      return;
+    } else {
+      rethrow;
+    }
   }
 
-  if (!hasFailed) {
-    final flutterLogger = Logger("Flutter");
+  final flutterLogger = Logger("Flutter");
 
+  if (!integrationTesting) {
     FlutterError.onError = (FlutterErrorDetails details) {
       var error = details.exception;
       if (error is Error) {
@@ -169,16 +183,19 @@ void main() async {
       // We have not handled printing to console, flutter should still do that.
       return false;
     };
+  }
 
-    DartPluginRegistrant.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
 
-    await findSystemLocale();
-    await initializeDateFormatting();
-    unawaited(fetchSystemPalette());
-    await initDBus();
+  await findSystemLocale();
+  await initializeDateFormatting();
+  unawaited(fetchSystemPalette());
+  await initDBus();
 
-    _mainLog.info("Launching main app");
+  _mainLog.info("Launching main app");
 
+  // Integration testing will launch the widgets itself, so just return
+  if (!integrationTesting) {
     runApp(const Finamp());
   }
 }
@@ -563,7 +580,7 @@ class _FinampState extends State<Finamp> with WindowListener {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _uriLinkSubscription = AppLinks().uriLinkStream.listen((uri) async {
         linkHandlingLogger.info("Received link: $uri");
-        var state = GlobalSnackbar.materialAppNavigatorKey.currentState;
+        var state = GlobalSnackbar.navigatorState;
         if (state != null) {
           if (uri.host == "internal") {
             await state.pushNamed(uri.path);
@@ -589,6 +606,7 @@ class _FinampState extends State<Finamp> with WindowListener {
 
   @override
   Future<void> dispose() async {
+    super.dispose();
     await DiscordRpc.stop().timeout(Duration(milliseconds: 500));
     await _uriLinkSubscription?.cancel();
 
@@ -599,7 +617,6 @@ class _FinampState extends State<Finamp> with WindowListener {
     if (Platform.isIOS) {
       GetIt.instance<CarPlayHelper>().disposeCarplay();
     }
-    super.dispose();
   }
 
   @override
@@ -767,8 +784,8 @@ class FinampApp extends ConsumerWidget {
       localeListResolutionCallback: (locales, supportedLocales) =>
           basicLocaleListResolution(locales, [const Locale("en")].followedBy(supportedLocales)),
       locale: locale,
-      scaffoldMessengerKey: GlobalSnackbar.materialAppScaffoldKey,
-      navigatorKey: GlobalSnackbar.materialAppNavigatorKey,
+      scaffoldMessengerKey: GlobalSnackbar.rawMaterialAppScaffoldKey,
+      navigatorKey: GlobalSnackbar.rawMaterialAppNavigatorKey,
     );
   }
 }
@@ -793,8 +810,8 @@ class FinampErrorApp extends StatelessWidget {
       darkTheme: ThemeData(brightness: Brightness.dark, colorScheme: darkColorScheme),
       supportedLocales: AppLocalizations.supportedLocales,
       home: ErrorScreen(error: error, trace: trace),
-      scaffoldMessengerKey: GlobalSnackbar.materialAppScaffoldKey,
-      navigatorKey: GlobalSnackbar.materialAppNavigatorKey,
+      scaffoldMessengerKey: GlobalSnackbar.rawMaterialAppScaffoldKey,
+      navigatorKey: GlobalSnackbar.rawMaterialAppNavigatorKey,
     );
   }
 }
@@ -959,4 +976,45 @@ class FinampProviderObserver extends ProviderObserver {
   ) {
     GlobalSnackbar.error(error);
   }
+}
+
+/// This is used by the login testing flag to redirect file accesses to the testing folder.
+/// Download base directories are not redirected, so loginTesting flag should be avoided on mobile.
+class TestingPathProvider extends PathProviderPlatform {
+  static Future<Directory> baseDirectory() async {
+    // If we're on desktop, use the integration_test directory in the checkout tree
+    // If we're on mobile and that doesn't exist, use cache directory.
+    Directory outerDirectory = Directory("integration_test");
+    if (!outerDirectory.existsSync()) {
+      outerDirectory = await getApplicationCacheDirectory();
+    }
+    final outerPath = outerDirectory.absolute.path;
+    return Directory(path.join(outerPath, "testing"));
+  }
+
+  TestingPathProvider(Directory dataDir) {
+    basePath = dataDir.absolute.path;
+  }
+
+  late final String basePath;
+
+  Future<String> _getPath(String extension) async {
+    final directory = Directory(path.join(basePath, extension));
+    if (!directory.existsSync()) {
+      directory.createSync(recursive: true);
+    }
+    return directory.absolute.path;
+  }
+
+  @override
+  Future<String?> getTemporaryPath() => _getPath("tmp");
+
+  @override
+  Future<String?> getApplicationSupportPath() => _getPath("support");
+
+  @override
+  Future<String?> getApplicationDocumentsPath() => _getPath("documents");
+
+  @override
+  Future<String?> getApplicationCachePath() => _getPath("cache");
 }
