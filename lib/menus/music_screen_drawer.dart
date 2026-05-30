@@ -244,7 +244,6 @@ class MusicScreenDrawer extends ConsumerWidget {
                   ),
                   const OfflineModeSwitchListTile(),
                   const OfflineModeStatusLabel(),
-                  Divider(),
                   ListTile(
                     leading: const Padding(padding: EdgeInsets.only(right: 16), child: Icon(Icons.file_download)),
                     title: Text(AppLocalizations.of(context)!.downloads),

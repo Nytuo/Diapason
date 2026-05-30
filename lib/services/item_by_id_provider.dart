@@ -22,11 +22,16 @@ Future<BaseItemDto?> itemById(Ref ref, BaseItemId baseItemId) async {
 
   BaseItemDto? baseItem;
 
-  if (ref.watch(finampSettingsProvider.isOffline)) {
-    baseItem = (await downloadsService.getCollectionInfo(id: baseItemId))?.baseItem;
-    baseItem ??= (await downloadsService.getTrackInfo(id: baseItemId))?.baseItem;
-  } else {
-    baseItem = await jellyfinApiHelper.getItemById(baseItemId);
+  try {
+    if (ref.watch(finampSettingsProvider.isOffline)) {
+      baseItem = (await downloadsService.getCollectionInfo(id: baseItemId))?.baseItem;
+      baseItem ??= (await downloadsService.getTrackInfo(id: baseItemId))?.baseItem;
+    } else {
+      baseItem = await jellyfinApiHelper.getItemById(baseItemId);
+    }
+    return baseItem;
+  } catch (e) {
+    // Don't throw on failure, just return null. Otherwise this could lead to unhandled exceptions leading to widget render errors.
+    return null;
   }
-  return baseItem;
 }
