@@ -17,7 +17,8 @@ Future<BaseItemDto?> itemById(Ref ref, BaseItemId baseItemId) async {
 
   BaseItemDto? baseItem;
 
-  if (ref.watch(finampSettingsProvider.isOffline)) {
+  try {
+    if (ref.watch(finampSettingsProvider.isOffline)) {
     baseItem = (await downloadsService.getCollectionInfo(id: baseItemId))?.baseItem;
     baseItem ??= (await downloadsService.getTrackInfo(id: baseItemId))?.baseItem;
   } else {
@@ -31,4 +32,8 @@ Future<BaseItemDto?> itemById(Ref ref, BaseItemId baseItemId) async {
   ref.onDispose(timer.cancel);
 
   return baseItem;
+  } catch (e) {
+    // Don't throw on failure, just return null. Otherwise this could lead to unhandled exceptions leading to widget render errors.
+    return null;
+  }
 }
