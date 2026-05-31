@@ -136,30 +136,7 @@ class MusicScreenPlayable<ChildType extends FinampPlayableDto> extends _Sortable
     }
   }
 
-  FinampPlayableDto buildChild(BaseItemDto item) {
-    switch (tab) {
-      case ContentType.tracks:
-        return Track.fromItem(item);
-      case ContentType.albums:
-        return Album.fromItem(item);
-      case ContentType.playlists:
-        return Playlist.fromItem(item);
-      case ContentType.genres:
-        return Genre.fromItem(item);
-      case ContentType.performingArtists:
-        return Artist.fromItem(item);
-      case ContentType.albumArtists:
-        return Artist.fromItem(item);
-      case ContentType.home:
-      case ContentType.genericArtists:
-      case ContentType.inPlaylist:
-      case ContentType.mixed:
-      case ContentType.inPerformingArtistAlbums:
-      case ContentType.inAlbumArtistAlbums:
-        throw UnsupportedError("Invalid content type $tab for music screen tab.");
-    }
-  }
-
+  @override
   int get normalChildSize => switch (tab) {
     ContentType.albums => 10,
     ContentType.playlists => 20,
@@ -392,7 +369,7 @@ enum ArtistChildType {
   };
 }
 
-class Genre<ChildType extends FinampPlayableDto> extends _SortableItem<ChildType> {
+class Genre<ChildType extends FinampPlayableDto> extends _SortablePagedItem<ChildType> {
   Genre._(super.item, {super.source, required super.sortConfig, required this.type, required this.library}) {
     if (BaseItemDtoType.fromItem(item) != BaseItemDtoType.genre) {
       throw UnsupportedError("Wrong BaseItemDto type: ${item.type}");
@@ -433,6 +410,22 @@ class Genre<ChildType extends FinampPlayableDto> extends _SortableItem<ChildType
     library: currentLibraryPlaceholder,
   );
 
+  MusicScreenPlayable<ChildType> getMusicScreenRequest() {
+    final sort = sortConfig.copyWithGenre(item);
+    return MusicScreenPlayable(
+      tab: switch (type) {
+        GenreChildType.tracks => ContentType.tracks,
+        GenreChildType.albums => ContentType.albums,
+        // TODO could we supply genericArtists here?  I don't believe that type can resolve, currently.
+        GenreChildType.artists => ContentType.performingArtists,
+        GenreChildType.playlists => ContentType.playlists,
+      },
+      library: library,
+      source: source,
+      sortConfig: sort,
+    );
+  }
+
   @override
   bool equalsHelper(Object other) => other is Genre && type == other.type && other.library == library;
 
@@ -442,6 +435,14 @@ class Genre<ChildType extends FinampPlayableDto> extends _SortableItem<ChildType
   @override
   Genre copyWith(ResolvedSortConfig newSort) =>
       Genre(item, source: source, sortConfig: newSort, type: type, library: library);
+
+  @override
+  int get normalChildSize => switch (type) {
+    GenreChildType.tracks => 1,
+    GenreChildType.albums => 10,
+    GenreChildType.artists => 15,
+    GenreChildType.playlists => 20,
+  };
 }
 
 enum GenreChildType {

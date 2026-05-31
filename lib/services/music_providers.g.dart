@@ -296,7 +296,7 @@ class _ResolveSectionProviderElement
       (origin as ResolveSectionProvider).section;
 }
 
-String _$getPlayerSliceHash() => r'd239b064f51db3d186ef65bd01c2de565dd21a37';
+String _$getPlayerSliceHash() => r'91f7f12b3a09e42c9618dfce498cbaddf294f913';
 
 /// See also [getPlayerSlice].
 @ProviderFor(getPlayerSlice)
@@ -588,7 +588,7 @@ class _GetAlbumShuffledPlayerSliceProviderElement
       (origin as GetAlbumShuffledPlayerSliceProvider).item;
 }
 
-String _$getChildTracksHash() => r'e8be34dc51bb2390e93925347fb5226012d0087a';
+String _$getChildTracksHash() => r'549f7a09f30ea42698768bf2b1243312485b70b6';
 
 /// See also [getChildTracks].
 @ProviderFor(getChildTracks)
@@ -709,7 +709,7 @@ class _GetChildTracksProviderElement
       (origin as GetChildTracksProvider).item;
 }
 
-String _$getChildItemsHash() => r'eb5b7de4959d1382b531ad5d1e3f2850a7011ded';
+String _$getChildItemsHash() => r'9bb5a70df1d6eeb9407ba0e44729af2cce2a0dd2';
 
 /// See also [getChildItems].
 @ProviderFor(getChildItems)

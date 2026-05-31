@@ -37,6 +37,8 @@ sealed class FinampUnpagedDisplayable<ChildType extends FinampDisplayableOrPlaya
 sealed class FinampPagedPlayable<ChildType extends FinampPlayable> extends FinampPlayable
     implements FinampDisplayable<ChildType> {
   const FinampPagedPlayable({required super.source});
+
+  int get normalChildSize;
 }
 
 sealed class FinampPlayableDto extends FinampPlayable {
@@ -103,7 +105,6 @@ sealed class FinampSortable<ChildType extends FinampDisplayableOrPlayable> exten
 //
 //
 
-// As of right now, we do not apply paging for any item types, only the music screens.
 sealed class _SortableItem<ChildType extends FinampPlayableDto> extends FinampPlayableDto
     implements FinampSortable<ChildType>, FinampUnpagedDisplayable<ChildType>, FinampUnpagedPlayable<ChildType> {
   _SortableItem(super.item, {required super.source, required this.sortConfig})
@@ -122,6 +123,30 @@ sealed class _SortableItem<ChildType extends FinampPlayableDto> extends FinampPl
   @override
   bool equalsHelperChain(Object other) {
     return other is _SortableItem && sortConfig == other.sortConfig && super.equalsHelperChain(other);
+  }
+
+  @override
+  int get hashHelperChain => Object.hash(sortConfig, super.hashHelperChain);
+}
+
+sealed class _SortablePagedItem<ChildType extends FinampPlayableDto> extends FinampPlayableDto
+    implements FinampSortable<ChildType>, FinampPagedPlayable<ChildType> {
+  _SortablePagedItem(super.item, {required super.source, required this.sortConfig})
+    : assert(() {
+        ContentType type = [BaseItemDtoType.album, BaseItemDtoType.playlist].contains(BaseItemDtoType.fromItem(item))
+            ? ContentType.inPlaylist
+            : ContentType.tracks;
+        final controller = SortAndFilterController(startingConfig: sortConfig, contentType: type);
+        final resolvedConfig = GetIt.instance<ProviderContainer>().read(resolveSortProvider(controller));
+        return sortConfig == resolvedConfig;
+      }());
+
+  @override
+  final ResolvedSortConfig sortConfig;
+
+  @override
+  bool equalsHelperChain(Object other) {
+    return other is _SortablePagedItem && sortConfig == other.sortConfig && super.equalsHelperChain(other);
   }
 
   @override

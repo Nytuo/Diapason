@@ -664,7 +664,7 @@ class QueueService {
           itemList: slice.cachedTracks,
           source: slice.source,
           order: FinampPlaybackOrder.linear,
-          initialIndex: 0,
+          initialIndex: slice.startingOffset,
           beginPlaying: beginPlaying,
         );
         _queueServiceLogger.info(

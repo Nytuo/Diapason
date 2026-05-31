@@ -32,7 +32,7 @@ class PagedContent extends _$PagedContent {
     switch (request) {
       case FinampUnpagedDisplayable():
         return _buildUnpaged(request);
-      case MusicScreenPlayable<FinampPlayableDto>():
+      case FinampPagedPlayable<FinampPlayableDto>():
         return _buildPaged(request);
     }
   }
@@ -78,7 +78,7 @@ class PagedContent extends _$PagedContent {
     );
   }
 
-  PagingState<int, FinampDisplayableOrPlayable> _buildPaged(MusicScreenPlayable<FinampPlayableDto> request) {
+  PagingState<int, FinampDisplayableOrPlayable> _buildPaged(FinampPagedPlayable<FinampPlayableDto> request) {
     final List<List<FinampDisplayableOrPlayable>> pages = [];
     final List<int> keys = [];
     final List<LoadHomeSectionItemsProvider> providers = [];
@@ -86,16 +86,24 @@ class PagedContent extends _$PagedContent {
     bool hasNextPage = true;
     Object? error;
 
+    final MusicScreenPlayable musicRequest;
+    switch (request) {
+      case Genre<FinampPlayableDto>():
+        musicRequest = request.getMusicScreenRequest();
+      case MusicScreenPlayable<FinampPlayableDto>():
+        musicRequest = request;
+    }
+
     int offset = 0;
     for (int i = 0; i < _pageSizes.length; i++) {
-      final provider = loadHomeSectionItemsProvider(request: request, startIndex: offset, limit: _pageSizes[i]);
+      final provider = loadHomeSectionItemsProvider(request: musicRequest, startIndex: offset, limit: _pageSizes[i]);
       providers.add(provider);
 
       final page = ref.watch(provider).unwrapPrevious();
 
       if (page is AsyncData) {
         if (page.value != null) {
-          pages.add(page.value!.map((x) => request.buildChild(x)).toList());
+          pages.add(page.value!.map((x) => FinampPlayableDto.fromItem(x)).toList());
           keys.add(offset);
           if (page.value!.length < _pageSizes[i]) {
             hasNextPage = false;
@@ -157,23 +165,42 @@ class PagedContent extends _$PagedContent {
       for (var provider in oldProviders) {
         ref.invalidate(provider);
       }
+      switch (request) {
+        case FinampPlayableDto item:
+          ref.invalidate(itemByIdProvider(item.item.id));
+        case MusicScreenPlayable<FinampPlayableDto> library:
+          final libraryId = library.library.resolve(ref);
+          if (libraryId != null && ref.exists(itemByIdProvider(libraryId))) {
+            try {
+              ref.read(itemByIdProvider(libraryId));
+            } catch (_) {
+              ref.invalidate(itemByIdProvider(libraryId));
+            }
+          }
+        case LatestQueues():
+        case PrecalculatedPlayable():
+          break;
+      }
     });
   }
 
   // TODO optimize for fast response, like play all on home screen?
   // Maybe we add a followup Future to PlayableSlice, and if we already have the starting item in cache (we should)
   // then immediately return a slice with the rest in that future for the caller to add to queue later.
-  Future<List<FinampDisplayableOrPlayable>> loadSlice(int startingIndex, int limit) async {
+  (List<FinampDisplayableOrPlayable>, Future<List<FinampDisplayableOrPlayable>>?) loadSlice(
+    int startingIndex,
+    int limit,
+  ) {
     // capture local request for type casting
     final request = this.request;
     // TODO wait for current active loads to complete.  Do error response?
     final preCached = state.items ?? [];
     // hasNextPage should always be false if we have any items from a non-pagable, but lets make extra sure.
-    final doLoads = state.hasNextPage && (request is FinampUnpagedDisplayable || preCached.isEmpty);
+    final doLoads = state.hasNextPage && (request is! FinampUnpagedDisplayable || preCached.isEmpty);
 
     final queueEndTarget = startingIndex + limit;
     if (preCached.length >= queueEndTarget) {
-      return preCached.slice(startingIndex, queueEndTarget);
+      return (preCached.slice(startingIndex, queueEndTarget), null);
     }
     List<FinampDisplayableOrPlayable> items = [];
     if (startingIndex < preCached.length) {
@@ -181,7 +208,7 @@ class PagedContent extends _$PagedContent {
     }
 
     if (!doLoads) {
-      return items;
+      return (items, null);
     }
 
     final loadStartOffset = startingIndex + items.length;
@@ -201,7 +228,13 @@ class PagedContent extends _$PagedContent {
         }
       },
     );
-    return (await waitForPage.future ?? []).safeSliceByLength(startingIndex, limit);
+    return (
+      items,
+      Future.sync(() async {
+        final fullPage = await waitForPage.future ?? [];
+        return fullPage.safeSliceByLength(startingIndex + items.length, limit);
+      }),
+    );
   }
 }
 

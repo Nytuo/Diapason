@@ -15,11 +15,6 @@ Future<BaseItemDto?> itemById(Ref ref, BaseItemId baseItemId) async {
   final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
   final downloadsService = GetIt.instance<DownloadsService>();
 
-  // Prevent re-fetching item for at least 15 minutes, even if we aren't being watched
-  final keepAlive = ref.keepAlive();
-  final timer = Timer(const Duration(minutes: 15), keepAlive.close);
-  ref.onDispose(timer.cancel);
-
   BaseItemDto? baseItem;
 
   if (ref.watch(finampSettingsProvider.isOffline)) {
@@ -28,5 +23,12 @@ Future<BaseItemDto?> itemById(Ref ref, BaseItemId baseItemId) async {
   } else {
     baseItem = await jellyfinApiHelper.getItemById(baseItemId);
   }
+
+  // Prevent re-fetching item for at least 15 minutes, even if we aren't being watched
+  // Do this after item is fetched to avoid caching errors
+  final keepAlive = ref.keepAlive();
+  final timer = Timer(const Duration(minutes: 15), keepAlive.close);
+  ref.onDispose(timer.cancel);
+
   return baseItem;
 }
