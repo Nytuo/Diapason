@@ -3291,7 +3291,7 @@
   },
   "library": "Library",
   "@library": {
-    "description": "Title for home screen section editor library selector dropdown"
+    "description": "Title for home screen section editor library selector dropdown, or a general view of the entire active music library (e.g. in CarPlay)"
   },
   "currentLibrary": "Current library",
   "@currentLibrary": {
@@ -3681,5 +3681,17 @@
   "libraryQualifierActive": "active",
   "@libraryQualifierActive": {
     "description": "Label shown next to the currently selected library in the Finamp menu/drawer"
+  },
+  "voiceSearch": "Voice Search",
+  "@voiceSearch": {
+    "description": "Heading for the page that prompts the user to perform a voice search."
+  },
+  "carPlaySiriHint": "Say \"Hey Siri, play [track/artist/album] on Finamp\"",
+  "@carPlaySiriHint": {
+    "description": "Hint text for how to use Siri to search in CarPlay."
+  },
+  "carPlayLoginPrompt": "Open the Finamp app on your phone to log in to your Jellyfin server.",
+  "@carPlayLoginPrompt": {
+    "description": "Label shown when the user is trying to use CarPlay without being logged in."
   }
 }

@@ -32,6 +32,8 @@ import 'package:finamp/screens/queue_restore_screen.dart';
 import 'package:finamp/services/album_image_provider.dart';
 import 'package:finamp/services/android_auto_helper.dart';
 import 'package:finamp/services/audio_service_smtc.dart';
+import 'package:finamp/services/carplay_helper.dart';
+import 'package:finamp/services/ios_helpers.dart';
 import 'package:finamp/services/data_source_service.dart';
 import 'package:finamp/services/dbus_manager.dart';
 import 'package:finamp/services/discord_rpc.dart';
@@ -71,6 +73,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:uuid/uuid.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:flutter_carplay/flutter_carplay.dart';
 
 import 'components/Buttons/simple_button.dart';
 import 'components/LogsScreen/copy_logs_button.dart';
@@ -448,6 +451,10 @@ Future<void> _setupPlaybackServices() async {
   GetIt.instance.registerSingleton(PlaybackHistoryService());
   GetIt.instance.registerSingleton(AudioServiceHelper());
 
+  if (Platform.isIOS) {
+    GetIt.instance.registerSingleton<CarPlayHelper>(CarPlayHelper());
+  }
+
   // Begin to restore queue
   unawaited(queueService.performInitialQueueLoad().catchError((dynamic x) => GlobalSnackbar.error(x)));
 }
@@ -753,6 +760,12 @@ class _FinampState extends State<Finamp> with WindowListener {
       WindowManager.instance.addListener(this);
       // windowManager.setPreventClose(true); //!!! destroying the window manager instance doesn't seem to work on Windows release builds, the app just freezes instead
     }
+
+    // iOS-specific setup (CarPlay, Siri)
+    if (Platform.isIOS) {
+      GetIt.instance<CarPlayHelper>().setupCarplay();
+      IosSiriHandler.setup();
+    }
   }
 
   Future<void> _consumeInitialAndroidLaunchIntent() async {
@@ -783,6 +796,10 @@ class _FinampState extends State<Finamp> with WindowListener {
 
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
       WindowManager.instance.removeListener(this);
+    }
+
+    if (Platform.isIOS) {
+      GetIt.instance<CarPlayHelper>().disposeCarplay();
     }
   }
 

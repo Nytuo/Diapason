@@ -125,7 +125,7 @@ class QueueService {
       _currentQueueIndex = event.queueIndex ?? 0;
 
       // Ignore playback events if queue is empty.
-      if (previousIndex != _currentQueueIndex && _currentTrack != null) {
+      if (_audioHandler.audioSources.isNotEmpty && (previousIndex != _currentQueueIndex || _currentTrack == null)) {
         _queueServiceLogger.finer("Play queue index changed, new index: $_currentQueueIndex");
         _buildQueueFromNativePlayerQueue();
       } else {
@@ -803,8 +803,13 @@ class QueueService {
       }
 
       if (Platform.isIOS || Platform.isMacOS) {
-        // Both iOS and macOS will start playing the first queue index if we don't stop first
-        await _audioHandler.stopPlayback();
+        // Both iOS and macOS will start playing the first queue index if we don't stop first.
+        // Use pause() instead of stop() to keep the audio session active and prevent
+        // other apps (e.g. Podcasts) from briefly resuming during Siri handoff.
+        // Server activity reporting: pause() sends a progress update (paused state)
+        // rather than a stop event; when the new queue starts, onTrackChanged fires
+        // and correctly reports the old track stopped + new track started.
+        await _audioHandler.pause();
       }
       await _audioHandler.clearFinampQueueItems();
 
@@ -827,7 +832,9 @@ class QueueService {
       if (beginPlaying) {
         // only open the player screen if we actually start playing, otherwise it would open after startup + queue restore
         if (FinampSettingsHelper.finampSettings.autoExpandPlayerScreen) {
-          unawaited(NowPlayingBar.openPlayerScreen());
+          if (GlobalSnackbar.navigatorState?.mounted ?? false) {
+            unawaited(NowPlayingBar.openPlayerScreen());
+          }
         }
       }
 
