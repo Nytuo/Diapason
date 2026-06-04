@@ -17,26 +17,26 @@ import 'package:flutter/material.dart';
 
 import '../models/music_models.dart';
 
-const Duration genreMenuDefaultAnimationDuration = Duration(milliseconds: 750);
-const Curve genreMenuDefaultInCurve = Curves.easeOutCubic;
-const Curve genreMenuDefaultOutCurve = Curves.easeInCubic;
-const genreMenuRouteName = "/genre-menu";
+const Duration collectionMenuDefaultAnimationDuration = Duration(milliseconds: 750);
+const Curve collectionMenuDefaultInCurve = Curves.easeOutCubic;
+const Curve collectionMenuDefaultOutCurve = Curves.easeInCubic;
+const collectionMenuRouteName = "/collection-menu";
 
-Future<void> showModalGenreMenu({
+Future<void> showModalCollectionMenu({
   required BuildContext context,
   required BaseItemDto item,
   FinampStorableQueueInfo? queueInfo,
 }) async {
-  final playableItem = Genre.fromItem(item);
+  final playableItem = JellyfinCollection.fromItem(item);
   // Normal menu entries, excluding headers
   List<HideableMenuEntry> getMenuEntries(BuildContext context) {
     return [
       if (queueInfo != null) RestoreQueueMenuEntry(queueInfo: queueInfo),
-      AddToPlaylistMenuEntry(item: playableItem),
+      // AddToPlaylistMenuEntry(item: playableItem),
       InstantMixMenuEntry(baseItem: item),
-      MixBuilderMenuEntry(baseItem: item),
+      // MixBuilderMenuEntry(baseItem: item),
       StartRadioMenuEntry(baseItem: item),
-      AdaptiveDownloadLockDeleteMenuEntry(baseItem: item),
+      // AdaptiveDownloadLockDeleteMenuEntry(baseItem: item),
       ToggleFavoriteMenuEntry(baseItem: item),
     ];
   }
@@ -66,7 +66,7 @@ Future<void> showModalGenreMenu({
   await showThemedBottomSheet(
     context: context,
     item: item,
-    routeName: genreMenuRouteName,
+    routeName: collectionMenuRouteName,
     buildSlivers: (context) => getMenuProperties(context),
   );
 }

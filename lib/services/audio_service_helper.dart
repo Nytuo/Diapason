@@ -91,6 +91,7 @@ class AudioServiceHelper {
               BaseItemDtoType.album => QueueItemSourceType.albumMix,
               BaseItemDtoType.artist => QueueItemSourceType.artistMix,
               BaseItemDtoType.genre => QueueItemSourceType.genreMix,
+              BaseItemDtoType.collection => QueueItemSourceType.collectionMix,
               _ => QueueItemSourceType.unknown,
             },
             name: QueueItemSourceName(

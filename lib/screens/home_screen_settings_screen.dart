@@ -395,7 +395,12 @@ class _GlobalSearchBoxState extends ConsumerState<GlobalSearchBox> {
             if (value == null) return SizedBox.shrink();
             return Padding(
               padding: const EdgeInsets.only(top: 10.0),
-              child: ItemWrapper(item: value),
+              child: ItemWrapper(
+                item: value,
+                // override default on-tap since we don't want to allow navigating away
+                onTap: () => openItemMenu(context: context, item: value),
+                isGrid: false,
+              ),
             );
           },
         ),

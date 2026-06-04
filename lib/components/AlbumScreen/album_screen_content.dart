@@ -182,14 +182,14 @@ class _AlbumScreenContentState extends ConsumerState<AlbumScreenContent> {
                 OverflowMenuButton(
                   onPressed: () => showModalAlbumMenu(
                     context: context,
-                    item: AlbumDisc(widget.parent, tracks: childrenOfThisDisc),
+                    album: AlbumDisc(widget.parent, tracks: childrenOfThisDisc),
                   ),
                   label: AppLocalizations.of(context)!.moreActionsOnAlbumDisc,
                 ),
               ],
               onTap: () => showModalAlbumMenu(
                 context: context,
-                item: AlbumDisc(widget.parent, tracks: childrenOfThisDisc),
+                album: AlbumDisc(widget.parent, tracks: childrenOfThisDisc),
               ),
               onDismiss: (followUpAction) => onConfirmPlayableDismiss(
                 followUpAction: followUpAction,

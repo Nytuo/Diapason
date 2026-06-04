@@ -1045,7 +1045,7 @@
   "@savedQueue": {
     "description": "Title for the queue source for tracks were previously in the queue before an app restart and have been reloaded"
   },
-  "playingFromType": "Playing From {source, select, album{Album} playlist{Playlist} trackMix{Track Mix} artistMix{Artist Mix} albumMix{Album Mix} genreMix{Genre Mix} favorites{Favorites} allTracks{All Tracks} filteredList{Tracks} genre{Genre} artist{Artist} track{Track} nextUpAlbum{Album in Next Up} nextUpPlaylist{Playlist in Next Up} nextUpArtist{Artist in Next Up} nextUpGenre{Genre in Next Up} remoteClient{a Remote Client} radio{Radio} homeScreenSection{} other{}}",
+  "playingFromType": "Playing From {source, select, album{Album} playlist{Playlist} trackMix{Track Mix} artistMix{Artist Mix} albumMix{Album Mix} genreMix{Genre Mix} favorites{Favorites} allTracks{All Tracks} filteredList{Tracks} genre{Genre} artist{Artist} track{Track} nextUpAlbum{Album in Next Up} nextUpPlaylist{Playlist in Next Up} nextUpArtist{Artist in Next Up} nextUpGenre{Genre in Next Up} remoteClient{a Remote Client} radio{Radio} homeScreenSection{} collection{Collection} collectionMix{Collection Mix} other{}}",
   "@playingFromType": {
     "description": "Prefix shown before the type of the main queue source at the top of the player screen. Example: \"Playing From Album\"",
     "placeholders": {
@@ -3695,13 +3695,13 @@
     "description": "Label shown when the user is trying to use CarPlay without being logged in."
   },
   "offlineSortFallback": "Sorting by {onlineSort} is only available online.  Currently falling back to default sort order",
-    "@offlineSortFallback": {
-      "description": "Warning presented in sort and filter menu when an online-only sort is chosen.",
-      "placeholders": {
-        "onlineSort": {
-          "type": "String",
-          "example": "Play Count"
-        }
+  "@offlineSortFallback": {
+    "description": "Warning presented in sort and filter menu when an online-only sort is chosen.",
+    "placeholders": {
+      "onlineSort": {
+        "type": "String",
+        "example": "Play Count"
       }
     }
+  }
 }

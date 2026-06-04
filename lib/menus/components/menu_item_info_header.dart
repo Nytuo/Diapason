@@ -23,9 +23,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 
-import '../../components/finamp_icon.dart';
 import '../../extensions/localizations.dart';
-import '../../services/finamp_settings_helper.dart';
 
 const double infoHeaderFullExtent = 162.0;
 const double infoHeaderFullInternalHeight = 140.0;
@@ -45,6 +43,7 @@ Widget _getMenuHeaderForItemType({
       BaseItemDtoType.playlist => PlaylistInfo(item: baseItem, condensed: condensed, features: features),
       BaseItemDtoType.genre => GenreInfo(item: baseItem, condensed: condensed, features: features),
       BaseItemDtoType.artist => ArtistInfo(item: baseItem, condensed: condensed, features: features),
+      BaseItemDtoType.collection => CollectionInfo(item: baseItem, condensed: condensed, features: features),
       _ => TrackInfo(item: baseItem, condensed: condensed, features: features),
     },
     MusicScreenPlayable(sortConfig: final config, library: final library, tab: final content) => HomeSectionInfo(
@@ -368,6 +367,40 @@ class ArtistInfo extends ConsumerWidget {
 
 class GenreInfo extends ConsumerWidget {
   const GenreInfo({super.key, required this.item, required this.condensed, required this.features});
+
+  final BaseItemDto item;
+  final bool condensed;
+  final List<MenuItemInfoHeaderFeatures> features;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ItemInfo(
+      item: item,
+      condensed: condensed,
+      features: features,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      featureImage: AlbumImage(item: item, borderRadius: BorderRadius.zero, tapToZoom: true),
+      infoRows: [
+        Text(
+          item.name ?? AppLocalizations.of(context)!.unknownName,
+          textAlign: TextAlign.start,
+          style: TextStyle(
+            fontSize: condensed ? 16 : 18,
+            height: 1.2,
+            color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white,
+          ),
+          overflow: TextOverflow.ellipsis,
+          softWrap: true,
+          maxLines: 2,
+        ),
+        if (!condensed) ...[const SizedBox(height: 6), ItemAmount(baseItem: item)],
+      ],
+    );
+  }
+}
+
+class CollectionInfo extends ConsumerWidget {
+  const CollectionInfo({super.key, required this.item, required this.condensed, required this.features});
 
   final BaseItemDto item;
   final bool condensed;

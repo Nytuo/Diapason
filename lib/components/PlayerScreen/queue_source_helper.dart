@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:finamp/components/confirmation_prompt_dialog.dart';
 import 'package:finamp/components/global_snackbar.dart';
 import 'package:finamp/l10n/app_localizations.dart';
+import 'package:finamp/menus/collection_menu.dart';
 import 'package:finamp/menus/track_menu.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
@@ -15,6 +16,7 @@ import 'package:finamp/services/album_screen_provider.dart';
 import 'package:finamp/services/downloads_service.dart';
 import 'package:finamp/services/feedback_helper.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
+import 'package:finamp/services/finamp_user_helper.dart';
 import 'package:finamp/services/jellyfin_api_helper.dart';
 import 'package:finamp/services/queue_service.dart';
 import 'package:flutter/material.dart';
@@ -50,6 +52,26 @@ void navigateToSource(BuildContext context, QueueItemSource source) {
     case QueueItemSourceType.trackMix:
       if (source.item != null) {
         showModalTrackMenu(context: context, item: source.item!);
+      }
+    case QueueItemSourceType.collection:
+    case QueueItemSourceType.collectionMix:
+      if (source.item != null) {
+        // showModalCollectionMenu(context: context, item: source.item!);
+        Navigator.of(context).push(
+          MaterialPageRoute<MusicScreen>(
+            builder: (context) => MusicScreen(
+              singleTabConfig: HomeScreenSectionConfiguration(
+                base: CollectionHomeSection(
+                  itemId: source.item!.id,
+                  libraryId: GetIt.instance<FinampUserHelper>().currentUser!.currentViewId!,
+                  contentType: ContentType.mixed,
+                ),
+                customSectionTitle: source.item!.name ?? AppLocalizations.of(context)!.unknownName,
+                sortConfig: SortAndFilterConfiguration.defaultSort,
+              ),
+            ),
+          ),
+        );
       }
     case QueueItemSourceType.radio:
       final radioSource = GetIt.instance<QueueService>().getQueue().source;

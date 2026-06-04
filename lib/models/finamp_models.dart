@@ -2022,6 +2022,10 @@ enum QueueItemSourceType {
   radio,
   @HiveField(23)
   homeScreenSection,
+  @HiveField(24)
+  collection,
+  @HiveField(25)
+  collectionMix,
 }
 
 @HiveType(typeId: 53)

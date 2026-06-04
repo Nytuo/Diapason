@@ -5,6 +5,7 @@ import 'package:finamp/components/MusicScreen/item_collection_list_tile.dart';
 import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/menus/album_menu.dart';
 import 'package:finamp/menus/artist_menu.dart';
+import 'package:finamp/menus/collection_menu.dart';
 import 'package:finamp/menus/genre_menu.dart';
 import 'package:finamp/menus/playlist_menu.dart';
 import 'package:finamp/menus/track_menu.dart';
@@ -173,21 +174,23 @@ void openItemMenu({
 
   switch (BaseItemDtoType.fromItem(item)) {
     case BaseItemDtoType.artist:
-      await showModalArtistMenu(context: context, baseItem: item, queueInfo: queueInfo);
+      await showModalArtistMenu(context: context, item: item, queueInfo: queueInfo);
       break;
     case BaseItemDtoType.genre:
-      await showModalGenreMenu(context: context, baseItem: item, queueInfo: queueInfo);
+      await showModalGenreMenu(context: context, item: item, queueInfo: queueInfo);
       break;
     case BaseItemDtoType.playlist:
-      await showModalPlaylistMenu(context: context, baseItem: item, queueInfo: queueInfo);
+      await showModalPlaylistMenu(context: context, item: item, queueInfo: queueInfo);
       break;
     case BaseItemDtoType.track:
       await showModalTrackMenu(context: context, item: item, queueInfo: queueInfo);
       break;
     case BaseItemDtoType.album:
-      await showModalAlbumMenu(context: context, item: Album.fromItem(item), queueInfo: queueInfo);
+      await showModalAlbumMenu(context: context, album: Album.fromItem(item), queueInfo: queueInfo);
       break;
-    //TODO add collection menu
+    case BaseItemDtoType.collection:
+      await showModalCollectionMenu(context: context, item: item, queueInfo: queueInfo);
+      break;
     default:
       // Do nothing for unsupported item types
       break;

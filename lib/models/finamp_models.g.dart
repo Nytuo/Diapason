@@ -2126,6 +2126,10 @@ class QueueItemSourceTypeAdapter extends TypeAdapter<QueueItemSourceType> {
         return QueueItemSourceType.radio;
       case 23:
         return QueueItemSourceType.homeScreenSection;
+      case 24:
+        return QueueItemSourceType.collection;
+      case 25:
+        return QueueItemSourceType.collectionMix;
       default:
         return QueueItemSourceType.album;
     }
@@ -2182,6 +2186,10 @@ class QueueItemSourceTypeAdapter extends TypeAdapter<QueueItemSourceType> {
         writer.writeByte(22);
       case QueueItemSourceType.homeScreenSection:
         writer.writeByte(23);
+      case QueueItemSourceType.collection:
+        writer.writeByte(24);
+      case QueueItemSourceType.collectionMix:
+        writer.writeByte(25);
     }
   }
 
