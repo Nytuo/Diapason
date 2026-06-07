@@ -270,6 +270,16 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
                       },
                     ),
                 ],
+                Builder(
+                  builder: (context) => MediaQuery.widthOf(context) > 600
+                      ? IconButtonWithSemantics(
+                          label: context.l10n.settings,
+                          icon: TablerIcons.settings,
+                          iconSize: 28.0,
+                          onPressed: () => Navigator.pushNamed(context, SettingsScreen.routeName),
+                        )
+                      : SizedBox.shrink(),
+                ),
                 IconButtonWithSemantics(
                   label: context.l10n.globalMenu,
                   icon: TablerIcons.dots,
