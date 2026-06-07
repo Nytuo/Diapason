@@ -88,16 +88,10 @@ class QuickActionsSelector extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      Visibility(
-                        maintainAnimation: true,
-                        maintainSize: true,
-                        maintainState: true,
-                        visible: action.action.editable,
-                        child: SimpleButton.small(
-                          text: context.l10n.editAction,
-                          icon: TablerIcons.edit,
-                          onPressed: () => editQuickAction(context, index),
-                        ),
+                      SimpleButton.small(
+                        text: action.action.editable ? context.l10n.editAction : context.l10n.swapAction,
+                        icon: action.action.editable ? TablerIcons.edit : TablerIcons.selector,
+                        onPressed: () => editQuickAction(context, index),
                       ),
                       SimpleButton.small(
                         text: context.l10n.removeAction,

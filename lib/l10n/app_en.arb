@@ -3556,6 +3556,10 @@
   "@editAction": {
     "description": "Button to edit a quick action"
   },
+  "swapAction": "Swap Action",
+  "@swapAction": {
+    "description": "Button to swap the selected quick action"
+  },
   "removeAction": "Remove Action",
   "@removeAction": {
     "description": "Button to remove a quick action"
@@ -3716,6 +3720,6 @@
       }
     }
   },
-"retry":  "Retry",
+  "retry": "Retry",
   "retryPageLoad": "Failed to load items from the server.  Click to retry."
 }
