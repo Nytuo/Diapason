@@ -288,7 +288,9 @@ class DefaultSettings {
       HomeScreenSectionConfiguration.fromPreset(HomeScreenSectionPresetType.favoriteArtists),
     ],
   );
+  //TODO these values should be set based on the platform
   static const gridImageSize = 160;
+  static const homeScreenImageSize = 80;
   static const useAndroidGainEffect = true;
 }
 
@@ -432,6 +434,7 @@ class FinampSettings {
     this.previousTracksPersistenceMode = DefaultSettings.previousTracksPersistenceMode,
     required this.homeScreenConfiguration,
     this.gridImageSize = DefaultSettings.gridImageSize,
+    this.homeScreenImageSize = DefaultSettings.homeScreenImageSize,
     this.useAndroidGainEffect = DefaultSettings.useAndroidGainEffect,
   });
 
@@ -907,6 +910,9 @@ class FinampSettings {
 
   @HiveField(149, defaultValue: DefaultSettings.useAndroidGainEffect)
   bool useAndroidGainEffect;
+
+  @HiveField(150, defaultValue: DefaultSettings.homeScreenImageSize)
+  int homeScreenImageSize;
 
   static Future<FinampSettings> create() async {
     final downloadLocation = await DownloadLocation.create(

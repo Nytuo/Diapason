@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:finamp/components/LayoutSettingsScreen/automatic_accent_color_selector.dart';
 import 'package:finamp/components/LayoutSettingsScreen/use_monochrome_icon.dart';
 import 'package:finamp/l10n/app_localizations.dart';
+import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/screens/album_settings_screen.dart';
 import 'package:finamp/screens/artist_settings_screen.dart';
 import 'package:finamp/screens/customization_settings_screen.dart';
@@ -90,7 +91,8 @@ class _LayoutSettingsScreenState extends ConsumerState<LayoutSettingsScreen> {
           const AutomaticAccentColorSelector(),
           const Divider(),
           const ContentViewTypeDropdownListTile(),
-          const GridImageSizeSelector(),
+          if (ref.watch(finampSettingsProvider.contentViewType) == ContentViewType.grid) const GridImageSizeSelector(),
+          const HomeScreenImageSizeSelector(),
           const ShowTextOnGridViewSelector(),
           const UseCoverAsBackgroundToggle(),
           const ShowArtistChipImageToggle(),
@@ -130,16 +132,59 @@ class ShowProgressOnNowPlayingBarToggle extends ConsumerWidget {
   }
 }
 
-class GridImageSizeSelector extends ConsumerStatefulWidget {
+class GridImageSizeSelector extends StatelessWidget {
   const GridImageSizeSelector({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() {
-    return _GridImageSizeSelectorState();
+  Widget build(BuildContext context) {
+    return GenericImageSizeSlider(
+      settingSelector: (settings) => settings.gridImageSize,
+      onChanged: FinampSetters.setGridImageSize,
+      title: (l10n) => l10n.gridImageSizeTitle,
+      subtitle: (l10n) => l10n.gridImageSizeSubtitle,
+      label: (l10n, sizeLabel, numLabel) => l10n.gridImageSizeLabel(sizeLabel, numLabel),
+    );
   }
 }
 
-class _GridImageSizeSelectorState extends ConsumerState<GridImageSizeSelector> {
+class HomeScreenImageSizeSelector extends StatelessWidget {
+  const HomeScreenImageSizeSelector({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GenericImageSizeSlider(
+      settingSelector: (settings) => settings.homeScreenImageSize,
+      onChanged: FinampSetters.setHomeScreenImageSize,
+      title: (l10n) => l10n.homeScreenImageSizeTitle,
+      subtitle: (l10n) => l10n.homeScreenImageSizeSubtitle,
+      label: (l10n, sizeLabel, numLabel) => l10n.gridImageSizeLabel(sizeLabel, numLabel),
+    );
+  }
+}
+
+class GenericImageSizeSlider extends ConsumerStatefulWidget {
+  const GenericImageSizeSlider({
+    super.key,
+    required this.settingSelector,
+    required this.onChanged,
+    required this.title,
+    required this.subtitle,
+    required this.label,
+  });
+
+  final int Function(FinampSettings settings) settingSelector;
+  final ValueChanged<int> onChanged;
+  final String Function(AppLocalizations l10n) title;
+  final String Function(AppLocalizations l10n) subtitle;
+  final String Function(AppLocalizations l10n, String sizeLabel, String numLabel) label;
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() {
+    return _GenericImageSizeSliderState();
+  }
+}
+
+class _GenericImageSizeSliderState extends ConsumerState<GenericImageSizeSlider> {
   // We'll just assume the setting can only be changed by this widget
   double? colCount;
 
@@ -156,7 +201,7 @@ class _GridImageSizeSelectorState extends ConsumerState<GridImageSizeSelector> {
     // 25 options even if they go below this to increase flexibility and because they can handle the more precise slider
     final maxAvailable = max((predictedGridWidth / 45).ceil(), Platform.isAndroid || Platform.isIOS ? 0 : 25);
 
-    colCount ??= predictedGridWidth / FinampSettingsHelper.finampSettings.gridImageSize;
+    colCount ??= predictedGridWidth / widget.settingSelector(FinampSettingsHelper.finampSettings);
     colCount = colCount!.clamp(1, maxAvailable.toDouble());
 
     String numLabel;
@@ -165,6 +210,7 @@ class _GridImageSizeSelectorState extends ConsumerState<GridImageSizeSelector> {
     } else {
       numLabel = "~${colCount!.round()}";
     }
+    //TODO this mapping might work for desktop, but on mobile it jumps from "medium" to "very large", and half the slider is "very small"
     final sizeLabel = AppLocalizations.of(context)!.fixedGridTileSizeEnum(switch (predictedGridWidth / colCount!) {
       < 80 => "verySmall",
       < 125 => "small",
@@ -175,7 +221,7 @@ class _GridImageSizeSelectorState extends ConsumerState<GridImageSizeSelector> {
 
     return Column(
       children: [
-        ListTile(title: Text(context.l10n.gridImageSizeTitle), subtitle: Text(context.l10n.gridImageSizeSubtitle)),
+        ListTile(title: Text(widget.title(context.l10n)), subtitle: Text(widget.subtitle(context.l10n))),
         Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -193,12 +239,13 @@ class _GridImageSizeSelectorState extends ConsumerState<GridImageSizeSelector> {
               },
               onChangeEnd: (value) {
                 final pixels = predictedGridWidth / value;
-                FinampSetters.setGridImageSize(pixels.toInt());
+                widget.onChanged(pixels.toInt());
               },
               autofocus: false,
               focusNode: FocusNode(skipTraversal: true, canRequestFocus: false),
             ),
-            Text(context.l10n.gridImageSizeLabel(sizeLabel, numLabel), style: Theme.of(context).textTheme.titleLarge),
+            Text(widget.label(context.l10n, sizeLabel, numLabel), style: Theme.of(context).textTheme.titleMedium),
+            SizedBox(height: 12),
           ],
         ),
       ],

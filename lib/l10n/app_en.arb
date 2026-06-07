@@ -3337,7 +3337,7 @@
   "@gridImageSizeTitle": {
     "description": "Title of grid tile image size setting"
   },
-  "gridImageSizeSubtitle": "Select the size of items in the grid",
+  "gridImageSizeSubtitle": "Select the size of items in grid view",
   "@gridImageSizeSubtitle": {
     "description": "Subtitle of grid tile image size setting"
   },
@@ -3353,6 +3353,14 @@
       }
     },
     "description": "Slider label in grid tile image size setting"
+  },
+  "homeScreenImageSizeTitle": "Home Screen Tile Size",
+  "@homeScreenImageSizeTitle": {
+    "description": "Title of home screen tile image size setting"
+  },
+  "homeScreenImageSizeSubtitle": "Select the size of items in on the home screen",
+  "@homeScreenImageSizeSubtitle": {
+    "description": "Subtitle of home screen tile image size setting"
   },
   "noFilterActive": "No Filter Active",
   "@noFilterActive": {

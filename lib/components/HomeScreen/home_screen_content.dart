@@ -353,7 +353,12 @@ class HomeScreenSectionContent extends ConsumerWidget {
           : Center(child: Text(context.l10n.noItemsAvailable, maxLines: 1));
     } else {
       return SizedBox(
-        height: calculateItemCollectionCardHeight(ref: ref, sectionInfo: sectionInfo, itemType: null),
+        height: calculateItemCollectionCardHeight(
+          ref: ref,
+          sectionInfo: sectionInfo,
+          itemType: null,
+          forHomeScreen: true,
+        ),
         child: ScrollConfiguration(
           behavior: ScrollConfiguration.of(context).copyWith(dragDevices: PointerDeviceKind.values.toSet()),
           child: ListView.separated(
@@ -379,6 +384,7 @@ class HomeScreenSectionContent extends ConsumerWidget {
                     item: item.item,
                     isGrid: true,
                     forceText: true,
+                    forHomeScreen: true,
                     interactive: interactive,
                     source: displayable.source,
                   );
@@ -406,7 +412,12 @@ class HomeScreenSectionContent extends ConsumerWidget {
         ? Colors.grey.shade400
         : Colors.grey.shade700;
     return SizedBox(
-      height: calculateItemCollectionCardHeight(ref: ref, sectionInfo: sectionInfo, itemType: null),
+      height: calculateItemCollectionCardHeight(
+        ref: ref,
+        sectionInfo: sectionInfo,
+        itemType: null,
+        forHomeScreen: true,
+      ),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: skeletonCount + 1, // Show [skeletonCount] skeleton items
@@ -422,8 +433,8 @@ class HomeScreenSectionContent extends ConsumerWidget {
             cardHeight = queuesHomeSectionHeight;
             showText = false;
           } else {
-            cardWidth = calculateItemCollectionCardWidth(ref).$1;
-            cardHeight = calculateItemCollectionCardWidth(ref).$1;
+            cardWidth = calculateItemCollectionCardWidth(ref, forHomeScreen: true).$1;
+            cardHeight = calculateItemCollectionCardWidth(ref, forHomeScreen: true).$1;
             showText = true;
           }
           return Column(

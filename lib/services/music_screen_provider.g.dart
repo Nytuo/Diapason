@@ -202,7 +202,7 @@ class _LoadHomeSectionItemsProviderElement
 }
 
 String _$getJellyfinCollectionHash() =>
-    r'2bc0431101a3df4e5800dcf3b325f86c027e9a30';
+    r'398b7a6c94b86740f7a4475331d79457cd63dab0';
 
 /// See also [getJellyfinCollection].
 @ProviderFor(getJellyfinCollection)

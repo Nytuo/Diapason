@@ -19,18 +19,19 @@ const double queuesHomeSectionHeight = 84;
 /// Card content for items. You probably shouldn't use this widget directly,
 /// use ItemWrapper instead.
 class ItemCard extends ConsumerWidget {
-  const ItemCard({super.key, required this.item, this.onTap, required this.forceText});
+  const ItemCard({super.key, required this.item, this.onTap, this.forHomeScreen = false, required this.forceText});
 
   final BaseItemDto item;
   final void Function()? onTap;
+  final bool forHomeScreen;
   final bool forceText;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final showText = forceText || ref.watch(finampSettingsProvider.showTextOnGridView);
+    final showText = forHomeScreen || forceText || ref.watch(finampSettingsProvider.showTextOnGridView);
     final hasImage = !(item.blurHash == null && item.imageId == null);
     return Container(
-      constraints: BoxConstraints(maxWidth: calculateItemCollectionCardWidth(ref).$1),
+      constraints: BoxConstraints(maxWidth: calculateItemCollectionCardWidth(ref, forHomeScreen: forHomeScreen).$1),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(borderRadius: AlbumImage.defaultBorderRadius),
       child: Column(
@@ -58,7 +59,14 @@ class ItemCard extends ConsumerWidget {
                       ),
                     )
                   else
-                    AlbumImage(item: item, sizePreset: ref.watch(finampSettingsProvider.gridImageSize)),
+                    AlbumImage(
+                      item: item,
+                      sizePreset: ref.watch(
+                        forHomeScreen
+                            ? finampSettingsProvider.homeScreenImageSize
+                            : finampSettingsProvider.gridImageSize,
+                      ),
+                    ),
                   Positioned.fill(
                     child: Material(
                       color: Colors.transparent,
@@ -208,8 +216,10 @@ class HomeScreenQueueTile extends ConsumerWidget {
 }
 
 /// This might calculate the width base on the device width in the future, or something similar
-(double, double) calculateItemCollectionCardWidth(WidgetRef ref) {
-  final target = ref.watch(finampSettingsProvider.gridImageSize).toDouble();
+(double, double) calculateItemCollectionCardWidth(WidgetRef ref, {bool forHomeScreen = false}) {
+  final target = ref
+      .watch(forHomeScreen ? finampSettingsProvider.homeScreenImageSize : finampSettingsProvider.gridImageSize)
+      .toDouble();
   final padding = ((target - 30) / 17.0).clamp(1.0, 10.0);
   return (target - padding, padding);
 }
@@ -231,6 +241,7 @@ double calculateItemCollectionCardHeight({
   required WidgetRef ref,
   required HomeScreenSectionConfiguration? sectionInfo,
   required BaseItemDtoType? itemType,
+  bool forHomeScreen = false,
 }) {
   assert(
     (sectionInfo == null && itemType != null) || (sectionInfo != null && itemType == null),
@@ -248,7 +259,7 @@ double calculateItemCollectionCardHeight({
       // Fallback to albums children as the tallest type
       resolvedItemType = base.contentType.itemType ?? BaseItemDtoType.album;
   }
-  return calculateItemCollectionCardWidth(ref).$1 +
+  return calculateItemCollectionCardWidth(ref, forHomeScreen: forHomeScreen).$1 +
       (ref.watch(finampSettingsProvider.showTextOnGridView) || sectionInfo != null
           ? _itemCollectionCardTextSpacing +
                 calculateTextHeight(

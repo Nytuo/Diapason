@@ -444,6 +444,9 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
             ? const FinampHomeScreenConfiguration(actions: [], sections: [])
             : fields[146] as FinampHomeScreenConfiguration,
         gridImageSize: fields[147] == null ? 160 : (fields[147] as num).toInt(),
+        homeScreenImageSize: fields[150] == null
+            ? 80
+            : (fields[150] as num).toInt(),
         useAndroidGainEffect: fields[149] == null ? true : fields[149] as bool,
       )
       ..sortBy = fields[7] as SortBy?
@@ -467,7 +470,7 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
   @override
   void write(BinaryWriter writer, FinampSettings obj) {
     writer
-      ..writeByte(143)
+      ..writeByte(144)
       ..writeByte(0)
       ..write(obj.isOffline)
       ..writeByte(1)
@@ -753,7 +756,9 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..writeByte(148)
       ..write(obj.amoledTheme)
       ..writeByte(149)
-      ..write(obj.useAndroidGainEffect);
+      ..write(obj.useAndroidGainEffect)
+      ..writeByte(150)
+      ..write(obj.homeScreenImageSize);
   }
 
   @override
