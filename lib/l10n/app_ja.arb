@@ -491,7 +491,7 @@
         "description": "Option to download item in long-press menu."
     },
     "downloadSettings": "ダウンロード",
-    "deleteDownloadsPrompt": "このデバイスから{itemType, select, album{アルバム} playlist{プレイリスト} artist{アーティスト} genre{ジャンル} track{トラック} library{ライブラリ} other{項目}}「{itemName}」を削除してもよろしいですか？",
+    "deleteDownloadsPrompt": "このデバイスから{itemType, select, album{アルバム} playlist{プレイリスト} artist{アーティスト} genre{ジャンル} track{トラック} library{ライブラリ} other{項目}}'{itemName}'を削除してもよろしいですか？",
     "@deleteDownloadsPrompt": {
         "placeholders": {
             "itemName": {
@@ -742,7 +742,7 @@
     "showArtistsTracksSectionSubtitle": "最大5曲のトラックセクションを表示するかどうか。有効にすると、再生回数が多い、 お気に入り、ランダム、最新リリース、最近追加、最近再生済みの中から選択できます。",
     "addToMorePlaylistsTooltip": "他のプレイリストに追加",
     "addToMorePlaylistsTitle": "他のプレイリストに追加",
-    "removeFromPlaylistNamedTooltip": "プレイリスト「{playlistName}」から削除",
+    "removeFromPlaylistNamedTooltip": "プレイリスト'{playlistName}'から削除",
     "@removeFromPlaylistNamedTooltip": {
         "description": "Tooltip for the action that removes a track from a specific playlist. The playlist name is a placeholder.",
         "placeholders": {
@@ -752,7 +752,7 @@
             }
         }
     },
-    "removeFromPlaylistNamedTitle": "プレイリスト「{playlistName}」から削除",
+    "removeFromPlaylistNamedTitle": "プレイリスト'{playlistName}'から削除",
     "@removeFromPlaylistNamedTitle": {
         "description": "Tooltip for the action that removes a track from a specific playlist. The playlist name is a placeholder.",
         "placeholders": {
@@ -924,7 +924,7 @@
     "@savedQueue": {
         "description": "Title for the queue source for tracks were previously in the queue before an app restart and have been reloaded"
     },
-    "playingFromType": "{source, select, album{アルバムから再生} playlist{プレイリストから再生} trackMix{トラックミックスから再生} artistMix{アーティストミックスから再生} albumMix{アルバムミックスから再生} genreMix{ジャンルミックスから再生} favorites{お気に入りから再生} allTracks{全曲から再生} filteredList{トラックから再生} genre{ジャンルから再生} artist{アーティストから再生} track{曲から再生} nextUpAlbum{次に再生のアルバムから再生} nextUpPlaylist{次に再生のプレイリストから再生} nextUpArtist{次に再生のアーティストから再生} nextUpGenre{次に再生のジャンルから再生} remoteClient{リモートクライアントから再生}  radio{ラジオから再生} other{から再生}}",
+    "playingFromType": "{source, select,album{アルバム}playlist{プレイリスト}trackMix{トラックミックス}artistMix{アーティストミックス}albumMix{アルバムミックス}genreMix{ジャンルミックス}favorites{お気に入り}allTracks{すべてのトラック}filteredList{トラック}genre{ジャンル}artist{アーティスト}track{トラック}nextUpAlbum{次に再生のアルバム}nextUpPlaylist{次に再生のプレイリスト}nextUpArtist{次に再生のアーティスト}nextUpGenre{次に再生のジャンル}remoteClient{リモートクライアント}radio{ラジオ}other{}}を再生中",
     "@playingFromType": {
         "description": "Prefix shown before the type of the main queue source at the top of the player screen. Example: \"Playing From Album\"",
         "placeholders": {
@@ -1251,7 +1251,7 @@
     "@autoOfflineOptionDisconnected": {
         "description": "This is shown when the autoOffline feature is set to Disconnected, this means offline mode will be automatically enabled when either wifi, ethernet or cellular is active"
     },
-    "autoOfflineSettingDescription": "自動でオフラインモードを有効化します\n無効：自動でオフラインモードを有効化しません。バッテリー節約になる場合があります\nローカルネットワーク：Wi-Fi またはイーサネットに接続されていない場合にオフラインモードを有効化します\n切断：ネットワークに接続されていない場合にオフラインモードを有効化します\n接続不可：ネットワーク切り替え後にサーバーに Ping できない場合、自動でオフラインモードを有効化します\nオフラインモードは手動で有効化することも可能です。手動で有効化すると、自動設定は一時停止し、オフラインモードを手動で解除するまで継続します",
+    "autoOfflineSettingDescription": "{disabledModeName}:\nオフラインモードを自動的にオンにしません。バッテリーを節約できる場合があります。\n\n{localNetworkModeName}:\nWi-Fiまたはイーサネットに接続されていない場合、オフラインモードをオンにします。\n\n{disconnectedModeName}:\nどのネットワークにも接続されていない場合、オフラインモードをオンにします。\n\n{unreachableModeName}:\nネットワークの切り替え後、サーバーにpingできない場合、オフラインモードをオンにします。\n\nオフラインモードはいつでも手動で切り替えられます。手動で切り替えると、再度有効にするまで自動化は一時停止されます。",
     "@autoOfflineSettingDescription": {
         "description": "Setting description. Make sure the Mode names match the translations."
     },
@@ -1786,7 +1786,7 @@
     "@genreFilterNotAvailableForAlbums": {
         "description": "Message shown when the user tries to apply a genre filter to an album."
     },
-    "genreNotFound": "ジャンルが見つかりませんでした。{AdditionalInfo, select, offline{ ダウンロードされていないか、別のライブラリにある可能性があります。} other{ 別のライブラリにある可能性があります。}}",
+    "genreNotFound": "ジャンルが見つかりませんでした。{additionalInfo, select, offline{ ダウンロードされていないか、別のライブラリにある可能性があります。} other{ 別のライブラリにある可能性があります。}}",
     "@genreNotFound": {
         "placeholders": {
             "additionalInfo": {
@@ -1804,7 +1804,7 @@
         },
         "description": "Tooltip for downloadbutton on incidental downloads, which show a lock icon. It says one of the requiring downloads."
     },
-    "finampCollectionNames": "{itemType, select, favorites{お気に入り} allPlaylists{すべてのプレイリスト} fourlatestAlbums{最新のアルバム5件} allPlaylistsMetadata{プレイリストのメタデータ} collectionWithLibraryFilter{フィルター付きコレクション} other{{itemType}} }",
+    "finampCollectionNames": "{itemType, select,favorites{お気に入り}allPlaylists{すべてのプレイリスト}fiveLatestAlbums{最新アルバム5件}allPlaylistsMetadata{プレイリストのメタデータ}collectionWithLibraryFilter{ライブラリフィルター付きコレクション}other{{itemType}}}",
     "@finampCollectionNames": {
         "placeholders": {
             "itemType": {
@@ -1813,7 +1813,7 @@
         },
         "description": "Localized names of special downloadable collections like favorites."
     },
-    "cacheLibraryImagesName": "「{libraryName}」のキャッシュ画像",
+    "cacheLibraryImagesName": "'{libraryName}'のキャッシュ画像",
     "@cacheLibraryImagesName": {
         "placeholders": {
             "libraryName": {
@@ -2349,7 +2349,7 @@
     "@downloadSizeWarningCutoffSubtitle": {
         "description": "Subtitle for the setting controlling when to warn about a large download"
     },
-    "confirmAddCollectionItemToPlaylist": "{itemType, select, album{album} プレイリスト{playlist} アーティスト{アーティスト} ジャンル{ジャンル} その他{アイテム}} '{itemName}' のすべてのトラックをこのプレイリストに追加してもよろしいですか?これらは個別にのみ削除できます。",
+    "confirmAddCollectionItemToPlaylist": "{itemType, select, album{アルバム} playlist{プレイリスト} artist{アーティスト} genre{ジャンル} other{項目}}'{itemName}'のすべてのトラックをこのプレイリストに追加してもよろしいですか？追加後は個別にしか削除できません。",
     "@confirmAddCollectionItemToPlaylist": {
         "description": "Warning dialog for adding an album, artist, etc. or multiple tracks to a playlist, clarifying that this cannot be undone without removing all tracks individually and manually.",
         "placeholders": {
@@ -2419,7 +2419,7 @@
     "@autoOfflineSettingSubtitle": {
         "description": "Subtitle for the automated offline mode setting."
     },
-    "autoOfflineNotification": "自動的に {state、select、enabled{enabled} disabled{disabled} other{set quantum Position for}} オフライン モード",
+    "autoOfflineNotification": "オフラインモードの自動切り替えを{state, select, enabled{有効} disabled{無効} other{設定}}にしました",
     "@autoOfflineNotification": {
         "description": "The text for 'other' should never be seen anyway, so feel free to put in a little harmless easter egg :)"
     },
@@ -2459,7 +2459,7 @@
     "@outputMenuOpenConnectionSettingsButtonTitle": {
         "description": "Button title for connecting to a device from the output menu"
     },
-    "deviceType": "{タイプ、選択、スピーカー{デバイス スピーカー} テレビ{テレビ} Bluetooth{Bluetooth} その他{不明}}",
+    "deviceType": "{type, select, speaker{デバイスのスピーカー} tv{テレビ} bluetooth{Bluetooth} other{不明}}",
     "@deviceType": {
         "placeholders": {
             "type": {
@@ -2482,7 +2482,7 @@
             }
         }
     },
-    "itemCountLoading": "{childType、選択、トラック{トラック} アルバム{アルバム} その他の{アイテム}}",
+    "itemCountLoading": "{childType, select, track{トラック} album{アルバム} other{項目}}",
     "@itemCountLoading": {
         "description": "Shown while the item count is being calculated.",
         "placeholders": {
@@ -2519,7 +2519,7 @@
     "@downloadPaused": {
         "description": "Gets shown in the snackbar if loosing wifi connection while downloads are running and the 'requireWifiForDownloads' is enabled"
     },
-    "missingSchemaError": "URL は http(s):// で始まる必要があります",
+    "missingSchemaError": "Urlは http(s):// から始める必要があります",
     "@missingSchemaError": {
         "description": "Snackbar message when the user changes their home/public address but it doesn't start with http"
     },
@@ -2563,7 +2563,7 @@
     "@radioFailedSubtitle": {
         "description": "Subtitle displayed in the radio menu to show that no radio tracks could be generated."
     },
-    "radioModeOptionName": "{option, select, reshuffle{Reshuffle} ランダム{Random} 類似{Similar} Continuous{Continuous} albumMix{Album Mix} other{{option}}}",
+    "radioModeOptionName": "{option, select, reshuffle{再シャッフル} random{ランダム} similar{似た曲} continuous{連続再生} albumMix{アルバムミックス} other{{option}}}",
     "@radioModeOptionName": {
         "placeholders": {
             "option": {
@@ -2573,7 +2573,7 @@
         },
         "description": "Radio mode names in radio mode/algorithm dropdown"
     },
-    "radioModeOptionTitle": "{option, select, reshuffle{再シャッフル モード} ランダム{ランダム モード} 類似{類似モード} 連続{連続モード} albumMix{アルバム ミックス} other{{option}}} 有効",
+    "radioModeOptionTitle": "{option, select, reshuffle{再シャッフルモード} random{ランダムモード} similar{類似モード} continuous{連続再生モード} albumMix{アルバムミックス} other{{option}}}が有効になりました",
     "@radioModeOptionTitle": {
         "placeholders": {
             "option": {
@@ -2607,7 +2607,7 @@
     "@radioModeDisableButtonSubtitle": {
         "description": "Subtitle for the option that disables radio mode."
     },
-    "radioModeOptionConfirmation": "{オプション、選択、再シャッフル{再シャッフル モード}ランダム{ランダム モード}類似{類似モード}連続{連続モード}アルバムミックス{アルバム ミックス}その他{{オプション}}}に切り替えました",
+    "radioModeOptionConfirmation": "{option, select, reshuffle{再シャッフルモード} random{ランダムモード} similar{類似モード} continuous{連続再生モード} albumMix{アルバムミックス} other{{option}}}に切り替えました",
     "@radioModeOptionConfirmation": {
         "placeholders": {
             "option": {
@@ -2629,7 +2629,7 @@
     "@radioModeDisabledBecauseNotAvailableOfflineSubtitle": {
         "description": "Subtitle displayed in the queue to show that radio mode is disabled because the current mode is not available offline."
     },
-    "radioModeDescription": "{mode、select、reshuffle{キューを継続的に再シャッフルする} random{最初の選択からランダムにトラックを追加する} like{元のキューに基づいて追加する}Continuous{現在のトラックに基づいて追加する} albumMix{類似のアルバムを追加する} other{}}",
+    "radioModeDescription": "{mode, select, reshuffle{キューを継続的に再シャッフル} random{最初の選択内容からランダムにトラックを追加} similar{元のキューに基づいて追加} continuous{現在のトラックに基づいて追加} albumMix{類似アルバムを追加} other{}}",
     "@radioModeDescription": {
         "placeholders": {
             "mode": {
@@ -2681,7 +2681,7 @@
         },
         "description": "Shown as the subtitle for radio modes when the queue is empty."
     },
-    "radioModeRandomUnavailableNotDownloadedDescription": "「{sourceName}」がダウンロードされていないため利用できません",
+    "radioModeRandomUnavailableNotDownloadedDescription": "'{sourceName}'がダウンロードされていないため利用できません",
     "@radioModeRandomUnavailableNotDownloadedDescription": {
         "description": "Shown as the subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded.",
         "placeholders": {
@@ -2690,7 +2690,7 @@
             }
         }
     },
-    "radioModeRandomUnavailableNotDownloadedSubtitle": "「{sourceName}」がダウンロードされていないため、{modeName} は利用できません",
+    "radioModeRandomUnavailableNotDownloadedSubtitle": "{modeName}は'{sourceName}'がダウンロードされていないため利用できません",
     "@radioModeRandomUnavailableNotDownloadedSubtitle": {
         "description": "Shown as the subtitle for radio modes when the user is offline and the random radio mode can't be used since the queue source hasn't been downloaded.",
         "placeholders": {
@@ -2725,7 +2725,7 @@
     "@loopingUnavailableWhileRadioActiveWarning": {
         "description": "Warning message when trying to change the loop mode while radio is active."
     },
-    "autoReloadPrompt": "新しい {タイプ、選択、ネットワーク{ネットワーク設定} トランスコーディング{トランスコーディング設定} その他の{設定}}を適用するためにキューをリロードします",
+    "autoReloadPrompt": "新しい{type, select, network{ネットワーク設定} transcoding{トランスコード設定} other{設定}}を適用するには、キューを再読み込みしてください",
     "@autoReloadPrompt": {
         "description": "Prompt shown when the queue needs to be reloaded after changing network settings",
         "placeholders": {
@@ -2803,7 +2803,7 @@
     "@autoExpandPlayerScreenTitle": {
         "description": "Title for the setting that controls if the player screen is opened directly after starting a new queue"
     },
-    "autoExpandPlayerScreenSubtitle": "これにより、新しいキューの再生を開始するときに、再生中画面が開きます。",
+    "autoExpandPlayerScreenSubtitle": "新しいキューの再生を開始するときに、再生中画面を開きます",
     "@autoExpandPlayerScreenSubtitle": {
         "description": "Subtitle for the setting that controls if the player screen is opened directly after starting a new queue"
     },
@@ -2847,7 +2847,7 @@
     "@rememberLastUsedPlaybackActionRowPageSubtitle": {
         "description": "Subtitle for the setting to remember the last used playback mode."
     },
-    "discOfAlbum": "[ディスク {番号}] {アルバム名}",
+    "discOfAlbum": "[ディスク {number}] {albumName}",
     "@discOfAlbum": {
         "description": "Used when a single disc of album is opened, then album name is replaced with this string",
         "placeholders": {
@@ -2972,7 +2972,7 @@
     "@explicit": {
         "description": "Label for content that is considered explicit, usually marked by an 'E' in music apps"
     },
-    "volumeControlHint": "{ショートカット} を使用して音量を調整します",
+    "volumeControlHint": "{shortcut}で音量を調整します",
     "@volumeControlHint": {
         "description": "Hint text displayed below the volume bar to inform users about keyboard shortcuts for volume control.",
         "placeholders": {
