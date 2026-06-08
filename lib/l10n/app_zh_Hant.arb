@@ -2997,5 +2997,13 @@
     "losslessNoBitrate": "不適用於FLAC轉碼",
     "@losslessNoBitrate": {
         "description": "Settings text informing the user that transcoding bitrate does not apply to lossless transcodes."
+    },
+    "home": "首頁",
+    "@home": {
+        "description": "Label for the home/main screen"
+    },
+    "search": "搜尋",
+    "@search": {
+        "description": "Button for the user to click to perform a search"
     }
 }
