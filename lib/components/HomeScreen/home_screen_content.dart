@@ -118,6 +118,7 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent>
                       } else {
                         buttonWidth = verticalButtonWidth;
                       }
+                      //TODO possibly use CustomMultiChildLayout instead of Wrap to allow actions to stretch in height to fill each row, in case of multi-line actions
                       return HomeScreenQuickActionButton(
                         width: buttonWidth,
                         text: action.getTitle(context.l10n),

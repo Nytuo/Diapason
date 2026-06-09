@@ -227,11 +227,11 @@ class HomeScreenQueueTile extends ConsumerWidget {
 int calculateItemCollectionTextLines(BaseItemDtoType itemType) {
   switch (itemType) {
     case BaseItemDtoType.artist:
-    case BaseItemDtoType.track:
-      return 2;
-    case BaseItemDtoType.album:
-    case BaseItemDtoType.playlist:
     case BaseItemDtoType.genre:
+    case BaseItemDtoType.playlist:
+      return 2;
+    case BaseItemDtoType.track:
+    case BaseItemDtoType.album:
     case _:
       return 3;
   }

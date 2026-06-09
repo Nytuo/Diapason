@@ -298,6 +298,7 @@ class SectionPreview extends ConsumerWidget {
             ref: ref,
             sectionInfo: sectionInfo,
             itemType: sectionInfo == null ? BaseItemDtoType.track : null,
+            forHomeScreen: true,
           ),
           child: sectionInfo != null
               ? HomeScreenSectionContent(sectionInfo: sectionInfo!)

@@ -131,6 +131,7 @@ class FinampSettingsHelper {
     FinampSetters.setUseSystemAccentColor(DefaultSettings.useSystemAccentColor);
     FinampSetters.setContentViewType(DefaultSettings.contentViewType);
     finampSettingsTemp.gridImageSize = DefaultSettings.gridImageSize;
+    finampSettingsTemp.homeScreenImageSize = DefaultSettings.homeScreenImageSize;
     finampSettingsTemp.showTextOnGridView = DefaultSettings.showTextOnGridView;
     FinampSetters.setUseCoverAsBackground(DefaultSettings.useCoverAsBackground);
     finampSettingsTemp.showArtistChipImage = DefaultSettings.showArtistChipImage;
