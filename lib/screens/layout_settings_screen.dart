@@ -11,6 +11,7 @@ import 'package:finamp/screens/customization_settings_screen.dart';
 import 'package:finamp/screens/genre_settings_screen.dart';
 import 'package:finamp/screens/lyrics_settings_screen.dart';
 import 'package:finamp/screens/player_settings_screen.dart';
+import 'package:finamp/utils/platform_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -194,13 +195,13 @@ class _GenericImageSizeSliderState extends ConsumerState<GenericImageSizeSlider>
         (ref.watch(finampSettingsProvider.showFastScroller) ? 22 : 0);
 
     // Always allow scaling items down to 48 px wide as the smallest reasonable value.  Desktop platforms are guaranteed
-    // 25 options even if they go below this to increase flexibility and because they can handle the more precise slider
+    // 16 options even if they go below this to increase flexibility and because they can handle the more precise slider
     final maxAvailable = max((predictedGridWidth / 48).ceil(), Platform.isAndroid || Platform.isIOS ? 0 : 16);
 
     colCount ??= predictedGridWidth / widget.settingSelector(FinampSettingsHelper.finampSettings);
     colCount = colCount!.clamp(1, maxAvailable.toDouble());
 
-    bool colCountExact = colCount!.round() * 20 == (colCount! * 20).round();
+    bool colCountExact = colCount!.round() * 8 == (colCount! * 8).round();
     int finalColCount = colCount!.round();
 
     final sizeLabel = AppLocalizations.of(context)!.fixedGridTileSizeEnum(switch (predictedGridWidth / colCount!) {
@@ -208,7 +209,7 @@ class _GenericImageSizeSliderState extends ConsumerState<GenericImageSizeSlider>
       < 60 => "verySmall",
       < 80 => "small",
       < 120 => "medium",
-      < 300 => "large",
+      < 240 => "large",
       < 350 => "huge",
       _ => "giant",
     });
@@ -225,7 +226,7 @@ class _GenericImageSizeSliderState extends ConsumerState<GenericImageSizeSlider>
               max: maxAvailable.toDouble(),
               value: colCount!,
               label: finalColCount.toString(),
-              divisions: maxAvailable - 1,
+              divisions: isDesktop ? null : maxAvailable - 1,
               onChanged: (value) {
                 setState(() {
                   colCount = value;
