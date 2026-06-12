@@ -114,7 +114,6 @@ Future<FinampDisplayable<FinampPlayable>> resolveSection(Ref ref, HomeScreenSect
         section.sortConfig,
       );
 
-      // TODO this is a pretty horrible abuse of the contentType field.  Refactor storage method?
       if (BaseItemDtoType.fromItem(item) == BaseItemDtoType.artist) {
         return Artist(
           item,
@@ -358,10 +357,6 @@ Future<List<BaseItemDto>> _flattenToTracks(Ref ref, {required FinampPlayableDto 
       // Keep page provider alive even though we only read its notifier.
       ref.listen(pagedContentProvider(item), (_, _) {});
       final pager = ref.read(pagedContentProvider(item).notifier);
-      // TODO figure out a better way to handle this limit
-      // TODO prevent loading full children during precache somehow?
-      // This block should only be encountered while processing collections containing genres?
-      // So it being suboptimal might not matter much.
       final (children, childFuture) = pager.loadSlice(
         0,
         limit ?? FinampSettingsHelper.finampSettings.trackShuffleItemCount,

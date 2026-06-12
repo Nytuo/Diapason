@@ -148,7 +148,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
           try {
             switch (currentTab) {
               // TODO should this distinguish between artist types somehow?
-              case ContentType.genericArtists:
+              case _ when currentTab.isArtist:
                 if (_jellyfinApiHelper.selectedMixArtists.isEmpty) {
                   GlobalSnackbar.message((scaffold) => AppLocalizations.of(context)!.startMixNoTracksArtist);
                 } else {
@@ -305,7 +305,6 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
                   displayable = MusicScreenPlayable(
                     tab: contentTabType,
                     library: currentLibraryPlaceholder,
-                    // TODO better queue source?
                     source: musicScreenSource,
                     sortConfig: ref
                         .watch(resolveSortProvider(sortAndFilterControllerMap[contentTabType]!))

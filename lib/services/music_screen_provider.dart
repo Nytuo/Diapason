@@ -208,9 +208,6 @@ class PagedContent extends _$PagedContent {
     }
   }
 
-  // TODO optimize for fast response, like play all on home screen?
-  // Maybe we add a followup Future to PlayableSlice, and if we already have the starting item in cache (we should)
-  // then immediately return a slice with the rest in that future for the caller to add to queue later.
   (List<FinampDisplayableOrPlayable>, Future<List<FinampDisplayableOrPlayable>>?) loadSlice(
     int startingIndex,
     int limit,
@@ -387,6 +384,7 @@ Future<List<BaseItemDto>?> loadHomeSectionItemsOffline({
       nameFilter: searchFilter?.extraString.trim(),
       includeItemTypes: [request.tab.itemType ?? BaseItemDtoType.album], //FIXME support allowing multiple types
       // TODO use the filter config for this instead of global(several places)?
+      // Might need to refactor sortconfig into some preexising providers to eliminate direct global setting usage
       fullyDownloaded: ref.watch(finampSettingsProvider.onlyShowFullyDownloaded),
       viewFilter: libraryId,
       childViewFilter: [ContentType.albums, ContentType.playlists].contains(request.tab) ? null : libraryId,

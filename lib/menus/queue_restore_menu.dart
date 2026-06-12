@@ -9,7 +9,6 @@ import 'package:finamp/menus/components/menuEntries/restore_queue_menu_entry.dar
 import 'package:finamp/menus/components/menu_item_info_header.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/music_models.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
 import 'package:finamp/services/item_by_id_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -111,79 +110,4 @@ Future<void> showQueueRestoreMenu({required BuildContext context, required Finam
     routeName: albumMenuRouteName,
     buildSlivers: (context) => getMenuProperties(context),
   );
-}
-
-class HomeDownloadInfo {
-  HomeDownloadInfo({required this.stub, required this.warning});
-  DownloadStub stub;
-  String? warning;
-}
-
-HomeDownloadInfo? getHomeDownloadInfo(
-  WidgetRef? ref,
-  AppLocalizations l10n,
-  HomeScreenSectionConfiguration section,
-  BaseItemDto? item,
-) {
-  switch (section.base) {
-    case TabsHomeSection tabSection:
-      return switch (section.presetType) {
-        HomeScreenSectionPresetType.favoriteTracks ||
-        HomeScreenSectionPresetType.favoriteAlbums ||
-        HomeScreenSectionPresetType.favoriteArtists ||
-        HomeScreenSectionPresetType.favoritePlaylists ||
-        HomeScreenSectionPresetType.favoriteGenres => HomeDownloadInfo(
-          stub: DownloadStub.fromFinampCollection(FinampCollection(type: FinampCollectionType.favorites)),
-          warning: l10n.homeFavoritesDownloadWarning(tabSection.contentType.toLocalisedString(l10n)),
-        ),
-        HomeScreenSectionPresetType.recentlyAddedAlbums ||
-        HomeScreenSectionPresetType.recentlyAddedTracks => HomeDownloadInfo(
-          stub: DownloadStub.fromFinampCollection(FinampCollection(type: FinampCollectionType.latest5Albums)),
-          warning: l10n.homeRecentAlbumsDownloadWarning,
-        ),
-        _ => null,
-      };
-    // TODO put all playlist download somewhere?
-    case CollectionHomeSection collectionSection:
-      if (item == null) return null;
-      final type = BaseItemDtoType.fromItem(item);
-      if (type == BaseItemDtoType.collection) {
-        // TODO implement collection downloads
-        return null;
-      } else if ([BaseItemDtoType.artist, BaseItemDtoType.genre].contains(type) &&
-          collectionSection.libraryId != allLibraryPlaceholder) {
-        final user =
-            (ref?.watch(FinampUserHelper.finampCurrentUserProvider) ?? GetIt.instance<FinampUserHelper>().currentUser);
-        final BaseItemDto? library;
-        if (collectionSection.libraryId == currentLibraryPlaceholder) {
-          library = user?.currentView;
-        } else {
-          library = user?.views[collectionSection.libraryId as BaseItemId];
-        }
-        if (library == null) {
-          return null;
-        }
-        return HomeDownloadInfo(
-          stub: DownloadStub.fromFinampCollection(
-            FinampCollection(
-              type: FinampCollectionType.collectionWithLibraryFilter,
-              // TODO allow LibraryIds?
-              library: library,
-              item: item,
-            ),
-          ),
-          warning: null,
-        );
-      } else {
-        return HomeDownloadInfo(
-          stub: DownloadStub.fromItem(
-            type: type == BaseItemDtoType.track ? DownloadItemType.track : DownloadItemType.collection,
-            item: item,
-          ),
-          warning: null,
-        );
-      }
-    case QueuesHomeSection():
-      return null;
-  }
 }

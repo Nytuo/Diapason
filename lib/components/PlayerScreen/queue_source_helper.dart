@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:finamp/components/confirmation_prompt_dialog.dart';
 import 'package:finamp/components/global_snackbar.dart';
 import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/menus/collection_menu.dart';
 import 'package:finamp/menus/track_menu.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
@@ -93,7 +92,21 @@ void navigateToSource(BuildContext context, QueueItemSource source) {
           Navigator.of(context).pushNamed(GenreScreen.routeName, arguments: radioSource.item);
           break;
         case BaseItemDtoType.collection:
-        //TODO implement collection screen
+          Navigator.of(context).push(
+            MaterialPageRoute<MusicScreen>(
+              builder: (context) => MusicScreen(
+                singleTabConfig: HomeScreenSectionConfiguration(
+                  base: CollectionHomeSection(
+                    itemId: radioSource.item!.id,
+                    libraryId: GetIt.instance<FinampUserHelper>().currentUser!.currentViewId!,
+                    contentType: ContentType.mixed,
+                  ),
+                  customSectionTitle: radioSource.item!.name ?? AppLocalizations.of(context)!.unknownName,
+                  sortConfig: SortAndFilterConfiguration.defaultSort,
+                ),
+              ),
+            ),
+          );
         case BaseItemDtoType.noItem:
         case BaseItemDtoType.library:
         case BaseItemDtoType.folder:

@@ -436,12 +436,11 @@ class _GlobalSearchBoxState extends ConsumerState<GlobalSearchBox> {
       return DropdownMenuEntry<BaseItemDto>(
         value: collection,
         label: label,
-        // TODO localizable item type name
         labelWidget: Row(
           spacing: 10.0,
           children: [
             Expanded(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis)),
-            Text("(${BaseItemDtoType.fromItem(collection).name})"),
+            Text("(${BaseItemDtoType.fromItem(collection).localized(context.l10n)})"),
           ],
         ),
         enabled: true,

@@ -3725,5 +3725,15 @@
     }
   },
   "retry": "Retry",
-  "retryPageLoad": "Failed to load items from the server.  Click to retry."
+  "retryPageLoad": "Failed to load items from the server.  Click to retry.",
+  "itemType": "{itemType, select, album{Album} playlist{Playlist} artist{Artist} genre{Genre} track{Track} library{Library} collection{Collection} unknown{Item} other{{itemType}}}",
+  "@itemType": {
+    "placeholders": {
+      "itemType": {
+        "type": "String",
+        "example": "album"
+      }
+    },
+    "description": "Item type name."
+  }
 }

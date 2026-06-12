@@ -617,7 +617,7 @@ class QueueService {
     }
   }
 
-  // TODO cut this over to take a PlayableSlice.
+  // TODO cut more/all usages of this over to startSlicePlayback
   Future<void> startPlayback({
     required List<jellyfin_models.BaseItemDto> items,
     required QueueItemSource source,

@@ -287,7 +287,6 @@ class FinampSettingsHelper {
     void Function() resetFunction, {
     bool isGlobal = false,
   }) {
-    // TODO: Replace the following Strings with localization
     return IconButton(
       onPressed: () async {
         await showDialog(

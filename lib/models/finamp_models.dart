@@ -1908,6 +1908,8 @@ enum BaseItemDtoType {
         return null;
     }
   }
+
+  String localized(AppLocalizations l10n)=> l10n.itemType(name);
 }
 
 /// The category of a section on the download screen.

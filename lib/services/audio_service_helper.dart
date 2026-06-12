@@ -201,6 +201,10 @@ class AudioServiceHelper {
   /// Start continuous radio with a random track
   Future<void> startSurpriseMeMix() async {
     //TODO handle offline mode (continuous radio not available, and offline request needed) - maybe just hide this?
+    if (FinampSettingsHelper.finampSettings.isOffline) {
+      GlobalSnackbar.message((context) => context.l10n.notAvailableInOfflineMode);
+      return;
+    }
     final randomTracks = await _jellyfinApiHelper.getItems(
       parentItem: _finampUserHelper.currentUser?.currentView,
       includeItemTypes: [BaseItemDtoType.track.jellyfinName].join(","),
