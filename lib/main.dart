@@ -704,7 +704,6 @@ class _FinampState extends State<Finamp> with WindowListener {
   static final Logger linkHandlingLogger = Logger("LinkHandling");
 
   StreamSubscription<Uri>? _uriLinkSubscription;
-  StreamSubscription<dynamic>? _androidIntentSubscription;
 
   @override
   void initState() {
@@ -752,7 +751,7 @@ class _FinampState extends State<Finamp> with WindowListener {
             if (item != null) {
               await GetIt.instance<QueueService>().startSlicePlayback(
                 await GetIt.instance<ProviderContainer>().read(
-                  getPlayerSliceProvider(item: FinampPlayableDto.fromItem(item), startingOffset: 0).future,
+                  getPlayableSliceProvider(item: FinampPlayableDto.fromItem(item), startingOffset: 0).future,
                 ),
               );
             }
@@ -780,7 +779,6 @@ class _FinampState extends State<Finamp> with WindowListener {
   Future<void> dispose() async {
     super.dispose();
     await DiscordRpc.stop().timeout(Duration(milliseconds: 500));
-    await _androidIntentSubscription?.cancel();
     await _uriLinkSubscription?.cancel();
 
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {

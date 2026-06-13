@@ -219,7 +219,7 @@ class HomeScreenSection extends ConsumerWidget {
                 final queueService = GetIt.instance<QueueService>();
                 final playable = sectionDisplayable as FinampPlayable;
                 await queueService.startSlicePlayback(
-                  await ref.read(getPlayerSliceProvider(item: playable, startingOffset: 0).future),
+                  await ref.read(getPlayableSliceProvider(item: playable, startingOffset: 0).future),
                 );
               },
               label: AppLocalizations.of(context)!.playButtonLabel,
@@ -233,7 +233,7 @@ class HomeScreenSection extends ConsumerWidget {
                       final playable = sectionDisplayable as FinampPlayable;
                       // TODO better shuffling?  need to think about shuffle all versus shuffle first
                       await queueService.startSlicePlayback(
-                        (await ref.read(getPlayerSliceProvider(item: playable, startingOffset: 0).future)).shuffle(),
+                        (await ref.read(getPlayableSliceProvider(item: playable, startingOffset: 0).future)).shuffle(),
                       );
                     },
               label: sectionInfo.sortConfig.sortBy == SortBy.random

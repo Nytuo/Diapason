@@ -681,7 +681,7 @@ class QueueService {
           "Started playing '${slice.source.name.getLocalized(GlobalSnackbar.requireL10n)}' (${slice.source.type}), pending additional tracks",
         );
         _queueServiceLogger.info("Items for queue: [${slice.cachedTracks.map((e) => e.name).join(", ")}]");
-        final additionalTracks = await slice.fetchTracks;
+        final additionalTracks = List.of(await slice.fetchTracks);
         if (!slice.combineTracks) {
           assert(() {
             for (int i = 0; i < slice.cachedTracks.length; i++) {
@@ -696,7 +696,7 @@ class QueueService {
           }
         }
         // TODO verify we haven't made other queue changes?
-        await addToQueue(PlayableSlice.simple(additionalTracks, slice.source));
+        await _insertFollowupItems(additionalTracks, slice.source, slice.cachedTracks.length);
     }
   }
 
@@ -988,14 +988,9 @@ class QueueService {
 
       int adjustedQueueIndex = getActualIndexByLinearIndex(_currentQueueIndex);
       int offset = min(_audioHandler.audioSources.length, 1);
-      int offsetLog = offset;
-
-      for (final queueItem in queueItems) {
-        _queueServiceLogger.fine(
-          "Prepended '${queueItem.item.title}' to Next Up (index ${adjustedQueueIndex + offsetLog})",
-        );
-        offsetLog++;
-      }
+      _queueServiceLogger.fine(
+        "Prepended ${items.length} items to Next Up at index ${adjustedQueueIndex + offset} from '${slice.source.name}' (${slice.source.type})",
+      );
       await _audioHandler.insertFinampQueueItems(adjustedQueueIndex + offset, queueItems);
 
       _buildQueueFromNativePlayerQueue(); // update internal queues
@@ -1029,16 +1024,11 @@ class QueueService {
 
       _buildQueueFromNativePlayerQueue(logUpdate: false); // update internal queues
       int offset = _queueNextUp.length + min(_audioHandler.audioSources.length, 1);
-      int offsetLog = offset;
 
       int adjustedQueueIndex = getActualIndexByLinearIndex(_currentQueueIndex);
-
-      for (final queueItem in queueItems) {
-        _queueServiceLogger.fine(
-          "Appended '${queueItem.item.title}' to Next Up (index ${adjustedQueueIndex + offsetLog})",
-        );
-        offsetLog++;
-      }
+      _queueServiceLogger.fine(
+        "Appended ${items.length} items to Next Up at index ${adjustedQueueIndex + offset} from '${slice.source.name}' (${slice.source.type})",
+      );
       await _audioHandler.insertFinampQueueItems(adjustedQueueIndex + offset, queueItems);
 
       _buildQueueFromNativePlayerQueue(); // update internal queues
@@ -1046,6 +1036,60 @@ class QueueService {
       _queueServiceLogger.severe(e);
       rethrow;
     }
+  }
+
+  Future<void> _insertFollowupItems(
+    List<jellyfin_models.BaseItemDto> items,
+    QueueItemSource source,
+    int previousItems,
+  ) async {
+    if (_audioHandler.audioSources.isEmpty) {
+      assert(
+        false,
+        "PreCachedPlayableSlice should always have enough tracks to begin playback.  Was the queue manually cleared?",
+      );
+      _queueServiceLogger.fine("Queue was already empty when inserting followup items");
+      return;
+    }
+    List<FinampQueueItem> queueItems = [];
+    for (final item in items) {
+      queueItems.add(
+        FinampQueueItem(
+          item: await generateMediaItem(item, contextNormalizationGain: source.contextNormalizationGain),
+          source: source,
+          type: QueueItemQueueType.queue,
+        ),
+      );
+    }
+
+    _buildQueueFromNativePlayerQueue(logUpdate: false); // update internal queues
+
+    if (_playbackOrder == FinampPlaybackOrder.shuffled) {
+      // If the queue was shuffled between playback start and followup items loading, we don't currently have any good options
+      // We will just shuffle the items and add them to the end of the queue.  This will prevent unshuffling, and it
+      // will still leave all of the first set of tracks shuffled before the followup set, but it should be better
+      // than playing back unshuffled.
+      queueItems.shuffle();
+
+      _queueServiceLogger.fine(
+        "Added ${items.length} followup items to shuffled queue from '${source.name}' (${source.type})",
+      );
+
+      await _audioHandler.appendFinampQueueItems(queueItems);
+    } else {
+      int offset = previousItems + _queueNextUp.length;
+      int adjustedQueueIndex = getActualIndexByLinearIndex(_currentQueueIndex);
+      int earliestQueueOffset = adjustedQueueIndex + _queueNextUp.length + min(_audioHandler.audioSources.length, 1);
+      offset = offset.clamp(earliestQueueOffset, _audioHandler.audioSources.length);
+
+      _queueServiceLogger.fine(
+        "Inserted ${items.length} followup items into queue at index $offset from '${source.name}' (${source.type})",
+      );
+
+      await _audioHandler.insertFinampQueueItems(offset, queueItems);
+    }
+
+    _buildQueueFromNativePlayerQueue(); // update internal queues
   }
 
   Future<void> skipByOffset(int offset) async {

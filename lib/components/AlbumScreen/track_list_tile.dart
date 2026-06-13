@@ -115,7 +115,7 @@ class TrackListTile extends ConsumerWidget {
       }
 
       PlayableSlice slice = await ref.watch(
-        getPlayerSliceProvider(item: parentPlayable, startingOffset: index!).future,
+        getPlayableSliceProvider(item: parentPlayable, startingOffset: index!).future,
       );
 
       // start linear playback of album from the given index
@@ -188,7 +188,7 @@ Future<bool> onConfirmPlayableDismiss({required ItemSwipeActions followUpAction,
   };
 
   final slice = await GetIt.instance<ProviderContainer>().read(
-    getPlayerSliceProvider(item: item, startingOffset: 0).future,
+    getPlayableSliceProvider(item: item, startingOffset: 0).future,
   );
 
   switch (followUpAction) {

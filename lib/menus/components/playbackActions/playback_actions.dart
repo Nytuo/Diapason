@@ -165,7 +165,7 @@ class PlayPlaybackAction extends ConsumerWidget {
         }
 
         await queueService.startSlicePlayback(
-          await ref.watch(getPlayerSliceProvider(item: item, startingOffset: 0).future),
+          await ref.watch(getPlayableSliceProvider(item: item, startingOffset: 0).future),
         );
       },
       iconColor: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white,
@@ -193,7 +193,7 @@ class PlayNextPlaybackAction extends ConsumerWidget {
           Navigator.pop(context);
         }
 
-        await queueService.addNext(await ref.watch(getPlayerSliceProvider(item: item, startingOffset: 0).future));
+        await queueService.addNext(await ref.watch(getPlayableSliceProvider(item: item, startingOffset: 0).future));
 
         GlobalSnackbar.message(
           (scaffold) =>
@@ -259,7 +259,7 @@ class AddToNextUpPlaybackAction extends ConsumerWidget {
           Navigator.pop(context);
         }
 
-        await queueService.addToNextUp(await ref.watch(getPlayerSliceProvider(item: item, startingOffset: 0).future));
+        await queueService.addToNextUp(await ref.watch(getPlayableSliceProvider(item: item, startingOffset: 0).future));
 
         GlobalSnackbar.message(
           (scaffold) =>
@@ -330,7 +330,7 @@ class AddToQueuePlaybackAction extends ConsumerWidget {
           Navigator.pop(context);
         }
 
-        await queueService.addToQueue(await ref.watch(getPlayerSliceProvider(item: item, startingOffset: 0).future));
+        await queueService.addToQueue(await ref.watch(getPlayableSliceProvider(item: item, startingOffset: 0).future));
 
         GlobalSnackbar.message(
           (scaffold) =>
@@ -411,7 +411,7 @@ class ShufflePlaybackAction extends ConsumerWidget {
         }
 
         await queueService.startSlicePlayback(
-          (await ref.watch(getPlayerSliceProvider(item: item, startingOffset: 0).future)).shuffle(),
+          (await ref.watch(getPlayableSliceProvider(item: item, startingOffset: 0).future)).shuffle(),
         );
       },
       iconColor: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white,
@@ -450,7 +450,7 @@ class ShuffleNextPlaybackAction extends ConsumerWidget {
         }
 
         await queueService.addNext(
-          (await ref.watch(getPlayerSliceProvider(item: item, startingOffset: 0).future)).shuffle(),
+          (await ref.watch(getPlayableSliceProvider(item: item, startingOffset: 0).future)).shuffle(),
         );
 
         GlobalSnackbar.message((scaffold) => AppLocalizations.of(scaffold)!.confirmShuffleNext, isConfirmation: true);
@@ -491,7 +491,7 @@ class ShuffleToNextUpPlaybackAction extends ConsumerWidget {
         }
 
         await queueService.addToNextUp(
-          (await ref.watch(getPlayerSliceProvider(item: item, startingOffset: 0).future)).shuffle(),
+          (await ref.watch(getPlayableSliceProvider(item: item, startingOffset: 0).future)).shuffle(),
         );
 
         GlobalSnackbar.message(
@@ -535,7 +535,7 @@ class ShuffleToQueuePlaybackAction extends ConsumerWidget {
         }
 
         await queueService.addToQueue(
-          (await ref.watch(getPlayerSliceProvider(item: item, startingOffset: 0).future)).shuffle(),
+          (await ref.watch(getPlayableSliceProvider(item: item, startingOffset: 0).future)).shuffle(),
         );
 
         GlobalSnackbar.message(

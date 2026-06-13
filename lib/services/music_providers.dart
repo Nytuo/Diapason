@@ -154,7 +154,7 @@ Future<FinampDisplayable<FinampPlayable>> resolveSection(Ref ref, HomeScreenSect
 }
 
 @riverpod
-Future<PlayableSlice> getPlayerSlice(
+Future<PlayableSlice> getPlayableSlice(
   Ref ref, {
   required FinampPlayable item,
   required int startingOffset,
@@ -328,7 +328,7 @@ Future<PlayableSlice> getAlbumShuffledPlayerSlice(Ref ref, {required FinampPlaya
             ),
           )
           as FinampPlayable;
-  final slice = await ref.watch(getPlayerSliceProvider(item: shuffledPlayable, startingOffset: 0).future);
+  final slice = await ref.watch(getPlayableSliceProvider(item: shuffledPlayable, startingOffset: 0).future);
   return slice.markPreshuffled();
   // return GroupedPlayableSlice(parent: slice, groupBy: (element) => element.albumId?.toString());
 }

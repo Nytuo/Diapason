@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:finamp/components/MusicScreen/sort_and_filter_row.dart';
 import 'package:finamp/components/global_snackbar.dart';
 import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/models/finamp_models.dart';
@@ -23,7 +24,7 @@ import 'music_screen_provider.dart';
 // TODO remove this and use getSliceProvider for all cases.
 Future<List<BaseItemDto>> loadChildTracksFromBaseItem({
   required BaseItemDto item,
-  required SortAndFilterConfiguration sortConfig,
+  required ResolvedSortConfig sortConfig,
 }) async {
   final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
   final finampUserHelper = GetIt.instance<FinampUserHelper>();
@@ -109,7 +110,7 @@ List<BaseItemDto> groupItems({
 Future<List<BaseItemDto>?> loadChildTracksOffline({
   required BaseItemDto item,
   int? limit,
-  required SortAndFilterConfiguration sortConfig,
+  required ResolvedSortConfig sortConfig,
 }) async {
   final downloadsService = GetIt.instance<DownloadsService>();
   final finampUserHelper = GetIt.instance<FinampUserHelper>();

@@ -166,7 +166,6 @@ class MusicScreenPlayable<ChildType extends FinampPlayableDto> extends _Sortable
       MusicScreenPlayable._(tab: tab, library: library, source: source, sortConfig: newSort);
 }
 
-// TODO do we need this to have an item?  Or can it be a generic prebaked section?
 class AlbumDisc extends FinampPlayableDto implements FinampUnpagedPlayable<Track> {
   AlbumDisc(super.item, {required this.tracks})
     : assert(
