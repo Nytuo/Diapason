@@ -18,6 +18,7 @@ import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../models/finamp_models.dart' hide ContentType;
+import '../models/finamp_models.dart' as finamp_models;
 import '../models/jellyfin_models.dart';
 import 'downloads_service.dart';
 import 'downloads_service_backend.dart';
@@ -1266,5 +1267,16 @@ class JellyfinApiHelper {
     }
     _jellyfinApiHelperLogger.warning("_verifyCallable failed in phase ${SchedulerBinding.instance.schedulerPhase}");
     return false;
+  }
+
+  /// Get [isFavorite] property for API item requests, based on content type and filters
+  /// TODO apply this directly here in the API helper once it has been refactored to work with [finamp_models.ContentType] and [SortAndFilterConfiguration] instead of raw strings
+  static bool? getIsFavoriteFilter(finamp_models.ContentType contentType, Set<ItemFilter> filters) {
+    // Jellyfin 10.10 and 10.11 use the [isFavorite] boolean filter instead of the list-based [filters] parameter for genres, so add that here
+    // I guess part of the reason for this is that it's not possible to favorite a genre through the Jellyfin Web UI at all...
+    if ([finamp_models.ContentType.genres, finamp_models.ContentType.mixed].contains(contentType)) {
+      return filters.any((filter) => filter.type == ItemFilterType.isFavorite);
+    }
+    return null;
   }
 }
