@@ -3366,7 +3366,7 @@
   "@homeScreenImageSizeTitle": {
     "description": "Title of home screen tile image size setting"
   },
-  "homeScreenImageSizeSubtitle": "Select the size of items in on the home screen",
+  "homeScreenImageSizeSubtitle": "Select the size of items on the home screen",
   "@homeScreenImageSizeSubtitle": {
     "description": "Subtitle of home screen tile image size setting"
   },
