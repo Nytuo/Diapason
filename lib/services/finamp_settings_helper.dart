@@ -51,8 +51,9 @@ class FinampSettingsHelper {
 
   static void resetTabsSettings() {
     FinampSettings finampSettingsTemp = finampSettings;
-    finampSettingsTemp.tabOrder = TabContentType.values;
-    finampSettingsTemp.showTabs = Map.fromEntries(TabContentType.values.map((e) => MapEntry(e, true)));
+    finampSettingsTemp.tabOrder = DefaultSettings.tabOrder;
+    finampSettingsTemp.showTabs = Map.fromEntries(DefaultSettings.tabOrder.map((e) => MapEntry(e, true)));
+    Hive.box<FinampSettings>("FinampSettings").put("FinampSettings", finampSettingsTemp);
   }
 
   static void resetCustomizationSettings() {
@@ -129,10 +130,8 @@ class FinampSettingsHelper {
     FinampSetters.setSystemAccentColor(DefaultSettings.accentColor);
     FinampSetters.setUseSystemAccentColor(DefaultSettings.useSystemAccentColor);
     FinampSetters.setContentViewType(DefaultSettings.contentViewType);
-    finampSettingsTemp.useFixedSizeGridTiles = DefaultSettings.useFixedSizeGridTiles;
-    FinampSetters.setContentGridViewCrossAxisCountPortrait(DefaultSettings.contentGridViewCrossAxisCountPortrait);
-    FinampSetters.setContentGridViewCrossAxisCountLandscape(DefaultSettings.contentGridViewCrossAxisCountLandscape);
-    finampSettingsTemp.fixedGridTileSize = DefaultSettings.fixedGridTileSize;
+    finampSettingsTemp.gridImageSize = DefaultSettings.gridImageSize;
+    finampSettingsTemp.homeScreenImageSize = DefaultSettings.homeScreenImageSize;
     finampSettingsTemp.showTextOnGridView = DefaultSettings.showTextOnGridView;
     FinampSetters.setUseCoverAsBackground(DefaultSettings.useCoverAsBackground);
     finampSettingsTemp.showArtistChipImage = DefaultSettings.showArtistChipImage;
@@ -140,6 +139,15 @@ class FinampSettingsHelper {
     finampSettingsTemp.showProgressOnNowPlayingBar = DefaultSettings.showProgressOnNowPlayingBar;
     finampSettingsTemp.autoSwitchItemCurationType = DefaultSettings.autoSwitchItemCurationType;
     finampSettingsTemp.useMonochromeIcon = DefaultSettings.useMonochromeIcon;
+
+    Hive.box<FinampSettings>("FinampSettings").put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void resetHomeScreenSettings() {
+    FinampSettings finampSettingsTemp = finampSettings;
+
+    //TODO reset to default home screen
+    finampSettingsTemp.homeScreenConfiguration = DefaultSettings.homeScreenConfiguration;
 
     Hive.box<FinampSettings>("FinampSettings").put("FinampSettings", finampSettingsTemp);
   }
@@ -279,7 +287,6 @@ class FinampSettingsHelper {
     void Function() resetFunction, {
     bool isGlobal = false,
   }) {
-    // TODO: Replace the following Strings with localization
     return IconButton(
       onPressed: () async {
         await showDialog(

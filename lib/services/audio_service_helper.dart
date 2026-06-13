@@ -1,4 +1,7 @@
+import 'package:finamp/components/global_snackbar.dart';
+import 'package:finamp/extensions/localizations.dart';
 import 'package:finamp/models/jellyfin_models.dart';
+import 'package:finamp/services/radio_service_helper.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 
@@ -29,7 +32,7 @@ class AudioServiceHelper {
       // way.
       items = (await _isarDownloader.getAllTracks(
         viewFilter: _finampUserHelper.currentUser?.currentView?.id,
-        genreFilter: genreFilter,
+        genreFilter: genreFilter?.id,
         onlyFavorites: onlyShowFavorites,
         nullableViewFilters: FinampSettingsHelper.finampSettings.showDownloadsWithUnknownLibrary,
       )).map((e) => e.baseItem!).toList();
@@ -46,7 +49,7 @@ class AudioServiceHelper {
         filters: onlyShowFavorites ? "IsFavorite" : null,
         limit: itemCount ?? FinampSettingsHelper.finampSettings.trackShuffleItemCount,
         sortBy: "Random",
-        genreFilter: genreFilter,
+        genreFilter: genreFilter?.id,
       );
     }
 
@@ -88,6 +91,7 @@ class AudioServiceHelper {
               BaseItemDtoType.album => QueueItemSourceType.albumMix,
               BaseItemDtoType.artist => QueueItemSourceType.artistMix,
               BaseItemDtoType.genre => QueueItemSourceType.genreMix,
+              BaseItemDtoType.collection => QueueItemSourceType.collectionMix,
               _ => QueueItemSourceType.unknown,
             },
             name: QueueItemSourceName(
@@ -192,5 +196,78 @@ class AudioServiceHelper {
       audioServiceHelperLogger.severe(e);
       return Future.error(e);
     }
+  }
+
+  /// Start continuous radio with a random track
+  Future<void> startSurpriseMeMix() async {
+    //TODO handle offline mode (continuous radio not available, and offline request needed) - maybe just hide this?
+    if (FinampSettingsHelper.finampSettings.isOffline) {
+      GlobalSnackbar.message((context) => context.l10n.notAvailableInOfflineMode);
+      return;
+    }
+    final randomTracks = await _jellyfinApiHelper.getItems(
+      parentItem: _finampUserHelper.currentUser?.currentView,
+      includeItemTypes: [BaseItemDtoType.track.jellyfinName].join(","),
+      limit: 1,
+      sortBy: SortBy.random.jellyfinName(ContentType.tracks),
+    );
+    if (randomTracks != null && randomTracks.isNotEmpty) {
+      await GetIt.instance<QueueService>().startPlayback(
+        items: randomTracks,
+        source: QueueItemSource.fromBaseItem(randomTracks.first),
+        skipRadioCacheInvalidation: false,
+        order: FinampPlaybackOrder.linear,
+      );
+      FinampSetters.setRadioMode(RadioMode.continuous);
+      toggleRadio(true);
+    } else {
+      GlobalSnackbar.message((context) => context.l10n.noTracksFound);
+    }
+  }
+
+  Future<void> playRandomItem({bool favoritesOnly = false, List<BaseItemDtoType>? limitItemTypes}) async {
+    // get random favorite (any item type)
+    final randomFavorite = (await _jellyfinApiHelper.getItems(
+      parentItem: _finampUserHelper.currentUser!.currentView,
+      filters: favoritesOnly ? "IsFavorite" : null,
+      // Jellyfin 10.10 and 10.11 use the [isFavorite] boolean filter instead of the list-based [filters] parameter for genres, so add that here
+      // I guess part of the reason for this is that it's not possible to favorite a genre through the Jellyfin Web UI at all...
+      isFavorite: favoritesOnly,
+      includeItemTypes:
+          (limitItemTypes ??
+                  [
+                    BaseItemDtoType.track,
+                    BaseItemDtoType.album,
+                    BaseItemDtoType.artist,
+                    BaseItemDtoType.genre,
+                    BaseItemDtoType.playlist,
+                  ])
+              .map((e) => e.jellyfinName)
+              .join(","),
+      sortBy: SortBy.random.jellyfinName(null),
+      limit: 1,
+    ))?.firstOrNull;
+
+    if (randomFavorite == null) {
+      GlobalSnackbar.message((context) => context.l10n.nothingFoundToPlay);
+      return;
+    }
+
+    // if item is a collection, get its tracks, otherwise just play the item
+    List<jellyfin_models.BaseItemDto> itemsToPlay;
+    if (BaseItemDtoType.fromItem(randomFavorite) != BaseItemDtoType.track) {
+      itemsToPlay =
+          await _jellyfinApiHelper.getItems(
+            parentItem: randomFavorite,
+            includeItemTypes: [BaseItemDtoType.track].map((e) => e.jellyfinName).join(","),
+            sortBy: SortBy.defaultOrder.jellyfinName(ContentType.tracks),
+            sortOrder: SortOrder.ascending.name,
+          ) ??
+          [];
+    } else {
+      itemsToPlay = [randomFavorite];
+    }
+
+    await _queueService.startPlayback(items: itemsToPlay, source: QueueItemSource.fromBaseItem(randomFavorite));
   }
 }

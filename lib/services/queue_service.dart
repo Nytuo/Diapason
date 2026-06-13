@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:app_links/app_links.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:collection/collection.dart';
 import 'package:finamp/components/PlayerScreen/queue_source_helper.dart';
@@ -30,6 +31,8 @@ import 'package:path/path.dart' as path_helper;
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
+
+import '../models/music_slices.dart';
 
 /// A track queueing service for Finamp.
 class QueueService {
@@ -395,7 +398,7 @@ class QueueService {
             unawaited(_queuesBox.deleteAll(extra));
           }
 
-          if (FinampSettingsHelper.finampSettings.autoloadLastQueueOnStartup) {
+          if (FinampSettingsHelper.finampSettings.autoloadLastQueueOnStartup && !await _hasInitialPlayLink()) {
             await loadSavedQueue(info);
           } else {
             _savedQueueState = SavedQueueState.pendingSave;
@@ -405,6 +408,15 @@ class QueueService {
         _queueServiceLogger.severe(e);
         rethrow;
       }
+    }
+  }
+
+  Future<bool> _hasInitialPlayLink() async {
+    try {
+      final initialLink = await AppLinks().getInitialLink();
+      return initialLink != null && initialLink.host == "play";
+    } catch (_) {
+      return false;
     }
   }
 
@@ -605,9 +617,11 @@ class QueueService {
     }
   }
 
+  // TODO cut more/all usages of this over to startSlicePlayback
   Future<void> startPlayback({
     required List<jellyfin_models.BaseItemDto> items,
     required QueueItemSource source,
+    // Only used for radio startup
     QueueItemSource? customTrackSource,
     FinampPlaybackOrder? order,
     int? startingIndex,
@@ -624,9 +638,66 @@ class QueueService {
       skipRadioCacheInvalidation: skipRadioCacheInvalidation,
     );
     _queueServiceLogger.info(
-      "Started playing '${GlobalSnackbar.localizations != null ? source.name.getLocalized2(GlobalSnackbar.localizations!) : source.name.type}' (${source.type}) in order $order from index $startingIndex",
+      "Started playing '${source.name.getLocalized(GlobalSnackbar.requireL10n)}' (${source.type}) in order $order from index $startingIndex",
     );
     _queueServiceLogger.info("Items for queue: [${items.map((e) => e.name).join(", ")}]");
+  }
+
+  Future<void> startSlicePlayback(PlayableSlice slice) async => _startSlicePlayback(slice: slice);
+
+  Future<void> _startSlicePlayback({required PlayableSlice slice, bool beginPlaying = true}) async {
+    switch (slice) {
+      case BasePlayableSlice():
+      case GroupedPlayableSlice():
+      case PreCachedPlayableSlice() when slice.shuffleState == SliceShuffleState.playerShuffled:
+        final base = await slice.resolve();
+        final order = switch (base.shuffleState) {
+          SliceShuffleState.preShuffled => FinampPlaybackOrder.linear,
+          SliceShuffleState.playerShuffled => FinampPlaybackOrder.shuffled,
+          SliceShuffleState.linear => FinampPlaybackOrder.linear,
+        };
+        await _replaceWholeQueue(
+          itemList: base.items,
+          source: base.source,
+          order: order,
+          initialIndex: order == FinampPlaybackOrder.linear ? base.startingIndex : null,
+          beginPlaying: beginPlaying,
+        );
+        _queueServiceLogger.info(
+          "Started playing '${base.source.name.getLocalized(GlobalSnackbar.requireL10n)}' (${base.source.type}) in order $order from index ${base.startingIndex}",
+        );
+        _queueServiceLogger.info("Items for queue: [${base.items.map((e) => e.name).join(", ")}]");
+      // TODO also do pre-cache work in other queue add methods?
+      case PreCachedPlayableSlice slice:
+        // Shuffle state is linear or preshuffled, so ignore.
+        await _replaceWholeQueue(
+          itemList: slice.cachedTracks,
+          source: slice.source,
+          order: FinampPlaybackOrder.linear,
+          initialIndex: slice.startingOffset,
+          beginPlaying: beginPlaying,
+        );
+        _queueServiceLogger.info(
+          "Started playing '${slice.source.name.getLocalized(GlobalSnackbar.requireL10n)}' (${slice.source.type}), pending additional tracks",
+        );
+        _queueServiceLogger.info("Items for queue: [${slice.cachedTracks.map((e) => e.name).join(", ")}]");
+        final additionalTracks = await slice.fetchTracks;
+        if (!slice.combineTracks) {
+          assert(() {
+            for (int i = 0; i < slice.cachedTracks.length; i++) {
+              if (slice.cachedTracks[i] != additionalTracks[i]) {
+                return false;
+              }
+            }
+            return true;
+          }());
+          for (var track in slice.cachedTracks) {
+            additionalTracks.remove(track);
+          }
+        }
+        // TODO verify we haven't made other queue changes?
+        await addToQueue(PlayableSlice.simple(additionalTracks, slice.source));
+    }
   }
 
   /// Replaces the queue with the given list of items. If startAtIndex is specified, Any items below it
@@ -858,49 +929,31 @@ class QueueService {
     return;
   }
 
-  Future<void> addToQueue({
-    required List<jellyfin_models.BaseItemDto> items,
-    QueueItemSource? source,
-    FinampPlaybackOrder? order,
-  }) async {
+  Future<void> addToQueue(PlayableSlice slice) async {
     if (_audioHandler.audioSources.isEmpty) {
-      return _replaceWholeQueue(
-        itemList: items,
-        order: order,
-        source:
-            source ??
-            QueueItemSource.rawId(
-              type: QueueItemSourceType.queue,
-              name: const QueueItemSourceName(type: QueueItemSourceNameType.queue),
-              id: "queue",
-              item: null,
-            ),
-        beginPlaying: false,
-      );
+      return _startSlicePlayback(slice: slice, beginPlaying: false);
     }
+    final baseSlice = await slice.resolve(preShuffle: true);
+    final items = baseSlice.items;
 
     try {
       if (_savedQueueState == SavedQueueState.pendingSave) {
         _savedQueueState = SavedQueueState.saving;
       }
-      if (order == FinampPlaybackOrder.shuffled) {
-        List<jellyfin_models.BaseItemDto> clonedItems = List.from(items);
-        clonedItems.shuffle();
-        items = clonedItems;
-      }
       List<FinampQueueItem> queueItems = [];
       for (final item in items) {
         queueItems.add(
           FinampQueueItem(
-            item: await generateMediaItem(item, contextNormalizationGain: source?.contextNormalizationGain),
-            source: source ?? _order.originalSource,
+            item: await generateMediaItem(item, contextNormalizationGain: slice.source.contextNormalizationGain),
+            source: slice.source,
             type: QueueItemQueueType.queue,
           ),
         );
-        _queueServiceLogger.fine(
-          "Added '${queueItems.last.item.title}' to queue from '${source?.name}' (${source?.type})",
-        );
       }
+
+      _queueServiceLogger.fine(
+        "Added ${items.length} items to queue from '${slice.source.name}' (${slice.source.type})",
+      );
 
       await _audioHandler.appendFinampQueueItems(queueItems);
 
@@ -911,48 +964,23 @@ class QueueService {
     }
   }
 
-  Future<void> addNext({
-    required List<jellyfin_models.BaseItemDto> items,
-    QueueItemSource? source,
-    FinampPlaybackOrder? order,
-  }) async {
+  Future<void> addNext(PlayableSlice slice) async {
     if (_audioHandler.audioSources.isEmpty) {
-      return _replaceWholeQueue(
-        itemList: items,
-        source:
-            source ??
-            QueueItemSource.rawId(
-              type: QueueItemSourceType.queue,
-              name: const QueueItemSourceName(type: QueueItemSourceNameType.queue),
-              id: "queue",
-              item: null,
-            ),
-        beginPlaying: false,
-        order: order,
-      );
+      return _startSlicePlayback(slice: slice, beginPlaying: false);
     }
+    final baseSlice = await slice.resolve(preShuffle: true);
+    final items = baseSlice.items;
 
     try {
       if (_savedQueueState == SavedQueueState.pendingSave) {
         _savedQueueState = SavedQueueState.saving;
       }
-      if (order == FinampPlaybackOrder.shuffled) {
-        List<jellyfin_models.BaseItemDto> clonedItems = List.from(items);
-        clonedItems.shuffle();
-        items = clonedItems;
-      }
       List<FinampQueueItem> queueItems = [];
       for (final item in items) {
         queueItems.add(
           FinampQueueItem(
-            item: await generateMediaItem(item, contextNormalizationGain: source?.contextNormalizationGain),
-            source:
-                source ??
-                QueueItemSource.rawId(
-                  id: "next-up",
-                  name: const QueueItemSourceName(type: QueueItemSourceNameType.nextUp),
-                  type: QueueItemSourceType.nextUp,
-                ),
+            item: await generateMediaItem(item, contextNormalizationGain: slice.source.contextNormalizationGain),
+            source: slice.source,
             type: QueueItemQueueType.nextUp,
           ),
         );
@@ -977,48 +1005,23 @@ class QueueService {
     }
   }
 
-  Future<void> addToNextUp({
-    required List<jellyfin_models.BaseItemDto> items,
-    QueueItemSource? source,
-    FinampPlaybackOrder? order,
-  }) async {
+  Future<void> addToNextUp(PlayableSlice slice) async {
     if (_audioHandler.audioSources.isEmpty) {
-      return _replaceWholeQueue(
-        itemList: items,
-        source:
-            source ??
-            QueueItemSource.rawId(
-              type: QueueItemSourceType.queue,
-              name: const QueueItemSourceName(type: QueueItemSourceNameType.queue),
-              id: "queue",
-              item: null,
-            ),
-        beginPlaying: false,
-        order: order,
-      );
+      return _startSlicePlayback(slice: slice, beginPlaying: false);
     }
+    final baseSlice = await slice.resolve(preShuffle: true);
+    final items = baseSlice.items;
 
     try {
       if (_savedQueueState == SavedQueueState.pendingSave) {
         _savedQueueState = SavedQueueState.saving;
       }
-      if (order == FinampPlaybackOrder.shuffled) {
-        List<jellyfin_models.BaseItemDto> clonedItems = List.from(items);
-        clonedItems.shuffle();
-        items = clonedItems;
-      }
       List<FinampQueueItem> queueItems = [];
       for (final item in items) {
         queueItems.add(
           FinampQueueItem(
-            item: await generateMediaItem(item, contextNormalizationGain: source?.contextNormalizationGain),
-            source:
-                source ??
-                QueueItemSource.rawId(
-                  id: "next-up",
-                  name: const QueueItemSourceName(type: QueueItemSourceNameType.nextUp),
-                  type: QueueItemSourceType.nextUp,
-                ),
+            item: await generateMediaItem(item, contextNormalizationGain: slice.source.contextNormalizationGain),
+            source: slice.source,
             type: QueueItemQueueType.nextUp,
           ),
         );
@@ -1389,12 +1392,12 @@ class QueueService {
     double? contextNormalizationGain,
     MediaItemParentType? parentType,
     jellyfin_models.BaseItemId? parentId,
-    bool Function({jellyfin_models.BaseItemDto? item, TabContentType? contentType})? isPlayable,
+    bool Function({jellyfin_models.BaseItemDto? item, ContentType? contentType})? isPlayable,
   }) async {
     const uuid = Uuid();
 
     MediaItemId? itemId;
-    final tabContentType = TabContentType.fromItemType(item.type ?? "Audio");
+    final tabContentType = ContentType.fromItemType(item.type ?? "Audio");
     bool isAndroidAutoOrMediaBrowserRequest = false;
 
     if (parentType != null) {
