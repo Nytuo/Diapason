@@ -140,7 +140,7 @@
     "removeFromMix": "Mix'ten Çıkart",
     "addToMix": "Mix'e Ekle",
     "bufferDuration": "Önden Kaydetme Süresi",
-    "bufferDurationSubtitle": "Saniye cinsinden ara belleğe alınması gereken en fazla süre. Yeniden başlatmayı gerektirir.",
+    "bufferDurationSubtitle": "Saniye cinsinden ara belleğe alınması gereken süre. Yeniden başlatmayı gerektirir.",
     "album": "Albüm",
     "selectMusicLibraries": "Müzik Kütüphanelerini Seç",
     "@selectMusicLibraries": {
@@ -198,7 +198,7 @@
     "shuffleAllTrackCountSubtitle": "Tüm parçalardaki ya da türlerdeki karıştır düğmesini kullanırken karıştırılacak parça sayısı.",
     "viewType": "Görüntüleme Tipi",
     "useCoverAsBackgroundSubtitle": "Oynatıcı arkaplanı olarak bulanık kapak fotoğrafını gösterilip gösterilmeyeceğini belirler.",
-    "showTextOnGridViewSubtitle": "Izgara müzik ekranında metin (başlık, sanatçı, vs.) gösterilip gösterilmeyeceğini belirler.",
+    "showTextOnGridViewSubtitle": "Izgara müzik ekranında metin (başlık, sanatçı, vs.) gösterilip gösterilmeyeceğini belirler. Yazı bu ayar göz ardı edilip her zaman ana ekranda gösterilir.",
     "addToQueue": "Kuyruğa Ekle",
     "instantMix": "Anlık Mix",
     "goToAlbum": "Albüme Git",
@@ -442,7 +442,7 @@
     },
     "hours": "Saat",
     "seconds": "Saniye",
-    "sleepTimerRemainingTime": "{time} dakika içinde uyuyor",
+    "sleepTimerRemainingTime": "{time} dakika içinde duracak",
     "@sleepTimerRemainingTime": {
         "description": "Button label for sleep timer. {time} is the amount of minutes left.",
         "placeholders": {
@@ -963,7 +963,7 @@
     "@defaultDownloadLocationButton": {
         "description": "Tooltip for button that sets a download location as the default."
     },
-    "reportQueueToServerSubtitle": "Etkinleştirildiğinde Finamp mevcut kuyruğu sunucuya gönderecektir. Şu anda bunun pek bir faydası yok gibi görünüyor ve ağ trafiğini artırıyor.",
+    "reportQueueToServerSubtitle": "Etkinleştirildiğinde Finamp mevcut kuyruğu sunucuya gönderecektir. Bu uzaktan kontrolü iyileştirebilir ve sunucu-taraflı kuyruğun restore edilmesine izin verir. 'Şurda Oynat' özelliği açık ise bu da her zaman açıktır.",
     "@reportQueueToServerSubtitle": {
         "description": "Description of the setting that toggles reporting of the current queue to the Jellyfin server"
     },
@@ -1244,7 +1244,7 @@
             }
         }
     },
-    "periodicPlaybackSessionUpdateFrequency": "Kayıttan yürütme oturumu güncelleme sıklığı",
+    "periodicPlaybackSessionUpdateFrequency": "Kayıttan Yürütme Oturumu Güncelleme Sıklığı",
     "@periodicPlaybackSessionUpdateFrequency": {
         "description": "Label for the setting that controls how frequently (in seconds) the current playback session is reported to the Jellyfin server"
     },
@@ -1277,7 +1277,7 @@
     },
     "bufferDisableSizeConstraintsTitle": "Arabellek boyutunu sınırlama",
     "bufferSizeTitle": "Arabellek Boyutu",
-    "bufferSizeSubtitle": "MB cinsinden arabelleğin maksimum boyutu. Yeniden başlatma gerektirir",
+    "bufferSizeSubtitle": "MB cinsinden arabelleğin boyutu. Yeniden başlatma gerektirir",
     "savedQueue": "Kuyruk Kayıt Edildi",
     "@savedQueue": {
         "description": "Title for the queue source for tracks were previously in the queue before an app restart and have been reloaded"
@@ -1477,7 +1477,7 @@
     },
     "none": "Yok",
     "autoSwitchItemCurationTypeTitle": "Öğe Düzenleme Türünü otomatik değiştir",
-    "autoSwitchItemCurationTypeSubtitle": "",
+    "autoSwitchItemCurationTypeSubtitle": "Etkinleştirildiğinde, Sanatçı ve Tür ekranlarındaki Öğe Bölümleri, öğe bulunmadığında (örneğin belirli bir sanatçı için favori yoksa) otomatik olarak farklı bir derleme türüne geçer.",
     "showArtistsTracksSection": "Şarkı seçimini göster",
     "shuffleToQueue": "Sıraya rastgele ekle",
     "@shuffleToQueue": {
@@ -1529,7 +1529,7 @@
     "@tracksFormerNextUp": {
         "description": "Title for the queue source for tracks that were once added to the queue via the \"Next Up\" feature, but have since been played"
     },
-    "playingFromType": "{source, select, album{Album} playlist{Playlist} trackMix{Track Mix} artistMix{Artist Mix} albumMix{Album Mix} genreMix{Genre Mix} favorites{Favorites} allTracks{All Tracks} filteredList{Tracks} genre{Genre} artist{Artist} track{Track} nextUpAlbum{Album in Next Up} nextUpPlaylist{Playlist in Next Up} nextUpArtist{Artist in Next Up} nextUpGenre{Genre in Next Up} remoteClient{a Remote Client} other{}} dan çalınıyor",
+    "playingFromType": "{source, select, album{Album} playlist{Playlist} trackMix{Track Mix} artistMix{Artist Mix} albumMix{Album Mix} genreMix{Genre Mix} favorites{Favorites} allTracks{All Tracks} filteredList{Tracks} genre{Genre} artist{Artist} track{Track} nextUpAlbum{Album in Next Up} nextUpPlaylist{Playlist in Next Up} nextUpArtist{Artist in Next Up} nextUpGenre{Genre in Next Up} remoteClient{a Remote Client} radio{Radio} homeScreenSection{} collection{Collection} collectionMix{Collection Mix} other{}} dan oynatılıyor",
     "@playingFromType": {
         "description": "Prefix shown before the type of the main queue source at the top of the player screen. Example: \"Playing From Album\"",
         "placeholders": {
@@ -1606,5 +1606,114 @@
     "@colorCodeHint": {
         "description": "Hint text for the color code input field. Don't translate 'coffee', unless the translation is also a valid hex color code."
     },
-    "save": "Kaydet"
+    "save": "Kaydet",
+    "playbackActionPageMoveWithinQueue": "Kuyruk İçerisinde Taşı",
+    "@playbackActionPageMoveWithinQueue": {
+        "description": "Label for the playback action page that contains all actions related to moving tracks within the queue"
+    },
+    "showArtistsTracksSectionSubtitle": "En fazla beş parçalık bir bölümün gösterilip gösterilmeyeceğini belirler. Etkinleştirildiğinde En Çok Çalınanlar, Favoriler, Rastgele, En Son Çıkanlar, Son Eklenenler ve Son Çalınan Parçalar arasından seçim yapabilirsiniz.",
+    "amoledTheme": "AMOLED Temayı Kullan",
+    "@amoledTheme": {
+        "description": "Toggles the dark color scheme between dark gray and pure black."
+    },
+    "amoledThemeSubtitle": "Karanlık renk şemasını tamamıyla siyah bir tema ile değiştirir.",
+    "sleepTimerRemainingTracks": "{time} dakika içinde duracak",
+    "@sleepTimerRemainingTracks": {
+        "description": "Button label for sleep timer. {time} is the amount of minutes left.",
+        "placeholders": {
+            "time": {
+                "type": "int"
+            }
+        }
+    },
+    "startRadio": "Radyo Başlat",
+    "@startRadio": {
+        "description": "Menu label for starting a radio from a playlist, album, etc."
+    },
+    "movePlayNext": "Sıradakini oynat",
+    "@movePlayNext": {
+        "description": "Used for moving a track to the \"Next Up\" queue at the first position, to play right after the current track finishes playing"
+    },
+    "moveAddToNextUp": "Sıradaki kuyruğunun sonuna ekle",
+    "@moveAddToNextUp": {
+        "description": "Used for moving a track to the \"Next Up\" queue at the end, to play after all prior tracks from Next Up have played"
+    },
+    "moveAddToQueue": "En sona taşı",
+    "@moveAddToQueue": {
+        "description": "Used for moving a track to the end of the queue, to play after all prior tracks from the queue have played"
+    },
+    "radio": "Radyo",
+    "@radio": {
+        "description": "Title for the queue source when the user is playing a track added via radio"
+    },
+    "radioForItem": "{radioSource} - Radyo",
+    "@radioForItem": {
+        "description": "Suffix added to a queue source when playing a radio track. Example: \"Never Gonna Give You Up - Radio\"",
+        "placeholders": {
+            "radioSource": {
+                "type": "String",
+                "example": "Never Gonna Give You Up"
+            }
+        }
+    },
+    "playOnStaleDelay": "'Şurda Oynat' Zaman Aşımı",
+    "@playOnStaleDelay": {
+        "description": "Label for the setting that controls how long a PlayOn remote session is considered active"
+    },
+    "homeScreenSettingsTitle": "Ana Ekran",
+    "@homeScreenSettingsTitle": {
+        "description": "Title for the home screen settings"
+    },
+    "homeScreenSectionPresetPickerMenuTitle": "Hazır Ayar Seç",
+    "@homeScreenSectionPresetPickerMenuTitle": {
+        "description": "Title for the preset picker menu, which allows users to pick a preset section to add to the home screen"
+    },
+    "homeScreenSectionCustomSectionTitle": "Özel Bölüm",
+    "@homeScreenSectionCustomSectionTitle": {
+        "description": "Title for the custom section type, which can be added to the home screen"
+    },
+    "homeScreenSectionCustomSectionDescription": "Özel bölümünü ayarla",
+    "@homeScreenSectionCustomSectionDescription": {
+        "description": "Description for the custom section type, which can be added to the home screen"
+    },
+    "homeScreenQuickActionPickerMenuTitle": "Bir İşlem Seç",
+    "@homeScreenQuickActionPickerMenuTitle": {
+        "description": "Title for the quick action picker menu, which allows users to pick a quick action to add to the home screen"
+    },
+    "homeScreenSectionPresetFavoriteTracksTitle": "Favori Parçalar",
+    "@homeScreenSectionPresetFavoriteTracksTitle": {
+        "description": "Title for the favorite tracks preset section, which can be added to the home screen"
+    },
+    "homeScreenSectionPresetFavoriteTracksDescription": "Rastegele sırada beğenilen parçalar",
+    "@homeScreenSectionPresetFavoriteTracksDescription": {
+        "description": "Description for the favorite tracks preset section, which can be added to the home screen"
+    },
+    "homeScreenSectionPresetForgottenFavoriteTracksTitle": "Unutulan Favori Parçalar",
+    "@homeScreenSectionPresetForgottenFavoriteTracksTitle": {
+        "description": "Title for the forgotten favorite tracks preset section, which can be added to the home screen"
+    },
+    "homeScreenSectionPresetForgottenFavoriteTracksDescription": "Uzun süredir çalınmayan beğenilen parçalar",
+    "@homeScreenSectionPresetForgottenFavoriteTracksDescription": {
+        "description": "Description for the forgotten favorite tracks preset section, which can be added to the home screen"
+    },
+    "quickActionsSubtitle": "Ana ekrandaki hızlı işlemleri seçip yeniden düzenle.",
+    "@quickActionsSubtitle": {
+        "description": "Subtitle for quick actions edit menu"
+    },
+    "sectionMenuSubtitle": "Ana ekrandaki hızlı işlemleri seç ve yeniden düzenle.",
+    "@sectionMenuSubtitle": {
+        "description": "Subtitle for home screen sections edit menu"
+    },
+    "editHomeScreenSection": "Ana Ekran Bölümünü Düzenle",
+    "@editHomeScreenSection": {
+        "description": "Title for home screen section editor menu"
+    },
+    "homeScreenImageSizeTitle": "Ana Ekran Öğe Boyutu",
+    "@homeScreenImageSizeTitle": {
+        "description": "Title of home screen tile image size setting"
+    },
+    "customizeHomeScreen": "Ana ekranı düzenle",
+    "@customizeHomeScreen": {
+        "description": "Label for home screen customize button"
+    }
 }
