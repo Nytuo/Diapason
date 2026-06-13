@@ -534,9 +534,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
               border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(8)),
             ),
             onChanged: (newValue) {
-              setState(() {
-                tabTitle = newValue;
-              });
+              tabTitle = newValue;
             },
           ),
         ],
@@ -556,7 +554,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
           Navigator.of(context).pop(currentSectionInfo);
         },
       ),
-      SizedBox(height: 20.0),
+      SizedBox(height: 350.0),
     ];
     // TODO calculate real size or otherwise fix.
     final stackHeight = 200.0;
