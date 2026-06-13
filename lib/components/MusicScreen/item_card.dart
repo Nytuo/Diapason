@@ -19,16 +19,15 @@ const double queuesHomeSectionHeight = 84;
 /// Card content for items. You probably shouldn't use this widget directly,
 /// use ItemWrapper instead.
 class ItemCard extends ConsumerWidget {
-  const ItemCard({super.key, required this.item, this.onTap, this.forHomeScreen = false, required this.forceText});
+  const ItemCard({super.key, required this.item, this.onTap, this.forHomeScreen = false});
 
   final BaseItemDto item;
   final void Function()? onTap;
   final bool forHomeScreen;
-  final bool forceText;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final showText = forHomeScreen || forceText || ref.watch(finampSettingsProvider.showTextOnGridView);
+    final showText = forHomeScreen || ref.watch(finampSettingsProvider.showTextOnGridView);
     final hasImage = !(item.blurHash == null && item.imageId == null);
     return Container(
       constraints: BoxConstraints(maxWidth: calculateItemCollectionCardWidth(ref, forHomeScreen: forHomeScreen).$1),

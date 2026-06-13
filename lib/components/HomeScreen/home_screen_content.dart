@@ -384,7 +384,6 @@ class HomeScreenSectionContent extends ConsumerWidget {
                     key: ValueKey(item.item.id),
                     item: item.item,
                     isGrid: true,
-                    forceText: true,
                     forHomeScreen: true,
                     interactive: interactive,
                     source: displayable.source,

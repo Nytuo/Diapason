@@ -37,7 +37,6 @@ class ItemWrapper extends ConsumerStatefulWidget {
     this.adaptiveAdditionalInfoSortBy,
     this.showFavoriteIconOnlyWhenFilterDisabled = false,
     this.interactive = true,
-    this.forceText = false,
     this.forHomeScreen = false,
     this.source,
   });
@@ -53,10 +52,7 @@ class ItemWrapper extends ConsumerStatefulWidget {
   /// this widget in a grid view.
   final bool isGrid;
 
-  /// Forces text to be shown in grid mode, even if showTextOnGridView is false
-  final bool forceText;
-
-  /// Apply home screen specific styling, like grid size
+  /// Apply home screen specific styling, like grid sizing or forcing text to be shown
   final bool forHomeScreen;
 
   /// If a genre filter is specified, it will propagate down to for example the ArtistScreen,
@@ -157,7 +153,7 @@ class _ItemCollectionWrapperState extends ConsumerState<ItemWrapper> {
       onLongPressStart: (details) => widget.interactive ? openItemMenu(context: context, item: widget.item) : null,
       onSecondaryTapDown: (details) => widget.interactive ? openItemMenu(context: context, item: widget.item) : null,
       child: widget.isGrid
-          ? ItemCard(item: mutableItem, onTap: onTap, forceText: widget.forceText, forHomeScreen: widget.forHomeScreen)
+          ? ItemCard(item: mutableItem, onTap: onTap, forHomeScreen: widget.forHomeScreen)
           : ItemCollectionListTile(
               item: mutableItem,
               onTap: onTap,
