@@ -6,6 +6,7 @@ import 'package:finamp/components/Buttons/simple_button.dart';
 import 'package:finamp/components/SettingsScreen/finamp_settings_dropdown.dart';
 import 'package:finamp/components/themed_bottom_sheet.dart';
 import 'package:finamp/components/toggleable_list_tile.dart';
+import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/models/finamp_models.dart';
 import 'package:finamp/models/jellyfin_models.dart';
 import 'package:finamp/services/finamp_settings_helper.dart';
@@ -271,18 +272,14 @@ class SortAndFilterRow extends ConsumerWidget {
                                 // If showChips, this is guaranteed to be at least minimumMaxChipWidth
                                 maxWidth: (constraints.maxWidth - filerButtonWidth) / activeFilterCount,
                               ),
-                              child: SimpleButton(
-                                text: filter.getName(context.l10n),
-                                label: context.l10n.removeFilter,
-                                icon: TablerIcons.x,
-                                iconColor: TextTheme.of(context).bodyMedium?.color?.withOpacity(0.7),
-                                backgroundColor: ColorScheme.of(context).primary.withOpacity(0.1),
-                                onPressed: () => controller._updateConfiguration(
+                              child: ActiveFilterChip(
+                                filter: filter,
+                                onRemove: () => controller._updateConfiguration(
                                   currentConfig.copyWith(
                                     filters: currentConfig.filters.whereNot((x) => x.type == filter.type).toSet(),
                                   ),
                                 ),
-                                onPressedSecondary: showMenu,
+                                onSecondaryPress: showMenu,
                               ),
                             ),
                           ),
@@ -310,6 +307,40 @@ class SortAndFilterRow extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class ActiveFilterChip extends StatelessWidget {
+  const ActiveFilterChip({
+    super.key,
+    required this.filter,
+    required this.onRemove,
+    this.onSecondaryPress,
+    this.showPlainName = false,
+  });
+
+  final ItemFilter filter;
+  final VoidCallback onRemove;
+  final VoidCallback? onSecondaryPress;
+
+  /// When true, shows only the extra value (e.g. the genre name) without the
+  /// "Genre: " prefix produced by [ItemFilter.getName].
+  final bool showPlainName;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final text = showPlainName ? filter.getPlainName(l10n) : filter.getName(l10n);
+    return SimpleButton(
+      text: text,
+      label: l10n.removeFilter,
+      icon: TablerIcons.x,
+      iconColor: TextTheme.of(context).bodyMedium?.color?.withOpacity(0.7),
+      backgroundColor: ColorScheme.of(context).primary.withOpacity(0.1),
+      iconPosition: IconPosition.end,
+      onPressed: onRemove,
+      onPressedSecondary: onSecondaryPress,
     );
   }
 }
