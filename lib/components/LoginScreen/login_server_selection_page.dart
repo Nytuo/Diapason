@@ -4,15 +4,17 @@ import 'package:finamp/components/finamp_icon.dart';
 import 'package:finamp/l10n/app_localizations.dart';
 import 'package:finamp/menus/client_certificate_authentication_menu.dart';
 import 'package:finamp/models/jellyfin_models.dart';
+import 'package:finamp/services/finamp_settings_helper.dart';
 import 'package:finamp/services/jellyfin_api_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 
 import 'login_flow.dart';
 
-class LoginServerSelectionPage extends StatefulWidget {
+class LoginServerSelectionPage extends ConsumerStatefulWidget {
   static const routeName = "login/server-selection";
 
   final ServerState serverState;
@@ -21,10 +23,10 @@ class LoginServerSelectionPage extends StatefulWidget {
   const LoginServerSelectionPage({super.key, required this.serverState, this.onServerSelected});
 
   @override
-  State<LoginServerSelectionPage> createState() => _LoginServerSelectionPageState();
+  ConsumerState<LoginServerSelectionPage> createState() => _LoginServerSelectionPageState();
 }
 
-class _LoginServerSelectionPageState extends State<LoginServerSelectionPage> {
+class _LoginServerSelectionPageState extends ConsumerState<LoginServerSelectionPage> {
   static final _loginServerSelectionPageLogger = Logger("LoginServerSelectionPage");
 
   final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
@@ -69,6 +71,9 @@ class _LoginServerSelectionPageState extends State<LoginServerSelectionPage> {
 
   @override
   Widget build(BuildContext context) {
+    final clientCertificate = ref.watch(finampSettingsProvider.clientCertificate);
+    final isClientCertificateInstalled = clientCertificate != null;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 32.0),
       child: Center(
@@ -99,8 +104,10 @@ class _LoginServerSelectionPageState extends State<LoginServerSelectionPage> {
             _buildServerUrlInput(context),
             ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 95.0),
-              child: widget.serverState.manualServer != null
-                  ? Padding(
+              child: Column(
+                children: [
+                  if (widget.serverState.manualServer != null)
+                    Padding(
                       padding: const EdgeInsets.only(top: 12.0),
                       child: JellyfinServerSelectionWidget(
                         baseUrl: widget.serverState.baseUrl,
@@ -109,9 +116,19 @@ class _LoginServerSelectionPageState extends State<LoginServerSelectionPage> {
                           widget.onServerSelected?.call(widget.serverState.manualServer!, widget.serverState.baseUrl!);
                         },
                       ),
+                    ),
+                  if (isClientCertificateInstalled)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      child: CTAMedium(
+                        text: AppLocalizations.of(context)!.clientCertificateInstalled,
+                        icon: TablerIcons.certificate,
+                        onPressed: () => showClientCertificateMenu(context: context),
+                        minWidth: 0,
+                      ),
                     )
-                  : widget.serverState.clientCertificateRequired
-                  ? Column(
+                  else if (widget.serverState.clientCertificateRequired)
+                    Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -134,9 +151,9 @@ class _LoginServerSelectionPageState extends State<LoginServerSelectionPage> {
                           ],
                         ),
                       ],
-                    )
-                  : widget.serverState.baseUrlToTest != null
-                  ? Padding(
+                    ),
+                  if (widget.serverState.baseUrlToTest != null && widget.serverState.manualServer == null)
+                    Padding(
                       padding: const EdgeInsets.only(top: 12.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -149,8 +166,9 @@ class _LoginServerSelectionPageState extends State<LoginServerSelectionPage> {
                           ),
                         ],
                       ),
-                    )
-                  : const SizedBox.shrink(),
+                    ),
+                ],
+              ),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 20.0, bottom: 16.0),
