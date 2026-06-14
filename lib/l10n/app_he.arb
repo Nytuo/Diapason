@@ -2885,5 +2885,62 @@
     "forceAudioOffloadingOnAndroidSubtitle": "העברת העומס של עיבוד השמע לחומרה, אם המכשיר תומך בזה.",
     "@forceAudioOffloadingOnAndroidSubtitle": {
         "description": "Subtitle for the setting that controls audio offloading on Android."
+    },
+    "ascending": "סדר עולה",
+    "@ascending": {
+        "description": "Label for ascending order."
+    },
+    "descending": "סדר יורד",
+    "@descending": {
+        "description": "Label for descending order."
+    },
+    "home": "בית",
+    "@home": {
+        "description": "Label for the home tab in the main navigation bar"
+    },
+    "homeScreenSettingsTitle": "מסך בית",
+    "@homeScreenSettingsTitle": {
+        "description": "Title for the home screen settings"
+    },
+    "homeScreenQuickActionPickerMenuTitle": "בחירת פעולה",
+    "@homeScreenQuickActionPickerMenuTitle": {
+        "description": "Title for the quick action picker menu, which allows users to pick a quick action to add to the home screen"
+    },
+    "homeScreenSectionPresetFavoriteTracksTitle": "רצועות שמע מועדפות",
+    "@homeScreenSectionPresetFavoriteTracksTitle": {
+        "description": "Title for the favorite tracks preset section, which can be added to the home screen"
+    },
+    "homeScreenSectionPresetForgottenFavoriteTracksTitle": "רצועות שמע מועדפות שנשכחו",
+    "@homeScreenSectionPresetForgottenFavoriteTracksTitle": {
+        "description": "Title for the forgotten favorite tracks preset section, which can be added to the home screen"
+    },
+    "noExternalDirectories": "אין תיקיות חיצוניות.",
+    "@noExternalDirectories": {
+        "description": "Message when the user tries to configure an Appdirectory external download directory but none are availible"
+    },
+    "exteranlStorageTip": "אם הנתיב לא כולל \"emulated\", זה כנראה אחסון חיצוני.",
+    "@exteranlStorageTip": {
+        "description": "Helper text in Appdirectory download location config form"
+    },
+    "tooltipDisabled": "{tip} (מבוטל)",
+    "@tooltipDisabled": {
+        "placeholders": {
+            "tip": {
+                "type": "String"
+            }
+        },
+        "description": "Added to tooltips on disabled buttons"
+    },
+    "noDownloadsInLocation": "לא קיימות כרגע הורדות במיקום הזה.",
+    "@noDownloadsInLocation": {
+        "description": "Message when deleting a downloads location informing the user it is empty."
+    },
+    "deleteDownloadLocation": "מחיקת מיקום",
+    "@deleteDownloadLocation": {
+        "description": "Button for confirming deletion of deownload location"
+    },
+    "cannotDeleteLocation": "לא ניתן למחוק מיקום",
+    "@cannotDeleteLocation": {
+        "description": "Message that a download location cannot currently be deleted."
     }
 }
