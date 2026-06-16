@@ -2929,11 +2929,11 @@
     "@showAll": {
         "description": "Tooltip for show all button on home screen sections"
     },
-    "homeScreenSectionPresetForgottenFavoriteTracksTitle": "從未播放已收藏的歌曲",
+    "homeScreenSectionPresetForgottenFavoriteTracksTitle": "未播放過的收藏",
     "@homeScreenSectionPresetForgottenFavoriteTracksTitle": {
         "description": "Title for the forgotten favorite tracks preset section, which can be added to the home screen"
     },
-    "homeScreenSectionPresetForgottenFavoriteTracksDescription": "未播放過的收藏",
+    "homeScreenSectionPresetForgottenFavoriteTracksDescription": "從未播放的收藏歌曲",
     "@homeScreenSectionPresetForgottenFavoriteTracksDescription": {
         "description": "Description for the forgotten favorite tracks preset section, which can be added to the home screen"
     },
