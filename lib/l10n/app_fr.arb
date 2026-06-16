@@ -40,7 +40,7 @@
     "downloads": "Téléchargements",
     "settings": "Réglages",
     "offlineMode": "Mode hors-ligne",
-    "sortOrder": "Ordre de tri",
+    "sortOrder": "",
     "sortBy": "Trier par",
     "album": "Album",
     "albumArtist": "Artiste d'album",
@@ -2988,5 +2988,105 @@
     "filters": "Filtres",
     "@filters": {
         "description": "Label for filters in Sort & Filter menu"
+    },
+    "sortFilter": "Trier & Filtrer",
+    "@sortFilter": {
+        "description": "title for Sort & Filter menu"
+    },
+    "selectAnItem": "Séléctionner un article",
+    "@selectAnItem": {
+        "description": "Title for 'play specific item' quick action edit menu"
+    },
+    "libraryQualifierActive": "Activée",
+    "@libraryQualifierActive": {
+        "description": "Label shown next to the currently selected library in the Finamp menu/drawer"
+    },
+    "retry": "Réessayer",
+    "removeFilters": "Retirer des filtres",
+    "@removeFilters": {
+        "description": "Title for remove filters only variant of sort and filter menu"
+    },
+    "editSection": "Modifier la section",
+    "@editSection": {
+        "description": "Label for edit home section menu entry"
+    },
+    "tabType": "Type d’Onglet",
+    "@tabType": {
+        "description": "Title for home screen section editor tab type dropdown (albums, artists, ect...)"
+    },
+    "currentLibrary": "Bibliothèque actuelle",
+    "@currentLibrary": {
+        "description": "Title for dynamic current library option in home screen section editor library selector dropdown"
+    },
+    "sectionTitle": "Titre de Section",
+    "@sectionTitle": {
+        "description": "Title for custom section title editor in home screen section editor"
+    },
+    "inPlaylist": "Dans playlist",
+    "@inPlaylist": {
+        "description": "Name of 'In Playlist' content type"
+    },
+    "randomAlbumAction": "Album Aléatoire",
+    "@randomAlbumAction": {
+        "description": "Name of a home screen quick action"
+    },
+    "randomTrackAction": "Piste aléatoire",
+    "@randomTrackAction": {
+        "description": "Name of a home screen quick action"
+    },
+    "surpriseMeAction": "Surprenez-moi",
+    "@surpriseMeAction": {
+        "description": "Name of a home screen quick action"
+    },
+    "editAction": "Modifier l’action",
+    "@editAction": {
+        "description": "Button to edit a quick action"
+    },
+    "unnamedCollection": "Collection Sans Nom",
+    "@unnamedCollection": {
+        "description": "Placeholder for unnamed collection in home screen section editor"
+    },
+    "unknownVersion": "Version inconnue",
+    "@unknownVersion": {
+        "description": "Reported server version if request fails"
+    },
+    "isFullyDownloadedFilter": "Complètement téléchargée",
+    "@isFullyDownloadedFilter": {
+        "description": "Name of fully downloaded items filter"
+    },
+    "genreFilter": "Genre : {name}",
+    "@genreFilter": {
+        "description": "Name of genrefilter",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "searchTermFilter": "Recherche : {searchTerm}",
+    "@searchTermFilter": {
+        "description": "Name of search term filter",
+        "placeholders": {
+            "searchTerm": {
+                "type": "String"
+            }
+        }
+    },
+    "connectedTo": "Connecté à",
+    "@connectedTo": {
+        "description": "Server info in music screen menu"
+    },
+    "allTypes": "Tous les Types",
+    "frequentlyPlayedAlbums": "Albums Souvent Lus",
+    "@frequentlyPlayedAlbums": {
+        "description": "Name of a home screen section preset"
+    },
+    "frequentlyPlayedTracks": "Pistes Souvent Lues",
+    "@frequentlyPlayedTracks": {
+        "description": "Name of a home screen section preset"
+    },
+    "frequentlyPlayedArtists": "Artistes Souvent Lus",
+    "@frequentlyPlayedArtists": {
+        "description": "Name of a home screen section preset"
     }
 }
