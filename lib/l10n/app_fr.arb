@@ -40,7 +40,7 @@
     "downloads": "Téléchargements",
     "settings": "Réglages",
     "offlineMode": "Mode hors-ligne",
-    "sortOrder": "",
+    "sortOrder": "Ordre",
     "sortBy": "Trier par",
     "album": "Album",
     "albumArtist": "Artiste d'album",
@@ -633,7 +633,7 @@
     "@savedQueue": {
         "description": "Title for the queue source for tracks were previously in the queue before an app restart and have been reloaded"
     },
-    "playingFromType": "Lecture depuis {source, select, album{Album} playlist{Playlist} trackMix{Track Mix} artistMix{Artist Mix} albumMix{Album Mix} genreMix{Genre Mix} favorites{Favorites} allTracks{All Tracks} filteredList{Tracks} genre{Genre} artist{Artist} track{Track} nextUpAlbum{Album dans Next Up} nextUpPlaylist{Playlist dans Next Up} nextUpArtist{Artist dans Next Up} nextUpGenre{Genre dans Next Up} remoteClient{un client distant} radio{Radio} other{}}",
+    "playingFromType": "Lecture depuis {source, select, album{Album} playlist{Liste de Lecture} trackMix{Mix de Piste} artistMix{Mix d’Artiste} albumMix{Mix d’album} genreMix{Mix de Genre} favorites{Favoris} allTracks{Tous les Pistes} filteredList{Pistes} genre{Genre} artist{Artiste} track{Piste} nextUpAlbum{Album dans Suivant} nextUpPlaylist{Liste de Lecture dans Suivant} nextUpArtist{Artiste dans Suivant} nextUpGenre{Genre dans Suivant} remoteClient{un client distant} radio{Radio} homeScreenSection{} collection{Collection} collectionMix{Mix de Collection} other{}}",
     "@playingFromType": {
         "description": "Prefix shown before the type of the main queue source at the top of the player screen. Example: \"Playing From Album\"",
         "placeholders": {
@@ -1284,7 +1284,7 @@
         "description": "Font size option for things like the lyrics view. Small means a smaller font size."
     },
     "keepScreenOnDisabled": "Désactivé",
-    "fixedGridTileSizeEnum": "{size, select, small{Petit} medium{Moyen} large{Grand} veryLarge{Très Grand} other{???}}",
+    "fixedGridTileSizeEnum": "{size, select, tiny{Minuscule} small{Petit} medium{Moyen} large{Grand} veryLarge{Très Grand} huge{Énorme} giant{Géant} other{???}}",
     "@fixedGridTileSizeEnum": {
         "placeholders": {
             "size": {
@@ -3022,7 +3022,7 @@
     "@sectionTitle": {
         "description": "Title for custom section title editor in home screen section editor"
     },
-    "inPlaylist": "Dans playlist",
+    "inPlaylist": "Dans liste de lecture",
     "@inPlaylist": {
         "description": "Name of 'In Playlist' content type"
     },
@@ -3088,5 +3088,241 @@
     "frequentlyPlayedArtists": "Artistes Souvent Lus",
     "@frequentlyPlayedArtists": {
         "description": "Name of a home screen section preset"
+    },
+    "showAll": "Afficher Toutes",
+    "@showAll": {
+        "description": "Tooltip for show all button on home screen sections"
+    },
+    "failedToLoadSection": "Échec lors du chargement de la section.",
+    "@failedToLoadSection": {
+        "description": "Message when an error is thrown while resolving home screen section"
+    },
+    "sectionContentsNotDownloaded": "Contenu de la section non téléchargé.",
+    "@sectionContentsNotDownloaded": {
+        "description": "Message when a home screen section has no items while offline"
+    },
+    "failedToLoadSectionMissingItem": "Échec lors du chargement de la section - article manquant.",
+    "@failedToLoadSectionMissingItem": {
+        "description": "Message when the parent item of a home screen section is missing from the server"
+    },
+    "errorLoadingItems": "Échec lors du chargement des articles.",
+    "@errorLoadingItems": {
+        "description": "Message when an error occurs while loading home screen section contents"
+    },
+    "noItemsAvailable": "Aucun article disponible.",
+    "@noItemsAvailable": {
+        "description": "Message when a home screen section has no items while online"
+    },
+    "removeFilter": "Retirer Ce Filtre",
+    "@removeFilter": {
+        "description": "Tooltip for removable filter chips in Sort & Filter row"
+    },
+    "timerTracks": "{tracks} pistes",
+    "@timerTracks": {
+        "placeholders": {
+            "tracks": {
+                "type": "int"
+            }
+        },
+        "description": "Label for sleep timer track count slider"
+    },
+    "quickActionsSubtitle": "Sélectionnez et réorganisez les actions rapides sur l’écran d’accueil.",
+    "@quickActionsSubtitle": {
+        "description": "Subtitle for quick actions edit menu"
+    },
+    "sectionsMenu": "Sections",
+    "@sectionsMenu": {
+        "description": "Title for home screen sections edit menu"
+    },
+    "sectionMenuSubtitle": "Sélectionnez et réorganisez les sections sur l’écran d’accueil.",
+    "@sectionMenuSubtitle": {
+        "description": "Subtitle for home screen sections edit menu"
+    },
+    "sectionType": "Type de Section",
+    "@sectionType": {
+        "description": "Title for home screen section editor section type dropdown (tab view, collection, ect...)"
+    },
+    "collection": "Collection",
+    "@collection": {
+        "description": "Name of home screen section type which uses the contents of a supplied playable item"
+    },
+    "queues": "Files d’attente",
+    "@queues": {
+        "description": "Name of home screen section type which shows the latest played queues"
+    },
+    "favoritePlaylists": "Listes de lecture favorites",
+    "@favoritePlaylists": {
+        "description": "Name of a home screen section preset"
+    },
+    "favoriteGenres": "Genres Favoris",
+    "@favoriteGenres": {
+        "description": "Name of a home screen section preset"
+    },
+    "newlyAddedAlbums": "Albums Récemment Ajoutés",
+    "@newlyAddedAlbums": {
+        "description": "Name of a home screen section preset"
+    },
+    "newlyAddedTracks": "Pistes Récemment Ajoutées",
+    "@newlyAddedTracks": {
+        "description": "Name of a home screen section preset"
+    },
+    "recentlyAddedTracksDescription": "Les pistes qui ont été récemment ajoutées à votre bibliothèque, commençant avec la plus récente",
+    "@recentlyAddedTracksDescription": {
+        "description": "Description of a home screen section preset"
+    },
+    "frequentlyPlayedAlbumsDescription": "Les albums auxquelles vous avez beaucoup écoutées, commençant avec la plus écoutée",
+    "@frequentlyPlayedAlbumsDescription": {
+        "description": "Description of a home screen section preset"
+    },
+    "frequentlyPlayedTracksDescription": "Les pistes auxquelles vous avez beaucoup écoutées, commençant avec la plus écoutée",
+    "@frequentlyPlayedTracksDescription": {
+        "description": "Description of a home screen section preset"
+    },
+    "frequentlyPlayedArtistsDescription": "Les artistes auxquels vous avez beaucoup écoutés, commençant avec le plus écouté",
+    "@frequentlyPlayedArtistsDescription": {
+        "description": "Description of a home screen section preset"
+    },
+    "neverPlayedAlbumsDescription": "Les albums auxquels vous n’avez pas encore écoutés, dans un ordre aléatoire",
+    "@neverPlayedAlbumsDescription": {
+        "description": "Description of a home screen section preset"
+    },
+    "recentQueuesDescription": "Les files d’attente que vous avez récemment créées, commençant avec la plus récente",
+    "@recentQueuesDescription": {
+        "description": "Description of a home screen section preset"
+    },
+    "configureOutputActionDescription": "Ouvre la configuration de périphérique de sortie",
+    "@configureOutputActionDescription": {
+        "description": "Description of a home screen quick action"
+    },
+    "previousQueueAction": "File d’attente précédente",
+    "@previousQueueAction": {
+        "description": "Name of a home screen quick action"
+    },
+    "configureOutputAction": "Configurer la Sortie",
+    "@configureOutputAction": {
+        "description": "Name of a home screen quick action"
+    },
+    "playSpecificItemAction": "Lire {itemName, select, finamp_placeholder{<Article>} other{{itemName}}}",
+    "@playSpecificItemAction": {
+        "placeholders": {
+            "itemName": {
+                "type": "String"
+            }
+        },
+        "description": "Name of a home screen quick action"
+    },
+    "featuredCollection": "Collection en Vedette",
+    "@featuredCollection": {
+        "description": "Title for home screen section editor collection selector"
+    },
+    "egFavoriteTracks": "par ex. Pistes favorites",
+    "@egFavoriteTracks": {
+        "description": "Placeholder text in custom section title editor in home screen section editor"
+    },
+    "searchNotAvailibleWhileOffline": "La recherche n’est pas disponible hors ligne !",
+    "@searchNotAvailibleWhileOffline": {
+        "description": "Message in home screen section editor search widget when offline"
+    },
+    "gridImageSizeTitle": "Taille des Tuiles de la Grille",
+    "@gridImageSizeTitle": {
+        "description": "Title of grid tile image size setting"
+    },
+    "gridImageSizeSubtitle": "Sélectionner la taille des articles dans la vue de grille",
+    "@gridImageSizeSubtitle": {
+        "description": "Subtitle of grid tile image size setting"
+    },
+    "gridImageSizeLabel": "{colCountExact, plural, =0{~} =1{} other{}}{colCount, plural, =0{{colCount} colonne ({sizeDescriptor})} =1{{colCount} colonne ({sizeDescriptor})} other{{colCount} colonnes ({sizeDescriptor})}}",
+    "@gridImageSizeLabel": {
+        "placeholders": {
+            "sizeDescriptor": {
+                "type": "String",
+                "example": "Very Small"
+            },
+            "colCount": {
+                "type": "int"
+            },
+            "colCountExact": {
+                "type": "int",
+                "description": "0 = not exact, add e.g. tilde character (~), 1 = exact, just show the number"
+            }
+        },
+        "description": "Slider label in grid tile image size setting"
+    },
+    "homeScreenImageSizeTitle": "Taille des Tuiles sur l’Écran d’Accueil",
+    "@homeScreenImageSizeTitle": {
+        "description": "Title of home screen tile image size setting"
+    },
+    "homeScreenImageSizeSubtitle": "Sélectionner la taille des articles sur l’écran d’accueil",
+    "@homeScreenImageSizeSubtitle": {
+        "description": "Subtitle of home screen tile image size setting"
+    },
+    "exteranlStorageTip": "Si l’emplacement ne contient pas « emulated », c’est probablement sur le stockage externe.",
+    "@exteranlStorageTip": {
+        "description": "Helper text in Appdirectory download location config form"
+    },
+    "activeFilterCount": "{filterCount, plural, =0{Pas de Filtre} =1{1 Filtre} other{{filterCount} Filtres}} Activé{filterCount, plural, =0{} =1{} other{s}}",
+    "@activeFilterCount": {
+        "placeholders": {
+            "filterCount": {
+                "type": "int"
+            }
+        },
+        "description": "Message in sort & filter row"
+    },
+    "customSectionTitleRequired": "Veuillez donner un titre à la section personnalisée",
+    "@customSectionTitleRequired": {
+        "description": "Message when a custom section title is needed in home screen section editor"
+    },
+    "editHomeScreenSection": "Modifier la Section de l’Écran d’accueil",
+    "@editHomeScreenSection": {
+        "description": "Title for home screen section editor menu"
+    },
+    "sectionConfigInvalid": "La configuration actuelle n’est pas valide.",
+    "@sectionConfigInvalid": {
+        "description": "Message in home screen section edit menu preview window when a valid preview cannot be generated"
+    },
+    "inCollection": "En collection",
+    "@inCollection": {
+        "description": "Name of jellyfin 'Collection' content type"
+    },
+    "tabView": "Vue d’Onglet",
+    "@tabView": {
+        "description": "Name of home screen section type which uses the contents of a music screen tab"
+    },
+    "unplayedAlbums": "Albums injoués",
+    "@unplayedAlbums": {
+        "description": "Name of a home screen section preset"
+    },
+    "browsePlaybackHistoryActionDescription": "Parcourir votre historique de lecture",
+    "@browsePlaybackHistoryActionDescription": {
+        "description": "Description of a home screen quick action"
+    },
+    "playRandomAlbumActionDescription": "Commencer à lire un album aléatoire",
+    "@playRandomAlbumActionDescription": {
+        "description": "Description of a home screen quick action"
+    },
+    "surpriseMeActionDescription": "Démarre la radio 'Continuous' à partir d’une piste aléatoire",
+    "@surpriseMeActionDescription": {
+        "description": "Description of a home screen quick action"
+    },
+    "playRandomTrackActionDescription": "Commence la lecture d'une piste aléatoire",
+    "@playRandomTrackActionDescription": {
+        "description": "Description of a home screen quick action"
+    },
+    "playRandomFavoriteItemActionDescription": "Commence à lire à partir d'un article favori aléatoire",
+    "@playRandomFavoriteItemActionDescription": {
+        "description": "Description of a home screen quick action"
+    },
+    "removeAction": "Retirer l’Action",
+    "@removeAction": {
+        "description": "Button to remove a quick action"
+    },
+    "addNewAction": "Ajouter Nouvelle Action",
+    "@addNewAction": {
+        "description": "Button to add a new quick action"
+    },
+    "removeSection": "Retirer la Section",
+    "@removeSection": {
+        "description": "Button to remove a home screen section"
     }
 }
