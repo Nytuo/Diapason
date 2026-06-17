@@ -618,7 +618,7 @@
     "@togglePlaybackButtonTooltip": {
         "description": "Tooltip for the button that toggles playback"
     },
-    "previousTracks": "已播放歌曲",
+    "previousTracks": "已播放的歌曲",
     "@previousTracks": {
         "description": "Description in the queue panel for the list of tracks that come before the current track in the queue. The tracks might not actually have been played (e.g. if the user skipped ahead to a specific track)."
     },
@@ -727,7 +727,7 @@
     "@savedQueue": {
         "description": "Title for the queue source for tracks were previously in the queue before an app restart and have been reloaded"
     },
-    "playingFromType": "現正播放自：{source, select, album{專輯} playlist{播放清單} trackMix{歌曲混播} artistMix{藝人混播} albumMix{專輯混播} genreMix{類型混播} favorites{收藏} allTracks{所有歌曲} filteredList{篩選結果} genre{類型} artist{藝人} track{歌曲} nextUpAlbum{即將播放中的專輯} nextUpPlaylist{即將播放中的播放清單} nextUpArtist{即將播放中的藝人} nextUpGenre{即將播放中的類型} remoteClient{其他用戶端} radio{電台} homeScreenSection{} collection{收藏} collectionMix{收藏的混播} other{}}",
+    "playingFromType": "現正播放自 {source, select, album{專輯} playlist{播放清單} trackMix{歌曲混播} artistMix{藝人混播} albumMix{專輯混播} genreMix{類型混播} favorites{收藏} allTracks{所有歌曲} filteredList{篩選結果} genre{類型} artist{藝人} track{歌曲} nextUpAlbum{即將播放中的專輯} nextUpPlaylist{即將播放中的播放清單} nextUpArtist{即將播放中的藝人} nextUpGenre{即將播放中的類型} remoteClient{其他用戶端} radio{電台} homeScreenSection{} collection{收藏} collectionMix{收藏的混播} other{}}",
     "@playingFromType": {
         "description": "Prefix shown before the type of the main queue source at the top of the player screen. Example: \"Playing From Album\"",
         "placeholders": {
@@ -1751,7 +1751,7 @@
             }
         }
     },
-    "allLibraries": "所有音樂庫",
+    "allLibraries": "所有的音樂庫",
     "@allLibraries": {
         "description": "All Libraries"
     },
@@ -2791,11 +2791,11 @@
             }
         }
     },
-    "previousTracksPersistenceModeSelectorTitle": "在播放佇列中顯示已播放歌曲",
+    "previousTracksPersistenceModeSelectorTitle": "在播放佇列中顯示已播放的歌曲",
     "@previousTracksPersistenceModeSelectorTitle": {
         "description": "Title for setting that allows to override state of previous tracks header in queue list"
     },
-    "previousTracksPersistenceModeSelectorSubtitle": "開啟播放佇列時，已播放歌曲區塊將…",
+    "previousTracksPersistenceModeSelectorSubtitle": "開啟播放佇列時，已播放的歌曲區塊將…",
     "@previousTracksPersistenceModeSelectorSubtitle": {
         "description": "Subtitle for setting that allows to override state of previous tracks header in queue list"
     },
@@ -2848,7 +2848,7 @@
     "@voiceSearch": {
         "description": "Heading for the page that prompts the user to perform a voice search."
     },
-    "carPlaySiriHint": "你可以說Hey Siri，在Finamp播放 [曲目/歌手/專輯]",
+    "carPlaySiriHint": "你可以說Hey Siri，在Finamp播放 [歌曲/歌手/專輯]",
     "@carPlaySiriHint": {
         "description": "Hint text for how to use Siri to search in CarPlay."
     },
@@ -3185,7 +3185,7 @@
     "@isFavoriteFilter": {
         "description": "Name of favorite filter"
     },
-    "homeFavoritesDownloadWarning": "確定要下載收藏嗎？這會下載所有類型的收藏，不只限於 {sectionType}。",
+    "homeFavoritesDownloadWarning": "確定要下載收藏嗎？這會下載所有類型的收藏，不只限於{sectionType}。",
     "@homeFavoritesDownloadWarning": {
         "description": "Warning presented when pressing the download button on certain home screen sections.  This is shown because home sections show a specific item type, like Albums, but the download covers all.",
         "placeholders": {
@@ -3307,7 +3307,7 @@
     "@configureOutputAction": {
         "description": "Name of a home screen quick action"
     },
-    "playSpecificItemAction": "播放 {itemName, select, finamp_placeholder{<自訂>} other{{itemName}}}",
+    "playSpecificItemAction": "播放{itemName, select, finamp_placeholder{<自訂>} other{{itemName}}}",
     "@playSpecificItemAction": {
         "placeholders": {
             "itemName": {
@@ -3349,7 +3349,7 @@
     "@unnamedCollection": {
         "description": "Placeholder for unnamed collection in home screen section editor"
     },
-    "noTracksFound": "找不到可開始「驚喜播放」混播的歌曲。",
+    "noTracksFound": "找不到可用於「驚喜播放」的歌曲。",
     "@noTracksFound": {
         "description": "Message if SurpriseMeMix creation fails"
     },
