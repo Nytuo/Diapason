@@ -3077,7 +3077,7 @@
         "description": "Server info in music screen menu"
     },
     "allTypes": "Tous les Types",
-    "frequentlyPlayedAlbums": "Albums Souvent Lus",
+    "frequentlyPlayedAlbums": "Albums souvent lus",
     "@frequentlyPlayedAlbums": {
         "description": "Name of a home screen section preset"
     },
@@ -3085,7 +3085,7 @@
     "@frequentlyPlayedTracks": {
         "description": "Name of a home screen section preset"
     },
-    "frequentlyPlayedArtists": "Artistes Souvent Lus",
+    "frequentlyPlayedArtists": "Artistes souvent écoutés",
     "@frequentlyPlayedArtists": {
         "description": "Name of a home screen section preset"
     },
@@ -3158,11 +3158,11 @@
     "@favoriteGenres": {
         "description": "Name of a home screen section preset"
     },
-    "newlyAddedAlbums": "Albums Récemment Ajoutés",
+    "newlyAddedAlbums": "Albums récemment ajoutés",
     "@newlyAddedAlbums": {
         "description": "Name of a home screen section preset"
     },
-    "newlyAddedTracks": "Pistes Récemment Ajoutées",
+    "newlyAddedTracks": "Pistes récemment ajoutées",
     "@newlyAddedTracks": {
         "description": "Name of a home screen section preset"
     },
@@ -3248,7 +3248,7 @@
         },
         "description": "Slider label in grid tile image size setting"
     },
-    "homeScreenImageSizeTitle": "Taille des Tuiles sur l’Écran d’Accueil",
+    "homeScreenImageSizeTitle": "Taille des tuiles sur l’ecran d’accueil",
     "@homeScreenImageSizeTitle": {
         "description": "Title of home screen tile image size setting"
     },
@@ -3373,7 +3373,7 @@
     "@randomFavoriteAction": {
         "description": "Name of a home screen quick action"
     },
-    "swapAction": "Action d'échange",
+    "swapAction": "Échanger les actions",
     "@swapAction": {
         "description": "Button to swap the selected quick action"
     },
