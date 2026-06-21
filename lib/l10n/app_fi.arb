@@ -1252,7 +1252,7 @@
             }
         }
     },
-    "activeDownloadsListHeader": "{itemCount} {typeName, select, downloading{Suoritetaan} failed{Epäonnistui} syncFailed{Toistuvasti synkronoimaton} enqueued{Jonossa} other{}} {itemCount, plural, =1{Lataus} other{Latauksia}}",
+    "activeDownloadsListHeader": "{itemCount} {itemCount, plural, =1{lataus} other{latausta}} {typeName, select, downloading{käynnissä} failed{epäonnistui} syncFailed{, synkronointi epäonnistui toistuvasti} enqueued{jonossa} other{}}",
     "@activeDownloadsListHeader": {
         "description": "Header text for lists of active downloads of a particular state.",
         "placeholders": {
