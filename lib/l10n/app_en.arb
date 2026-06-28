@@ -3529,19 +3529,19 @@
             }
         }
     },
-    "clientCertificate": "SSL Client Certificate",
+    "clientCertificate": "mTLS (SSL) Client Certificate",
     "@clientCertificate": {
         "description": "Title for the setting that allows managing SSL client certificates used for authentication"
     },
-    "clientCertificateUnavailable": "No certificate available, client authentication disabled.",
+    "clientCertificateUnavailable": "No certificate set up, client authentication disabled",
     "@clientCertificateUnavailable": {
         "description": "Message shown when the user has no SSL client certificate available to use."
     },
-    "clientCertificateInstalled": "Certificate installed.",
+    "clientCertificateInstalled": "Certificate installed",
     "@clientCertificateInstalled": {
         "description": "Message shown when the user has successfully installed an SSL client certificate."
     },
-    "clientCertificateDescription": "An SSL client certificate (.p12 or .pfx) is used to authenticate this device with your Jellyfin server. Only required if your server is configured for mutual TLS.",
+    "clientCertificateDescription": "A TLS client certificate (.p12 or .pfx) is used to authenticate this device with your Jellyfin server. Only required if your server is configured for mutual TLS.",
     "@clientCertificateDescription": {
         "description": "Explanatory text in the client certificate settings menu describing what a client certificate is used for"
     },
@@ -3565,15 +3565,15 @@
     "@clientCertificateDeleteConfirm": {
         "description": "Confirmation prompt shown before removing the installed client certificate."
     },
-    "clientCertificateImportSuccess": "Certificate imported successfully.",
+    "clientCertificateImportSuccess": "Certificate imported successfully",
     "@clientCertificateImportSuccess": {
         "description": "Message shown after successfully importing a client certificate."
     },
-    "clientCertificateImportError": "Failed to import certificate.",
+    "clientCertificateImportError": "Failed to import certificate",
     "@clientCertificateImportError": {
         "description": "Error message shown when importing a client certificate fails."
     },
-    "clientCertificateRequired": "Client certificate required.",
+    "clientCertificateRequired": "Client certificate required",
     "@clientCertificateRequired": {
         "description": "Message shown on the server selection screen when the server requires a client certificate to be provided."
     }
