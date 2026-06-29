@@ -1955,5 +1955,13 @@
     "startRadio": "라디오를 시작합니다",
     "@startRadio": {
         "description": "Menu label for starting a radio from a playlist, album, etc."
+    },
+    "shuffleSomeNext": "Next Up에 임의 재생 곡 추가",
+    "@shuffleSomeNext": {
+        "description": "Used for shuffling some tracks to the \"Next Up\" queue at the first position, to play right after the current track finishes playing"
+    },
+    "shuffleSomeToNextUp": "Next Up에 임의 재생 곡 추가",
+    "@shuffleSomeToNextUp": {
+        "description": "Used for shuffling some tracks to the end of the \"Next Up\" queue, to play after all prior tracks from Next Up have played"
     }
 }
