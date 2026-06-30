@@ -379,7 +379,7 @@
     },
     "criticRating": "Nota de la Crítica",
     "shareLogs": "Compartir registres",
-    "downloadedCountUnified": "{trackCount,plural,=1{{trackCount} pista} other{{trackCount} cançons}}, {imageCount,plural,=1{{imageCount} imatge} other{{imageCount} imatges}}\n{syncCount,plural,=1{{syncCount} node sincronitzat} other{{syncCount} nodes sincronitzats}}{repairing, plural, =0{} other{\nReparant}}",
+    "downloadedCountUnified": "{trackCount,plural,=1{{trackCount} cançó} other{{trackCount} cançons}}, {imageCount,plural,=1{{imageCount} imatge} other{{imageCount} imatges}}\n{syncCount,plural,=1{{syncCount} node sincronitzat} other{{syncCount} nodes sincronitzats}}{repairing, plural, =0{} other{\nReparant}}",
     "@downloadedCountUnified": {
         "description": "Display of downloaded track and image count on downloads screen.",
         "placeholders": {
@@ -2894,5 +2894,82 @@
     "carPlayLoginPrompt": "Obre l'aplicació Finamp al teu telèfon per iniciar sessió al teu servidor Jellyfin.",
     "@carPlayLoginPrompt": {
         "description": "Label shown when the user is trying to use CarPlay without being logged in."
+    },
+    "ascending": "Ascendent",
+    "@ascending": {
+        "description": "Label for ascending order."
+    },
+    "descending": "Descendent",
+    "@descending": {
+        "description": "Label for descending order."
+    },
+    "homeScreenSettingsTitle": "Pantalla d'inici",
+    "@homeScreenSettingsTitle": {
+        "description": "Title for the home screen settings"
+    },
+    "homeScreenSectionPresetPickerMenuTitle": "Tria un predefinit",
+    "@homeScreenSectionPresetPickerMenuTitle": {
+        "description": "Title for the preset picker menu, which allows users to pick a preset section to add to the home screen"
+    },
+    "homeScreenSectionCustomSectionTitle": "Secció personalitzada",
+    "@homeScreenSectionCustomSectionTitle": {
+        "description": "Title for the custom section type, which can be added to the home screen"
+    },
+    "homeScreenSectionCustomSectionDescription": "Configura la teva pròpia secció",
+    "@homeScreenSectionCustomSectionDescription": {
+        "description": "Description for the custom section type, which can be added to the home screen"
+    },
+    "homeScreenQuickActionPickerMenuTitle": "Tria una acció",
+    "@homeScreenQuickActionPickerMenuTitle": {
+        "description": "Title for the quick action picker menu, which allows users to pick a quick action to add to the home screen"
+    },
+    "homeScreenSectionPresetFavoriteTracksTitle": "Cançons preferides",
+    "@homeScreenSectionPresetFavoriteTracksTitle": {
+        "description": "Title for the favorite tracks preset section, which can be added to the home screen"
+    },
+    "homeScreenSectionPresetFavoriteTracksDescription": "Cançons preferides en ordre aleatori",
+    "@homeScreenSectionPresetFavoriteTracksDescription": {
+        "description": "Description for the favorite tracks preset section, which can be added to the home screen"
+    },
+    "homeScreenSectionPresetForgottenFavoriteTracksTitle": "Cançons preferides oblidades",
+    "@homeScreenSectionPresetForgottenFavoriteTracksTitle": {
+        "description": "Title for the forgotten favorite tracks preset section, which can be added to the home screen"
+    },
+    "homeScreenSectionPresetForgottenFavoriteTracksDescription": "Cançons preferides escoltades menys recentment",
+    "@homeScreenSectionPresetForgottenFavoriteTracksDescription": {
+        "description": "Description for the forgotten favorite tracks preset section, which can be added to the home screen"
+    },
+    "noExternalDirectories": "Cap directori extern disponible.",
+    "@noExternalDirectories": {
+        "description": "Message when the user tries to configure an Appdirectory external download directory but none are availible"
+    },
+    "nameRequired": "Nom (obligatori)",
+    "@nameRequired": {
+        "description": "Descriptor for the required name field when adding download locations."
+    },
+    "exteranlStorageTip": "Si la ubicació no conté \"emulated\", probablement és emmagatzematge extern.",
+    "@exteranlStorageTip": {
+        "description": "Helper text in Appdirectory download location config form"
+    },
+    "tooltipDisabled": "{tip} (Desactivat)",
+    "@tooltipDisabled": {
+        "placeholders": {
+            "tip": {
+                "type": "String"
+            }
+        },
+        "description": "Added to tooltips on disabled buttons"
+    },
+    "noDownloadsInLocation": "Actualment no hi ha cap descàrrega en aquesta ubicació.",
+    "@noDownloadsInLocation": {
+        "description": "Message when deleting a downloads location informing the user it is empty."
+    },
+    "deleteDownloadLocation": "Suprimeix la ubicació",
+    "@deleteDownloadLocation": {
+        "description": "Button for confirming deletion of deownload location"
+    },
+    "cannotDeleteLocation": "No es pot suprimir la ubicació",
+    "@cannotDeleteLocation": {
+        "description": "Message that a download location cannot currently be deleted."
     }
 }
