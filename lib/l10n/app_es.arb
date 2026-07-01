@@ -2360,11 +2360,11 @@
     "@shuffleSomeToQueue": {
         "description": "Used for shuffling some tracks to the end of the regular queue, to play after all prior tracks from the queue have played"
     },
-    "moveAddToNextUp": "Mover hacia A Continuación",
+    "moveAddToNextUp": "Mover al siguiente",
     "@moveAddToNextUp": {
         "description": "Used for moving a track to the \"Next Up\" queue at the end, to play after all prior tracks from Next Up have played"
     },
-    "moveAddToQueue": "Mover hacia el final",
+    "moveAddToQueue": "Mover al final",
     "@moveAddToQueue": {
         "description": "Used for moving a track to the end of the queue, to play after all prior tracks from the queue have played"
     },
