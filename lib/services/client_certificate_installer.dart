@@ -2,9 +2,11 @@ import 'dart:io';
 
 import 'package:finamp/models/finamp_models.dart';
 import 'package:flutter/services.dart';
+import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 
 import 'finamp_settings_helper.dart';
+import 'jellyfin_api_helper.dart';
 
 class ClientCertificateInstaller {
   static final isSupported = Platform.isAndroid;
@@ -25,6 +27,20 @@ class ClientCertificateInstaller {
     }
 
     installCertificateInSecurityContext(cert, SecurityContext.defaultContext);
+
+    // Install certificate to worker isolate with separate SecurityContext.
+    // During app startup, the API helper isn't registered yet, we can ignore that,
+    // since it'll pass the certificate to the isolate itself when spawning it.
+    if (GetIt.instance.isRegistered<JellyfinApiHelper>()) {
+      try {
+        await GetIt.instance<JellyfinApiHelper>().runInIsolate((_) async {
+          ClientCertificateInstaller().installCertificateInSecurityContext(cert, SecurityContext.defaultContext);
+          return true;
+        });
+      } catch (e) {
+        _logger.warning('Failed to install client certificate in worker isolate: $e');
+      }
+    }
 
     // On Android, ExoPlayer uses HttpURLConnection (not Dart's HttpClient),
     // so we also configure the JVM-global SSLContext via a method channel.
