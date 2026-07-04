@@ -60,7 +60,7 @@ class ClientCertificateInstaller {
       try {
         await _channel.invokeMethod('clearClientCertificate');
       } catch (e) {
-        _logger.warning('Failed to install client certificate in Android SSL context: $e');
+        _logger.warning('Failed to clear client certificate from Android SSL context: $e');
       }
     }
   }
