@@ -49,7 +49,11 @@ class JellyfinApiHelper {
   JellyfinApiHelper() {
     ReceivePort startupPort = ReceivePort();
     var rootToken = RootIsolateToken.instance!;
-    Isolate.spawn(_processRequestsBackground, (startupPort.sendPort, rootToken));
+    // Pass client certificate to background isolates, since Hive isn't accessible from them.
+    var clientCertificate = ClientCertificateInstaller.isSupported
+        ? FinampSettingsHelper.finampSettings.clientCertificate
+        : null;
+    Isolate.spawn(_processRequestsBackground, (startupPort.sendPort, rootToken, clientCertificate));
     Future.sync(() async {
       _workerIsolatePort = await startupPort.first as SendPort?;
     });
@@ -59,7 +63,7 @@ class JellyfinApiHelper {
 
   /// This should only be run in a worker isolate
   /// Sets up singletons and listens for work.
-  static Future<void> _processRequestsBackground((SendPort, RootIsolateToken) input) async {
+  static Future<void> _processRequestsBackground((SendPort, RootIsolateToken, ClientCertificate?) input) async {
     BackgroundIsolateBinaryMessenger.ensureInitialized(input.$2);
     ReceivePort requestPort = ReceivePort();
 
@@ -67,7 +71,10 @@ class JellyfinApiHelper {
     // This is a workaround for <https://github.com/dart-lang/sdk/issues/50435>.
     await FlutterUserCertificatesAndroid().trustAndroidUserCertificates(SecurityContext.defaultContext);
 
-    await ClientCertificateInstaller().installClientCertificate();
+    // Configure SecurityContext to use client certificate, if provided.
+    if (input.$3 != null) {
+      ClientCertificateInstaller().installCertificateInSecurityContext(input.$3!, SecurityContext.defaultContext);
+    }
 
     input.$1.send(requestPort.sendPort);
     final dir = (Platform.isAndroid || Platform.isIOS)
