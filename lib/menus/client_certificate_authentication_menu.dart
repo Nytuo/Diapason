@@ -82,7 +82,7 @@ class _ClientCertificateMenuContentState extends ConsumerState<_ClientCertificat
     try {
       final bytes = await File(filePath).readAsBytes();
       FinampSetters.setClientCertificate(ClientCertificate(data: bytes, password: password));
-      await _clientCertificateInstaller.defaultInstallClientCertificate();
+      await _clientCertificateInstaller.installClientCertificate();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.clientCertificateImportSuccess)));
         widget.onImported?.call();
@@ -112,7 +112,7 @@ class _ClientCertificateMenuContentState extends ConsumerState<_ClientCertificat
         confirmButtonText: l10n.removeClientCertificate,
         onConfirmed: () async {
           FinampSetters.setClientCertificate(null);
-          await _clientCertificateInstaller.defaultClearClientCertificate();
+          await _clientCertificateInstaller.clearClientCertificate();
         },
       ),
     );

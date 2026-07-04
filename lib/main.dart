@@ -144,7 +144,7 @@ Future<void> main({bool integrationTesting = false, bool loginTesting = false}) 
     _mainLog.info("Completed applicable migrations");
     await _trustAndroidUserCerts();
     _mainLog.info("Trusted Android user certs");
-    await ClientCertificateInstaller().defaultInstallClientCertificate();
+    await ClientCertificateInstaller().installClientCertificate();
     _mainLog.info("Installed client certificate");
     await _setupFinampUserHelper();
     _mainLog.info("Setup user helper");

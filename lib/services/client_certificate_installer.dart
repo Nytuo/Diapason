@@ -12,13 +12,10 @@ class ClientCertificateInstaller {
   static final _logger = Logger('ClientCertificateInstaller');
   static const _channel = MethodChannel('com.unicornsonlsd.finamp/client_certificate');
 
-  /// Installs the configured [ClientCertificate] to the [SecurityContext.defaultContext], if available.
-  Future<void> defaultInstallClientCertificate() async {
-    await installClientCertificate(SecurityContext.defaultContext);
-  }
-
-  /// Installs the configured [ClientCertificate] into the given [context], if available.
-  Future<void> installClientCertificate(SecurityContext context) async {
+  /// Installs the configured [ClientCertificate] in the whole app, if supported and available:
+  /// - into the [SecurityContext.defaultContext] used by Dart's HttpClient
+  /// - into the process-global Android SSL context
+  Future<void> installClientCertificate() async {
     if (!isSupported) {
       return;
     }
@@ -27,16 +24,7 @@ class ClientCertificateInstaller {
       return;
     }
 
-    try {
-      context.usePrivateKeyBytes(cert.data, password: cert.password);
-      // "On iOS one call to usePrivateKey […] is used instead of two calls
-      // to useCertificateChain and usePrivateKey." (see [SecurityContext.usePrivateKey]).
-      if (!Platform.isIOS) {
-        context.useCertificateChainBytes(cert.data, password: cert.password);
-      }
-    } catch (e) {
-      _logger.warning('Failed to install client certificate in SecurityContext: $e');
-    }
+    installCertificateInSecurityContext(cert, SecurityContext.defaultContext);
 
     // On Android, ExoPlayer uses HttpURLConnection (not Dart's HttpClient),
     // so we also configure the JVM-global SSLContext via a method channel.
@@ -49,12 +37,22 @@ class ClientCertificateInstaller {
     }
   }
 
-  Future<void> defaultClearClientCertificate() async {
-    await clearClientCertificate(SecurityContext.defaultContext);
+  /// Installs the given [cert] into [context].
+  void installCertificateInSecurityContext(ClientCertificate cert, SecurityContext context) {
+    try {
+      context.usePrivateKeyBytes(cert.data, password: cert.password);
+      // "On iOS one call to usePrivateKey […] is used instead of two calls
+      // to useCertificateChain and usePrivateKey." (see [SecurityContext.usePrivateKey]).
+      if (!Platform.isIOS) {
+        context.useCertificateChainBytes(cert.data, password: cert.password);
+      }
+    } catch (e) {
+      _logger.warning('Failed to install client certificate in SecurityContext: $e');
+    }
   }
 
-  Future<void> clearClientCertificate(SecurityContext context) async {
-    // TODO: clear certificate from context
+  Future<void> clearClientCertificate() async {
+    // TODO: clear certificate from SecurityContext.defaultContext
 
     if (Platform.isAndroid) {
       try {
