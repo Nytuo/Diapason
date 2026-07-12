@@ -1,4 +1,4 @@
-import 'package:finamp/models/finamp_models.dart';
+import 'package:diapason/models/finamp_models.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -89,6 +89,9 @@ class MusicScreenPlayable<ChildType extends FinampPlayableDto> extends _Sortable
       case ContentType.tracks:
         assert(ChildType == Track);
       case ContentType.home:
+      case ContentType.discover:
+      case ContentType.youtube:
+      case ContentType.downloads:
       case ContentType.genericArtists:
       case ContentType.inPlaylist:
       case ContentType.mixed:
@@ -129,6 +132,9 @@ class MusicScreenPlayable<ChildType extends FinampPlayableDto> extends _Sortable
       case ContentType.inPlaylist:
       case ContentType.genericArtists:
       case ContentType.home:
+      case ContentType.discover:
+      case ContentType.youtube:
+      case ContentType.downloads:
       case ContentType.mixed:
       case ContentType.inPerformingArtistAlbums:
       case ContentType.inAlbumArtistAlbums:
@@ -145,6 +151,9 @@ class MusicScreenPlayable<ChildType extends FinampPlayableDto> extends _Sortable
     ContentType.performingArtists => 30,
     ContentType.albumArtists => 3,
     ContentType.home ||
+    ContentType.discover ||
+    ContentType.youtube ||
+    ContentType.downloads ||
     ContentType.genericArtists ||
     ContentType.inPlaylist ||
     ContentType.inAlbumArtistAlbums ||

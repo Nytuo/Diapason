@@ -1,15 +1,15 @@
 import 'dart:async';
 
-import 'package:finamp/components/MusicScreen/item_wrapper.dart';
-import 'package:finamp/components/icon_and_text.dart';
-import 'package:finamp/components/themed_bottom_sheet.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/menus/components/menuEntries/menu_entry.dart';
-import 'package:finamp/menus/components/menuEntries/restore_queue_menu_entry.dart';
-import 'package:finamp/menus/components/menu_item_info_header.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/music_models.dart';
-import 'package:finamp/services/item_by_id_provider.dart';
+import 'package:diapason/components/MusicScreen/item_wrapper.dart';
+import 'package:diapason/components/icon_and_text.dart';
+import 'package:diapason/components/themed_bottom_sheet.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/menus/components/menuEntries/menu_entry.dart';
+import 'package:diapason/menus/components/menuEntries/restore_queue_menu_entry.dart';
+import 'package:diapason/menus/components/menu_item_info_header.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/music_models.dart';
+import 'package:diapason/services/item_by_id_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';

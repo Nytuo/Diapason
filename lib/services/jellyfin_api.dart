@@ -4,8 +4,8 @@ import 'dart:io' show HttpClient, Platform;
 import 'package:app_set_id/app_set_id.dart';
 import 'package:chopper/chopper.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/services/http_aggregate_logging_interceptor.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/http_aggregate_logging_interceptor.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/io_client.dart' as http;
@@ -679,7 +679,7 @@ Future<String> getAuthHeader() async {
     authHeader = '${authHeader}Token="${finampUserHelper.currentUser!.accessToken}", ';
   }
 
-  authHeader = '${authHeader}Client="Finamp", ';
+  authHeader = '${authHeader}Client="Diapason", ';
 
   final deviceInfo = await getDeviceInfo();
   authHeader = '${authHeader}Device="${deviceInfo.name}",DeviceId="${deviceInfo.id}", ';

@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/favorite_provider.dart';
-import 'package:finamp/services/jellyfin_api.dart';
-import 'package:finamp/services/queue_service.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/favorite_provider.dart';
+import 'package:diapason/services/jellyfin_api.dart';
+import 'package:diapason/services/queue_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';

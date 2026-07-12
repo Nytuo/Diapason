@@ -1,14 +1,13 @@
 import 'dart:async';
 
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/downloads_service.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/services/downloads_service.dart';
 import 'package:flutter/material.dart';
-import 'package:finamp/l10n/app_localizations.dart';
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:get_it/get_it.dart';
 
-import '../../services/finamp_user_helper.dart';
-import '../../services/jellyfin_api_helper.dart';
 import '../global_snackbar.dart';
 
 class NewPlaylistDialog extends StatefulWidget {
@@ -23,8 +22,6 @@ class NewPlaylistDialog extends StatefulWidget {
 
 class _NewPlaylistDialogState extends State<NewPlaylistDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
-  final _finampUserHelper = GetIt.instance<FinampUserHelper>();
 
   bool _isSubmitting = false;
 
@@ -88,14 +85,14 @@ class _NewPlaylistDialogState extends State<NewPlaylistDialog> {
 
       Navigator.of(context).pop<(Future<BaseItemId>, String?)?>((
         Future.sync(() async {
-          var newId = await _jellyfinApiHelper.createNewPlaylist(
-            NewPlaylist(
-              name: _name,
-              ids: widget.itemsToAdd,
-              userId: _finampUserHelper.currentUser!.id,
-              isPublic: _public,
-            ),
+          final playlist = await GetIt.instance<AggregateBackend>().createPlaylist(
+            _name!,
+            itemIds: widget.itemsToAdd,
+            isPublic: _public ?? true,
           );
+          if (playlist == null) {
+            throw Exception("No source is available that supports playlists.");
+          }
 
           GlobalSnackbar.message((scaffold) => AppLocalizations.of(scaffold)!.playlistCreated, isConfirmation: true);
 
@@ -109,7 +106,7 @@ class _NewPlaylistDialogState extends State<NewPlaylistDialog> {
               keepSlow: true,
             ),
           );
-          return newId.id!;
+          return playlist.id;
         }),
         _name,
       ));

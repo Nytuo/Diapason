@@ -1,15 +1,15 @@
+import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:collection/collection.dart';
-import 'package:finamp/components/MusicScreen/sort_and_filter_row.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/album_screen_provider.dart';
-import 'package:finamp/services/artist_content_provider.dart';
-import 'package:finamp/services/downloads_service.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
+import 'package:diapason/components/MusicScreen/sort_and_filter_row.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/album_screen_provider.dart';
+import 'package:diapason/services/artist_content_provider.dart';
+import 'package:diapason/services/downloads_service.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -26,7 +26,6 @@ Future<List<BaseItemDto>> loadChildTracksFromBaseItem({
   required BaseItemDto item,
   required ResolvedSortConfig sortConfig,
 }) async {
-  final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
   final finampUserHelper = GetIt.instance<FinampUserHelper>();
   final settings = FinampSettingsHelper.finampSettings;
   final ref = GetIt.instance<ProviderContainer>();
@@ -59,7 +58,7 @@ Future<List<BaseItemDto>> loadChildTracksFromBaseItem({
         );
         break;
       case BaseItemDtoType.genre:
-        newItemsFuture = jellyfinApiHelper.getItems(
+        newItemsFuture = GetIt.instance<AggregateBackend>().getItems(
           parentItem: finampUserHelper.currentUser?.currentView,
           includeItemTypes: [BaseItemDtoType.track.jellyfinName].join(","),
           limit: FinampSettingsHelper.finampSettings.trackShuffleItemCount,
@@ -68,7 +67,7 @@ Future<List<BaseItemDto>> loadChildTracksFromBaseItem({
         );
         break;
       default:
-        newItemsFuture = jellyfinApiHelper.getItems(
+        newItemsFuture = GetIt.instance<AggregateBackend>().getItems(
           parentItem: item,
           includeItemTypes: [BaseItemDtoType.track.jellyfinName].join(","),
           sortBy: "ParentIndexNumber,IndexNumber,SortName",

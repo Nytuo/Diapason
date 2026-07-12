@@ -1,5 +1,5 @@
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/services/feedback_helper.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/services/feedback_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

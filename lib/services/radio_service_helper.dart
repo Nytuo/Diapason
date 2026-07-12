@@ -1,20 +1,23 @@
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/services/backends/backend_registry.dart';
+import 'package:diapason/services/backends/jellyfin_backend.dart';
 import 'dart:async';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:finamp/components/PlayerScreen/artist_chip.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/artist_content_provider.dart';
-import 'package:finamp/services/downloads_service.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/item_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
-import 'package:finamp/services/music_player_background_task.dart';
-import 'package:finamp/services/queue_service.dart';
+import 'package:diapason/components/PlayerScreen/artist_chip.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/artist_content_provider.dart';
+import 'package:diapason/services/downloads_service.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/item_helper.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
+import 'package:diapason/services/music_player_background_task.dart';
+import 'package:diapason/services/queue_service.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -65,6 +68,10 @@ Future<void> maybeAddRadioTracks() async {
 
   if (_radioCacheStateStream.valueOrNull == null || !_radioCacheStateStream.value!.isStillValid()) {
     invalidateRadioCache();
+  }
+
+  if (currentQueue.fullQueue.isEmpty) {
+    return;
   }
 
   final radioTracksNeeded = calculateRadioTracksNeeded();
@@ -296,6 +303,13 @@ Future<List<BaseItemDto>> generateRadioTracks(
     "Generating $minNumTracks radio tracks from ${overrideSeedItem == null ? "queue" : "override"} item '${actualSeed?.name}' using '${FinampSettingsHelper.finampSettings.radioMode.name}' mode.",
   );
 
+  Future<BaseItemDto?> _expandTrackSeedForPooling(BaseItemDto? seed) async {
+    if (seed == null || BaseItemDtoType.fromItem(seed) != BaseItemDtoType.track) return seed;
+    final albumId = seed.albumId;
+    if (albumId == null) return seed;
+    return await GetIt.instance<AggregateBackend>().getItemById(albumId) ?? seed;
+  }
+
   /// Adds tracks in such a manner to simulate "shuffle-repeat all",
   /// but with each repeat iteration re-shuffling the order.
   Future<List<BaseItemDto>> reshuffleMode() async {
@@ -310,12 +324,13 @@ Future<List<BaseItemDto>> generateRadioTracks(
     final queueWithoutRadioTracks = currentQueue.fullQueue
         .whereNot((e) => e.source.type == QueueItemSourceType.radio)
         .toList();
+    final poolSeed = await _expandTrackSeedForPooling(actualSeed);
     // Items originally in the currently playing source (or manually added)
     final originalQueue =
-        (actualSeed != null
+        (poolSeed != null
                 ? (await loadChildTracksFromBaseItem(
-                    item: actualSeed,
-                    sortConfig: SortAndFilterConfiguration.defaultForItem(actualSeed),
+                    item: poolSeed,
+                    sortConfig: SortAndFilterConfiguration.defaultForItem(poolSeed),
                   )).map((item) => item).toList()
                 : <BaseItemDto>[])
             // if the queue is purely made up of radio modes (i.e. after using the "Start Radio" option in the menu), we don't filter out radio tracks
@@ -336,8 +351,6 @@ Future<List<BaseItemDto>> generateRadioTracks(
     return originalQueue.shuffled();
   }
 
-  /// Adds tracks from the source completely randomly,
-  /// even allowing the same track to repeat
   Future<List<BaseItemDto>> randomMode() async {
     final randomModeAvailabilityStatus = providers.read(
       _randomAndReshuffleRadioModeAvailabilityStatusProvider(overrideSeedItem),
@@ -347,31 +360,26 @@ Future<List<BaseItemDto>> generateRadioTracks(
         "Random radio mode selected but the provided item '${overrideSeedItem?.name}' is not downloaded or the queue is empty. Availability status: $randomModeAvailabilityStatus. Returning empty track list.",
       );
     }
-    final queueWithoutRadioTracks = currentQueue.fullQueue
-        .whereNot((e) => e.source.type == QueueItemSourceType.radio)
-        .toList();
-    // Items originally in the currently playing source (or manually added)
-    final originalQueue =
-        (actualSeed != null
-                ? (await loadChildTracksFromBaseItem(
-                    item: actualSeed,
-                    sortConfig: SortAndFilterConfiguration.defaultForItem(actualSeed),
-                  )).map((item) => item).toList()
-                : <BaseItemDto>[])
-            // if the queue is purely made up of radio modes (i.e. after using the "Start Radio" option in the menu), we don't filter out radio tracks
-            .followedBy(
-              (forNewQueue ? <FinampQueueItem>[] : queueWithoutRadioTracks)
-                  .where(
-                    (e) => !FinampSettingsHelper.finampSettings.isOffline || e.item.extras?["isDownloaded"] == true,
-                  )
-                  .map((e) => e.baseItem)
-                  .nonNulls,
-            )
-            .toList();
-    return List.generate(max(25, minNumTracks), (index) {
+
+    final count = max(25, minNumTracks);
+    final pool = FinampSettingsHelper.finampSettings.isOffline
+        ? (await downloadsService.getAllTracks(
+            viewFilter: finampUserHelper.currentUser?.currentView?.id,
+            nullableViewFilters: FinampSettingsHelper.finampSettings.showDownloadsWithUnknownLibrary,
+          )).map((e) => e.baseItem).nonNulls.toList()
+        : await GetIt.instance<AggregateBackend>().getItems(
+            parentItem: finampUserHelper.currentUser?.currentView,
+            includeItemTypes: "Audio",
+            sortBy: "Random",
+            limit: count,
+          );
+    if (pool.isEmpty) {
+      throw Exception("Random radio mode selected but the library has no tracks.");
+    }
+    return List.generate(count, (index) {
       // Pick a random item to add, duplicates possible!
-      int nextIndex = _radioRandom.nextInt(originalQueue.length);
-      return originalQueue[nextIndex];
+      int nextIndex = _radioRandom.nextInt(pool.length);
+      return pool[nextIndex];
     });
   }
 
@@ -525,19 +533,20 @@ Future<List<BaseItemDto>> generateRadioTracks(
                 nullableViewFilters: FinampSettingsHelper.finampSettings.showDownloadsWithUnknownLibrary,
               )).map((e) => e.baseItem).nonNulls.toList();
             } else {
-              similarAlbums =
-                  (await jellyfinApiHelper.getItems(
-                    parentItem: currentQueue.sourceLibrary,
-                    recursive: true,
-                    includeItemTypes: [BaseItemDtoType.album.name].join(","),
-                    sortBy: SortBy.random.jellyfinName(ContentType.albums),
-                  )) ??
-                  [];
+              similarAlbums = await GetIt.instance<AggregateBackend>().getItems(
+                parentItem: currentQueue.sourceLibrary,
+                includeItemTypes: [BaseItemDtoType.album.name].join(","),
+                sortBy: SortBy.random.jellyfinName(ContentType.albums),
+              );
             }
             break;
           case AlbumMixFallbackModes.similarSingles:
           case null:
             if (FinampSettingsHelper.finampSettings.isOffline) {
+              fallbackMode = AlbumMixFallbackModes.artistAlbums;
+              continue;
+            }
+            if (GetIt.instance<BackendRegistry>().forItemId(seedId) is! JellyfinBackend) {
               fallbackMode = AlbumMixFallbackModes.artistAlbums;
               continue;
             }
@@ -674,7 +683,13 @@ Future<List<BaseItemDto>> _getSimilarTracks({
   const filterExtraTracks = 10; // extra tracks in case duplicates are removed
 
   assert(!FinampSettingsHelper.finampSettings.isOffline, "Similar tracks not available while offline");
-  final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
+
+  final backend = GetIt.instance<BackendRegistry>().forItem(referenceItem);
+  if (backend == null || !backend.capabilities.instantMix) {
+    _radioLogger.fine("'${referenceItem.name}' comes from a source with no similar tracks; not looking for any.");
+    return [];
+  }
+
   final queueService = GetIt.instance<QueueService>();
   int attempt = 0;
   while (attempt < maxAttempts) {
@@ -687,9 +702,9 @@ Future<List<BaseItemDto>> _getSimilarTracks({
     final trackLimit = minNumTracks + skippedTracks + filterExtraTracks + randomnessExtraTracks + attemptExtraTracks;
     _radioLogger.finer("Fetching (up to) $trackLimit similar tracks for reference item '${referenceItem.name}'.");
 
-    final items = await jellyfinApiHelper.getInstantMix(referenceItem, limit: trackLimit);
+    final items = await GetIt.instance<AggregateBackend>().getInstantMix(referenceItem, limit: trackLimit);
     List<BaseItemDto> filteredSample = [];
-    if (items != null) {
+    if (items.isNotEmpty) {
       filteredSample.addAll(items);
       _radioLogger.finer(
         "Fetched ${filteredSample.length} similar radio candidates: ${filteredSample.map((e) => "'${e.artists?.firstOrNull} - ${e.name}'").join(", ")}",

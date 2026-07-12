@@ -125,7 +125,7 @@ extension AppDelegate {
     }
 }
 
-// Handles voice commands like "Hey Siri, play [track/artist] on Finamp"
+// Handles voice commands like "Hey Siri, play [track/artist] on Diapason"
 
 private var siriIntentChannel: FlutterMethodChannel?
 
@@ -138,7 +138,7 @@ extension AppDelegate {
     }
 
     /// Resolves media items for Siri so it knows the app can handle the request.
-    /// Without this, Siri says "That action is not supported on Finamp."
+    /// Without this, Siri says "That action is not supported on Diapason."
     func resolveMediaItems(for intent: INPlayMediaIntent, with completion: @escaping ([INPlayMediaMediaItemResolutionResult]) -> Void) {
         // If Siri provided media items, accept them
         if let mediaItems = intent.mediaItems, !mediaItems.isEmpty {
@@ -164,7 +164,7 @@ extension AppDelegate {
 
         let searchData = extractSearchData(from: intent)
 
-        NSLog("[FINAMP] Siri handle play intent - query: \(searchData["query"] ?? "nil"), artist: \(searchData["artist"] ?? "nil"), album: \(searchData["album"] ?? "nil")")
+        NSLog("[DIAPASON] Siri handle play intent - query: \(searchData["query"] ?? "nil"), artist: \(searchData["artist"] ?? "nil"), album: \(searchData["album"] ?? "nil")")
 
         siriIntentChannel?.invokeMethod("playFromSearch", arguments: searchData)
 
@@ -229,7 +229,7 @@ extension AppDelegate {
     private func handlePlayMediaIntent(userActivity: NSUserActivity) -> Bool {
         guard let interaction = userActivity.interaction,
               let intent = interaction.intent as? INPlayMediaIntent else {
-            NSLog("[FINAMP] Could not extract INPlayMediaIntent from user activity")
+            NSLog("[DIAPASON] Could not extract INPlayMediaIntent from user activity")
             return false
         }
 
@@ -237,7 +237,7 @@ extension AppDelegate {
 
         let searchData = extractSearchData(from: intent)
 
-        NSLog("[FINAMP] Play media intent via NSUserActivity - query: \(searchData["query"] ?? "nil"), artist: \(searchData["artist"] ?? "nil"), album: \(searchData["album"] ?? "nil")")
+        NSLog("[DIAPASON] Play media intent via NSUserActivity - query: \(searchData["query"] ?? "nil"), artist: \(searchData["artist"] ?? "nil"), album: \(searchData["album"] ?? "nil")")
 
         siriIntentChannel?.invokeMethod("playFromSearch", arguments: searchData)
 
@@ -253,14 +253,14 @@ extension AppDelegate {
             try session.setCategory(.playback)
             try session.setActive(true)
         } catch {
-            NSLog("[FINAMP] Failed to activate audio session for play intent: \(error)")
+            NSLog("[DIAPASON] Failed to activate audio session for play intent: \(error)")
         }
     }
 
     private func handleSearchForMediaIntent(userActivity: NSUserActivity) -> Bool {
         guard let interaction = userActivity.interaction,
               let intent = interaction.intent as? INSearchForMediaIntent else {
-            NSLog("[FINAMP] Could not extract INSearchForMediaIntent from user activity")
+            NSLog("[DIAPASON] Could not extract INSearchForMediaIntent from user activity")
             return false
         }
 
@@ -278,7 +278,7 @@ extension AppDelegate {
         }
         searchData["searchOnly"] = true
 
-        NSLog("[FINAMP] Search media intent - query: \(searchData["query"] ?? "nil")")
+        NSLog("[DIAPASON] Search media intent - query: \(searchData["query"] ?? "nil")")
 
         siriIntentChannel?.invokeMethod("searchMedia", arguments: searchData)
 

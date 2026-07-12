@@ -1,5 +1,10 @@
+import 'package:diapason/models/media_source.dart';
+import 'package:diapason/services/backends/backend_registry.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/services/lyrics/lrc_parser.dart';
+import 'package:diapason/services/lyrics/lrclib_client.dart';
 import 'package:collection/collection.dart';
-import 'package:finamp/models/finamp_models.dart';
+import 'package:diapason/models/finamp_models.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -37,8 +42,35 @@ class MetadataProvider {
 
   MediaSourceInfo get mediaSourceInfo => playbackInfo.mediaSources!.first;
 
-  bool get hasLyrics => mediaSourceInfo.mediaStreams.any((e) => e.type == "Lyric");
+  bool get hasLyrics => lyrics != null || mediaSourceInfo.mediaStreams.any((e) => e.type == "Lyric");
 }
+
+PlaybackInfoResponse _playbackInfoFromItem(BaseItemDto item) => PlaybackInfoResponse(
+  mediaSources: item.mediaSources?.isNotEmpty == true
+      ? item.mediaSources
+      : [
+          MediaSourceInfo(
+            id: item.id,
+            protocol: "Http",
+            type: "Default",
+            isRemote: true,
+            supportsTranscoding: false,
+            supportsDirectStream: true,
+            supportsDirectPlay: true,
+            isInfiniteStream: false,
+            requiresOpening: false,
+            requiresClosing: false,
+            requiresLooping: false,
+            supportsProbing: false,
+            mediaStreams: const [],
+            readAtNativeFramerate: false,
+            ignoreDts: false,
+            ignoreIndex: false,
+            genPtsInput: false,
+            container: item.container,
+          ),
+        ],
+);
 
 final AutoDisposeFutureProviderFamily<MetadataProvider?, BaseItemDto> metadataProvider = FutureProvider.autoDispose
     .family<MetadataProvider?, BaseItemDto>((ref, item) async {
@@ -133,8 +165,13 @@ final AutoDisposeFutureProviderFamily<MetadataProvider?, BaseItemDto> metadataPr
 
       //!!! only use offline metadata if the app is in offline mode
       // Finamp should always use the server metadata when online, if possible
+      final backend = GetIt.instance<BackendRegistry>().forItem(item);
+      final isJellyfin = backend == null || backend.config.kind == MediaSourceKind.jellyfin;
+
       if (ref.watch(finampSettingsProvider.isOffline)) {
         playbackInfo = localPlaybackInfo;
+      } else if (!isJellyfin) {
+        playbackInfo = localPlaybackInfo ?? _playbackInfoFromItem(item);
       } else {
         // fetch from server in online mode
         metadataProviderLogger.fine(
@@ -209,28 +246,48 @@ final AutoDisposeFutureProviderFamily<MetadataProvider?, BaseItemDto> metadataPr
         metadata.qualifiesForPlaybackSpeedControl = true;
       }
 
-      if (metadata.hasLyrics) {
-        //!!! only use offline metadata if the app is in offline mode
-        // Finamp should always use the server metadata when online, if possible
-        if (ref.watch(finampSettingsProvider.isOffline)) {
-          DownloadedLyrics? downloadedLyrics;
-          downloadedLyrics = await downloadsService.getLyricsDownload(baseItem: item);
+      if (ref.watch(finampSettingsProvider.isOffline)) {
+        if (metadata.hasLyrics) {
+          final downloadedLyrics = await downloadsService.getLyricsDownload(baseItem: item);
           if (downloadedLyrics != null) {
             metadata.lyrics = downloadedLyrics.lyricDto;
             metadataProviderLogger.fine("Got offline lyrics for '${item.name}'");
           } else {
             metadataProviderLogger.fine("No offline lyrics for '${item.name}'");
           }
-        } else {
-          metadataProviderLogger.fine("Fetching lyrics for '${item.name}' (${item.id})");
-          try {
-            final lyrics = await jellyfinApiHelper.getLyrics(itemId: item.id);
-            metadata.lyrics = lyrics;
-          } catch (e) {
-            metadataProviderLogger.warning(
-              "Failed to fetch lyrics for '${item.name}' (${item.id}). Metadata might be stale",
-              e,
+        }
+      } else {
+        try {
+          metadata.lyrics = await GetIt.instance<AggregateBackend>().getLyrics(item);
+        } catch (e) {
+          metadataProviderLogger.warning("Failed to fetch lyrics for '${item.name}' (${item.id})", e);
+        }
+
+        if (!LrcParser.isSynced(metadata.lyrics)) {
+          final hadUnsynced = metadata.lyrics != null;
+
+          final artists = <String>{
+            ...?item.artists,
+            if (item.albumArtist != null) item.albumArtist!,
+          }.where((artist) => artist.trim().isNotEmpty);
+
+          for (final artist in artists) {
+            final fromLrclib = await GetIt.instance<LrclibClient>().fetch(
+              title: item.name ?? "",
+              artist: artist,
+              album: item.album,
+              duration: item.runTimeTicksDuration(),
+              syncedOnly: hadUnsynced,
             );
+            if (fromLrclib != null) {
+              metadata.lyrics = fromLrclib;
+              metadataProviderLogger.fine(
+                hadUnsynced
+                    ? "Upgraded '${item.name}' to synced lyrics from LRCLIB"
+                    : "Got lyrics for '${item.name}' from LRCLIB (as '$artist')",
+              );
+              break;
+            }
           }
         }
       }
@@ -244,7 +301,6 @@ final AutoDisposeFutureProviderFamily<MetadataProvider?, BaseItemDto> metadataPr
 
 final AutoDisposeFutureProviderFamily<BaseItemDto?, BaseItemId> albumProvider = FutureProvider.autoDispose
     .family<BaseItemDto?, BaseItemId>((ref, parentId) async {
-      final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
       final downloadsService = GetIt.instance<DownloadsService>();
 
       if (ref.watch(finampSettingsProvider.isOffline)) {
@@ -258,7 +314,7 @@ final AutoDisposeFutureProviderFamily<BaseItemDto?, BaseItemId> albumProvider = 
         }
       } else {
         try {
-          return await jellyfinApiHelper.getItemById(parentId);
+          return await GetIt.instance<AggregateBackend>().getItemById(parentId);
         } catch (e) {
           metadataProviderLogger.warning("Failed to get parent item '$parentId'", e);
         }

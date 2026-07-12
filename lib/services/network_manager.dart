@@ -3,18 +3,21 @@ import 'dart:core';
 import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/services/downloads_service.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
-import 'package:finamp/services/playon_service.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/services/backends/backend_registry.dart';
+import 'package:diapason/services/backends/media_source_service.dart';
+import 'package:diapason/services/downloads_service.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
+import 'package:diapason/services/playon_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../models/finamp_models.dart';
+import '../models/media_source.dart';
 import 'finamp_settings_helper.dart';
 
 part 'network_manager.g.dart';
@@ -90,6 +93,7 @@ Future<void> _onConnectivityChange(List<ConnectivityResult>? connections) async 
   if (baseUrlChanged) {
     _reconnectPlayOnService(connections);
   }
+  unawaited(_switchNonJellyfinSourcesTargetUrl());
   _notifyOfPausedDownloads(connections);
 }
 
@@ -174,6 +178,41 @@ Future<bool> changeTargetUrl({bool? isLocal}) async {
 
   bool reachable = await GetIt.instance<JellyfinApiHelper>().pingLocalServer();
   return await changeTargetUrl(isLocal: reachable);
+}
+
+Future<void> _switchNonJellyfinSourcesTargetUrl() async {
+  final mediaSourceService = GetIt.instance<MediaSourceService>();
+  final registry = GetIt.instance<BackendRegistry>();
+
+  for (final config in mediaSourceService.sources) {
+    if (config.kind == MediaSourceKind.jellyfin || config.kind == MediaSourceKind.local) continue;
+    if (config.localAddress.isEmpty || config.publicAddress.isEmpty) continue;
+
+    if (!config.preferLocalNetwork) {
+      if (config.isLocal) {
+        config.isLocal = false;
+        await mediaSourceService.persistSourceState(config);
+      }
+      continue;
+    }
+
+    final backend = registry.bySourceId(config.sourceId);
+    if (backend == null) continue;
+
+    final wasLocal = config.isLocal;
+    config.isLocal = true;
+    bool reachable;
+    try {
+      reachable = await backend.ping();
+    } catch (_) {
+      reachable = false;
+    }
+    config.isLocal = reachable;
+    if (reachable != wasLocal) {
+      _networKSwitcherLogger.info("Changed ${config.name}'s active network to ${reachable ? "local" : "public"} address");
+      await mediaSourceService.updateSource(config);
+    }
+  }
 }
 
 int _getDownloads() {

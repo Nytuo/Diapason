@@ -3,12 +3,12 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:diacritic/diacritic.dart';
-import 'package:finamp/components/Buttons/cta_medium.dart';
-import 'package:finamp/components/MusicScreen/item_card.dart';
-import 'package:finamp/components/QueueRestoreScreen/queue_restore_tile.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/music_models.dart';
-import 'package:finamp/services/item_by_id_provider.dart';
+import 'package:diapason/components/Buttons/cta_medium.dart';
+import 'package:diapason/components/MusicScreen/item_card.dart';
+import 'package:diapason/components/QueueRestoreScreen/queue_restore_tile.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/music_models.dart';
+import 'package:diapason/services/item_by_id_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

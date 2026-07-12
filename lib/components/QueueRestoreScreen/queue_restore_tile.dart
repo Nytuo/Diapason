@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:finamp/components/album_image.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/menus/queue_restore_menu.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/item_by_id_provider.dart';
-import 'package:finamp/services/queue_service.dart';
+import 'package:diapason/components/album_image.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/menus/queue_restore_menu.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/item_by_id_provider.dart';
+import 'package:diapason/services/queue_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';

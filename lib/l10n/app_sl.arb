@@ -3,21 +3,21 @@
     "@finampTagline": {
         "description": "Tagline / short description for the app"
     },
-    "aboutContributionLink": "Prispevaj k Finamp na GitHub:",
+    "aboutContributionLink": "Prispevaj k Diapason na GitHub:",
     "@aboutContributionLink": {
-        "description": "Link to the Finamp GitHub repository, shown in the about screen."
+        "description": "Link to the Diapason GitHub repository, shown in the about screen."
     },
-    "finamp": "Finamp",
+    "finamp": "Diapason",
     "@finamp": {
         "description": "App name, possibly translated"
     },
-    "about": "O Finamp",
+    "about": "O Diapason",
     "@about": {
         "description": "Label for the about/info button on the settings screen"
     },
     "loginFlowWelcomeHeading": "Dobrodošli v",
     "@loginFlowWelcomeHeading": {
-        "description": "Greeting shown on the login screen. The full message will be 'Welcome to Finamp'."
+        "description": "Greeting shown on the login screen. The full message will be 'Welcome to Diapason'."
     },
     "loginFlowSlogan": "Tvoja glasba, kakor si jo želiš.",
     "@loginFlowSlogan": {

@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:finamp/components/confirmation_prompt_dialog.dart';
-import 'package:finamp/components/themed_bottom_sheet.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/services/client_certificate_installer.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
+import 'package:diapason/components/confirmation_prompt_dialog.dart';
+import 'package:diapason/components/themed_bottom_sheet.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/client_certificate_installer.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';

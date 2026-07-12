@@ -1,22 +1,29 @@
+import 'package:diapason/services/shortcuts/shortcut_service.dart';
+import 'dart:async';
+import 'package:diapason/components/MusicScreen/discover_tab_view.dart';
+import 'package:diapason/components/MusicScreen/downloads_tab_view.dart';
+import 'package:diapason/components/MusicScreen/youtube_tab_view.dart';
 import 'dart:io';
 
-import 'package:finamp/components/HomeScreen/finamp_music_screen_header.dart';
-import 'package:finamp/components/HomeScreen/home_screen_content.dart';
-import 'package:finamp/components/MusicScreen/artist_type_selection_row.dart';
-import 'package:finamp/components/MusicScreen/music_screen_tab_view.dart';
-import 'package:finamp/components/MusicScreen/sort_and_filter_row.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/components/now_playing_bar.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/menus/music_screen_drawer.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/music_models.dart';
-import 'package:finamp/services/audio_service_helper.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/item_by_id_provider.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
-import 'package:finamp/services/music_providers.dart';
+import 'package:diapason/components/AddToPlaylistScreen/new_playlist_dialog.dart';
+import 'package:diapason/components/HomeScreen/finamp_music_screen_header.dart';
+import 'package:diapason/components/HomeScreen/home_screen_content.dart';
+import 'package:diapason/components/MusicScreen/artist_type_selection_row.dart';
+import 'package:diapason/components/MusicScreen/music_screen_tab_view.dart';
+import 'package:diapason/components/MusicScreen/sort_and_filter_row.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/components/now_playing_bar.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/menus/music_screen_drawer.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/music_models.dart';
+import 'package:diapason/services/audio_service_helper.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/item_by_id_provider.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
+import 'package:diapason/services/music_providers.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -48,6 +55,8 @@ class MusicScreen extends ConsumerStatefulWidget {
 
 class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderStateMixin {
   bool isSearching = false;
+
+  Timer? _searchHistoryDebounce;
   TextEditingController textEditingController = TextEditingController();
   String? searchQuery;
   final Map<ContentType, MusicRefreshCallback> refreshMap = {};
@@ -113,6 +122,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
 
   @override
   void dispose() {
+    _searchHistoryDebounce?.cancel();
     _tabController?.dispose();
     textEditingController.dispose();
     super.dispose();
@@ -178,6 +188,29 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
         },
         child: const Icon(TablerIcons.category_2),
       );
+    } else if (currentTab == ContentType.playlists) {
+      return FloatingActionButton(
+        tooltip: AppLocalizations.of(context)!.newPlaylist,
+        onPressed: () async {
+          if (GetIt.instance<AggregateBackend>().playlistCapableSources.isEmpty) {
+            GlobalSnackbar.message((_) => "No configured source supports creating playlists.");
+            return;
+          }
+          final result = await showDialog<(Future<BaseItemId>, String?)?>(
+            context: context,
+            builder: (context) => const NewPlaylistDialog(itemsToAdd: []),
+          );
+          if (result == null) return;
+          try {
+            await result.$1;
+          } catch (e) {
+            if (context.mounted) GlobalSnackbar.error(e);
+            return;
+          }
+          refreshTab(ContentType.playlists);
+        },
+        child: const Icon(TablerIcons.plus),
+      );
     } else {
       return null;
     }
@@ -203,9 +236,14 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
               CollectionHomeSection() => ContentType.mixed,
             },
           ]
-        : ref
-              .watch(finampSettingsProvider.tabOrder)
-              .where((e) => ref.watch(finampSettingsProvider.showTabs(e)) ?? false);
+        : () {
+            final saved = ref.watch(finampSettingsProvider.tabOrder);
+            final order = [...saved, ...DefaultSettings.tabOrder.where((tab) => !saved.contains(tab))];
+
+            return order.where(
+              (tab) => ref.watch(finampSettingsProvider.showTabs(tab)) ?? DefaultSettings.showTabs[tab] ?? false,
+            );
+          }();
 
     if (sortedTabs.length != _tabController?.length) {
       _musicScreenLogger.info(
@@ -251,6 +289,12 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
             setState(() {
               searchQuery = value;
             });
+            _searchHistoryDebounce?.cancel();
+            _searchHistoryDebounce = Timer(const Duration(milliseconds: 1200), () {
+              if (value != null && value.trim().length > 1) {
+                GetIt.instance<ShortcutService>().recordSearch(value);
+              }
+            });
           },
           refreshTab: () => refreshTab(sortedTabs.elementAt(_tabController!.index)),
           textEditingController: textEditingController,
@@ -276,6 +320,15 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
               children: sortedTabs.map((tabType) {
                 if (tabType == ContentType.home && widget.singleTabConfig == null) {
                   return HomeScreenContent(refresh: refreshMap[tabType]);
+                }
+                if (tabType == ContentType.discover) {
+                  return const DiscoverTabView();
+                }
+                if (tabType == ContentType.youtube) {
+                  return const YouTubeTabView();
+                }
+                if (tabType == ContentType.downloads) {
+                  return const DownloadsTabView();
                 }
                 final contentTabType = tabType == ContentType.genericArtists
                     ? ref.watch(finampSettingsProvider.defaultArtistType).tabType

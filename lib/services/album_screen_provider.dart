@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:finamp/models/finamp_models.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -9,7 +10,6 @@ import '../components/MusicScreen/sort_and_filter_row.dart';
 import '../models/jellyfin_models.dart';
 import 'downloads_service.dart';
 import 'finamp_settings_helper.dart';
-import 'jellyfin_api_helper.dart';
 import 'music_screen_provider.dart';
 
 part 'album_screen_provider.g.dart';
@@ -17,7 +17,6 @@ part 'album_screen_provider.g.dart';
 // Get the Tracks of an Album or Playlist
 @riverpod
 Future<(List<BaseItemDto>, List<BaseItemDto>)> getAlbumOrPlaylistTracks(Ref ref, BaseItemDto parent) async {
-  JellyfinApiHelper jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
   final bool isOffline = ref.watch(finampSettingsProvider.isOffline);
   List<BaseItemDto> allTracks;
   List<BaseItemDto> playableTracks;
@@ -27,13 +26,11 @@ Future<(List<BaseItemDto>, List<BaseItemDto>)> getAlbumOrPlaylistTracks(Ref ref,
     allTracks = await downloadsService.getCollectionTracks(parent, playable: false);
     playableTracks = await downloadsService.getCollectionTracks(parent, playable: true);
   } else {
-    allTracks =
-        await jellyfinApiHelper.getItems(
-          parentItem: parent,
-          sortBy: "ParentIndexNumber,IndexNumber,SortName",
-          includeItemTypes: "Audio",
-        ) ??
-        [];
+    allTracks = await GetIt.instance<AggregateBackend>().getItems(
+      parentItem: parent,
+      sortBy: "ParentIndexNumber,IndexNumber,SortName",
+      includeItemTypes: "Audio",
+    );
     playableTracks = allTracks;
   }
 

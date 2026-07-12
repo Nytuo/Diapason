@@ -1,6 +1,6 @@
-import 'package:finamp/components/Buttons/simple_button.dart';
+import 'package:diapason/components/Buttons/simple_button.dart';
 import 'package:flutter/material.dart';
-import 'package:finamp/l10n/app_localizations.dart';
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:get_it/get_it.dart';
 
 import '../../services/finamp_logs_helper.dart';

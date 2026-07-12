@@ -1,5 +1,6 @@
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/services/datetime_helper.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/services/datetime_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -110,7 +111,6 @@ class _AlbumChipContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
     final isarDownloader = GetIt.instance<DownloadsService>();
 
     final albumName = item.album ?? AppLocalizations.of(context)!.noAlbum;
@@ -132,8 +132,8 @@ class _AlbumChipContent extends StatelessWidget {
                       await Navigator.of(context).pushNamed(AlbumScreen.routeName, arguments: stub!.baseItem!);
                     }
                   } else {
-                    var album = await jellyfinApiHelper.getItemById(item.albumId!);
-                    if (context.mounted) {
+                    var album = await GetIt.instance<AggregateBackend>().getItemById(item.albumId!);
+                    if (album != null && context.mounted) {
                       await Navigator.of(context).pushNamed(AlbumScreen.routeName, arguments: album);
                     }
                   }

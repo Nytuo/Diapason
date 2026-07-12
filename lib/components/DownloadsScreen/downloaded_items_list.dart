@@ -1,7 +1,9 @@
-import 'package:finamp/components/delete_prompts.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
+import 'package:diapason/components/delete_prompts.dart';
+import 'package:diapason/services/queue_service.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -10,6 +12,29 @@ import '../../models/finamp_models.dart';
 import '../../services/downloads_service.dart';
 import '../album_image.dart';
 import 'item_file_size.dart';
+
+Future<void> playDownload(BuildContext context, DownloadStub stub) async {
+  final item = stub.baseItem ?? stub.finampCollection?.item;
+  if (item == null) return;
+
+  final downloadsService = GetIt.instance<DownloadsService>();
+  final tracks = BaseItemDtoType.fromItem(item) == BaseItemDtoType.track
+      ? [item]
+      : await downloadsService.getCollectionTracks(item, playable: true);
+
+  if (tracks.isEmpty) {
+    if (context.mounted) {
+      GlobalSnackbar.message((scaffold) => AppLocalizations.of(scaffold)!.noItemsDownloaded);
+    }
+    return;
+  }
+
+  await GetIt.instance<QueueService>().startPlayback(
+    items: tracks,
+    source: QueueItemSource.fromBaseItem(item),
+    order: FinampPlaybackOrder.linear,
+  );
+}
 
 class DownloadedItemsTitle extends StatelessWidget {
   const DownloadedItemsTitle({super.key, required this.title});
@@ -56,6 +81,11 @@ class _DownloadedItemTypeListState extends ConsumerState<DownloadedItemsList> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    IconButton(
+                      icon: const Icon(Icons.play_arrow),
+                      tooltip: AppLocalizations.of(context)!.playButtonLabel,
+                      onPressed: () => playDownload(context, stub),
+                    ),
                     if ((!(stub.baseItemType == BaseItemDtoType.album || stub.baseItemType == BaseItemDtoType.track)) &&
                         !ref.watch(finampSettingsProvider.isOffline))
                       IconButton(
@@ -140,6 +170,7 @@ class _DownloadedChildrenListState extends ConsumerState<DownloadedChildrenList>
               title: Text(stub.baseItem?.name ?? stub.name),
               leading: AlbumImage(item: stub.baseItem),
               subtitle: ItemFileSize(stub: stub),
+              onTap: () => playDownload(context, stub),
               trailing: ref.watch(_downloadsService.statusProvider((stub, null))).isRequired
                   ? IconButton(
                       icon: const Icon(Icons.delete),

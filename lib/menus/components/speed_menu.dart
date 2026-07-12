@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:finamp/components/AlbumScreen/preset_chip.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/services/feedback_helper.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/queue_service.dart';
+import 'package:diapason/components/AlbumScreen/preset_chip.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/services/feedback_helper.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/queue_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';

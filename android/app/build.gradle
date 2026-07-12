@@ -35,7 +35,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.unicornsonlsd.finamp"
+        applicationId "fr.nytuo.diapason"
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutter.versionCode
@@ -61,7 +61,7 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.release
-            resValue "string", "app_name", "Finamp"
+            resValue "string", "app_name", "Diapason"
             // shrinkResources false
             // minifyEnabled false
         }
@@ -71,7 +71,7 @@ android {
             }
             applicationIdSuffix '.profile'
             // minifyEnabled true // avoid dexing issues
-            resValue "string", "app_name", "Finamp Profile"
+            resValue "string", "app_name", "Diapason Profile"
         }
         debug {
             if (signingConfigs.hasProperty('debug')) {
@@ -79,10 +79,10 @@ android {
             }
             applicationIdSuffix '.debug'
             // minifyEnabled true // avoid dexing issues
-            resValue "string", "app_name", "Finamp Debug"
+            resValue "string", "app_name", "Diapason Debug"
         }
     }
-    namespace 'com.unicornsonlsd.finamp'
+    namespace 'fr.nytuo.diapason'
     lint {
         disable 'InvalidPackage'
     }

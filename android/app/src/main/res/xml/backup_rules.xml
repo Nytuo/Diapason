@@ -11,8 +11,8 @@
         <!-- Exclude flutter engine assets-->
         <exclude domain="root" path="app_flutter/flutter_assets/"/>
         <!-- Exclude log files, which may be up to 10 MB -->
-        <exclude domain="root" path="app_flutter/finamp-logs.txt"/>
-        <exclude domain="root" path="app_flutter/finamp-logs-old.txt"/>
+        <exclude domain="root" path="app_flutter/diapason-logs.txt"/>
+        <exclude domain="root" path="app_flutter/diapason-logs-old.txt"/>
     </cloud-backup>
     <device-transfer>
         <!-- Use the default backup config, which includes all internal download directories -->

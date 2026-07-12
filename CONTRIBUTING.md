@@ -1,10 +1,10 @@
-# Contributing to Finamp
+# Contributing to Diapason
 
-Thanks for your interest in contributing to Finamp! This document goes over how to get started on Finamp development, and other ways to contribute.
+Thanks for your interest in contributing to Diapason! This document goes over how to get started on Diapason development, and other ways to contribute.
 
 ## Setting up a Development Environment
 
-Finamp is a fairly standard Flutter app, so all you have to do is [install Flutter](https://docs.flutter.dev/get-started/install). Once Flutter is installed, you should be able to run Finamp on emulators/real devices.  
+Diapason is a fairly standard Flutter app, so all you have to do is [install Flutter](https://docs.flutter.dev/get-started/install). Once Flutter is installed, you should be able to run Diapason on emulators/real devices.  
 After installing Flutter you can check if every need component is installed by running:
 
 ```bash
@@ -12,7 +12,7 @@ flutter doctor -v
 ```
 
 This will list out all components used for Flutter development, and if they are installed. This should include either Android or iOS development (depending on your platform), as well as any desktop platform you want to target.  
-You can ignore the Chrome/Web component, since Finamp is not a web app.
+You can ignore the Chrome/Web component, since Diapason is not a web app.
 
 ### NixOS
 
@@ -23,8 +23,8 @@ To get the application running on NixOS once you are in the development shell:
 
 - `flutter build linux` - generates the build files in `./build/linux/x64/release/bundle` where the `lib` folder will have all the dynamic libraries.
 - `cd ./build/linux/x64/release/bundle/lib` - flutter cannot find the dynamic libraries by default. Probably works only with this CWD because the fallback is CWD.
-- `../finamp` - start the application.  
-  Or use convenient `(cd build/linux/x64/release/bundle/lib && ../finamp)` command to cd in subshell
+- `../Diapason` - start the application.  
+  Or use convenient `(cd build/linux/x64/release/bundle/lib && ../Diapason)` command to cd in subshell
 
 It is possible those actions will not lead to application start in JetBrains IDEs. Then, the actual run should be done outside JetBrains IDE using the same flake.
 
@@ -33,9 +33,9 @@ The normally-used `flutter run ...` command does not seem to launch application 
 Note that code generation fails since 21baadbaf6852d34d7d12725a293c359c05cf20b due to unknown issue in nixpkgs. Applying this patch helps:
 
 ```diff
-diff --git a/lib/builders/finamp_settings_builder.dart b/lib/builders/finamp_settings_builder.dart
---- a/lib/builders/finamp_settings_builder.dart (revision 66736f47c5d084463591dd74189c46123f4144ff)
-+++ b/lib/builders/finamp_settings_builder.dart (date 1768146068892)
+diff --git a/lib/builders/Diapason_settings_builder.dart b/lib/builders/Diapason_settings_builder.dart
+--- a/lib/builders/Diapason_settings_builder.dart (revision 66736f47c5d084463591dd74189c46123f4144ff)
++++ b/lib/builders/Diapason_settings_builder.dart (date 1768146068892)
 @@ -129,13 +129,6 @@
    }
  
@@ -62,8 +62,8 @@ You can build debug builds for Android right-away, but you will get an error if 
 To build release APKs, you need to set up a signing key for Android. To get that set up, follow [this guide](https://docs.flutter.dev/deployment/android#signing-the-app) from the Flutter documentation.
 Respectively, you can also set a custom keystore for debug builds by setting the `debugKeystoreFile`, `debugKeystorePassword`, `debugKeyAlias`, and `debugKeyPassword` variables in the same `android/key.properties` file.
 This should not be necessary for most users, but can be useful if you develop on multiple machines and easily want to share the same debug key.
-Note that Finamp is configured to use a different app ID for debug builds by default, so if you install a release build and a debug build, you will have two independent versions of Finamp installed on your device.
-This also means that you can keep using your regular install of Finamp (from the Play Store, etc.) while developing new features for Finamp, without breaking your ability to listen to music :)  
+Note that Diapason is configured to use a different app ID for debug builds by default, so if you install a release build and a debug build, you will have two independent versions of Diapason installed on your device.
+This also means that you can keep using your regular install of Diapason (from the Play Store, etc.) while developing new features for Diapason, without breaking your ability to listen to music :)  
 
 If you try to install a release build you built yourself (with your signing key) on top of a release build you downloaded from the Play Store or GitHub, Android will prevent you from doing so and show a generic error message. The only solution here is to uninstall the existing version, and then install your build. Note that this will delete any logins, settings and downloads that you had configured.  
 This generally shouldn't be needed, since debug builds works fine for daily usage, even though they are a bit less performant.
@@ -71,7 +71,7 @@ This generally shouldn't be needed, since debug builds works fine for daily usag
 ### Developing on Windows
 
 With recent Flutter updates, there have been some issue with caches not being closed when trying to build *on* Windows (no matter which platform).  
-If you run into this (something about "unclosed caches"), then check if your pub.dev cache is on the same drive (e.g. `C:`, `D:`) as your Finamp directory (the one you cloned via Git). If they aren't on the same drive, you'll have to move either your Finamp directory, or your pub.dev package cache. For the latter, simply clear the old cache via `flutter pub cache clean`, and then point the cache to a new location (<https://dart.dev/tools/pub/environment-variables>).  
+If you run into this (something about "unclosed caches"), then check if your pub.dev cache is on the same drive (e.g. `C:`, `D:`) as your Diapason directory (the one you cloned via Git). If they aren't on the same drive, you'll have to move either your Diapason directory, or your pub.dev package cache. For the latter, simply clear the old cache via `flutter pub cache clean`, and then point the cache to a new location (<https://dart.dev/tools/pub/environment-variables>).  
 This should fix the issue.
 
 ### Developing on an Android Device without Android Studio on linux (not recommended)
@@ -98,7 +98,7 @@ This should fix the issue.
 Because Dart doesn't support macros, a few dependencies rely on code generation which must be run manually.  
 You'll have to do this whenever you:
 
-- Create a new setting (in `lib/models/finamp_models.dart`)
+- Create a new setting (in `lib/models/Diapason_models.dart`)
 - Create a new class/type or extend and existing one, where you **use type annotations** (e.g. `@HiveType`, `@HiveField`, `@Isar`, `@riverpod`, `@JsonSerializable`, ...)
 - Modify the Jellyfin API interface (`lib/services/jellyfin_api.dart`)
 
@@ -108,7 +108,7 @@ To perform the code generation, run:
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-If you can't launch Finamp (e.g. with `flutter run`) after generating code you may need to run `flutter clean` and then try both commands again. This must be done when:
+If you can't launch Diapason (e.g. with `flutter run`) after generating code you may need to run `flutter clean` and then try both commands again. This must be done when:
 
 - Modifying a class that is returned by Jellyfin (such as the classes in `lib/models/jellyfin_models.dart`)
 - Adding fields (annotated with `@HiveField`) to a database class (annotated with `@HiveType`)
@@ -134,22 +134,22 @@ Rerun this after changing splash colors, splash icon assets, or light/dark splas
 
 Aside from generating the code you'll also have to explicitly use the generated code in some cases:
 
-- After creating a **new** class annotated with `@HiveType` in `lib/models/finamp_models.dart` (or another file), you need to first run code generation and then register the newly generated Hive adapter.  
+- After creating a **new** class annotated with `@HiveType` in `lib/models/Diapason_models.dart` (or another file), you need to first run code generation and then register the newly generated Hive adapter.  
   This is done in `main.dart`, in the `setupHive()` method. Simply add another line like `Hive.registerAdapter(YourNewClassNameAdapter());`, where `YourNewClassName` is the name of the class, and you append the word `Adapter` at the end.
 
 In detail, the actual dependencies and purposes for the code generation are:
 
-- Hive - the database that Finamp uses for storing most data
-- Isar - Hive's younger/newer brother, which powers Finamp's login & download system
-- `json_serializable` - For serializing and deserializing JSON from/into classes, e.g. automatically converting data between Finamp's internal representation and the Jellyfin API
+- Hive - the database that Diapason uses for storing most data
+- Isar - Hive's younger/newer brother, which powers Diapason's login & download system
+- `json_serializable` - For serializing and deserializing JSON from/into classes, e.g. automatically converting data between Diapason's internal representation and the Jellyfin API
 - Chopper - For talking to Jellyfin over HTTP
   - This layer (`lib/services/jellyfin_api.dart`) is not used by the app directly. The user-facing API is located at `lib/services/jellyfin_api_helper.dart`.
 - Riverpod - For reactive state management throughout the app
-- Most recently, Finamp's settings helpers - These are methods automatically generated for getting and settings any settings within Finamp.
+- Most recently, Diapason's settings helpers - These are methods automatically generated for getting and settings any settings within Diapason.
 
 ### Hive
 
-As mentioned above, Finamp uses Hive for most data storage needs. If you're doing work that involves data storage, we recommend you read [the Hive docs](https://docs.hivedb.dev/#/). Please ensure that your changes work when upgrading Finamp from the current release to your changes, as not handling upgrades will cause the app to crash.  
+As mentioned above, Diapason uses Hive for most data storage needs. If you're doing work that involves data storage, we recommend you read [the Hive docs](https://docs.hivedb.dev/#/). Please ensure that your changes work when upgrading Diapason from the current release to your changes, as not handling upgrades will cause the app to crash.  
 
 >[!IMPORTANT]
 > When downgrading or switching between branches, you will have to wipe your app data if any changes were made to Hive, otherwise you'll encounter Hive-related errors.
@@ -165,7 +165,7 @@ lib/                                -- the codebase also known as src in other p
     components/                     -- Contains elements used by screens
     l10n/                           -- Translations files. Edit the en file to add translations and run code generation
         models/
-            finamp_models.g.dart    -- Mostly database and settings
+            Diapason_models.g.dart    -- Mostly database and settings
         screens/                    -- All the "pages", "screens", "views" what ever you want to call them
         services/                   -- Things that run in the background, kinda like backend
 ```
@@ -185,8 +185,8 @@ lib/                                -- the codebase also known as src in other p
 ### Adding a New Setting
 
 1. Find a setting that has a similar UI (e.g. toggle, dropdown) as what you're trying to add
-2. Find the code for that setting on one of the settings screens, and check what kind of data structure it uses (defined in `finamp_models.dart`)
-3. Add a new property for the setting you're trying to add, with the right data structure. That [can] involve, in that order: [create a new enum or class at the end of the file], [assign new HiveIDs and field IDs], add a new default value for the setting (`DefaultSettings` class), add a new property to `FinampSettings` (remember to increment the `HiveField` annotation), and add an argument for the new property to the `FinampSettings` constructor
+2. Find the code for that setting on one of the settings screens, and check what kind of data structure it uses (defined in `Diapason_models.dart`)
+3. Add a new property for the setting you're trying to add, with the right data structure. That [can] involve, in that order: [create a new enum or class at the end of the file], [assign new HiveIDs and field IDs], add a new default value for the setting (`DefaultSettings` class), add a new property to `DiapasonSettings` (remember to increment the `HiveField` annotation), and add an argument for the new property to the `DiapasonSettings` constructor
 4. Then run code generation via `dart run build_runner build --delete-conflicting-outputs`
 5. Now duplicate the code for the new setting in the appropriate settings screen file, and update the settings property it references to match your newly added setting
 6. Now add new translation strings in `app_en.arb` at the bottom, then generate the new localizations via `flutter gen-l10n` (see "Adding i18n strings")
@@ -200,12 +200,12 @@ lib/                                -- the codebase also known as src in other p
 
 ### Playback Reporting
 
-There are several aspects to playback reporting in Finamp. The main goal is to always let the server know what the user is listening to, including when they *started* and when they *stopped*. This is handled in [`playback_history_service.dart`](lib/services/playback_history_service.dart), by listening to the player state (among others) and invoking various Jellyfin endpoints in response. There are 3 endpoints: starting, stopping, and a generic "progress" endpoint that just updates the server's state without creating a start or stop event.  
+There are several aspects to playback reporting in Diapason. The main goal is to always let the server know what the user is listening to, including when they *started* and when they *stopped*. This is handled in [`playback_history_service.dart`](lib/services/playback_history_service.dart), by listening to the player state (among others) and invoking various Jellyfin endpoints in response. There are 3 endpoints: starting, stopping, and a generic "progress" endpoint that just updates the server's state without creating a start or stop event.  
 The start and stop events are further used by server plugins such as ["Playback Reporting"](https://github.com/jellyfin/jellyfin-plugin-playbackreporting) or ["Last.fm"](https://github.com/jesseward/jellyfin-plugin-lastfm) to keep track of users' listening activity.
-Playback reporting is also used as a way to tell the server about the user's current playback queue, so that it can be shown in other Jellyfin clients when they are controlling Finamp via the "Play On" feature. That's why when a Play On session is established, we increase the frequency of playback updates.
+Playback reporting is also used as a way to tell the server about the user's current playback queue, so that it can be shown in other Jellyfin clients when they are controlling Diapason via the "Play On" feature. That's why when a Play On session is established, we increase the frequency of playback updates.
 Finally, playback reporting is also used (read: required) to tell the server about the transcoding status, so that is actually shows up correctly on the admin dashboard (see below).  
 
-Finamp keeps track of any plays that couldn't be sent to the server (due to errors or because offline mode was active) in a text file which can be exported via the "share" icon on the [🔗 Playback History Screen](https://intradeus.github.io/http-protocol-redirector?r=finamp://internal/playbackhistory).  
+Diapason keeps track of any plays that couldn't be sent to the server (due to errors or because offline mode was active) in a text file which can be exported via the "share" icon on the [🔗 Playback History Screen](https://intradeus.github.io/http-protocol-redirector?r=Diapason://internal/playbackhistory).  
 The playback history itself currently only contains plays since the app was last launched and is deleted when the app is closed.
 
 #### Showing Transcode Status on the Admin Dashboard
@@ -223,7 +223,7 @@ The server team mentioned that in the future this ID might be used to authentica
 The above steps are all that's needed to get the dashboard to show "Transcoding" instead of the default "Direct Play". However, if you want to show *reasons* for transcoding, and/or make use of Jellyfin's ability to support *automatic* transcoding based on device capabilities, there are stricter requirements.  
 Firstly, you'll *have* to use the [`POST /Items/{itemId}/PlaybackInfo`](https://api.jellyfin.org/#tag/MediaInfo/operation/GetPostedPlaybackInfo) endpoint in order to let the server know which codecs, containers, bitrates, etc. your device supports (this data could vary depending on client settings, e.g. the maximum bitrate could be a setting. Jellyfin will probably also default to the Jellyfin user's default settings here.). This endpoint will return information about which playback method is best suited (based on the media formats and the device capabilities), a pre-build endpoint for streaming the media with the recommended settings, IDs, and keys (the `/{streamId}/stream.{container}` URL mentioned earlier), and the `PlaySessionId` which is used to identify the playback session.  
 What this means is that for each and every track you want to possibly play transcoded, you'll have to make a request to the server. There currently is no batching or reusing if you want to properly show the transcoding status and reasons. Possibly because the server needs to decide the transcoding settings for each item individually, since they could all have different formats and bit rates.  
-But since **making one request for each track that is queued up is simply not feasible in Finamp** at the moment (takes way to long, and we need to make the request *before* we can add the track to the queue), we have opted to simply use a random `playSessionId` and not support the transcode reasons and/or automatic transcoding features. Finamp stores the ID in the `playSessionId` field of the `MediaItem`'s `extras` map.  
+But since **making one request for each track that is queued up is simply not feasible in Diapason** at the moment (takes way to long, and we need to make the request *before* we can add the track to the queue), we have opted to simply use a random `playSessionId` and not support the transcode reasons and/or automatic transcoding features. Diapason stores the ID in the `playSessionId` field of the `MediaItem`'s `extras` map.  
 Notably, since we already have the full `BaseItemDto`s and additional metadata for each track, we could simply build client-side automatic transcoding. This would be needed anyway for considering network connectivity and such, so we're not losing much here.  
 
 Should the API for this improve in the future, for example by allowing us to submit the supported codecs and bitrate limits to an endpoint like [`/Sessions/Capabilities/Full`](https://api.jellyfin.org/#tag/Session/operation/PostFullCapabilities) (that part is already possible) and then getting the corresponding `PlaySessionId`s and transcode URLs via the regular `BaseItemDto`, then we could think about doing this the proper way. But until then we'll most likely handle the ID generation and transcoding settings client-side.
@@ -248,7 +248,7 @@ Note: CarPlay can only be tested on the simulator with the included entitlements
 
 #### CarPlay Not Appearing in Simulator
 
-If Finamp doesn't appear in the CarPlay display after enabling it, the most common cause is corruption in the Xcode project file from repeated `pod install` runs. This can break entitlement embedding for simulator builds.
+If Diapason doesn't appear in the CarPlay display after enabling it, the most common cause is corruption in the Xcode project file from repeated `pod install` runs. This can break entitlement embedding for simulator builds.
 
 **Fix:**
 
@@ -268,12 +268,12 @@ Then restart the simulator and re-enable CarPlay via **I/O > External Displays >
 ### Add dbus message
 
 1. Open `lib/services/dbus_manager.dart`
-2. Add another `else if (call.interface == 'com.unicornsonlsd.Finamp' && call.name == 'YOUR FUNCTION NAME')`
+2. Add another `else if (call.interface == 'fr.nytuo.Diapason' && call.name == 'YOUR FUNCTION NAME')`
 3. Profit
 
 ### Add global keyboard shortcuts
 
-Finamp uses Flutter `Shortcuts`/`Actions` under `lib/components/Shortcuts/`.
+Diapason uses Flutter `Shortcuts`/`Actions` under `lib/components/Shortcuts/`.
 
 1. Create a new file (Example: `lib/components/Shortcuts/navigation_shortcuts.dart`).
 2. Create intents and get actions function (see example at `music_control_shortcuts.dart`).
@@ -284,7 +284,7 @@ Handle `consumesKey` and `invoke` in the `CallbackAction` class for cases where 
 
 ## The Redesign
 
-The biggest main piece of work being done on Finamp at the moment is the redesign. The relevant meta-issue can be found [here](https://github.com/jmshrv/finamp/issues/220).  
+The biggest main piece of work being done on Diapason at the moment is the redesign. The relevant meta-issue can be found [here](https://github.com/jmshrv/Diapason/issues/220).  
 The `redesign` branch has diverged a lot from the stable version on `main`, and `main` is in a "maintenance mode" at this point, with only occasional bug fixes.  
 **Please use the `redesign` branch as your source branch when working on new features and creating pull requests!**  
 We won't accept new features for the `main` branch at this point.
@@ -297,22 +297,22 @@ If you are a designer or have ideas on how the new user interface could/should l
 You can share your mockups in an issue here on GitHub (use a relevant one if possible, otherwise create a new one) or on Discord for further discussion.  
 Once the mockup is finalized, people can start implementing it.
 
-There's also a Figma file with some existing mockups that you can go off of: <https://www.figma.com/design/wVizekpm9YchvHFP6l508r/Finamp?node-id=101-425&t=27CRT9QAwFhlIMqm-1>  
+There's also a Figma file with some existing mockups that you can go off of: <https://www.figma.com/design/wVizekpm9YchvHFP6l508r/Diapason?node-id=101-425&t=27CRT9QAwFhlIMqm-1>  
 Some of the designs in there are already outdated or still a work in progress. When in doubt, you should look at the current design in the actual app, or ask us about it!
 
 ## Translating
 
-Finamp uses Weblate to manage translations: **<https://hosted.weblate.org/engage/finamp/>**
+Diapason uses Weblate to manage translations: **<https://hosted.weblate.org/engage/Diapason/>**
 
 Feel free to add new languages if yours isn't there yet.  
-If you have any questions, such as the context of a string, you can ask in the [Translation Discussions](https://github.com/jmshrv/finamp/discussions/categories/translations). There's also a channel on our [Discord server](https://discord.gg/xh9SZ73jWk) for potentially getting a reply faster.
+If you have any questions, such as the context of a string, you can ask in the [Translation Discussions](https://github.com/jmshrv/Diapason/discussions/categories/translations). There's also a channel on our [Discord server](https://discord.gg/xh9SZ73jWk) for potentially getting a reply faster.
 
 ## Packaging
 
 ### Linux
 
 Linux packaging might vary depending on distribution and type of installation.
-Please follow the guidelines of your distribution if you would like to package Finamp for it.
-The repo contains a [desktop file template](assets/finamp.desktop.m4) and
+Please follow the guidelines of your distribution if you would like to package Diapason for it.
+The repo contains a [desktop file template](assets/Diapason.desktop.m4) and
 pre-generated icons following the XDG Icon Theme Specification
 in the [assets folder](assets/icon/linux).

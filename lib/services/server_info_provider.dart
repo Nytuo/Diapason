@@ -1,7 +1,7 @@
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';

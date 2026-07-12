@@ -1,4 +1,4 @@
-import 'package:finamp/models/finamp_models.dart';
+import 'package:diapason/models/finamp_models.dart';
 import 'package:flutter/material.dart';
 
 import '../../../extensions/localizations.dart';

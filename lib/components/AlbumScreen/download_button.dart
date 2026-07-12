@@ -1,16 +1,16 @@
-import 'package:finamp/components/AlbumScreen/download_dialog.dart';
-import 'package:finamp/components/MusicScreen/music_screen_tab_view.dart';
-import 'package:finamp/components/confirmation_prompt_dialog.dart';
-import 'package:finamp/components/delete_prompts.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/extensions/localizations.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/downloads_service.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/permission_providers.dart';
+import 'package:diapason/components/AlbumScreen/download_dialog.dart';
+import 'package:diapason/components/MusicScreen/music_screen_tab_view.dart';
+import 'package:diapason/components/confirmation_prompt_dialog.dart';
+import 'package:diapason/components/delete_prompts.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/extensions/localizations.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/downloads_service.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/permission_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -67,7 +67,7 @@ class DownloadButton extends ConsumerWidget {
       viewId = BaseItemId(item.id);
     } else {
       final finampUserHelper = GetIt.instance<FinampUserHelper>();
-      viewId = finampUserHelper.currentUser!.currentViewId!;
+      viewId = finampUserHelper.currentUser?.currentViewId ?? BaseItemId(item.id);
     }
 
     var downloadButton = Opacity(

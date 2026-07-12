@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +12,6 @@ import '../../models/jellyfin_models.dart';
 import '../../screens/artist_screen.dart';
 import '../../services/downloads_service.dart';
 import '../../services/finamp_settings_helper.dart';
-import '../../services/jellyfin_api_helper.dart';
 import '../album_image.dart';
 
 part 'artist_chip.g.dart';
@@ -23,12 +23,11 @@ final _defaultBackgroundColour = Colors.white.withOpacity(0.1);
 
 @riverpod
 Future<BaseItemDto?> artistItem(Ref ref, BaseItemId id) async {
-  final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
   final isarDownloader = GetIt.instance<DownloadsService>();
   final bool isOffline = ref.watch(finampSettingsProvider.isOffline);
   return isOffline
       ? isarDownloader.getCollectionInfo(id: id).then((value) => value?.baseItem)
-      : jellyfinApiHelper.getItemById(id);
+      : GetIt.instance<AggregateBackend>().getItemById(id);
 }
 
 class ArtistChips extends StatelessWidget {

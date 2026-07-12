@@ -1,16 +1,16 @@
 import 'package:collection/collection.dart';
-import 'package:finamp/components/AddToPlaylistScreen/add_to_playlist_list.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/components/themed_bottom_sheet.dart';
-import 'package:finamp/components/toggleable_list_tile.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/menus/components/menu_item_info_header.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/models/music_models.dart';
-import 'package:finamp/services/favorite_provider.dart';
-import 'package:finamp/services/feedback_helper.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
+import 'package:diapason/components/AddToPlaylistScreen/add_to_playlist_list.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/components/themed_bottom_sheet.dart';
+import 'package:diapason/components/toggleable_list_tile.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/menus/components/menu_item_info_header.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/models/music_models.dart';
+import 'package:diapason/services/favorite_provider.dart';
+import 'package:diapason/services/feedback_helper.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
@@ -24,11 +24,9 @@ Future<void> showPlaylistActionsMenu({
   required List<BaseItemDto> items,
   BaseItemDto? parentPlaylist,
 }) async {
-  final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
-
   FeedbackHelper.feedback(FeedbackType.selection);
 
-  var playlistsFuture = jellyfinApiHelper.getItems(includeItemTypes: "Playlist", sortBy: "SortName");
+  var playlistsFuture = GetIt.instance<AggregateBackend>().getItems(includeItemTypes: "Playlist", sortBy: "SortName");
 
   await showThemedBottomSheet(
     context: context,

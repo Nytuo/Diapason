@@ -1,12 +1,14 @@
-import 'package:finamp/components/finamp_app_bar_back_button.dart';
-import 'package:finamp/screens/music_screen.dart';
+import 'package:diapason/components/finamp_app_bar_back_button.dart';
+import 'package:diapason/screens/music_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/screens/splash_screen.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/screens/splash_screen.dart';
 import '../components/ViewSelector/no_music_libraries_message.dart';
 import '../components/global_snackbar.dart';
 import '../models/jellyfin_models.dart';
+import '../models/media_source.dart';
+import '../services/backends/backend_registry.dart';
 import '../services/finamp_user_helper.dart';
 import '../services/jellyfin_api_helper.dart';
 
@@ -29,7 +31,9 @@ class _ViewSelectorState extends State<ViewSelector> {
   @override
   void initState() {
     super.initState();
-    viewListFuture = _jellyfinApiHelper.getViews();
+    viewListFuture = GetIt.instance<BackendRegistry>().ofKind(MediaSourceKind.jellyfin).isEmpty
+        ? Future.value(const [])
+        : _jellyfinApiHelper.getViews();
   }
 
   @override

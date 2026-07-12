@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:finamp/components/themed_bottom_sheet.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/menus/choice_menu.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/feedback_helper.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/queue_service.dart';
-import 'package:finamp/services/radio_service_helper.dart';
+import 'package:diapason/components/themed_bottom_sheet.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/menus/choice_menu.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/feedback_helper.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/queue_service.dart';
+import 'package:diapason/services/radio_service_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';

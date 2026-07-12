@@ -1,10 +1,12 @@
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/artist_content_provider.dart';
-import 'package:finamp/services/downloads_service.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/artist_content_provider.dart';
+import 'package:diapason/services/backends/backend_registry.dart';
+import 'package:diapason/services/backends/jellyfin_backend.dart';
+import 'package:diapason/services/downloads_service.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -22,6 +24,16 @@ Future<(int, BaseItemDtoType)> itemAmount(
   final library = GetIt.instance<FinampUserHelper>().currentUser?.currentView;
 
   BaseItemDtoType itemType = BaseItemDtoType.fromItem(baseItem);
+
+  final isJellyfin = GetIt.instance<BackendRegistry>().forItem(baseItem) is JellyfinBackend;
+  if (!isJellyfin && !ref.watch(finampSettingsProvider.isOffline)) {
+    return switch (itemType) {
+      BaseItemDtoType.artist => (baseItem.childCount ?? 0, BaseItemDtoType.album),
+      BaseItemDtoType.genre => (baseItem.childCount ?? 0, BaseItemDtoType.album),
+      BaseItemDtoType.album || BaseItemDtoType.playlist => (baseItem.childCount ?? 0, BaseItemDtoType.track),
+      _ => (baseItem.childCount ?? 0, BaseItemDtoType.unknown),
+    };
+  }
 
   late int itemCount;
 

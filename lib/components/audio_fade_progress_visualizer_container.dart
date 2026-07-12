@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/music_player_background_task.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/music_player_background_task.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:progress_border/progress_border.dart';

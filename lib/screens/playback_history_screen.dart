@@ -1,8 +1,8 @@
-import 'package:finamp/components/finamp_app_bar_back_button.dart';
-import 'package:finamp/components/PlaybackHistoryScreen/playback_history_list.dart';
-import 'package:finamp/components/PlaybackHistoryScreen/share_offline_listens_button.dart';
-import 'package:finamp/components/now_playing_bar.dart';
-import 'package:finamp/l10n/app_localizations.dart';
+import 'package:diapason/components/finamp_app_bar_back_button.dart';
+import 'package:diapason/components/PlaybackHistoryScreen/playback_history_list.dart';
+import 'package:diapason/components/PlaybackHistoryScreen/share_offline_listens_button.dart';
+import 'package:diapason/components/now_playing_bar.dart';
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class PlaybackHistoryScreen extends StatelessWidget {

@@ -1,7 +1,7 @@
-import 'package:finamp/components/Shortcuts/global_shortcut_manager.dart';
-import 'package:finamp/components/Shortcuts/music_control_shortcuts.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/screens/player_screen.dart';
+import 'package:diapason/components/Shortcuts/global_shortcut_manager.dart';
+import 'package:diapason/components/Shortcuts/music_control_shortcuts.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/screens/player_screen.dart';
 import 'package:flutter/material.dart';
 
 import 'feature_chips.dart';

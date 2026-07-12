@@ -1,15 +1,15 @@
 import 'dart:convert';
 
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/services/album_image_provider.dart';
-import 'package:finamp/services/music_player_background_task.dart';
-import 'package:finamp/services/music_screen_provider.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/services/album_image_provider.dart';
+import 'package:diapason/services/music_player_background_task.dart';
+import 'package:diapason/services/music_screen_provider.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_carplay/flutter_carplay.dart';
 import 'package:audio_service/audio_service.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/downloads_service.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/downloads_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -410,6 +410,9 @@ class CarPlayHelper {
               case ContentType.inAlbumArtistAlbums:
                 showTracksTemplate();
               case ContentType.home:
+              case ContentType.discover:
+              case ContentType.youtube:
+              case ContentType.downloads:
                 return complete(); // already on home, no action
             }
             complete();

@@ -1,1 +1,1 @@
-Finamp is a music player for Jellyfin.
+Diapason is a music player for Jellyfin.

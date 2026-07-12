@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:finamp/services/queue_service.dart';
+import 'package:diapason/services/queue_service.dart';
 import 'package:hive_ce/hive.dart';
 
 import 'finamp_models.dart';

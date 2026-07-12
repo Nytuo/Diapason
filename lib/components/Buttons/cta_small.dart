@@ -1,4 +1,4 @@
-import 'package:finamp/services/feedback_helper.dart';
+import 'package:diapason/services/feedback_helper.dart';
 import 'package:flutter/material.dart';
 
 class CTASmall extends StatelessWidget {

@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:balanced_text/balanced_text.dart';
-import 'package:finamp/components/themed_bottom_sheet.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/services/feedback_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
+import 'package:diapason/components/themed_bottom_sheet.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/services/feedback_helper.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';

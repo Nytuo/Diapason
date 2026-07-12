@@ -13,7 +13,7 @@ function generate_linux_icon() {
   inkscape icon_foreground_noborder.svg --export-height=$inner_dim --export-filename=$foreground_temp
 
   # Extend output to padded square image
-  convert $foreground_temp -background none -gravity center -extent ${outer_dim}x${outer_dim} "$output_folder/finamp.png"
+  convert $foreground_temp -background none -gravity center -extent ${outer_dim}x${outer_dim} "$output_folder/diapason.png"
 
   # Clean up
   rm $foreground_temp

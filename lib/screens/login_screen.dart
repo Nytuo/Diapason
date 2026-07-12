@@ -1,15 +1,17 @@
-import 'package:finamp/components/Buttons/simple_button.dart';
-import 'package:finamp/components/LoginScreen/login_flow.dart';
-import 'package:finamp/screens/language_selection_screen.dart';
-import 'package:finamp/screens/logs_screen.dart';
+import 'package:diapason/components/Buttons/simple_button.dart';
+import 'package:diapason/components/LoginScreen/login_flow.dart';
+import 'package:diapason/screens/language_selection_screen.dart';
+import 'package:diapason/screens/logs_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:finamp/l10n/app_localizations.dart';
+import 'package:diapason/l10n/app_localizations.dart';
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, this.jellyfinOnly = false});
 
   static const routeName = "/login";
+
+  final bool jellyfinOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -20,10 +22,10 @@ class LoginScreen extends StatelessWidget {
           surfaceTintColor: Colors.transparent,
         ),
       ),
-      child: const Scaffold(
+      child: Scaffold(
         resizeToAvoidBottomInset: true,
-        body: SafeArea(child: LoginFlow()),
-        bottomNavigationBar: _LoginAuxillaryOptions(),
+        body: SafeArea(child: LoginFlow(jellyfinOnly: jellyfinOnly)),
+        bottomNavigationBar: jellyfinOnly ? null : const _LoginAuxillaryOptions(),
       ),
     );
   }

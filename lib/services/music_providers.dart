@@ -1,7 +1,8 @@
+import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:finamp/components/MusicScreen/sort_and_filter_row.dart';
+import 'package:diapason/components/MusicScreen/sort_and_filter_row.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce/hive.dart';
@@ -25,32 +26,34 @@ part 'music_providers.g.dart';
 @riverpod
 Future<List<BaseItemDto>> globalSearch(Ref ref, String searchTerm, {required bool includeTracks}) async {
   final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
-  final baseFuture = jellyfinApiHelper.getItems(
+  final aggregate = GetIt.instance<AggregateBackend>();
+
+  final baseFuture = aggregate.getItems(
     includeItemTypes: [
       BaseItemDtoType.album.jellyfinName,
       BaseItemDtoType.playlist.jellyfinName,
       BaseItemDtoType.collection.jellyfinName,
       if (includeTracks) BaseItemDtoType.track.jellyfinName,
     ].join(","),
-    recursive: true,
     searchTerm: searchTerm,
     limit: 30,
   );
   // TODO handle album artists?
-  final artistFuture = jellyfinApiHelper.getItems(
+  final artistFuture = aggregate.getItems(
     includeItemTypes: [BaseItemDtoType.artist.jellyfinName].join(","),
-    recursive: false,
     searchTerm: searchTerm,
     limit: 10,
   );
-  // TODO handle genres for all libraries?  Or just use current?  We could just warn on no/low results?
-  final genreFuture = jellyfinApiHelper.getItems(
-    parentItem: GetIt.instance<FinampUserHelper>().currentUser!.currentView!,
-    includeItemTypes: [BaseItemDtoType.genre.jellyfinName].join(","),
-    recursive: false,
-    searchTerm: searchTerm,
-    limit: 10,
-  );
+  final currentView = GetIt.instance<FinampUserHelper>().currentUser?.currentView;
+  final genreFuture = currentView == null
+      ? Future<List<BaseItemDto>?>.value(const [])
+      : jellyfinApiHelper.getItems(
+          parentItem: currentView,
+          includeItemTypes: [BaseItemDtoType.genre.jellyfinName].join(","),
+          recursive: false,
+          searchTerm: searchTerm,
+          limit: 10,
+        );
   final values = await Future.wait([baseFuture, artistFuture, genreFuture]);
   final out = <BaseItemDto>[];
   for (var val in values) {

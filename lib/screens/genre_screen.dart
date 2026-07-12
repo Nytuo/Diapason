@@ -1,5 +1,5 @@
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/genre_screen_provider.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/genre_screen_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';

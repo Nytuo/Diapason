@@ -1,13 +1,13 @@
-import 'package:finamp/components/Buttons/cta_medium.dart';
-import 'package:finamp/components/Buttons/simple_button.dart';
-import 'package:finamp/components/finamp_icon.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/menus/client_certificate_authentication_menu.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/client_certificate_installer.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
-import 'package:finamp/services/server_client_discovery_service.dart';
+import 'package:diapason/components/Buttons/cta_medium.dart';
+import 'package:diapason/components/Buttons/simple_button.dart';
+import 'package:diapason/components/finamp_icon.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/menus/client_certificate_authentication_menu.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/client_certificate_installer.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
+import 'package:diapason/services/server_client_discovery_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -133,7 +133,7 @@ class _LoginServerSelectionPageState extends ConsumerState<LoginServerSelectionP
                   text: AppLocalizations.of(context)!.back,
                   onPressed: () {
                     widget.serverState.manualServer = null;
-                    Navigator.of(context).pop();
+                    popLoginStep(context);
                   },
                 ),
               ),

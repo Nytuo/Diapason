@@ -1,10 +1,10 @@
-Finamp is a Jellyfin music player for Android and iOS. Its main feature is the ability to download songs for offline listening.
+Diapason is a Jellyfin music player for Android and iOS. Its main feature is the ability to download songs for offline listening.
 
 Translations
 
-Finamp uses Weblate to manage translations: https://hosted.weblate.org/engage/finamp/
+Diapason uses Weblate to manage translations: https://hosted.weblate.org/engage/diapason/
 
-Feel free to add new languages if yours isn't there yet. If you have any questions, such as the context of a string, you can ask in the Translation Discussions (https://github.com/jmshrv/finamp/discussions/categories/translations).
+Feel free to add new languages if yours isn't there yet. If you have any questions, such as the context of a string, you can ask in the Translation Discussions (https://github.com/jmshrv/diapason/discussions/categories/translations).
 
 Known Issues
 

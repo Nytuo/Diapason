@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:finamp/l10n/app_localizations.dart';
+import 'package:diapason/l10n/app_localizations.dart';
 
 class NoMusicLibrariesMessage extends StatelessWidget {
   const NoMusicLibrariesMessage({super.key, this.onRefresh});

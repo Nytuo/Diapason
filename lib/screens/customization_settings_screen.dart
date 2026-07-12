@@ -1,14 +1,14 @@
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:finamp/components/LayoutSettingsScreen/CustomizationSettingsScreen/playback_speed_control_visibility_dropdown_list_tile.dart';
-import 'package:finamp/components/LayoutSettingsScreen/CustomizationSettingsScreen/tile_additional_info_type_dropdown_list_tile.dart';
-import 'package:finamp/components/SettingsScreen/finamp_settings_dropdown.dart';
-import 'package:finamp/components/finamp_app_bar_back_button.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/music_player_background_task.dart';
+import 'package:diapason/components/LayoutSettingsScreen/CustomizationSettingsScreen/playback_speed_control_visibility_dropdown_list_tile.dart';
+import 'package:diapason/components/LayoutSettingsScreen/CustomizationSettingsScreen/tile_additional_info_type_dropdown_list_tile.dart';
+import 'package:diapason/components/SettingsScreen/finamp_settings_dropdown.dart';
+import 'package:diapason/components/finamp_app_bar_back_button.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/music_player_background_task.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';

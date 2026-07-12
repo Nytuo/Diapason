@@ -1,7 +1,7 @@
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/menus/components/menuEntries/menu_entry.dart';
-import 'package:finamp/menus/components/radio_mode_menu.dart';
-import 'package:finamp/models/jellyfin_models.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/menus/components/menuEntries/menu_entry.dart';
+import 'package:diapason/menus/components/radio_mode_menu.dart';
+import 'package:diapason/models/jellyfin_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';

@@ -95,7 +95,7 @@
         };
       in {
         devShells = let
-          mkFinampShell = { withFenix ? false }: with pkgs; mkShell rec {
+          mkDiapasonShell = { withFenix ? false }: with pkgs; mkShell rec {
             ANDROID_SDK_ROOT = "${androidSdk}/libexec/android-sdk";
             ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
             GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${androidSdk}/libexec/android-sdk/build-tools/${buildToolsVersion}/aapt2";
@@ -123,8 +123,8 @@
             ]);
           };
         in {
-          default = mkFinampShell {}; # nix develop
-          fenix = mkFinampShell { withFenix = true; }; # nix develop .#fenix
+          default = mkDiapasonShell {}; # nix develop
+          fenix = mkDiapasonShell { withFenix = true; }; # nix develop .#fenix
         };
       }
     );

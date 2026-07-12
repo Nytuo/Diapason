@@ -2,11 +2,14 @@ import 'dart:async';
 import 'dart:core';
 import 'dart:io';
 
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
-import 'package:finamp/services/music_player_background_task.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/services/backends/backend_registry.dart';
+import 'package:diapason/services/backends/jellyfin_backend.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
+import 'package:diapason/services/music_player_background_task.dart';
 import 'package:flutter_discord_rpc/flutter_discord_rpc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -16,6 +19,7 @@ bool lastState = false;
 Timer? _timer;
 final _jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
 final _finampUserHelper = GetIt.instance<FinampUserHelper>();
+final _aggregateBackend = GetIt.instance<AggregateBackend>();
 BaseItemDto? artistItem;
 
 enum _RpcStatus { running, transition, stopped }
@@ -161,11 +165,20 @@ class DiscordRpc {
   }
 
   static (String?, String) _fetchImageUrls(BaseItemDto baseItem) {
+    final backend = GetIt.instance<BackendRegistry>().forItem(baseItem);
+    if (backend is! JellyfinBackend) {
+      final smallImage = artistItem == null ? null : _aggregateBackend.imageUrl(artistItem!, maxHeight: 128, maxWidth: 128)?.toString();
+      final largeImage =
+          _aggregateBackend.imageUrl(baseItem, maxHeight: 128, maxWidth: 128)?.toString() ??
+          FinampSettingsHelper.finampSettings.rpcIcon.toString();
+      return (smallImage, largeImage);
+    }
+
     String? smallImage;
     String? largeImage;
 
-    final activeAddress = _finampUserHelper.currentUser!.baseURL;
-    final activeAddressIsPrivate = isAddressInLocalAddressRange(activeAddress);
+    final activeAddress = _finampUserHelper.currentUser?.baseURL;
+    final activeAddressIsPrivate = activeAddress != null && isAddressInLocalAddressRange(activeAddress);
 
     bool forcePublicAddress = false;
     bool skipUrlGetting = false;
@@ -178,9 +191,11 @@ class DiscordRpc {
     }
 
     if (!skipUrlGetting) {
-      smallImage = _jellyfinApiHelper
-          .getImageUrl(item: artistItem!, maxHeight: 128, maxWidth: 128, forcePublicAddress: forcePublicAddress)
-          ?.toString();
+      smallImage = artistItem == null
+          ? null
+          : _jellyfinApiHelper
+                .getImageUrl(item: artistItem!, maxHeight: 128, maxWidth: 128, forcePublicAddress: forcePublicAddress)
+                ?.toString();
       largeImage = _jellyfinApiHelper
           .getImageUrl(item: baseItem, maxHeight: 128, maxWidth: 128, forcePublicAddress: forcePublicAddress)
           ?.toString();
@@ -202,8 +217,12 @@ class DiscordRpc {
 
     final baseItem = BaseItemDto.fromJson(mediaItem!.extras!["itemJson"] as Map<String, dynamic>);
 
-    if (artistItem == null || !baseItem.artistItems!.any((v) => v.id == artistItem?.id)) {
-      artistItem = await _jellyfinApiHelper.getItemById(baseItem.artistItems!.first.id);
+    if (baseItem.artistItems?.isNotEmpty ?? false) {
+      if (artistItem == null || !baseItem.artistItems!.any((v) => v.id == artistItem?.id)) {
+        artistItem = await _aggregateBackend.getItemById(baseItem.artistItems!.first.id);
+      }
+    } else {
+      artistItem = null;
     }
 
     final now = (DateTime.now().millisecondsSinceEpoch / 1000).truncate();

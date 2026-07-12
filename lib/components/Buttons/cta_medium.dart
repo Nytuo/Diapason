@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:finamp/services/feedback_helper.dart';
+import 'package:diapason/services/feedback_helper.dart';
 import 'package:flutter/material.dart';
 
 class CTAMedium extends StatelessWidget {

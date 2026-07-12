@@ -1,22 +1,22 @@
 import 'dart:async';
 
-import 'package:finamp/components/AlbumScreen/download_button.dart';
-import 'package:finamp/components/ArtistScreen/artist_screen_content_flexible_space_bar.dart';
-import 'package:finamp/components/MusicScreen/item_wrapper.dart';
-import 'package:finamp/components/MusicScreen/sort_and_filter_row.dart';
-import 'package:finamp/components/curated_item_filter_row.dart';
-import 'package:finamp/components/curated_item_sections.dart';
-import 'package:finamp/components/favorite_button.dart';
-import 'package:finamp/components/finamp_app_bar_back_button.dart';
-import 'package:finamp/components/padded_custom_scrollview.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/artist_content_provider.dart';
-import 'package:finamp/services/downloads_service.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
+import 'package:diapason/components/AlbumScreen/download_button.dart';
+import 'package:diapason/components/ArtistScreen/artist_screen_content_flexible_space_bar.dart';
+import 'package:diapason/components/MusicScreen/item_wrapper.dart';
+import 'package:diapason/components/MusicScreen/sort_and_filter_row.dart';
+import 'package:diapason/components/curated_item_filter_row.dart';
+import 'package:diapason/components/curated_item_sections.dart';
+import 'package:diapason/components/favorite_button.dart';
+import 'package:diapason/components/finamp_app_bar_back_button.dart';
+import 'package:diapason/components/padded_custom_scrollview.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/artist_content_provider.dart';
+import 'package:diapason/services/downloads_service.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -199,13 +199,15 @@ class _ArtistScreenContentState extends ConsumerState<ArtistScreenContent> {
               FavoriteButton(item: widget.parent),
               if (!isLoading)
                 DownloadButton(
-                  item: DownloadStub.fromFinampCollection(
-                    FinampCollection(
-                      type: FinampCollectionType.collectionWithLibraryFilter,
-                      library: library,
-                      item: widget.parent,
-                    ),
-                  ),
+                  item: library == null
+                      ? DownloadStub.fromItem(type: DownloadItemType.collection, item: widget.parent)
+                      : DownloadStub.fromFinampCollection(
+                          FinampCollection(
+                            type: FinampCollectionType.collectionWithLibraryFilter,
+                            library: library,
+                            item: widget.parent,
+                          ),
+                        ),
                   children: allChildren,
                   downloadDisabled: disableDownloads,
                   customTooltip: disableDownloads

@@ -18,7 +18,7 @@
     "music": "Музика",
     "clear": "Изчисти",
     "shuffleAll": "Възпроизвеждане в случаен ред",
-    "finamp": "Finamp",
+    "finamp": "Diapason",
     "downloads": "Изтегляния",
     "settings": "Настройки",
     "offlineMode": "Офлайн режим",
@@ -181,7 +181,7 @@
     "errorScreenError": "Възникна грешка при получаване на списъка с грешки! Преинсталирайте приложението и съобщете за проблема на GitHub",
     "downloadsQueued": "Добавено в изтегляния.",
     "addButtonLabel": "ДОБАВИ",
-    "applicationLegalese": "Лиценз Mozilla Public License 2.0. Програмният код е достъпен на:\n\ngithub.com/jmshrv/finamp",
+    "applicationLegalese": "Лиценз Mozilla Public License 2.0. Програмният код е достъпен на:\n\ngithub.com/Nytuo/diapason-flutter",
     "trackCount": "{count,plural,=1{{count} Песен} other{{count} Песни}}",
     "@trackCount": {
         "placeholders": {

@@ -2,25 +2,27 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:finamp/components/AlbumScreen/track_list_tile.dart';
-import 'package:finamp/components/MusicScreen/music_screen_tab_view.dart';
-import 'package:finamp/components/album_image.dart';
-import 'package:finamp/components/finamp_app_bar_back_button.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/components/padded_custom_scrollview.dart';
-import 'package:finamp/components/print_duration.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/menus/components/icon_button_with_semantics.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/album_screen_provider.dart';
-import 'package:finamp/services/downloads_service.dart';
-import 'package:finamp/services/feedback_helper.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
-import 'package:finamp/services/permission_providers.dart';
-import 'package:finamp/services/theme_provider.dart';
+import 'package:diapason/components/AlbumScreen/track_list_tile.dart';
+import 'package:diapason/components/MusicScreen/music_screen_tab_view.dart';
+import 'package:diapason/components/album_image.dart';
+import 'package:diapason/components/finamp_app_bar_back_button.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/components/padded_custom_scrollview.dart';
+import 'package:diapason/components/print_duration.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/menus/components/icon_button_with_semantics.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/album_screen_provider.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/services/backends/backend_registry.dart';
+import 'package:diapason/services/backends/jellyfin_backend.dart';
+import 'package:diapason/services/downloads_service.dart';
+import 'package:diapason/services/feedback_helper.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
+import 'package:diapason/services/permission_providers.dart';
+import 'package:diapason/services/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
@@ -148,6 +150,13 @@ class _PlaylistEditScreenState extends ConsumerState<PlaylistEditScreen> {
 
   Future<void> _fetchPublicVisibility() async {
     if (_publicVisibility != null) return;
+    if (GetIt.instance<BackendRegistry>().forItem(playlist) is! JellyfinBackend) {
+      setState(() {
+        _publicVisibility = true;
+        _initialVisibility = true;
+      });
+      return;
+    }
     final resultPlaylist = await _jellyfinApiHelper.getPlaylist(playlist.id!);
     setState(() {
       _publicVisibility = resultPlaylist.openAccess;
@@ -161,29 +170,33 @@ class _PlaylistEditScreenState extends ConsumerState<PlaylistEditScreen> {
       setState(() => _isUpdating = true);
       formState.save();
       try {
+        final aggregateBackend = GetIt.instance<AggregateBackend>();
         if (_hasMetadataChanged) {
           // Jellyfin can't handle updating both the track list and name at the same time, so make two separate requests
-          await _jellyfinApiHelper.updatePlaylist(
-            newPlaylist: NewPlaylist(
-              isPublic: _publicVisibility,
-              name: _name,
-              userId: GetIt.instance<FinampUserHelper>().currentUserId,
-            ),
-            itemId: playlist.id,
+          final updated = await aggregateBackend.updatePlaylistMetadata(
+            playlist,
+            name: _name,
+            isPublic: _publicVisibility,
           );
+          if (!updated) {
+            throw Exception("This source doesn't support editing a playlist's name or visibility.");
+          }
           // update local BaseItemDto to reflect changes for already loaded playlist screen
           playlist.name = _name;
         }
         if (_haveTracksChanged) {
-          await _jellyfinApiHelper.updatePlaylist(
-            newPlaylist: NewPlaylist(
-              ids: playlistTracks.map((track) => track.id).toList(),
-              userId: GetIt.instance<FinampUserHelper>().currentUserId,
-            ),
-            itemId: playlist.id,
+          final reordered = await aggregateBackend.reorderPlaylist(
+            playlist,
+            playlistTracks.map((track) => track.id).toList(),
           );
+          if (!reordered) {
+            throw Exception("This source doesn't support reordering a playlist's tracks.");
+          }
         }
         if (_hasCoverChanged) {
+          if (GetIt.instance<BackendRegistry>().forItem(playlist) is! JellyfinBackend) {
+            throw Exception("This source doesn't support a custom playlist cover.");
+          }
           await _jellyfinApiHelper.setItemPrimaryImage(itemId: playlist.id!, imageFile: newAlbumImage!);
         }
         musicScreenRefreshStream.add(null); // refresh playlist content
@@ -268,7 +281,7 @@ class _PlaylistEditScreenState extends ConsumerState<PlaylistEditScreen> {
                   coverSize: _coverSize,
                   name: _name,
                   albumImage: playlist,
-                  canEdit: ref.watch(canEditMetadataProvider),
+                  canEdit: ref.watch(canEditMetadataProvider(playlist)),
                   publicVisibility: _publicVisibility ?? false,
                   trackCountString: trackCountString,
                   trackDurationString: trackDurationString,

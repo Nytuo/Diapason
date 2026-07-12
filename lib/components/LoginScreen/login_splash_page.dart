@@ -1,6 +1,6 @@
-import 'package:finamp/components/Buttons/cta_huge.dart';
-import 'package:finamp/components/finamp_icon.dart';
-import 'package:finamp/l10n/app_localizations.dart';
+import 'package:diapason/components/Buttons/cta_huge.dart';
+import 'package:diapason/components/finamp_icon.dart';
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 
@@ -30,7 +30,7 @@ class LoginSplashPage extends StatelessWidget {
                 children: [
                   TextSpan(text: welcomeString[0]),
                   TextSpan(
-                    text: "Finamp",
+                    text: "Diapason",
                     style: Theme.of(context).textTheme.headlineMedium!.copyWith(
                       // color: Theme.of(context).colorScheme.secondary,
                       fontWeight: FontWeight.w500,

@@ -165,6 +165,9 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
                 ContentType.playlists,
                 ContentType.tracks,
                 ContentType.genres,
+                ContentType.discover,
+                ContentType.youtube,
+                ContentType.downloads,
               ]
             : (fields[22] as List).cast<ContentType>(),
         autoloadLastQueueOnStartup: fields[28] == null
@@ -465,13 +468,69 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..radioMode = fields[141] == null
           ? RadioMode.similar
           : fields[141] as RadioMode
-      ..clientCertificate = fields[151] as ClientCertificate?;
+      ..clientCertificate = fields[151] as ClientCertificate?
+      ..cacheStreamedTracks = fields[152] == null ? true : fields[152] as bool
+      ..maxCacheSizeMegabytes = fields[153] == null
+          ? 1024
+          : (fields[153] as num).toInt()
+      ..listenBrainzToken = fields[154] == null ? '' : fields[154] as String
+      ..lastFmApiKey = fields[155] == null ? '' : fields[155] as String
+      ..lastFmApiSecret = fields[156] == null ? '' : fields[156] as String
+      ..lastFmSessionKey = fields[157] == null ? '' : fields[157] as String
+      ..lastFmUsername = fields[158] == null ? '' : fields[158] as String
+      ..uploaderEnabled = fields[159] == null ? false : fields[159] as bool
+      ..uploaderUrl = fields[160] == null ? '' : fields[160] as String
+      ..uploaderToken = fields[161] == null ? '' : fields[161] as String
+      ..uploaderNetworkPolicy = fields[162] == null
+          ? 'local'
+          : fields[162] as String
+      ..interfaceMode = fields[163] == null ? 'modern' : fields[163] as String
+      ..autoRadioEnabled = fields[164] == null ? false : fields[164] as bool
+      ..crossfadeSeconds = fields[165] == null
+          ? 0
+          : (fields[165] as num).toInt()
+      ..visualizerEnabled = fields[166] == null ? true : fields[166] as bool
+      ..visualizerBins = fields[167] == null ? 64 : (fields[167] as num).toInt()
+      ..visualizerFps = fields[168] == null ? 30 : (fields[168] as num).toInt()
+      ..visualizerSmoothing = fields[169] == null
+          ? 0.8
+          : (fields[169] as num).toDouble()
+      ..visualizerScale = fields[170] == null
+          ? 1.0
+          : (fields[170] as num).toDouble()
+      ..visualizerHeightFactor = fields[171] == null
+          ? 0.35
+          : (fields[171] as num).toDouble()
+      ..visualizerBottomOpacity = fields[172] == null
+          ? 0.5
+          : (fields[172] as num).toDouble()
+      ..visualizerTopOpacity = fields[173] == null
+          ? 0.0
+          : (fields[173] as num).toDouble()
+      ..visualizerUseSplines = fields[174] == null ? true : fields[174] as bool
+      ..visualizerStrokeWidth = fields[175] == null
+          ? 1.5
+          : (fields[175] as num).toDouble()
+      ..visualizerFillEnabled = fields[176] == null ? true : fields[176] as bool
+      ..visualizerMinHz = fields[178] == null
+          ? 20.0
+          : (fields[178] as num).toDouble()
+      ..visualizerMaxHz = fields[179] == null
+          ? 16000.0
+          : (fields[179] as num).toDouble()
+      ..visualizerDbFloor = fields[180] == null
+          ? -100.0
+          : (fields[180] as num).toDouble()
+      ..visualizerDbCeiling = fields[181] == null
+          ? -10.0
+          : (fields[181] as num).toDouble()
+      ..visualizerLogScale = fields[182] == null ? true : fields[182] as bool;
   }
 
   @override
   void write(BinaryWriter writer, FinampSettings obj) {
     writer
-      ..writeByte(145)
+      ..writeByte(175)
       ..writeByte(0)
       ..write(obj.isOffline)
       ..writeByte(1)
@@ -761,7 +820,67 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..writeByte(150)
       ..write(obj.homeScreenImageSize)
       ..writeByte(151)
-      ..write(obj.clientCertificate);
+      ..write(obj.clientCertificate)
+      ..writeByte(152)
+      ..write(obj.cacheStreamedTracks)
+      ..writeByte(153)
+      ..write(obj.maxCacheSizeMegabytes)
+      ..writeByte(154)
+      ..write(obj.listenBrainzToken)
+      ..writeByte(155)
+      ..write(obj.lastFmApiKey)
+      ..writeByte(156)
+      ..write(obj.lastFmApiSecret)
+      ..writeByte(157)
+      ..write(obj.lastFmSessionKey)
+      ..writeByte(158)
+      ..write(obj.lastFmUsername)
+      ..writeByte(159)
+      ..write(obj.uploaderEnabled)
+      ..writeByte(160)
+      ..write(obj.uploaderUrl)
+      ..writeByte(161)
+      ..write(obj.uploaderToken)
+      ..writeByte(162)
+      ..write(obj.uploaderNetworkPolicy)
+      ..writeByte(163)
+      ..write(obj.interfaceMode)
+      ..writeByte(164)
+      ..write(obj.autoRadioEnabled)
+      ..writeByte(165)
+      ..write(obj.crossfadeSeconds)
+      ..writeByte(166)
+      ..write(obj.visualizerEnabled)
+      ..writeByte(167)
+      ..write(obj.visualizerBins)
+      ..writeByte(168)
+      ..write(obj.visualizerFps)
+      ..writeByte(169)
+      ..write(obj.visualizerSmoothing)
+      ..writeByte(170)
+      ..write(obj.visualizerScale)
+      ..writeByte(171)
+      ..write(obj.visualizerHeightFactor)
+      ..writeByte(172)
+      ..write(obj.visualizerBottomOpacity)
+      ..writeByte(173)
+      ..write(obj.visualizerTopOpacity)
+      ..writeByte(174)
+      ..write(obj.visualizerUseSplines)
+      ..writeByte(175)
+      ..write(obj.visualizerStrokeWidth)
+      ..writeByte(176)
+      ..write(obj.visualizerFillEnabled)
+      ..writeByte(178)
+      ..write(obj.visualizerMinHz)
+      ..writeByte(179)
+      ..write(obj.visualizerMaxHz)
+      ..writeByte(180)
+      ..write(obj.visualizerDbFloor)
+      ..writeByte(181)
+      ..write(obj.visualizerDbCeiling)
+      ..writeByte(182)
+      ..write(obj.visualizerLogScale);
   }
 
   @override
@@ -1955,6 +2074,12 @@ class ContentTypeAdapter extends TypeAdapter<ContentType> {
         return ContentType.inPerformingArtistAlbums;
       case 11:
         return ContentType.inAlbumArtistAlbums;
+      case 12:
+        return ContentType.discover;
+      case 13:
+        return ContentType.youtube;
+      case 14:
+        return ContentType.downloads;
       default:
         return ContentType.albums;
     }
@@ -1987,6 +2112,12 @@ class ContentTypeAdapter extends TypeAdapter<ContentType> {
         writer.writeByte(10);
       case ContentType.inAlbumArtistAlbums:
         writer.writeByte(11);
+      case ContentType.discover:
+        writer.writeByte(12);
+      case ContentType.youtube:
+        writer.writeByte(13);
+      case ContentType.downloads:
+        writer.writeByte(14);
     }
   }
 
@@ -9574,6 +9705,9 @@ const _$ContentTypeEnumMap = {
   ContentType.mixed: 'mixed',
   ContentType.inPerformingArtistAlbums: 'inPerformingArtistAlbums',
   ContentType.inAlbumArtistAlbums: 'inAlbumArtistAlbums',
+  ContentType.discover: 'discover',
+  ContentType.youtube: 'youtube',
+  ContentType.downloads: 'downloads',
 };
 
 const _$MediaItemParentTypeEnumMap = {

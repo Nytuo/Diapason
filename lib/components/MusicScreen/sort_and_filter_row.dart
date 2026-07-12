@@ -1,15 +1,15 @@
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:finamp/components/Buttons/cta_medium.dart';
-import 'package:finamp/components/Buttons/simple_button.dart';
-import 'package:finamp/components/SettingsScreen/finamp_settings_dropdown.dart';
-import 'package:finamp/components/themed_bottom_sheet.dart';
-import 'package:finamp/components/toggleable_list_tile.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
+import 'package:diapason/components/Buttons/cta_medium.dart';
+import 'package:diapason/components/Buttons/simple_button.dart';
+import 'package:diapason/components/SettingsScreen/finamp_settings_dropdown.dart';
+import 'package:diapason/components/themed_bottom_sheet.dart';
+import 'package:diapason/components/toggleable_list_tile.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';

@@ -5,9 +5,9 @@ import 'dart:isolate';
 
 import 'package:chopper/chopper.dart';
 import 'package:collection/collection.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/services/client_certificate_installer.dart';
-import 'package:finamp/services/http_aggregate_logging_interceptor.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/services/client_certificate_installer.dart';
+import 'package:diapason/services/http_aggregate_logging_interceptor.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

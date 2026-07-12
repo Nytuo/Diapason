@@ -60,7 +60,7 @@
     },
     "downloads": "Descargas",
     "goToAlbum": "Ir al álbum",
-    "finamp": "Finamp",
+    "finamp": "Diapason",
     "landscape": "Horizontal",
     "noAlbum": "Sin álbum",
     "noItem": "Ningún elemento",
@@ -227,10 +227,10 @@
         "description": "Title for message that shows on the views screen when no music libraries could be found."
     },
     "refresh": "Refrescar",
-    "noMusicLibrariesBody": "Finamp no ha podido encontrar ninguna biblioteca de música. Asegúrate de que tu servidor Jellyfin contiene al menos una biblioteca con el tipo de \"Música\".",
+    "noMusicLibrariesBody": "Diapason no ha podido encontrar ninguna biblioteca de música. Asegúrate de que tu servidor Jellyfin contiene al menos una biblioteca con el tipo de \"Música\".",
     "showFastScroller": "Mostrar desplazamiento rápido",
     "interactions": "Interacciones",
-    "about": "Acerca de Finamp",
+    "about": "Acerca de Diapason",
     "finampTagline": "Un reproductor de música de código abierto para Jellyfin",
     "@finampTagline": {
         "description": "Tagline / short description for the app"
@@ -239,15 +239,15 @@
     "@aboutContributionPrompt": {
         "description": "Text shown in the about screen, explaining that the app is made by volunteers and that the user could be one of them."
     },
-    "aboutContributionLink": "Contribuye a Finamp en GitHub:",
+    "aboutContributionLink": "Contribuye a Diapason en GitHub:",
     "@aboutContributionLink": {
-        "description": "Link to the Finamp GitHub repository, shown in the about screen."
+        "description": "Link to the Diapason GitHub repository, shown in the about screen."
     },
     "aboutReleaseNotes": "Lee los cambios de la última actualización:",
     "@aboutReleaseNotes": {
         "description": "Link to the release notes, shown in the about screen."
     },
-    "aboutThanks": "¡Gracias por usar Finamp!",
+    "aboutThanks": "¡Gracias por usar Diapason!",
     "@aboutThanks": {
         "description": "Thank you message shown in the about screen."
     },
@@ -255,13 +255,13 @@
     "@loginFlowGetStarted": {
         "description": "Button label for the login/splash screen."
     },
-    "aboutTranslations": "Ayuda a traducir Finamp a tu idioma:",
+    "aboutTranslations": "Ayuda a traducir Diapason a tu idioma:",
     "@aboutTranslations": {
         "description": "Link to the translation project, shown in the about screen."
     },
     "loginFlowWelcomeHeading": "Bienvenido a {styledName}",
     "@loginFlowWelcomeHeading": {
-        "description": "Greeting shown on the login screen. The full message will be 'Welcome to Finamp'."
+        "description": "Greeting shown on the login screen. The full message will be 'Welcome to Diapason'."
     },
     "loginFlowSlogan": "Tu música, en la manera que tu quieras.",
     "@loginFlowSlogan": {
@@ -541,7 +541,7 @@
     "@playbackMode": {
         "description": "Label for the feature chips showing the playback mode of a track. See [playbackModeLocal], [playbackModeDirectPlaying], and [playbackModeTranscoding]"
     },
-    "reportQueueToServerSubtitle": "Mientras esté activo, Finamp enviará la cola del dispositivo al servidor. Esto puede mejorar el control de manera remota y permitir la recuperación de la cola desde el servidor. Siempre está habilitada si la opción 'Reproducir en' está habilitada.",
+    "reportQueueToServerSubtitle": "Mientras esté activo, Diapason enviará la cola del dispositivo al servidor. Esto puede mejorar el control de manera remota y permitir la recuperación de la cola desde el servidor. Siempre está habilitada si la opción 'Reproducir en' está habilitada.",
     "@reportQueueToServerSubtitle": {
         "description": "Description of the setting that toggles reporting of the current queue to the Jellyfin server"
     },
@@ -1455,7 +1455,7 @@
         },
         "description": "Tooltip for downloadbutton on incidental downloads, which show a lock icon. It says one of the requiring downloads."
     },
-    "playbackSpeedControlSettingDescription": "Automático:\nFinamp intentara identificar si la pista que se esta reproduciendo es un podcast o (parte de) un audiolibro. Se considera que lo son si la duración de la pista es mayor a {trackDuration} minutes, si la longitud del álbum de la pista es mayor a {albumDuration} horas, o si la pista tiene al menor uno de estos géneros asignados: {genreList}\nLos controles de velocidad de reproducción se mostraran en el menú del reproductor.\n\nVisible:\nLos controles de velocidad de reproducción siempre se mostraran en el menú del reproductor.\n\nOculto:\nLos controles de velocidad de reproducción siempre se ocultaran en el menú del reproductor.",
+    "playbackSpeedControlSettingDescription": "Automático:\nDiapason intentara identificar si la pista que se esta reproduciendo es un podcast o (parte de) un audiolibro. Se considera que lo son si la duración de la pista es mayor a {trackDuration} minutes, si la longitud del álbum de la pista es mayor a {albumDuration} horas, o si la pista tiene al menor uno de estos géneros asignados: {genreList}\nLos controles de velocidad de reproducción se mostraran en el menú del reproductor.\n\nVisible:\nLos controles de velocidad de reproducción siempre se mostraran en el menú del reproductor.\n\nOculto:\nLos controles de velocidad de reproducción siempre se ocultaran en el menú del reproductor.",
     "@playbackSpeedControlSettingDescription": {
         "description": "Description for the dropdown that selects the replay gain mode, shown in a dialog that opens when the user presses the info icon next to the dropdown",
         "placeholders": {
@@ -1702,7 +1702,7 @@
     "@genreFilterPlaylistScreensSubtitle": {
         "description": "Description of the setting that controls if a genreFilter should get applied to PlaylistScreens when accessing the PlaylistScreens through a Genre."
     },
-    "startupErrorCallToAction": "Por favor crea una incidencia en \"github.com/jmshrv/finamp\" con los registros (utiliza el botón de abajo) y una captura de pantalla de esta página para que podamos resolverlo lo más rápido posible.",
+    "startupErrorCallToAction": "Por favor crea una incidencia en \"github.com/Nytuo/diapason-flutter\" con los registros (utiliza el botón de abajo) y una captura de pantalla de esta página para que podamos resolverlo lo más rápido posible.",
     "@startupErrorCallToAction": {
         "description": "The subtitle / call to action for what to do after encountering a startup error"
     },
@@ -1717,7 +1717,7 @@
         "description": "Description of the setting that controls the order of item sections on the screens."
     },
     "recentlyPlayedAlbums": "Álbumes reproducidos recientemente",
-    "enablePlayonSubtitle": "Activa la característica \"Reproducir en\" de Jellyfin (controlar remotamente Finamp desde otro cliente). Desactiva esto si tu proxy inverso o servidor no soporta websockets.",
+    "enablePlayonSubtitle": "Activa la característica \"Reproducir en\" de Jellyfin (controlar remotamente Diapason desde otro cliente). Desactiva esto si tu proxy inverso o servidor no soporta websockets.",
     "@enablePlayonSubtitle": {
         "description": "Description of the setting to enable Jellyfin's 'Play On' feature (remote control)"
     },
@@ -1984,7 +1984,7 @@
     "@autoReloadPromptReloadButton": {
         "description": "Button title for reloading the queue after network settings change"
     },
-    "autoReloadQueueSubtitle": "Recarga la cola automáticamente cuando cambie la fuente (por ejemplo, cuando se activa el modo sin conexión o cambia la dirección del servidor). Si está desactivado, Finamp te preguntará.",
+    "autoReloadQueueSubtitle": "Recarga la cola automáticamente cuando cambie la fuente (por ejemplo, cuando se activa el modo sin conexión o cambia la dirección del servidor). Si está desactivado, Diapason te preguntará.",
     "@autoReloadQueueSubtitle": {
         "description": "Subtitle for the setting that controls if the queue is automatically reloaded when the source changes"
     },
@@ -2129,7 +2129,7 @@
     "@serverSharingMenuButtonTitle": {
         "description": "Title for the button in the drawer that opens the server sharing menu"
     },
-    "serverSharingMenuConfirmationDialogText": "¿Estás seguro de que deseas habilitar la compartición del servidor aunque estés en modo offline? Esto hará que Finamp envíe datos a través de la red local.",
+    "serverSharingMenuConfirmationDialogText": "¿Estás seguro de que deseas habilitar la compartición del servidor aunque estés en modo offline? Esto hará que Diapason envíe datos a través de la red local.",
     "@serverSharingMenuConfirmationDialogText": {
         "description": "Dialog text shown when enabling server sharing while offline mode is enabled"
     },
@@ -2157,7 +2157,7 @@
     "@serverSharingMenuDescription": {
         "description": "Description text shown in the server sharing menu, right below the controls"
     },
-    "serverSharingMenuDetails": "Funcjona escuchando las solicitudes de descubrimiento del servidor por parte de otros clientes en la red local y luego respondiendo a esas solicitudes con la dirección configurada de tu servidor de Jellyifin.\nSi tienes configuradas tanto una dirección local como una pública, Finamp proporcionará ambas al cliente que lo solicite.",
+    "serverSharingMenuDetails": "Funcjona escuchando las solicitudes de descubrimiento del servidor por parte de otros clientes en la red local y luego respondiendo a esas solicitudes con la dirección configurada de tu servidor de Jellyifin.\nSi tienes configuradas tanto una dirección local como una pública, Diapason proporcionará ambas al cliente que lo solicite.",
     "@serverSharingMenuDetails": {
         "description": "Description text shown in the server sharing menu, below the description"
     },
@@ -2197,7 +2197,7 @@
     "@quickConnectAuthorizationMenuStateSubtitleFailed": {
         "description": "Subtitle for the quick connect authorization menu state info (above the input field) when the authorization was unsuccessful"
     },
-    "quickConnectAuthorizationMenuDescription": "Si estás intentando iniciar sesión en otro cliente de Jellyfin a través de Conexión Rápida, puedes ingresar o pegar el código de 6 dígitos en el campo de arriba. Esto autorizará la solicitud de inicio de sesión del otro cliente y te conectará a la misma cuenta que estás utilizando para Finamp.",
+    "quickConnectAuthorizationMenuDescription": "Si estás intentando iniciar sesión en otro cliente de Jellyfin a través de Conexión Rápida, puedes ingresar o pegar el código de 6 dígitos en el campo de arriba. Esto autorizará la solicitud de inicio de sesión del otro cliente y te conectará a la misma cuenta que estás utilizando para Diapason.",
     "@quickConnectAuthorizationMenuDescription": {
         "description": "Description for the quick connect authorization menu, shown at the bottom"
     },
@@ -2229,29 +2229,29 @@
     "@discordRPCIconSettingDescription": {
         "description": "Description for the setting that controls which Icon the discord RPC displays as a Fallback in case no public address is detected (it doenst matter what connection is active)."
     },
-    "discordRPCIconDark": "Finamp - Oscuro",
+    "discordRPCIconDark": "Diapason - Oscuro",
     "@discordRPCIconDark": {
-        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with the Dark-Theme Background"
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Diapason logo with the Dark-Theme Background"
     },
-    "discordRPCIconBlack": "Finamp - Negro",
+    "discordRPCIconBlack": "Diapason - Negro",
     "@discordRPCIconBlack": {
-        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with a Black Background"
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Diapason logo with a Black Background"
     },
-    "discordRPCIconLight": "Finamp - Blanco",
+    "discordRPCIconLight": "Diapason - Blanco",
     "@discordRPCIconLight": {
-        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with a White Background"
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Diapason logo with a White Background"
     },
     "discordRPCIconJFTransparent": "Jellyfin - Transparente",
     "@discordRPCIconJFTransparent": {
         "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Jellyfin logo with a Transparent Background"
     },
-    "discordRPCIconTransparent": "Finamp - Transparente",
+    "discordRPCIconTransparent": "Diapason - Transparente",
     "@discordRPCIconTransparent": {
-        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Finamp logo with a Transparent Background"
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the Diapason logo with a Transparent Background"
     },
-    "discordRPCIconWhiteTransparent": "Finamp Blanco - Transparente",
+    "discordRPCIconWhiteTransparent": "Diapason Blanco - Transparente",
     "@discordRPCIconWhiteTransparent": {
-        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the full white Finamp logo with a Transparent Background"
+        "description": "A REALLY short description of the icon in use. Its format is 'ICON, BACKGROUND'. This one is the full white Diapason logo with a Transparent Background"
     },
     "adaptive": "Adaptativo",
     "sleepTimerRemainingTracks": "Durmiendo {time,plural,=1{después de esta canción} other{en {time} canciones}}",
@@ -2333,11 +2333,11 @@
     },
     "useMonochromeIcon": "Usar Logo Monocromático",
     "@useMonochromeIcon": {
-        "description": "Toggles the Finamp icon between classic and it being monochromic. This does not change the outside-app-icon"
+        "description": "Toggles the Diapason icon between classic and it being monochromic. This does not change the outside-app-icon"
     },
     "useMonochromeIconSubtitle": "Esto solo afecta al logo en la aplicación, no al icono del lanzador.",
     "@useMonochromeIconSubtitle": {
-        "description": "Subtitle for the toggle that switches the Finamp icon between classic and it being monochromic."
+        "description": "Subtitle for the toggle that switches the Diapason icon between classic and it being monochromic."
     },
     "startRadio": "Iniciar Radio",
     "@startRadio": {

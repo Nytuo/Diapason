@@ -1,24 +1,25 @@
+import 'package:diapason/services/backends/backend_registry.dart';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:finamp/components/HomeScreen/finamp_music_screen_header.dart';
-import 'package:finamp/components/MusicScreen/offline_mode_status_label.dart';
-import 'package:finamp/components/MusicScreen/offline_mode_switch_list_tile.dart';
-import 'package:finamp/components/MusicScreen/view_list_tile.dart';
-import 'package:finamp/components/finamp_icon.dart';
-import 'package:finamp/components/themed_bottom_sheet.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/screens/downloads_screen.dart';
-import 'package:finamp/screens/logs_screen.dart';
-import 'package:finamp/screens/playback_history_screen.dart';
-import 'package:finamp/screens/queue_restore_screen.dart';
-import 'package:finamp/screens/settings_screen.dart';
-import 'package:finamp/services/downloads_service.dart';
-import 'package:finamp/services/feedback_helper.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/server_info_provider.dart';
+import 'package:diapason/components/HomeScreen/finamp_music_screen_header.dart';
+import 'package:diapason/components/MusicScreen/offline_mode_status_label.dart';
+import 'package:diapason/components/MusicScreen/offline_mode_switch_list_tile.dart';
+import 'package:diapason/components/MusicScreen/view_list_tile.dart';
+import 'package:diapason/components/finamp_icon.dart';
+import 'package:diapason/components/themed_bottom_sheet.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/screens/downloads_screen.dart';
+import 'package:diapason/screens/logs_screen.dart';
+import 'package:diapason/screens/playback_history_screen.dart';
+import 'package:diapason/screens/queue_restore_screen.dart';
+import 'package:diapason/screens/settings_screen.dart';
+import 'package:diapason/services/downloads_service.dart';
+import 'package:diapason/services/feedback_helper.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/server_info_provider.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -76,7 +77,7 @@ Future<void> showFinampMainMenu({required BuildContext context}) async {
                           children: [
                             TextSpan(
                               text:
-                                  " ${ref.watch(currentServerInfoProvider).value?.publicServerInfo.serverName ?? context.l10n.unknown}",
+                                  " ${_connectedSourceNames(ref, context)}",
                               style: const TextStyle(fontWeight: FontWeight.w600),
                             ),
                           ],
@@ -229,7 +230,7 @@ class MusicScreenDrawer extends ConsumerWidget {
                                   children: [
                                     TextSpan(
                                       text:
-                                          " ${ref.watch(currentServerInfoProvider).value?.publicServerInfo.serverName ?? context.l10n.unknown}",
+                                          " ${_connectedSourceNames(ref, context)}",
                                       style: const TextStyle(fontWeight: FontWeight.w600),
                                     ),
                                   ],
@@ -340,3 +341,12 @@ final packageNameProvider = FutureProvider((Ref ref) async {
 });
 
 enum ConnectionStateInfo { syncing, downloading, deleting, connectedLocal, syncingLocal, downloadingLocal, other }
+
+String _connectedSourceNames(WidgetRef ref, BuildContext context) {
+  final jellyfinName = ref.watch(currentServerInfoProvider).value?.publicServerInfo.serverName;
+  if (jellyfinName != null) return jellyfinName;
+
+  final sources = GetIt.instance<BackendRegistry>().configured.map((b) => b.config.name).toList();
+  if (sources.isEmpty) return context.l10n.unknown;
+  return sources.join(", ");
+}

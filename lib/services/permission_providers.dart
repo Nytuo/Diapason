@@ -1,7 +1,9 @@
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/backends/backend_registry.dart';
+import 'package:diapason/services/backends/jellyfin_backend.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 
@@ -39,6 +41,9 @@ final AutoDisposeProviderFamily<bool, BaseItemDto> canDeleteFromServerProvider =
 
 final AutoDisposeFutureProviderFamily<bool?, BaseItemId> _canDeleteFromServerAsyncProvider =
     AutoDisposeFutureProviderFamily((ref, BaseItemId id) {
+      if (GetIt.instance<BackendRegistry>().forItemId(id) is! JellyfinBackend) {
+        return Future.value(null);
+      }
       return GetIt.instance<JellyfinApiHelper>()
           .getItemById(id)
           .then((response) {
@@ -75,6 +80,9 @@ final AutoDisposeProviderFamily<bool, BaseItemDto> canEditPlaylistProvider = Aut
 
 final AutoDisposeFutureProviderFamily<bool?, BaseItemId> _canEditPlaylistAsyncProvider =
     AutoDisposeFutureProviderFamily((ref, BaseItemId id) {
+      if (GetIt.instance<BackendRegistry>().forItemId(id) is! JellyfinBackend) {
+        return Future.value(null);
+      }
       return GetIt.instance<JellyfinApiHelper>()
           .getPlaylistUser(id)
           .then((response) {
@@ -85,11 +93,14 @@ final AutoDisposeFutureProviderFamily<bool?, BaseItemId> _canEditPlaylistAsyncPr
           });
     });
 
-final AutoDisposeProvider<bool> canEditMetadataProvider = AutoDisposeProvider((ref) {
+final AutoDisposeProviderFamily<bool, BaseItemDto> canEditMetadataProvider = AutoDisposeProviderFamily((ref, item) {
   // editing metadata while offline (e.g., through caching or edit queues) probably isn't a good idea
   bool offline = ref.watch(finampSettingsProvider.isOffline);
   if (offline) {
     return false;
+  }
+  if (GetIt.instance<BackendRegistry>().forItem(item) is! JellyfinBackend) {
+    return true;
   }
   bool? serverReturn = ref.watch(_canEditMetadataAsyncProvider).value;
   return serverReturn ?? false;

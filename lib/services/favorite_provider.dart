@@ -1,6 +1,7 @@
-import 'package:finamp/services/music_player_background_task.dart';
-import 'package:finamp/services/queue_service.dart';
-import 'package:finamp/l10n/app_localizations.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/services/music_player_background_task.dart';
+import 'package:diapason/services/queue_service.dart';
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -9,7 +10,6 @@ import '../models/jellyfin_models.dart';
 import 'downloads_service.dart';
 import 'feedback_helper.dart';
 import 'finamp_settings_helper.dart';
-import 'jellyfin_api_helper.dart';
 
 part 'favorite_provider.g.dart';
 
@@ -37,9 +37,8 @@ class IsFavorite extends _$IsFavorite {
         // as soon as possible.
         _initializing = Future.sync(() async {
           try {
-            final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
-            var newItem = await jellyfinApiHelper.getItemById(item.id);
-            if (!_changed) {
+            final newItem = await GetIt.instance<AggregateBackend>().getItemById(item.id);
+            if (!_changed && newItem != null) {
               state = newItem.userData?.isFavorite ?? false;
             }
           } catch (e) {
@@ -58,7 +57,6 @@ class IsFavorite extends _$IsFavorite {
   bool updateFavorite(bool isFavorite) {
     assert(item != null);
     final isOffline = FinampSettingsHelper.finampSettings.isOffline;
-    final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
     final audioHandler = GetIt.instance<MusicPlayerBackgroundTask>();
     final queueService = GetIt.instance<QueueService>();
     if (isOffline) {
@@ -76,13 +74,13 @@ class IsFavorite extends _$IsFavorite {
 
     Future.sync(() async {
       try {
-        UserItemDataDto newUserData;
-        if (isFavorite) {
-          newUserData = await jellyfinApiHelper.addFavorite(item!.id);
-        } else {
-          newUserData = await jellyfinApiHelper.removeFavorite(item!.id);
+        final applied = await GetIt.instance<AggregateBackend>().setFavorite(item!, isFavorite: isFavorite);
+        if (!applied) {
+          state = oldState;
+          GlobalSnackbar.message((context) => "This source doesn't support favorites");
+          return;
         }
-        state = newUserData.isFavorite;
+        state = isFavorite;
 
         FeedbackHelper.feedback(FeedbackType.heavy);
       } catch (e) {

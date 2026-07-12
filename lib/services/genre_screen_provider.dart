@@ -1,6 +1,9 @@
 import 'dart:async';
 
-import 'package:finamp/components/curated_item_filter_row.dart';
+import 'package:diapason/components/curated_item_filter_row.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/services/backends/backend_registry.dart';
+import 'package:diapason/services/backends/jellyfin_backend.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -13,6 +16,8 @@ import 'jellyfin_api_helper.dart';
 import 'music_screen_provider.dart';
 
 part 'genre_screen_provider.g.dart';
+
+const _curatedItemCountLimit = 100;
 
 @riverpod
 Future<(List<BaseItemDto>, int, CuratedItemSelectionType, Set<CuratedItemSelectionType>?)> genreCuratedItems(
@@ -119,6 +124,19 @@ Future<(List<BaseItemDto>, int)> getCuratedItemsOnline({
     _ => ContentType.tracks,
   };
   int itemCount;
+
+  if (GetIt.instance<BackendRegistry>().forItem(parent) is! JellyfinBackend) {
+    final items = await GetIt.instance<AggregateBackend>().getItems(
+      libraryFilter: library?.id,
+      genreFilter: parent.id,
+      includeItemTypes: baseItemType.jellyfinName,
+      sortBy: sortBy.jellyfinName(tabType),
+      sortOrder: "Descending",
+      isFavorite: (genreCuratedItemSelectionType == CuratedItemSelectionType.favorites) ? true : null,
+      limit: _curatedItemCountLimit,
+    );
+    return (items, items.length);
+  }
 
   final fetchedItems = await jellyfinApiHelper.getItemsWithTotalRecordCount(
     parentItem: library,

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:finamp/services/finamp_settings_helper.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:logging/logging.dart';
 

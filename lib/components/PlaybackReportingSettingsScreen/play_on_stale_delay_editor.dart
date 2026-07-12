@@ -1,4 +1,4 @@
-import 'package:finamp/l10n/app_localizations.dart';
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/finamp_settings_helper.dart';

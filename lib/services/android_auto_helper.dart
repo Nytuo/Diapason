@@ -1,9 +1,9 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:collection/collection.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/downloads_service.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/downloads_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 

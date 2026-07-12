@@ -1,9 +1,9 @@
-import 'package:finamp/components/Buttons/simple_button.dart';
-import 'package:finamp/components/finamp_icon.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/feedback_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
+import 'package:diapason/components/Buttons/simple_button.dart';
+import 'package:diapason/components/finamp_icon.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/feedback_helper.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
 import 'package:flutter/material.dart' hide ConnectionState;
 import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -83,7 +83,7 @@ class _LoginUserSelectionPageState extends State<LoginUserSelectionPage> {
                   icon: TablerIcons.chevron_left,
                   text: AppLocalizations.of(context)!.backToServerSelection,
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    popLoginStep(context);
                   },
                 ),
               ),

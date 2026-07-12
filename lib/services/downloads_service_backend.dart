@@ -6,8 +6,11 @@ import 'dart:io';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:chopper/chopper.dart';
 import 'package:collection/collection.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/services/downloads_service.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/models/media_source.dart';
+import 'package:diapason/services/backends/jellyfin_backend.dart';
+import 'package:diapason/services/downloads_service.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get_it/get_it.dart';
 import 'package:isar/isar.dart';
@@ -17,6 +20,8 @@ import 'package:path/path.dart' as path_helper;
 import 'package:uuid/uuid.dart';
 
 import '../models/finamp_models.dart';
+import '../models/media_source.dart';
+import 'backends/backend_registry.dart';
 import '../models/jellyfin_models.dart';
 import '../screens/downloads_screen.dart';
 import 'finamp_settings_helper.dart';
@@ -233,6 +238,8 @@ class IsarTaskQueue implements TaskQueue {
   final _jellyfinApiData = GetIt.instance<JellyfinApiHelper>();
   final _finampUserHelper = GetIt.instance<FinampUserHelper>();
 
+  bool get _hasSources => GetIt.instance<BackendRegistry>().configured.isNotEmpty;
+
   IsarTaskQueue(this._downloadsService);
 
   /// Set of tasks that are believed to be actively running
@@ -327,39 +334,33 @@ class IsarTaskQueue implements TaskQueue {
             continue;
           }
           while (_activeDownloads.length >= FinampSettingsHelper.finampSettings.maxConcurrentDownloads ||
-              _finampUserHelper.currentUser == null) {
+              !_hasSources) {
             await Future.delayed(const Duration(milliseconds: 500));
           }
-          await SchedulerBinding.instance.scheduleTask(() {
+          await SchedulerBinding.instance.scheduleTask(() async {
             _activeDownloads.add(task.isarId);
             try {
-              // Base URL shouldn't be null at this point (user has to be logged in
-              // to get to the point where they can add downloads).
-              var url = switch (task.type) {
-                DownloadItemType.track =>
-                  _jellyfinApiData
-                      .getTrackDownloadUrl(item: task.baseItem!, transcodingProfile: task.fileTranscodingProfile)
-                      .toString(),
-                DownloadItemType.image =>
-                  _jellyfinApiData
-                      .getImageUrl(
-                        item: task.baseItem!,
-                        // Download original file
-                        quality: null,
-                        format: null,
-                      )
-                      .toString(),
+              final backend = GetIt.instance<BackendRegistry>().backendFor(task.baseItem!);
+              final source = switch (task.type) {
+                DownloadItemType.track => await backend.resolveDownload(
+                  task.baseItem!,
+                  transcodingProfile: task.fileTranscodingProfile,
+                ),
+                DownloadItemType.image => PlayableSource(
+                  backend.imageUrl(task.baseItem!, quality: null, format: null)!,
+                  headers: backend.imageHeaders,
+                ),
                 _ => throw StateError("Invalid enqueue ${task.name} which is a ${task.type}"),
               };
               _enqueueLog.fine("Submitting download ${task.name} to background_downloader.");
               var downloadTask = DownloadTask(
                 taskId: task.isarId.toString(),
-                url: url,
+                url: source.uri.toString(),
                 displayName: task.name,
                 baseDirectory: task.fileDownloadLocation!.baseDirectory.baseDirectory,
                 retries: 3,
                 directory: path_helper.dirname(task.path!),
-                headers: {"Authorization": _finampUserHelper.authorizationHeader},
+                headers: source.headers,
                 filename: path_helper.basename(task.path!),
               );
               return Future.sync(() async {
@@ -686,6 +687,8 @@ class DownloadsSyncService {
   final _jellyfinApiData = GetIt.instance<JellyfinApiHelper>();
   final _finampUserHelper = GetIt.instance<FinampUserHelper>();
 
+  bool get _hasSources => GetIt.instance<BackendRegistry>().configured.isNotEmpty;
+
   /// Currently processing syncs.  Will be null if no syncs are executing.
   final Set<int> _activeSyncs = {};
   final Set<int> _requireCompleted = {};
@@ -770,7 +773,7 @@ class DownloadsSyncService {
         if (wrappedSyncs.isEmpty ||
             !_downloadsService.allowSyncs ||
             FinampSettingsHelper.finampSettings.isOffline ||
-            _finampUserHelper.currentUser == null) {
+            !_hasSources) {
           assert(_isar.isarTaskDatas.where().typeEqualTo(type).countSync() >= _activeSyncs.length);
           if (_activeSyncs.isEmpty && _callbacksComplete != null) {
             _callbacksComplete!.complete(null);
@@ -818,7 +821,7 @@ class DownloadsSyncService {
                     );
                   }
                 }
-                if (_finampUserHelper.currentUser == null) break;
+                if (!_hasSources) break;
               }
             }
           } catch (e, stack) {
@@ -1243,9 +1246,16 @@ class DownloadsSyncService {
         }
       }
       _metadataCache[id] = itemFetch.future;
-      item = await _jellyfinApiData
-          .getItemByIdBatched(id, "${_jellyfinApiData.defaultFields},sortName,MediaSources")
-          .then((value) => value == null ? null : DownloadStub.fromItem(item: value, type: type));
+
+      final backend = GetIt.instance<BackendRegistry>().forItemId(id);
+      final refreshed = backend is JellyfinBackend
+          ? await _jellyfinApiData.getItemByIdBatched(id, "${_jellyfinApiData.defaultFields},sortName,MediaSources")
+          : await backend?.getItemById(id);
+
+      item = refreshed == null
+          ? _isar.downloadItems.getSync(DownloadStub.getHash(id.raw, type))
+          : DownloadStub.fromItem(item: refreshed, type: type);
+
       _downloadsService.resetConnectionErrors();
       itemFetch.complete(item);
       return itemFetch.future;
@@ -1299,19 +1309,28 @@ class DownloadsSyncService {
     unawaited(itemFetch.future.then((_) => null, onError: (_) => null));
     try {
       _childCache[item.id.raw] = itemFetch.future;
-      var childItems =
-          await _jellyfinApiData.getItems(
-            parentItem: item,
-            includeItemTypes: childFilter.jellyfinName,
-            sortBy: sortOrder,
-            fields: fields,
-          ) ??
-          [];
+
+      final backend = GetIt.instance<BackendRegistry>().forItem(item);
+      final isJellyfin = backend is JellyfinBackend;
+
+      var childItems = isJellyfin
+          ? (await _jellyfinApiData.getItems(
+                  parentItem: item,
+                  includeItemTypes: childFilter.jellyfinName,
+                  sortBy: sortOrder,
+                  fields: fields,
+                ) ??
+                [])
+          : await GetIt.instance<AggregateBackend>().getItems(
+              parentItem: item,
+              includeItemTypes: childFilter.jellyfinName,
+              sortBy: sortOrder,
+            );
       _downloadsService.resetConnectionErrors();
       var childStubs = childItems.map((e) => DownloadStub.fromItem(type: childType, item: e)).toList();
       // If we are a library, we need to get orphan tracks to download in addition to
       // tracks which are contained in albums.
-      if (parent.baseItemType == BaseItemDtoType.library) {
+      if (isJellyfin && parent.baseItemType == BaseItemDtoType.library) {
         var trackChildItems =
             await _jellyfinApiData.getItems(
               parentItem: item,
@@ -1329,7 +1348,7 @@ class DownloadsSyncService {
       // only is a performing artist, but not an album artist
       // We might get some overlap because we often see albumartist = performingartist,
       // but they will get filtered out later
-      if (parent.baseItemType == BaseItemDtoType.artist) {
+      if (isJellyfin && parent.baseItemType == BaseItemDtoType.artist) {
         var artistTrackChildItems =
             await _jellyfinApiData.getItems(
               parentItem: item,
@@ -1369,30 +1388,31 @@ class DownloadsSyncService {
     assert(parent.type == DownloadItemType.finampCollection);
     FinampCollection collection = parent.finampCollection!;
     final String fields = "${_jellyfinApiData.defaultFields},MediaSources,SortName";
+
+    final aggregate = GetIt.instance<AggregateBackend>();
+    final hasJellyfin = GetIt.instance<BackendRegistry>().ofKind(MediaSourceKind.jellyfin).isNotEmpty;
+
     try {
       List<BaseItemDto> outputItems;
       DownloadItemType? typeOverride;
       switch (collection.type) {
         case FinampCollectionType.favorites:
-          outputItems =
-              await _jellyfinApiData.getItems(
-                includeItemTypes: "Audio,MusicAlbum,Playlist",
-                filters: "IsFavorite",
-                fields: fields,
-              ) ??
-              [];
-          // Artists use a different endpoint, so request those separately
-          outputItems.addAll(
-            await _jellyfinApiData.getItems(includeItemTypes: "MusicArtist", filters: "IsFavorite", fields: fields) ??
-                [],
+          outputItems = await aggregate.getItems(
+            includeItemTypes: "Audio,MusicAlbum,Playlist",
+            filters: "IsFavorite",
           );
+          outputItems.addAll(await aggregate.getItems(includeItemTypes: "MusicArtist", filters: "IsFavorite"));
         case FinampCollectionType.allPlaylists:
         case FinampCollectionType.allPlaylistsMetadata:
-          outputItems = await _jellyfinApiData.getItems(includeItemTypes: "Playlist", fields: fields) ?? [];
+          outputItems = await aggregate.getItems(includeItemTypes: "Playlist");
         case FinampCollectionType.latest5Albums:
-          outputItems =
-              await _jellyfinApiData.getLatestItems(includeItemTypes: "MusicAlbum", limit: 5, fields: fields) ?? [];
+          outputItems = hasJellyfin
+              ? (await _jellyfinApiData.getLatestItems(includeItemTypes: "MusicAlbum", limit: 5, fields: fields) ?? [])
+              : [];
         case FinampCollectionType.libraryImages:
+          if (!hasJellyfin) {
+            return [];
+          }
           outputItems =
               await _jellyfinApiData.getItems(
                 parentItem: collection.library!,
@@ -1588,7 +1608,7 @@ class DownloadsSyncService {
       // }
       subDirectory = path_helper.joinAll(pathSegments.nonNulls);
       if (path_helper.split(downloadLocation.currentPath).lastOrNull?.toLowerCase() != "finamp") {
-        subDirectory = path_helper.join("Finamp", subDirectory);
+        subDirectory = path_helper.join("Diapason", subDirectory);
       }
     } else {
       fileName = item.id.raw;
@@ -1622,7 +1642,19 @@ class DownloadsSyncService {
 
     // Container must be accurate because unknown container names break iOS playback
     String? container = downloadItem.syncTranscodingProfile?.codec.container ?? mediaSources?.firstOrNull?.container;
-    String extension = container == null ? "" : ".${_filesystemSafe(container)}";
+
+    container ??= item.container;
+    if (container == null || container.isEmpty) {
+      try {
+        final backend = GetIt.instance<BackendRegistry>().backendFor(item);
+        final source = await backend.resolveDownload(item, transcodingProfile: downloadItem.syncTranscodingProfile);
+        container = source.container;
+      } catch (e) {
+        _syncLogger.warning("Could not work out the container for ${item.name}: $e");
+      }
+    }
+
+    String extension = (container == null || container.isEmpty) ? "" : ".${_filesystemSafe(container)}";
 
     String baseFilename;
     String subDirectory;
@@ -1684,7 +1716,7 @@ class DownloadsSyncService {
 
     if (downloadLocation.useHumanReadableNames) {
       if (path_helper.split(downloadLocation.currentPath).lastOrNull?.toLowerCase() != "finamp") {
-        subDirectory = path_helper.join("Finamp", subDirectory);
+        subDirectory = path_helper.join("Diapason", subDirectory);
       }
     }
     if (downloadLocation.baseDirectory.baseDirectory == BaseDirectory.root) {

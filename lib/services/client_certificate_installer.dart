@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:finamp/models/finamp_models.dart';
+import 'package:diapason/models/finamp_models.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -12,7 +12,7 @@ class ClientCertificateInstaller {
   static final isSupported = Platform.isAndroid;
 
   static final _logger = Logger('ClientCertificateInstaller');
-  static const _channel = MethodChannel('com.unicornsonlsd.finamp/client_certificate');
+  static const _channel = MethodChannel('fr.nytuo.diapason/client_certificate');
 
   /// Installs the configured [ClientCertificate] in the whole app, if supported and available:
   /// - into the [SecurityContext.defaultContext] used by Dart's HttpClient

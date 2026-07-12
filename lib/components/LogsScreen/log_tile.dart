@@ -1,7 +1,7 @@
 import 'package:clipboard/clipboard.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/services/censored_log.dart';
-import 'package:finamp/services/contains_login.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/services/censored_log.dart';
+import 'package:diapason/services/contains_login.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 

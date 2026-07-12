@@ -1,23 +1,23 @@
 import 'dart:async';
 
-import 'package:finamp/components/confirmation_prompt_dialog.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/menus/track_menu.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/screens/album_screen.dart';
-import 'package:finamp/screens/artist_screen.dart';
-import 'package:finamp/screens/downloads_screen.dart';
-import 'package:finamp/screens/genre_screen.dart';
-import 'package:finamp/screens/music_screen.dart';
-import 'package:finamp/services/album_screen_provider.dart';
-import 'package:finamp/services/downloads_service.dart';
-import 'package:finamp/services/feedback_helper.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
-import 'package:finamp/services/queue_service.dart';
+import 'package:diapason/components/confirmation_prompt_dialog.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/menus/track_menu.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/screens/album_screen.dart';
+import 'package:diapason/screens/artist_screen.dart';
+import 'package:diapason/screens/downloads_screen.dart';
+import 'package:diapason/screens/genre_screen.dart';
+import 'package:diapason/screens/music_screen.dart';
+import 'package:diapason/services/album_screen_provider.dart';
+import 'package:diapason/services/downloads_service.dart';
+import 'package:diapason/services/feedback_helper.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/queue_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -62,7 +62,7 @@ void navigateToSource(BuildContext context, QueueItemSource source) {
               singleTabConfig: HomeScreenSectionConfiguration(
                 base: CollectionHomeSection(
                   itemId: source.item!.id,
-                  libraryId: GetIt.instance<FinampUserHelper>().currentUser!.currentViewId!,
+                  libraryId: GetIt.instance<FinampUserHelper>().currentUser?.currentViewId ?? allLibraryPlaceholder,
                   contentType: ContentType.mixed,
                 ),
                 customSectionTitle: source.item!.name ?? AppLocalizations.of(context)!.unknownName,
@@ -98,7 +98,7 @@ void navigateToSource(BuildContext context, QueueItemSource source) {
                 singleTabConfig: HomeScreenSectionConfiguration(
                   base: CollectionHomeSection(
                     itemId: radioSource.item!.id,
-                    libraryId: GetIt.instance<FinampUserHelper>().currentUser!.currentViewId!,
+                    libraryId: GetIt.instance<FinampUserHelper>().currentUser?.currentViewId ?? allLibraryPlaceholder,
                     contentType: ContentType.mixed,
                   ),
                   customSectionTitle: radioSource.item!.name ?? AppLocalizations.of(context)!.unknownName,
@@ -167,10 +167,7 @@ Future<bool> removeFromPlaylist(
   }
   if (isConfirmed) {
     try {
-      await GetIt.instance<JellyfinApiHelper>().removeItemsFromPlaylist(
-        playlistId: parent.id,
-        entryIds: [playlistItemId],
-      );
+      await GetIt.instance<AggregateBackend>().removeFromPlaylist(parent, [playlistItemId]);
 
       // re-sync playlist to delete removed item if not required anymore
       final downloadsService = GetIt.instance<DownloadsService>();
@@ -206,12 +203,10 @@ Future<bool> addItemsToPlaylist(BuildContext context, List<BaseItemDto> items, B
   }
 
   //TODO request server to return the new playlist item id
-  await GetIt.instance<JellyfinApiHelper>().addItemstoPlaylist(
-    playlistId: parent.id,
-    ids: items.map((item) {
-      return item.id;
-    }).toList(),
-  );
+  final added = await GetIt.instance<AggregateBackend>().addToPlaylist(parent, items.map((item) => item.id).toList());
+  if (!added) {
+    throw Exception("Couldn't add to '${parent.name}': its source doesn't support editing playlists.");
+  }
 
   // re-sync playlist to download added item if needed
   final downloadsService = GetIt.instance<DownloadsService>();

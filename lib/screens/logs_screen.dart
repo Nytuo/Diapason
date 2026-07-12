@@ -1,7 +1,7 @@
-import 'package:finamp/components/LogsScreen/export_logs_button.dart';
-import 'package:finamp/components/finamp_app_bar_back_button.dart';
+import 'package:diapason/components/LogsScreen/export_logs_button.dart';
+import 'package:diapason/components/finamp_app_bar_back_button.dart';
 import 'package:flutter/material.dart';
-import 'package:finamp/l10n/app_localizations.dart';
+import 'package:diapason/l10n/app_localizations.dart';
 
 import '../components/LogsScreen/logs_view.dart';
 import '../components/LogsScreen/share_logs_button.dart';

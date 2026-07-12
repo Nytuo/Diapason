@@ -1282,6 +1282,246 @@ extension FinampSetters on FinampSettingsHelper {
     ).put("FinampSettings", finampSettingsTemp);
   }
 
+  static void setCacheStreamedTracks(bool newCacheStreamedTracks) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.cacheStreamedTracks = newCacheStreamedTracks;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setMaxCacheSizeMegabytes(int newMaxCacheSizeMegabytes) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.maxCacheSizeMegabytes = newMaxCacheSizeMegabytes;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setListenBrainzToken(String newListenBrainzToken) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.listenBrainzToken = newListenBrainzToken;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setLastFmApiKey(String newLastFmApiKey) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.lastFmApiKey = newLastFmApiKey;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setLastFmApiSecret(String newLastFmApiSecret) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.lastFmApiSecret = newLastFmApiSecret;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setLastFmSessionKey(String newLastFmSessionKey) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.lastFmSessionKey = newLastFmSessionKey;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setLastFmUsername(String newLastFmUsername) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.lastFmUsername = newLastFmUsername;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setUploaderEnabled(bool newUploaderEnabled) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.uploaderEnabled = newUploaderEnabled;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setUploaderUrl(String newUploaderUrl) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.uploaderUrl = newUploaderUrl;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setUploaderToken(String newUploaderToken) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.uploaderToken = newUploaderToken;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setUploaderNetworkPolicy(String newUploaderNetworkPolicy) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.uploaderNetworkPolicy = newUploaderNetworkPolicy;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setInterfaceMode(String newInterfaceMode) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.interfaceMode = newInterfaceMode;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setAutoRadioEnabled(bool newAutoRadioEnabled) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.autoRadioEnabled = newAutoRadioEnabled;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setCrossfadeSeconds(int newCrossfadeSeconds) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.crossfadeSeconds = newCrossfadeSeconds;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerEnabled(bool newVisualizerEnabled) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerEnabled = newVisualizerEnabled;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerBins(int newVisualizerBins) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerBins = newVisualizerBins;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerFps(int newVisualizerFps) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerFps = newVisualizerFps;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerSmoothing(double newVisualizerSmoothing) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerSmoothing = newVisualizerSmoothing;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerScale(double newVisualizerScale) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerScale = newVisualizerScale;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerHeightFactor(double newVisualizerHeightFactor) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerHeightFactor = newVisualizerHeightFactor;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerBottomOpacity(double newVisualizerBottomOpacity) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerBottomOpacity = newVisualizerBottomOpacity;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerTopOpacity(double newVisualizerTopOpacity) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerTopOpacity = newVisualizerTopOpacity;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerUseSplines(bool newVisualizerUseSplines) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerUseSplines = newVisualizerUseSplines;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerStrokeWidth(double newVisualizerStrokeWidth) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerStrokeWidth = newVisualizerStrokeWidth;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerFillEnabled(bool newVisualizerFillEnabled) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerFillEnabled = newVisualizerFillEnabled;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerMinHz(double newVisualizerMinHz) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerMinHz = newVisualizerMinHz;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerMaxHz(double newVisualizerMaxHz) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerMaxHz = newVisualizerMaxHz;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerDbFloor(double newVisualizerDbFloor) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerDbFloor = newVisualizerDbFloor;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerDbCeiling(double newVisualizerDbCeiling) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerDbCeiling = newVisualizerDbCeiling;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerLogScale(bool newVisualizerLogScale) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerLogScale = newVisualizerLogScale;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
   static void setBufferDuration(Duration newBufferDuration) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
     finampSettingsTemp.bufferDuration = newBufferDuration;
@@ -1720,6 +1960,76 @@ extension FinampSettingsProviderSelectors on StreamProvider<FinampSettings> {
       finampSettingsProvider.select(
         (value) => value.requireValue.clientCertificate,
       );
+  ProviderListenable<bool> get cacheStreamedTracks => finampSettingsProvider
+      .select((value) => value.requireValue.cacheStreamedTracks);
+  ProviderListenable<int> get maxCacheSizeMegabytes => finampSettingsProvider
+      .select((value) => value.requireValue.maxCacheSizeMegabytes);
+  ProviderListenable<String> get listenBrainzToken => finampSettingsProvider
+      .select((value) => value.requireValue.listenBrainzToken);
+  ProviderListenable<String> get lastFmApiKey =>
+      finampSettingsProvider.select((value) => value.requireValue.lastFmApiKey);
+  ProviderListenable<String> get lastFmApiSecret => finampSettingsProvider
+      .select((value) => value.requireValue.lastFmApiSecret);
+  ProviderListenable<String> get lastFmSessionKey => finampSettingsProvider
+      .select((value) => value.requireValue.lastFmSessionKey);
+  ProviderListenable<String> get lastFmUsername => finampSettingsProvider
+      .select((value) => value.requireValue.lastFmUsername);
+  ProviderListenable<bool> get uploaderEnabled => finampSettingsProvider.select(
+    (value) => value.requireValue.uploaderEnabled,
+  );
+  ProviderListenable<String> get uploaderUrl =>
+      finampSettingsProvider.select((value) => value.requireValue.uploaderUrl);
+  ProviderListenable<String> get uploaderToken => finampSettingsProvider.select(
+    (value) => value.requireValue.uploaderToken,
+  );
+  ProviderListenable<String> get uploaderNetworkPolicy => finampSettingsProvider
+      .select((value) => value.requireValue.uploaderNetworkPolicy);
+  ProviderListenable<String> get interfaceMode => finampSettingsProvider.select(
+    (value) => value.requireValue.interfaceMode,
+  );
+  ProviderListenable<bool> get autoRadioEnabled => finampSettingsProvider
+      .select((value) => value.requireValue.autoRadioEnabled);
+  ProviderListenable<int> get crossfadeSeconds => finampSettingsProvider.select(
+    (value) => value.requireValue.crossfadeSeconds,
+  );
+  ProviderListenable<bool> get visualizerEnabled => finampSettingsProvider
+      .select((value) => value.requireValue.visualizerEnabled);
+  ProviderListenable<int> get visualizerBins => finampSettingsProvider.select(
+    (value) => value.requireValue.visualizerBins,
+  );
+  ProviderListenable<int> get visualizerFps => finampSettingsProvider.select(
+    (value) => value.requireValue.visualizerFps,
+  );
+  ProviderListenable<double> get visualizerSmoothing => finampSettingsProvider
+      .select((value) => value.requireValue.visualizerSmoothing);
+  ProviderListenable<double> get visualizerScale => finampSettingsProvider
+      .select((value) => value.requireValue.visualizerScale);
+  ProviderListenable<double> get visualizerHeightFactor =>
+      finampSettingsProvider.select(
+        (value) => value.requireValue.visualizerHeightFactor,
+      );
+  ProviderListenable<double> get visualizerBottomOpacity =>
+      finampSettingsProvider.select(
+        (value) => value.requireValue.visualizerBottomOpacity,
+      );
+  ProviderListenable<double> get visualizerTopOpacity => finampSettingsProvider
+      .select((value) => value.requireValue.visualizerTopOpacity);
+  ProviderListenable<bool> get visualizerUseSplines => finampSettingsProvider
+      .select((value) => value.requireValue.visualizerUseSplines);
+  ProviderListenable<double> get visualizerStrokeWidth => finampSettingsProvider
+      .select((value) => value.requireValue.visualizerStrokeWidth);
+  ProviderListenable<bool> get visualizerFillEnabled => finampSettingsProvider
+      .select((value) => value.requireValue.visualizerFillEnabled);
+  ProviderListenable<double> get visualizerMinHz => finampSettingsProvider
+      .select((value) => value.requireValue.visualizerMinHz);
+  ProviderListenable<double> get visualizerMaxHz => finampSettingsProvider
+      .select((value) => value.requireValue.visualizerMaxHz);
+  ProviderListenable<double> get visualizerDbFloor => finampSettingsProvider
+      .select((value) => value.requireValue.visualizerDbFloor);
+  ProviderListenable<double> get visualizerDbCeiling => finampSettingsProvider
+      .select((value) => value.requireValue.visualizerDbCeiling);
+  ProviderListenable<bool> get visualizerLogScale => finampSettingsProvider
+      .select((value) => value.requireValue.visualizerLogScale);
   ProviderListenable<DownloadProfile> get downloadTranscodingProfile =>
       finampSettingsProvider.select(
         (value) => value.requireValue.downloadTranscodingProfile,

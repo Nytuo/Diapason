@@ -1,6 +1,6 @@
-import 'package:finamp/components/AlbumScreen/track_list_tile.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/services/datetime_helper.dart';
+import 'package:diapason/components/AlbumScreen/track_list_tile.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/datetime_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 

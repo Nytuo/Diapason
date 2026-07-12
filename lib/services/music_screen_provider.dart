@@ -1,9 +1,12 @@
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/services/backends/backend_registry.dart';
+import 'package:diapason/services/backends/jellyfin_backend.dart';
 import 'dart:async';
 
 import 'package:collection/collection.dart';
-import 'package:finamp/extensions/list.dart';
-import 'package:finamp/models/music_models.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
+import 'package:diapason/extensions/list.dart';
+import 'package:diapason/models/music_models.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
@@ -270,8 +273,6 @@ Future<List<BaseItemDto>?> loadHomeSectionItems(
   required int startIndex,
   required int limit,
 }) async {
-  final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
-
   if (ref.watch(finampSettingsProvider.isOffline)) {
     return loadHomeSectionItemsOffline(ref: ref, request: request, startIndex: startIndex, limit: limit);
   }
@@ -280,13 +281,13 @@ Future<List<BaseItemDto>?> loadHomeSectionItems(
   if (request.library == allLibraryPlaceholder) {
     libraryId = null;
   } else if (request.library == currentLibraryPlaceholder) {
-    final nullableLibraryId = ref.watch<BaseItemId?>(
-      FinampUserHelper.finampCurrentUserProvider.select((value) => value?.currentView?.id),
-    );
-    if (nullableLibraryId == null) {
+    final user = ref.watch(FinampUserHelper.finampCurrentUserProvider);
+    if (user == null) {
+      libraryId = null;
+    } else if (user.currentView == null) {
       return [];
     } else {
-      libraryId = nullableLibraryId;
+      libraryId = user.currentView!.id;
     }
   } else {
     libraryId = request.library as BaseItemId;
@@ -303,35 +304,18 @@ Future<List<BaseItemDto>?> loadHomeSectionItems(
 
   final genreFilter = request.sortConfig.filters.firstWhereOrNull((x) => x.type == ItemFilterType.genreFilter);
   final searchFilter = request.sortConfig.filters.firstWhereOrNull((x) => x.type == ItemFilterType.searchTerm);
-  return jellyfinApiHelper.getItems(
+
+  return GetIt.instance<AggregateBackend>().getItems(
     libraryFilter: library?.id,
     parentItem: request.tab == ContentType.playlists ? null : library,
     includeItemTypes: [request.tab.itemType?.jellyfinName].join(","),
     sortBy: request.sortConfig.sortBy.jellyfinName(request.tab),
     sortOrder: request.sortConfig.sortOrder.toString(),
     searchTerm: searchFilter?.extraString.trim(),
-    filters: request.sortConfig.filters
-        .map(
-          (filter) => switch (filter.type) {
-            ItemFilterType.isFavorite => "IsFavorite",
-            ItemFilterType.isFullyDownloaded => null, // only applicable for offline mode
-            // ItemFilterType.startsWithCharacter => "NameStartsWith: ${filter.value}",
-            ItemFilterType.startsWithCharacter =>
-              throw UnimplementedError(), //TODO properly handle the "NameStartsWith" filter in the API helper
-            ItemFilterType.genreFilter => null,
-            ItemFilterType.searchTerm => null,
-            ItemFilterType.isUnplayed => "IsUnplayed",
-          },
-        )
-        .nonNulls
-        .join(","),
+    filters: _jellyfinFilters(request),
     startIndex: request.sortConfig.sortBy == SortBy.random ? 0 : startIndex,
     limit: limit,
     isFavorite: JellyfinApiHelper.getIsFavoriteFilter(request.tab, request.sortConfig.filters),
-    //(widget.tabContentType.itemType == BaseItemDtoType.genre &&
-    //    sortAndFilterConfig.filters.any((filter) => filter.type == ItemFilterType.isFavorite))
-    //     ? true
-    //    : null,
     artistType: switch (request.tab) {
       ContentType.albumArtists => ArtistType.albumArtist,
       ContentType.performingArtists => ArtistType.artist,
@@ -340,6 +324,21 @@ Future<List<BaseItemDto>?> loadHomeSectionItems(
     genreFilter: genreFilter?.extraBaseItem.id,
   );
 }
+
+String _jellyfinFilters(MusicScreenPlayable request) => request.sortConfig.filters
+    .map(
+      (filter) => switch (filter.type) {
+        ItemFilterType.isFavorite => "IsFavorite",
+        ItemFilterType.isFullyDownloaded => null, // only applicable for offline mode
+        ItemFilterType.startsWithCharacter =>
+          throw UnimplementedError(), //TODO properly handle the "NameStartsWith" filter in the API helper
+        ItemFilterType.genreFilter => null,
+        ItemFilterType.searchTerm => null,
+        ItemFilterType.isUnplayed => "IsUnplayed",
+      },
+    )
+    .nonNulls
+    .join(",");
 
 Future<List<BaseItemDto>?> loadHomeSectionItemsOffline({
   required Ref ref,
@@ -610,6 +609,9 @@ Future<List<BaseItemDto>?> getJellyfinCollection(
     );
     return stubs.map((x) => x.baseItem).nonNulls.toList();
   } else {
+    if (GetIt.instance<BackendRegistry>().forItem(collection) is! JellyfinBackend) {
+      return const [];
+    }
     return GetIt.instance<JellyfinApiHelper>().getItems(
       parentItem: collection,
       recursive: false, //!!! prevent loading tracks and albums from inside the collection items

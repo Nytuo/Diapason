@@ -1,19 +1,19 @@
 import 'dart:io';
 
-import 'package:finamp/components/AlbumScreen/downloaded_indicator.dart';
-import 'package:finamp/components/album_image.dart';
-import 'package:finamp/components/favorite_button.dart';
-import 'package:finamp/components/print_duration.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/current_album_image_provider.dart';
-import 'package:finamp/services/datetime_helper.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/generate_subtitle.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
-import 'package:finamp/services/theme_provider.dart';
+import 'package:diapason/components/AlbumScreen/downloaded_indicator.dart';
+import 'package:diapason/components/album_image.dart';
+import 'package:diapason/components/favorite_button.dart';
+import 'package:diapason/components/print_duration.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/current_album_image_provider.dart';
+import 'package:diapason/services/datetime_helper.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/generate_subtitle.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
+import 'package:diapason/services/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -57,7 +57,7 @@ class ItemCollectionListTile extends ConsumerWidget {
           )
         : null;
     final itemDownloadStub = switch (itemType) {
-      BaseItemDtoType.artist || BaseItemDtoType.genre => DownloadStub.fromFinampCollection(
+      BaseItemDtoType.artist || BaseItemDtoType.genre when library != null => DownloadStub.fromFinampCollection(
         FinampCollection(type: FinampCollectionType.collectionWithLibraryFilter, library: library, item: item),
       ),
       BaseItemDtoType.track => DownloadStub.fromItem(type: DownloadItemType.track, item: item),

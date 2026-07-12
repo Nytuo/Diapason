@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
-import 'package:finamp/components/Buttons/cta_medium.dart';
-import 'package:finamp/components/PlayerScreen/queue_source_helper.dart';
-import 'package:finamp/components/album_image.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/services/downloads_service.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
+import 'package:diapason/components/Buttons/cta_medium.dart';
+import 'package:diapason/components/PlayerScreen/queue_source_helper.dart';
+import 'package:diapason/components/album_image.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/services/downloads_service.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -123,15 +123,18 @@ class _AddToPlaylistListState extends State<AddToPlaylistList> {
                   var newId = await dialogResult.$1;
                   // Give the server time to calculate an initial playlist image
                   await Future<void>.delayed(const Duration(seconds: 1));
-                  final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
-                  var playlist = await jellyfinApiHelper.getItemById(newId);
+                  final aggregateBackend = GetIt.instance<AggregateBackend>();
+                  var playlist = await aggregateBackend.getItemById(newId);
+                  if (playlist == null) {
+                    throw Exception("Couldn't find the playlist that was just created.");
+                  }
 
                   String? trackId;
                   if (widget.itemsToAdd.length == 1 &&
                       BaseItemDtoType.fromItem(widget.itemsToAdd.first) == BaseItemDtoType.track) {
-                    var playlistItems = await jellyfinApiHelper.getItems(parentItem: playlist, fields: "");
+                    var playlistItems = await aggregateBackend.getItems(parentItem: playlist);
                     trackId = playlistItems
-                        ?.firstWhere((element) => element.id == widget.itemsToAdd.first.id)
+                        .firstWhere((element) => element.id == widget.itemsToAdd.first.id)
                         .playlistItemId;
                   } else {
                     // Provide a fake playlist id for playlists created with a non-track initial item.
@@ -235,14 +238,13 @@ class _AddToPlaylistTileState extends ConsumerState<AddToPlaylistTile> {
           }
           // If playlistItemId is null, we need to fetch from the server before we can remove
           if (playlistItemId == null) {
-            final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
-            var newItems = await jellyfinApiHelper.getItems(parentItem: widget.playlist, fields: "");
+            var newItems = await GetIt.instance<AggregateBackend>().getItems(parentItem: widget.playlist);
 
-            playlistItemId = newItems?.firstWhereOrNull((x) => x.id == widget.itemsToBeAdded.first.id)?.playlistItemId;
+            playlistItemId = newItems.firstWhereOrNull((x) => x.id == widget.itemsToBeAdded.first.id)?.playlistItemId;
             if (playlistItemId == null) {
               // We were already not part of the playlist,. so removal is complete
               setState(() {
-                childCount = newItems?.length ?? 0;
+                childCount = newItems.length;
                 itemIsIncluded = false;
               });
               return false;
@@ -299,13 +301,10 @@ class _AddToPlaylistTileState extends ConsumerState<AddToPlaylistTile> {
           }
           bool added = await addItemsToPlaylist(context, widget.itemsToBeAdded, widget.playlist);
           if (added) {
-            final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
-            var newItems = await jellyfinApiHelper.getItems(parentItem: widget.playlist, fields: "");
+            var newItems = await GetIt.instance<AggregateBackend>().getItems(parentItem: widget.playlist);
             setState(() {
-              childCount = newItems?.length ?? 0;
-              playlistItemId = newItems
-                  ?.firstWhereOrNull((x) => x.id == widget.itemsToBeAdded.first.id)
-                  ?.playlistItemId;
+              childCount = newItems.length;
+              playlistItemId = newItems.firstWhereOrNull((x) => x.id == widget.itemsToBeAdded.first.id)?.playlistItemId;
               itemIsIncluded = true;
             });
             return true; // this is called before the state is updated

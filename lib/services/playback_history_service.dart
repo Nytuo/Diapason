@@ -1,12 +1,19 @@
+import 'package:diapason/models/music_slices.dart';
+import 'package:diapason/services/discovery/auto_radio_service.dart';
+import 'package:diapason/services/stats/stats_service.dart';
+import 'package:diapason/services/scrobbling/scrobble_service.dart';
 import 'dart:async';
 import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
-import 'package:finamp/services/discord_rpc.dart';
-import 'package:finamp/services/music_player_background_task.dart';
-import 'package:finamp/services/playon_service.dart';
-import 'package:finamp/services/queue_service.dart';
-import 'package:finamp/utils/platform_helper.dart';
+import 'package:diapason/services/backends/backend_registry.dart';
+import 'package:diapason/services/backends/jellyfin_backend.dart';
+import 'package:diapason/services/backends/media_backend.dart';
+import 'package:diapason/services/discord_rpc.dart';
+import 'package:diapason/services/music_player_background_task.dart';
+import 'package:diapason/services/playon_service.dart';
+import 'package:diapason/services/queue_service.dart';
+import 'package:diapason/utils/platform_helper.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:rxdart/rxdart.dart';
@@ -59,10 +66,11 @@ class PlaybackHistoryService {
     void onPlaybackStopped() {
       _playbackHistoryServiceLogger.info("Handling playback stop event");
       reportPlaybackStopped();
+      unawaited(_extendWithAutoRadio());
       // stop periodic background updates if playback has ended
       _periodicUpdateTimer?.cancel();
       if (isDesktop) {
-        WindowManager.instance.setTitle("Finamp");
+        WindowManager.instance.setTitle("Diapason");
       }
       return;
     }
@@ -101,7 +109,7 @@ class PlaybackHistoryService {
             currentIndex < 0 ||
             currentIndex >= _audioService.sequenceState.effectiveSequence.length) {
           if (isDesktop) {
-            WindowManager.instance.setTitle("Finamp");
+            WindowManager.instance.setTitle("Diapason");
           }
           return;
         }
@@ -109,7 +117,7 @@ class PlaybackHistoryService {
           currentItem = item;
         } else {
           if (isDesktop) {
-            WindowManager.instance.setTitle("Finamp");
+            WindowManager.instance.setTitle("Diapason");
           }
           return;
         }
@@ -384,7 +392,7 @@ class PlaybackHistoryService {
         _resetPeriodicUpdates(); // delay next periodic update to avoid race conditions with old data
         //!!! allow reporting the same track here to skipping after looping a single track is reported correctly
         _lastReportedTrackStopped = previousItem;
-        await _jellyfinApiHelper.stopPlaybackProgress(previousTrackPlaybackData);
+        await _reportStopped(previousItem, previousTrackPlaybackData);
         //TODO also mark the track as played in the user data: https://api.jellyfin.org/openapi/api.html#tag/Playstate/operation/MarkPlayedItem
       } catch (e) {
         _playbackHistoryServiceLogger.warning(e);
@@ -399,7 +407,7 @@ class PlaybackHistoryService {
         _resetPeriodicUpdates(); // delay next periodic update to avoid race conditions with old data
         //!!! allow reporting the same track here to ensure loop one reports correctly
         _lastReportedTrackStarted = _currentTrack?.item;
-        await _jellyfinApiHelper.reportPlaybackStart(newTrackplaybackData);
+        await _reportStart(currentItem, newTrackplaybackData);
       } catch (e) {
         _playbackHistoryServiceLogger.warning(e);
         // don't log start event to offline listen log helper, as only stop events are logged
@@ -431,7 +439,7 @@ class PlaybackHistoryService {
           _resetPeriodicUpdates(); // delay next periodic update to avoid race conditions with old data
           if (_lastReportedTrackStopped?.id != currentItem.id) {
             _lastReportedTrackStopped = currentItem;
-            await _jellyfinApiHelper.stopPlaybackProgress(playbackData);
+            await _reportStopped(currentItem, playbackData);
           }
         } catch (e) {
           _playbackHistoryServiceLogger.warning(e);
@@ -459,6 +467,45 @@ class PlaybackHistoryService {
     );
   }
 
+  Future<void> _extendWithAutoRadio() async {
+    final autoRadio = GetIt.instance<AutoRadioService>();
+    if (!autoRadio.enabled) return;
+
+    final seed = _currentTrack?.item.baseItem;
+    if (seed == null) return;
+
+    try {
+      final queue = _queueService.getQueue();
+      final alreadyQueued = queue.queue
+          .followedBy(queue.nextUp)
+          .followedBy(queue.previousTracks)
+          .map((item) => item.baseItem?.id.raw)
+          .nonNulls
+          .toSet();
+
+      final tracks = await autoRadio.extend(seed, exclude: alreadyQueued);
+      if (tracks.isEmpty) return;
+
+      await _queueService.addToQueue(
+        BasePlayableSlice(
+          items: tracks,
+          startingIndex: 0,
+          shuffleState: SliceShuffleState.linear,
+          source: QueueItemSource(
+            type: QueueItemSourceType.unknown,
+            name: const QueueItemSourceName(
+              type: QueueItemSourceNameType.preTranslated,
+              pretranslatedName: "Auto-Radio",
+            ),
+            id: seed.id,
+          ),
+        ),
+      );
+    } catch (e) {
+      _playbackHistoryServiceLogger.warning("Auto-radio could not extend the queue: $e");
+    }
+  }
+
   Future<void> reportPlaybackStopped() async {
     final playbackInfo = generateGenericPlaybackProgressInfo();
     if (playbackInfo != null) {
@@ -470,14 +517,70 @@ class PlaybackHistoryService {
           if (FinampSettingsHelper.finampSettings.isOffline) {
             await _offlineListenLogHelper.logOfflineListen(_currentTrack!.item.item);
           } else {
-            await _jellyfinApiHelper.stopPlaybackProgress(playbackInfo);
+            await _reportStopped(_currentTrack?.item, playbackInfo);
           }
         }
       } catch (e) {
         _playbackHistoryServiceLogger.warning(e);
         await _offlineListenLogHelper.logOfflineListen(_currentTrack!.item.item, playbackStopTime);
       }
+
+      final stoppedTrack = _currentTrack?.item.baseItem;
+      if (stoppedTrack != null) {
+        final played = Duration(microseconds: (playbackInfo.positionTicks ?? 0) ~/ 10);
+        final startedAt = playbackStopTime.subtract(played);
+
+        await GetIt.instance<ScrobbleService>().scrobble(stoppedTrack, played: played, startedAt: startedAt);
+
+        await GetIt.instance<StatsService>().record(stoppedTrack, played: played, startedAt: startedAt);
+      }
+
       await DiscordRpc.updateRPC();
+    }
+  }
+
+  MediaBackend? _backendFor(FinampQueueItem? item) {
+    final baseItem = item?.baseItem;
+    if (baseItem == null) return null;
+    return GetIt.instance<BackendRegistry>().forItem(baseItem);
+  }
+
+  Duration _positionOf(jellyfin_models.PlaybackProgressInfo info) =>
+      Duration(microseconds: (info.positionTicks ?? 0) ~/ 10);
+
+  Future<void> _reportStart(FinampQueueItem? item, jellyfin_models.PlaybackProgressInfo info) async {
+    final backend = _backendFor(item);
+    if (backend is JellyfinBackend) {
+      await _jellyfinApiHelper.reportPlaybackStart(info);
+    } else {
+      await backend?.reportPlaybackStart(item!.baseItem, playSessionId: info.playSessionId);
+    }
+  }
+
+  Future<void> _reportProgress(FinampQueueItem? item, jellyfin_models.PlaybackProgressInfo info) async {
+    final backend = _backendFor(item);
+    if (backend is JellyfinBackend) {
+      await _jellyfinApiHelper.updatePlaybackProgress(info);
+    } else {
+      await backend?.reportPlaybackProgress(
+        item!.baseItem,
+        position: _positionOf(info),
+        isPaused: info.isPaused,
+        playSessionId: info.playSessionId,
+      );
+    }
+  }
+
+  Future<void> _reportStopped(FinampQueueItem? item, jellyfin_models.PlaybackProgressInfo info) async {
+    final backend = _backendFor(item);
+    if (backend is JellyfinBackend) {
+      await _jellyfinApiHelper.stopPlaybackProgress(info);
+    } else {
+      await backend?.reportPlaybackStopped(
+        item!.baseItem,
+        position: _positionOf(info),
+        playSessionId: info.playSessionId,
+      );
     }
   }
 
@@ -492,9 +595,12 @@ class PlaybackHistoryService {
         if (_lastReportedTrackStarted?.id != _currentTrack?.item.id) {
           // _playbackStartNotYetReported = false;
           _lastReportedTrackStarted = _currentTrack?.item;
-          await _jellyfinApiHelper.reportPlaybackStart(playbackInfo);
+          await _reportStart(_currentTrack?.item, playbackInfo);
+          if (_currentTrack?.item.baseItem case final startedTrack?) {
+            await GetIt.instance<ScrobbleService>().nowPlaying(startedTrack);
+          }
         } else {
-          await _jellyfinApiHelper.updatePlaybackProgress(playbackInfo);
+          await _reportProgress(_currentTrack?.item, playbackInfo);
         }
       } catch (e) {
         _playbackHistoryServiceLogger.warning(e);
@@ -505,6 +611,9 @@ class PlaybackHistoryService {
 
   Future<void> _updateQueueInfo() async {
     if (FinampSettingsHelper.finampSettings.isOffline) {
+      return;
+    }
+    if (_backendFor(_currentTrack?.item) is! JellyfinBackend) {
       return;
     }
     final playbackInfo = generateGenericPlaybackProgressInfo(includeNowPlayingQueue: true, force: true);

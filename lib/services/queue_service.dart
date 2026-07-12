@@ -1,3 +1,4 @@
+import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
@@ -5,22 +6,22 @@ import 'dart:math';
 import 'package:app_links/app_links.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:collection/collection.dart';
-import 'package:finamp/components/PlayerScreen/queue_source_helper.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/components/now_playing_bar.dart';
-import 'package:finamp/gen/assets.gen.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart' as jellyfin_models;
-import 'package:finamp/services/album_image_provider.dart';
-import 'package:finamp/services/current_album_image_provider.dart';
-import 'package:finamp/services/downloads_service.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
-import 'package:finamp/services/music_player_background_task.dart';
-import 'package:finamp/services/playback_history_service.dart';
-import 'package:finamp/services/radio_service_helper.dart';
+import 'package:diapason/components/PlayerScreen/queue_source_helper.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/components/now_playing_bar.dart';
+import 'package:diapason/gen/assets.gen.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart' as jellyfin_models;
+import 'package:diapason/services/album_image_provider.dart';
+import 'package:diapason/services/current_album_image_provider.dart';
+import 'package:diapason/services/downloads_service.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
+import 'package:diapason/services/music_player_background_task.dart';
+import 'package:diapason/services/playback_history_service.dart';
+import 'package:diapason/services/radio_service_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
@@ -319,7 +320,7 @@ class QueueService {
           .toList(),
     );
     // _audioHandler.queueTitle.add(_order.originalSource.name.toString());
-    _audioHandler.queueTitle.add("Finamp");
+    _audioHandler.queueTitle.add("Diapason");
 
     if (_savedQueueState == SavedQueueState.saving) {
       _saveCurrentQueue(withPosition: false);
@@ -500,9 +501,14 @@ class QueueService {
           }
         }
       } else {
-        List<jellyfin_models.BaseItemDto> itemList = await _jellyfinApiHelper.getItems(itemIds: missingIds) ?? [];
-        for (var d2 in itemList) {
-          idMap[d2.id] = d2;
+        final aggregate = GetIt.instance<AggregateBackend>();
+        final fetched = await Future.wait(missingIds.map((id) async => (id, await aggregate.getItemById(id))));
+        for (final (id, item) in fetched) {
+          if (item != null) {
+            idMap[id] = item;
+          } else {
+            _queueServiceLogger.warning("Track '$id' is in the saved queue but its source no longer has it.");
+          }
         }
       }
 
@@ -1397,21 +1403,36 @@ class QueueService {
     }
   }
 
+  /// How many titles of the queue to spell out in the log. A shuffled library
+  /// runs to thousands of tracks, and this is written on every queue change.
+  static const _maxLoggedQueueTitles = 25;
+
   void _logQueues({String message = ""}) {
     // generate string for `_queue`
-    String queueString = "";
+    final queueBuffer = StringBuffer();
+    var logged = 0;
+
+    void writeTitle(String? title) {
+      if (logged++ >= _maxLoggedQueueTitles) return;
+      queueBuffer.write("$title, ");
+    }
+
     for (FinampQueueItem queueItem in _queuePreviousTracks) {
-      queueString += "${queueItem.item.title}, ";
+      writeTitle(queueItem.item.title);
     }
-    queueString += "[[${_currentTrack?.item.title}]], ";
-    queueString += "{";
+    queueBuffer.write("[[${_currentTrack?.item.title}]], ");
+    queueBuffer.write("{");
     for (FinampQueueItem queueItem in _queueNextUp) {
-      queueString += "${queueItem.item.title}, ";
+      writeTitle(queueItem.item.title);
     }
-    queueString += "} ";
+    queueBuffer.write("} ");
     for (FinampQueueItem queueItem in _queue) {
-      queueString += "${queueItem.item.title}, ";
+      writeTitle(queueItem.item.title);
     }
+    if (logged > _maxLoggedQueueTitles) {
+      queueBuffer.write("... and ${logged - _maxLoggedQueueTitles} more");
+    }
+    final queueString = queueBuffer.toString();
 
     // generate string for `_queueAudioSource`
     // String queueAudioSourceString = "";

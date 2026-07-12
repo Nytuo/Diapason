@@ -1,11 +1,25 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Android TV: leanback is what a TV provides, and touch is what it lacks.
+       Both are declared not-required so the same APK still installs on phones. -->
+  <uses-feature android:name="android.software.leanback" android:required="false"/>
+  <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
+  <!-- Wear OS -->
+  <uses-feature android:name="android.hardware.type.watch" android:required="false"/>
+
   <uses-permission android:name="android.permission.INTERNET"/>
+  <!-- Diapason Connect: mDNS/Bonjour discovery over the local network. -->
+  <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
   <uses-permission android:name="android.permission.WAKE_LOCK"/>
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
+  <!-- The platform Visualizer effect is gated behind RECORD_AUDIO even when it only reads our own
+       audio session. Requested at runtime, and only when the user turns the visualizer on. -->
+  <uses-permission android:name="android.permission.RECORD_AUDIO"/>
   <!-- io.flutter.app.FlutterApplication is an android.app.Application that
          calls FlutterMain.startInitialization(this); in its onCreate method.
          In most cases you can leave this as-is, but you if you want to provide
@@ -24,6 +38,7 @@
     android:fullBackupContent="@xml/backup_rules_legacy"
     android:dataExtractionRules="@xml/backup_rules"
     android:networkSecurityConfig="@xml/network_security_config"
+    android:banner="@drawable/tv_banner"
     android:enableOnBackInvokedCallback="true"
   >
     <activity android:name=".MainActivity" android:launchMode="singleTop" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize" android:exported="true">
@@ -47,7 +62,13 @@
           <category android:name="android.intent.category.BROWSABLE" />
           <!-- Add optional android:host to distinguish your app
                 from others in case of conflicting scheme name -->
-          <data android:scheme="finamp" />
+          <data android:scheme="diapason" />
+      </intent-filter>
+
+      <!-- Android TV's launcher only lists activities with this category. -->
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
       </intent-filter>
 
       <intent-filter>
@@ -97,6 +118,25 @@
     <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
     <meta-data android:name="flutterEmbedding" android:value="2" />
+
+    <!-- Google Cast: the SDK looks up its options through this provider. The
+         flutter_chrome_cast plugin ships one, so we point at it. -->
+    <meta-data
+        android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
+        android:value="com.felnanuke.google_cast.GoogleCastOptionsProvider" />
+
+    <!-- Home-screen widget. It renders what WidgetSyncService writes; it cannot
+         call into Flutter itself. -->
+    <receiver
+        android:name=".DiapasonWidgetProvider"
+        android:exported="false">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+          android:name="android.appwidget.provider"
+          android:resource="@xml/diapason_widget_info" />
+    </receiver>
   </application>
 
   <!-- <uses-feature

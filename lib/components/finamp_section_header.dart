@@ -1,6 +1,6 @@
-import 'package:finamp/components/AlbumScreen/track_list_tile.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
+import 'package:diapason/components/AlbumScreen/track_list_tile.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';

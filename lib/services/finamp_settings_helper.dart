@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
-import 'package:finamp/components/confirmation_prompt_dialog.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
+import 'package:diapason/components/confirmation_prompt_dialog.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -76,6 +76,29 @@ class FinampSettingsHelper {
     finampSettingsTemp.suppressPlayerPadding = DefaultSettings.suppressPlayerPadding;
     finampSettingsTemp.prioritizeCoverFactor = DefaultSettings.prioritizeCoverFactor;
     finampSettingsTemp.hidePlayerBottomActions = DefaultSettings.hidePlayerBottomActions;
+
+    Hive.box<FinampSettings>("FinampSettings").put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void resetVisualizerSettings() {
+    FinampSettings finampSettingsTemp = finampSettings;
+
+    finampSettingsTemp.visualizerEnabled = DefaultSettings.visualizerEnabled;
+    finampSettingsTemp.visualizerBins = DefaultSettings.visualizerBins;
+    finampSettingsTemp.visualizerFps = DefaultSettings.visualizerFps;
+    finampSettingsTemp.visualizerSmoothing = DefaultSettings.visualizerSmoothing;
+    finampSettingsTemp.visualizerScale = DefaultSettings.visualizerScale;
+    finampSettingsTemp.visualizerHeightFactor = DefaultSettings.visualizerHeightFactor;
+    finampSettingsTemp.visualizerBottomOpacity = DefaultSettings.visualizerBottomOpacity;
+    finampSettingsTemp.visualizerTopOpacity = DefaultSettings.visualizerTopOpacity;
+    finampSettingsTemp.visualizerUseSplines = DefaultSettings.visualizerUseSplines;
+    finampSettingsTemp.visualizerStrokeWidth = DefaultSettings.visualizerStrokeWidth;
+    finampSettingsTemp.visualizerFillEnabled = DefaultSettings.visualizerFillEnabled;
+    finampSettingsTemp.visualizerMinHz = DefaultSettings.visualizerMinHz;
+    finampSettingsTemp.visualizerMaxHz = DefaultSettings.visualizerMaxHz;
+    finampSettingsTemp.visualizerDbFloor = DefaultSettings.visualizerDbFloor;
+    finampSettingsTemp.visualizerDbCeiling = DefaultSettings.visualizerDbCeiling;
+    finampSettingsTemp.visualizerLogScale = DefaultSettings.visualizerLogScale;
 
     Hive.box<FinampSettings>("FinampSettings").put("FinampSettings", finampSettingsTemp);
   }

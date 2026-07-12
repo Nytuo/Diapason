@@ -1,18 +1,19 @@
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'dart:io';
 
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:finamp/components/AudioServiceSettingsScreen/buffer_duration_list_tile.dart';
-import 'package:finamp/components/finamp_app_bar_back_button.dart';
-import 'package:finamp/components/AudioServiceSettingsScreen/loadQueueOnStartup_selector.dart';
-import 'package:finamp/components/AudioServiceSettingsScreen/stop_foreground_selector.dart';
-import 'package:finamp/components/AudioServiceSettingsScreen/track_shuffle_item_count_editor.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/music_player_background_task.dart';
+import 'package:diapason/components/AudioServiceSettingsScreen/buffer_duration_list_tile.dart';
+import 'package:diapason/components/finamp_app_bar_back_button.dart';
+import 'package:diapason/components/AudioServiceSettingsScreen/loadQueueOnStartup_selector.dart';
+import 'package:diapason/components/AudioServiceSettingsScreen/stop_foreground_selector.dart';
+import 'package:diapason/components/AudioServiceSettingsScreen/track_shuffle_item_count_editor.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/music_player_background_task.dart';
 
 class AudioServiceSettingsScreen extends StatefulWidget {
   const AudioServiceSettingsScreen({super.key});
@@ -39,6 +40,7 @@ class _AudioServiceSettingsScreenState extends State<AudioServiceSettingsScreen>
       body: ListView(
         padding: const EdgeInsets.only(bottom: 200.0),
         children: [
+          const _CrossfadeSelector(),
           if (Platform.isAndroid) const StopForegroundSelector(),
           if (Platform.isAndroid) const EnableDuckingOnInterruptionsToggle(),
           if (Platform.isAndroid) const ForceAudioOffloadingOnAndroidToggle(),
@@ -279,6 +281,33 @@ class ForceAudioOffloadingOnAndroidToggle extends ConsumerWidget {
       onChanged: (newValue) async {
         FinampSetters.setForceAudioOffloadingOnAndroid(newValue);
       },
+    );
+  }
+}
+
+class _CrossfadeSelector extends ConsumerWidget {
+  const _CrossfadeSelector();
+
+  static const _options = [0, 2, 4, 6, 8, 12];
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final seconds = ref.watch(finampSettingsProvider.crossfadeSeconds);
+
+    return ListTile(
+      leading: const Icon(TablerIcons.transition_right),
+      title: const Text("Crossfade"),
+      subtitle: Text(seconds == 0 ? "Off" : "Overlap $seconds seconds into the next track"),
+      trailing: DropdownButton<int>(
+        value: _options.contains(seconds) ? seconds : 0,
+        onChanged: (value) {
+          if (value != null) FinampSetters.setCrossfadeSeconds(value);
+        },
+        items: [
+          for (final option in _options)
+            DropdownMenuItem(value: option, child: Text(option == 0 ? "Off" : "${option}s")),
+        ],
+      ),
     );
   }
 }

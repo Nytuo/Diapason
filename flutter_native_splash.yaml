@@ -8,7 +8,7 @@ flutter_native_splash:
 
   color: "#FCFDFE"
   color_dark: "#101315"
-  image: assets/icon/icon_foreground.png
+  image: images/diapason.png
   image_ios: assets/icon/splash_ios_light.png
   android_gravity: center
   ios_content_mode: center
@@ -22,4 +22,4 @@ flutter_native_splash:
   android_12:
     color: "#FCFDFE"
     color_dark: "#101315"
-    image: assets/icon/icon_foreground.png
+    image: images/diapason.png

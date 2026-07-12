@@ -1,9 +1,10 @@
+import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'dart:async';
 
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/downloads_service.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/downloads_service.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -27,7 +28,7 @@ Future<BaseItemDto?> itemById(Ref ref, BaseItemId baseItemId) async {
       baseItem = (await downloadsService.getCollectionInfo(id: baseItemId))?.baseItem;
       baseItem ??= (await downloadsService.getTrackInfo(id: baseItemId))?.baseItem;
     } else {
-      baseItem = await jellyfinApiHelper.getItemById(baseItemId);
+      baseItem = await GetIt.instance<AggregateBackend>().getItemById(baseItemId);
     }
 
     return baseItem;

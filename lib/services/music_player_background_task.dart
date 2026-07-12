@@ -5,16 +5,20 @@ import 'dart:math';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart' as jellyfin_models;
-import 'package:finamp/services/current_track_metadata_provider.dart';
-import 'package:finamp/services/favorite_provider.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/playback_history_service.dart';
-import 'package:finamp/services/queue_service.dart';
-import 'package:finamp/services/radio_service_helper.dart' as RadioServiceHelper;
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/media_source.dart';
+import 'package:diapason/services/stream_cache_service.dart';
+import 'package:diapason/services/youtube_service.dart';
+import 'package:diapason/services/backends/backend_registry.dart';
+import 'package:diapason/models/jellyfin_models.dart' as jellyfin_models;
+import 'package:diapason/services/current_track_metadata_provider.dart';
+import 'package:diapason/services/favorite_provider.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/playback_history_service.dart';
+import 'package:diapason/services/queue_service.dart';
+import 'package:diapason/services/radio_service_helper.dart' as RadioServiceHelper;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -131,22 +135,48 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
   AppLocalizations? _appLocalizations;
 
-  late final AudioPlayer _player;
+  late final AudioPlayer _playerA;
+  late final AudioPlayer _playerB;
+  final _activePlayerIndexSubject = BehaviorSubject<int>.seeded(0);
+  int get _activePlayerIndex => _activePlayerIndexSubject.value;
+  AudioPlayer get _player => _activePlayerIndex == 0 ? _playerA : _playerB;
+  AudioPlayer get _standbyPlayer => _activePlayerIndex == 0 ? _playerB : _playerA;
+
+  Stream<PlaybackEvent> get _activePlaybackEventStream =>
+      _activePlayerIndexSubject.switchMap((i) => (i == 0 ? _playerA : _playerB).playbackEventStream);
+  Stream<PlayerException> get _activeErrorStream =>
+      _activePlayerIndexSubject.switchMap((i) => (i == 0 ? _playerA : _playerB).errorStream);
+  Stream<Duration> get _activePositionStream =>
+      _activePlayerIndexSubject.switchMap((i) => (i == 0 ? _playerA : _playerB).positionStream);
+  Stream<ProcessingState> get _activeProcessingStateStream =>
+      _activePlayerIndexSubject.switchMap((i) => (i == 0 ? _playerA : _playerB).processingStateStream);
+  Stream<int?> get _activeCurrentIndexStream =>
+      _activePlayerIndexSubject.switchMap((i) => (i == 0 ? _playerA : _playerB).currentIndexStream);
+  Stream<Duration?> get _activeDurationStream =>
+      _activePlayerIndexSubject.switchMap((i) => (i == 0 ? _playerA : _playerB).durationStream);
+
+  Stream<int?> get androidAudioSessionIdStream =>
+      _activePlayerIndexSubject.switchMap((i) => (i == 0 ? _playerA : _playerB).androidAudioSessionIdStream);
+
   late final AudioPipeline _audioPipeline;
   late final List<AndroidAudioEffect> _androidAudioEffects;
   late final List<DarwinAudioEffect> _iosAudioEffects;
-  late final AndroidLoudnessEnhancer? _loudnessEnhancerEffect;
+
+  AndroidLoudnessEnhancer? _loudnessEnhancerEffect;
 
   final _audioServiceBackgroundTaskLogger = Logger("MusicPlayerBackgroundTask");
   final _volumeNormalizationLogger = Logger("VolumeNormalization");
   final _outputLogger = Logger("Output");
 
-  /// Time window used to ignore spurious play/pause callbacks immediately
-  /// after a skip command from certain Bluetooth headsets. Behavior before this fix was that a double-tap on such headsets would trigger a skip followed by an unintended pause, because the headset sent play/pause events immediately after the skip event. With this guard, if a play/pause event is received within this window after a skip command, it will be ignored.
   static const Duration _skipPlayPauseGuardWindow = Duration(milliseconds: 50);
 
   /// Timestamp of the most recent explicit skip command (next/previous).
   DateTime? _lastSkipCommandAt;
+
+  DateTime? _lastManualSeekAt;
+  static const Duration _crossfadeSeekGuardWindow = Duration(seconds: 1);
+
+  void _markManualSeek() => _lastManualSeekAt = DateTime.now();
 
   // Init the new sleep timer with a length of 0
   // SleepTimer sleepTimer = SleepTimer(SleepTimerType.duration, 0);
@@ -163,18 +193,17 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   List<AudioSource> get audioSources => _player.audioSources;
 
   double iosBaseVolumeGainFactor = 1.0;
-  late final PlayerVolumeController _volume = PlayerVolumeController(_player);
+  late final PlayerVolumeController _volumeA;
+  late final PlayerVolumeController _volumeB;
+  PlayerVolumeController get _volume => _activePlayerIndex == 0 ? _volumeA : _volumeB;
+  PlayerVolumeController get _standbyVolume => _activePlayerIndex == 0 ? _volumeB : _volumeA;
   Duration minBufferDuration = Duration(seconds: 90);
 
   final _audioFadeStepDuration = Duration(milliseconds: 50);
   late final BehaviorSubject<FadeState> fadeState;
 
-  final outputSwitcherChannel = MethodChannel('com.unicornsonlsd.finamp/output_switcher');
+  final outputSwitcherChannel = MethodChannel('fr.nytuo.diapason/output_switcher');
 
-  /// Some Bluetooth headsets send skip and pause/play media button events in
-  /// very quick succession for a double-tap skip gesture. This guard ignores a
-  /// trailing play/pause event if it arrives right after skip, preventing an
-  /// unintended pause while still allowing normal controls outside the window.
   bool get _shouldIgnorePlayPauseAfterRecentSkip {
     final lastSkipCommandAt = _lastSkipCommandAt;
     if (lastSkipCommandAt == null) return false;
@@ -303,7 +332,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
     if (Platform.isWindows || Platform.isLinux) {
       _audioServiceBackgroundTaskLogger.info("Initializing media-kit for Windows/Linux");
-      JustAudioMediaKit.title = "Finamp";
+      JustAudioMediaKit.title = "Diapason";
       JustAudioMediaKit.prefetchPlaylist = true; // cache upcoming tracks, enable gapless playback
       JustAudioMediaKit.bufferSize = FinampSettingsHelper.finampSettings.bufferSizeMegabytes * 1024 * 1024;
       JustAudioMediaKit.ensureInitialized(linux: true, windows: true, macOS: false, iOS: false, android: false);
@@ -378,48 +407,10 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       });
     });
 
-    _player = AudioPlayer(
-      maxSkipsOnError: 0,
-      handleInterruptions: FinampSettingsHelper.finampSettings.duckOnAudioInterruption,
-      androidAudioOffloadPreferences: AndroidAudioOffloadPreferences(
-        audioOffloadMode: FinampSettingsHelper.finampSettings.forceAudioOffloadingOnAndroid
-            ? AndroidAudioOffloadMode.enabled
-            : AndroidAudioOffloadMode.disabled,
-        isGaplessSupportRequired: true,
-        isSpeedChangeSupportRequired: true,
-      ),
-      audioLoadConfiguration: AudioLoadConfiguration(
-        androidLoadControl: AndroidLoadControl(
-          targetBufferBytes: FinampSettingsHelper.finampSettings.bufferDisableSizeConstraints
-              ? null
-              : 1024 * 1024 * FinampSettingsHelper.finampSettings.bufferSizeMegabytes,
-          // minBufferDuration: FinampSettingsHelper.finampSettings.bufferDuration, //!!! there are issues with the bufferForPlaybackDuration setting, the min duration seemingly has to be smaller than that. so we're using the default
-          // it seems like the player won't fetch more than [minBufferDuration], even if the buffer isn't filled yet
-          // so if we ignore size constraints, we just set the minimum to the specified buffer size, but allow fetching even more to reduce the request frequency
-          minBufferDuration: FinampSettingsHelper.finampSettings.bufferDisableSizeConstraints
-              ? maxBufferDuration
-              : minBufferDuration,
-          maxBufferDuration:
-              // allows the player to fetch a bit more data in exchange for reduced request frequency
-              FinampSettingsHelper.finampSettings.bufferDisableSizeConstraints
-              ? (maxBufferDuration + Duration(seconds: 90))
-              : maxBufferDuration,
-          prioritizeTimeOverSizeThresholds: FinampSettingsHelper
-              .finampSettings
-              .bufferDisableSizeConstraints, // targetBufferBytes sets the absolute maximum, but if this false and maxBufferDuration is reached, buffering will end
-          bufferForPlaybackDuration: Duration(seconds: 5),
-          bufferForPlaybackAfterRebufferDuration: Duration(seconds: 10),
-        ),
-        darwinLoadControl: DarwinLoadControl(
-          // preferredForwardBufferDuration:
-          //     FinampSettingsHelper.finampSettings.bufferDuration,
-          preferredForwardBufferDuration: FinampSettingsHelper.finampSettings.bufferDisableSizeConstraints
-              ? FinampSettingsHelper.finampSettings.bufferDuration
-              : null, // let system decide
-        ),
-      ),
-      audioPipeline: _audioPipeline,
-    );
+    _playerA = _buildPlayer(audioPipeline: _audioPipeline, maxBufferDuration: maxBufferDuration);
+    _playerB = _buildPlayer(audioPipeline: AudioPipeline(), maxBufferDuration: maxBufferDuration);
+    _volumeA = PlayerVolumeController(_playerA);
+    _volumeB = PlayerVolumeController(_playerB);
 
     try {
       _loudnessEnhancerEffect?.setEnabled(FinampSettingsHelper.finampSettings.volumeNormalizationActive);
@@ -441,7 +432,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
     // Propagate all events from the audio player to AudioService clients.
     int? replayQueueIndex;
-    _player.playbackEventStream.listen((event) async {
+    _activePlaybackEventStream.listen((event) async {
       final playerSequence = _player.sequenceState.sequence;
       if (playerSequence.isNotEmpty) {
         if (event.currentIndex != replayQueueIndex) {
@@ -504,12 +495,12 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       sleepTimer?.onTrackCompleted();
     });
 
-    _player.errorStream.listen((error) {
+    _activeErrorStream.listen((error) {
       _audioServiceBackgroundTaskLogger.severe("Player error: $error", error);
     });
 
     // trigger sleep timer early if we're almost at the end of the final track
-    _player.positionStream.listen((position) {
+    _activePositionStream.listen((position) {
       if (sleepTimer?.remainingTracks == 1 &&
           ((mediaItem.value?.duration ?? Duration.zero) - position).inMilliseconds / _player.speed <=
               // even if fade out is disabled, we stop a bit early to avoid advancing to the next track
@@ -522,13 +513,182 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     });
 
     // Special processing for state transitions.
-    _player.processingStateStream.listen((event) async {
+    _activeProcessingStateStream.listen((event) async {
       if (event == ProcessingState.completed) {
         await handleEndOfQueue();
       }
     });
 
     fadeState = BehaviorSubject.seeded(FadeState(fadeVolume: 1.0));
+
+    _setupCrossfade();
+    _setupStreamCacheProgressTracking();
+    _setupDurationReconciliation();
+    _setupFlacSeekWarning();
+  }
+
+  void _setupFlacSeekWarning() {
+    if (!Platform.isIOS) return;
+
+    var warned = false;
+    mediaItem.listen((item) {
+      if (warned || item == null) return;
+      final json = item.extras?["itemJson"] as Map<String, dynamic>?;
+      if (json == null) return;
+      if (item.extras?["shouldTranscode"] as bool? ?? false) return;
+
+      final container = jellyfin_models.BaseItemDto.fromJson(json).container;
+      if (container?.toLowerCase() != "flac") return;
+
+      warned = true;
+      _audioServiceBackgroundTaskLogger.warning(
+        "Playing a FLAC on iOS ('${item.title}'): AVFoundation mis-seeks this container, "
+        "so seeking will be inaccurate and playback can run past the end of the track.",
+      );
+      GlobalSnackbar.message((scaffold) => AppLocalizations.of(scaffold)!.flacSeekWarningIos);
+    });
+  }
+
+  AudioPlayer _buildPlayer({required AudioPipeline audioPipeline, required Duration maxBufferDuration}) {
+    return AudioPlayer(
+      maxSkipsOnError: 0,
+      handleInterruptions: FinampSettingsHelper.finampSettings.duckOnAudioInterruption,
+      androidAudioOffloadPreferences: AndroidAudioOffloadPreferences(
+        audioOffloadMode: FinampSettingsHelper.finampSettings.forceAudioOffloadingOnAndroid
+            ? AndroidAudioOffloadMode.enabled
+            : AndroidAudioOffloadMode.disabled,
+        isGaplessSupportRequired: true,
+        isSpeedChangeSupportRequired: true,
+      ),
+      audioLoadConfiguration: AudioLoadConfiguration(
+        androidLoadControl: AndroidLoadControl(
+          targetBufferBytes: FinampSettingsHelper.finampSettings.bufferDisableSizeConstraints
+              ? null
+              : 1024 * 1024 * FinampSettingsHelper.finampSettings.bufferSizeMegabytes,
+          minBufferDuration: FinampSettingsHelper.finampSettings.bufferDisableSizeConstraints
+              ? maxBufferDuration
+              : minBufferDuration,
+          maxBufferDuration: FinampSettingsHelper.finampSettings.bufferDisableSizeConstraints
+              ? (maxBufferDuration + Duration(seconds: 90))
+              : maxBufferDuration,
+          prioritizeTimeOverSizeThresholds: FinampSettingsHelper
+              .finampSettings
+              .bufferDisableSizeConstraints, // targetBufferBytes sets the absolute maximum, but if this false and maxBufferDuration is reached, buffering will end
+          bufferForPlaybackDuration: Duration(seconds: 5),
+          bufferForPlaybackAfterRebufferDuration: Duration(seconds: 10),
+        ),
+        darwinLoadControl: DarwinLoadControl(
+          preferredForwardBufferDuration: FinampSettingsHelper.finampSettings.bufferDisableSizeConstraints
+              ? FinampSettingsHelper.finampSettings.bufferDuration
+              : null, // let system decide
+        ),
+      ),
+      audioPipeline: audioPipeline,
+    );
+  }
+
+  void _setupStreamCacheProgressTracking() {
+    final cache = GetIt.instance<StreamCacheService>();
+    _activeCurrentIndexStream.listen((index) {
+      final currentSource = _player.sequenceState.currentSource;
+      if (currentSource is LockCachingAudioSource) {
+        final title = (currentSource.tag as FinampQueueItem?)?.item.title;
+        cache.trackProgressOf(currentSource, title: title);
+        unawaited(currentSource.cacheFile.then((file) => cache.prune(keep: file)).catchError((_) {}));
+      } else {
+        cache.stopTracking();
+      }
+    });
+  }
+
+  void _setupDurationReconciliation() {
+    _activeDurationStream.listen((duration) {
+      if (duration == null || duration == Duration.zero) return;
+      final current = mediaItem.valueOrNull;
+      if (current == null || current.duration == duration) return;
+      if (current.extras?["downloadedTrackPath"] == null) return;
+
+      final currentSourceTag = _player.sequenceState.currentSource?.tag as FinampQueueItem?;
+      final currentTrackJson = current.extras?["itemJson"] as Map<String, dynamic>?;
+      if (currentSourceTag == null || currentTrackJson == null) return;
+      final displayedTrackId = jellyfin_models.BaseItemDto.fromJson(currentTrackJson).id;
+      if (currentSourceTag.baseItem.id != displayedTrackId) return;
+
+      mediaItem.add(current.copyWith(duration: duration));
+    });
+  }
+
+  bool _crossfadeInProgress = false;
+
+  void _setupCrossfade() {
+    _activePositionStream.listen((position) async {
+      final seconds = FinampSettingsHelper.finampSettings.crossfadeSeconds;
+      if (seconds <= 0) return;
+      if (_crossfadeInProgress) return;
+      if (!_player.playing) return;
+
+      final lastManualSeekAt = _lastManualSeekAt;
+      if (lastManualSeekAt != null && DateTime.now().difference(lastManualSeekAt) < _crossfadeSeekGuardWindow) {
+        return;
+      }
+
+      final duration = _player.duration;
+      if (duration == null || duration == Duration.zero) return;
+
+      if (duration.inSeconds < seconds * 2) return;
+
+      if (!_player.hasNext) return;
+      final toIndex = _player.nextIndex;
+      if (toIndex == null) return;
+
+      if (toIndex == _player.currentIndex) return;
+
+      if (_standbyOutOfSync) {
+        unawaited(_resyncStandby());
+        return;
+      }
+
+      final remaining = duration - position;
+      if (remaining <= Duration(seconds: seconds)) {
+        await _performCrossfadeSwap(seconds: seconds, toIndex: toIndex);
+      }
+    });
+  }
+
+  Future<void> _abortCrossfadeIfInProgress() async {
+    if (!_crossfadeInProgress) return;
+    _crossfadeInProgress = false;
+    await Future<void>.delayed(_audioFadeStepDuration);
+    await _standbyVolume.setFadeVolume(1.0);
+    await _standbyPlayer.pause();
+  }
+
+  Future<void> _performCrossfadeSwap({required int seconds, required int toIndex}) async {
+    _crossfadeInProgress = true;
+    final outgoingVolume = _volume;
+    final incoming = _standbyPlayer;
+    final incomingVolume = _standbyVolume;
+    try {
+      await incomingVolume.setFadeVolume(0.0);
+      await incoming.seek(Duration.zero, index: toIndex);
+      unawaited(incoming.play());
+
+      final steps = getFadeSteps(Duration(seconds: seconds));
+      for (var step = 1; step <= steps; step++) {
+        if (!_crossfadeInProgress) return; // aborted — e.g. a manual skip
+        final t = (step / steps).clamp(0.0, 1.0);
+        await Future.wait([outgoingVolume.setFadeVolume(1.0 - t), incomingVolume.setFadeVolume(t)]);
+        await Future<void>.delayed(_audioFadeStepDuration);
+      }
+      if (!_crossfadeInProgress) return;
+
+      final outgoing = _player;
+      await outgoing.pause();
+      _activePlayerIndexSubject.add(1 - _activePlayerIndexSubject.value);
+      await outgoingVolume.setFadeVolume(1.0); // reset ahead of its next turn as active
+    } finally {
+      _crossfadeInProgress = false;
+    }
   }
 
   SleepTimer? get sleepTimer => _timer.value;
@@ -536,6 +696,49 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   /// this could be useful for updating queue state from this player class, but isn't used right now due to limitations with just_audio
   void setQueueCallbacks({required Future<bool> Function() previousTrackCallback}) {
     _queueCallbackPreviousTrack = previousTrackCallback;
+  }
+
+  bool get _crossfadeEnabled => FinampSettingsHelper.finampSettings.crossfadeSeconds > 0;
+
+  bool _standbyOutOfSync = false;
+  bool _standbyResyncing = false;
+
+  Future<void> _mirrorToStandby(Future<void> Function(AudioPlayer) action) async {
+    if (!_crossfadeEnabled) {
+      _standbyOutOfSync = true;
+      return;
+    }
+    try {
+      await action(_standbyPlayer);
+    } catch (e, stack) {
+      _audioServiceBackgroundTaskLogger.warning("Failed to mirror a queue change to the standby player", e, stack);
+    }
+  }
+
+  /// Rebuilds the standby player's queue from the active one, for when
+  /// crossfade is switched on after queue changes were skipped.
+  ///
+  /// Only the order matters: a crossfade seeks the standby player by raw index,
+  /// so its shuffle order does not have to match.
+  Future<void> _resyncStandby() async {
+    if (_standbyResyncing) return;
+    _standbyResyncing = true;
+    try {
+      final queueItems = _player.audioSources
+          .map((source) => (source as IndexedAudioSource).tag)
+          .whereType<FinampQueueItem>()
+          .toList();
+      await _standbyPlayer.setAudioSources(
+        await Future.wait(queueItems.map(_queueItemToAudioSource)),
+        preload: false,
+        initialIndex: _player.currentIndex,
+      );
+      _standbyOutOfSync = false;
+    } catch (e, stack) {
+      _audioServiceBackgroundTaskLogger.warning("Could not resync the standby player", e, stack);
+    } finally {
+      _standbyResyncing = false;
+    }
   }
 
   Future<Duration?> setQueueItems(
@@ -546,18 +749,24 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     ShuffleOrder? shuffleOrder,
   }) async {
     try {
-      List<AudioSource> audioSources = [];
-
-      for (final queueItem in queueItems) {
-        audioSources.add(await _queueItemToAudioSource(queueItem));
-      }
-      return await _player.setAudioSources(
-        audioSources,
+      final result = await _player.setAudioSources(
+        await Future.wait(queueItems.map(_queueItemToAudioSource)),
         preload: preload,
         initialIndex: initialIndex,
         initialPosition: initialPosition,
         shuffleOrder: shuffleOrder,
       );
+      unawaited(
+        _mirrorToStandby(
+          (player) async => player.setAudioSources(
+            await Future.wait(queueItems.map(_queueItemToAudioSource)),
+            preload: false,
+            initialIndex: initialIndex,
+            shuffleOrder: shuffleOrder,
+          ),
+        ),
+      );
+      return result;
     } on PlayerException catch (e) {
       _audioServiceBackgroundTaskLogger.severe("Player error code ${e.code}: ${e.message}");
       GlobalSnackbar.error(e);
@@ -572,39 +781,56 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   }
 
   Future<void> appendFinampQueueItem(FinampQueueItem queueItem) async {
+    unawaited(_mirrorToStandby((player) async => player.addAudioSource(await _queueItemToAudioSource(queueItem))));
     return _player.addAudioSource(await _queueItemToAudioSource(queueItem));
   }
 
   Future<void> appendFinampQueueItems(List<FinampQueueItem> queueItems) async {
+    unawaited(
+      _mirrorToStandby(
+        (player) async => player.addAudioSources(await Future.wait(queueItems.map(_queueItemToAudioSource))),
+      ),
+    );
     return _player.addAudioSources(await Future.wait(queueItems.map(_queueItemToAudioSource)));
   }
 
   Future<void> insertFinampQueueItemAt(int index, FinampQueueItem queueItem) async {
+    unawaited(
+      _mirrorToStandby((player) async => player.insertAudioSource(index, await _queueItemToAudioSource(queueItem))),
+    );
     return _player.insertAudioSource(index, await _queueItemToAudioSource(queueItem));
   }
 
   Future<void> insertFinampQueueItems(int index, List<FinampQueueItem> queueItems) async {
+    unawaited(
+      _mirrorToStandby(
+        (player) async => player.insertAudioSources(index, await Future.wait(queueItems.map(_queueItemToAudioSource))),
+      ),
+    );
     return _player.insertAudioSources(index, await Future.wait(queueItems.map(_queueItemToAudioSource)));
   }
 
   Future<void> moveFinampQueueItem(int currentIndex, int newIndex) {
+    unawaited(_mirrorToStandby((player) => player.moveAudioSource(currentIndex, newIndex)));
     return _player.moveAudioSource(currentIndex, newIndex);
   }
 
   Future<void> removeFinampQueueItemAt(int index) {
+    unawaited(_mirrorToStandby((player) => player.removeAudioSourceAt(index)));
     return _player.removeAudioSourceAt(index);
   }
 
   Future<void> removeFinampQueueItemRange(int start, int end) {
+    unawaited(_mirrorToStandby((player) => player.removeAudioSourceRange(start, end)));
     return _player.removeAudioSourceRange(start, end);
   }
 
   Future<void> clearFinampQueueItems() {
+    unawaited(_mirrorToStandby((player) => player.clearAudioSources()));
     return _player.clearAudioSources();
   }
 
-  /// Fully dispose the player instance.  Should only be called during app shutdown.
-  Future<void> dispose() => _player.dispose();
+  Future<void> dispose() => Future.wait([_playerA.dispose(), _playerB.dispose()]);
 
   @override
   Future<void> play({bool disableFade = false}) async {
@@ -645,6 +871,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     if (_shouldIgnorePlayPauseAfterRecentSkip) {
       return;
     }
+    await _abortCrossfadeIfInProgress();
     if (!disableFade && FinampSettingsHelper.finampSettings.audioFadeOutDuration > Duration.zero) {
       return fadeOutAndPause();
     } else {
@@ -653,25 +880,30 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   }
 
   int getFadeSteps(Duration fadeDuration) {
-    return (fadeDuration.inMilliseconds / _audioFadeStepDuration.inMilliseconds).toInt();
+    final steps = (fadeDuration.inMilliseconds / _audioFadeStepDuration.inMilliseconds).toInt();
+    return steps < 1 ? 1 : steps;
   }
 
-  double _getVolumeFadeInStepSize() {
-    final steps = getFadeSteps(FinampSettingsHelper.finampSettings.audioFadeInDuration);
+  double _getVolumeFadeInStepSize([Duration? overrideDuration]) {
+    final steps = getFadeSteps(overrideDuration ?? FinampSettingsHelper.finampSettings.audioFadeInDuration);
     return 1.0 / steps;
   }
 
-  double _getVolumeFadeOutStepSize() {
-    final steps = getFadeSteps(FinampSettingsHelper.finampSettings.audioFadeOutDuration);
+  double _getVolumeFadeOutStepSize([Duration? overrideDuration]) {
+    final steps = getFadeSteps(overrideDuration ?? FinampSettingsHelper.finampSettings.audioFadeOutDuration);
     return 1.0 / steps;
   }
 
-  Future<void> _fadeAudio(FadeDirection direction) async {
+  int _fadeGeneration = 0;
+
+  Future<void> _fadeAudio(FadeDirection direction, {bool pauseOnFadeOutComplete = true, Duration? fadeDuration}) async {
+    final myGeneration = ++_fadeGeneration;
+
     fadeState.add(
       FadeState(
         fadeVolume: direction == FadeDirection.fadeIn ? 0.0 : 1.0,
-        volumeFadeInStepSize: _getVolumeFadeInStepSize(),
-        volumeFadeOutStepSize: _getVolumeFadeOutStepSize(),
+        volumeFadeInStepSize: _getVolumeFadeInStepSize(fadeDuration),
+        volumeFadeOutStepSize: _getVolumeFadeOutStepSize(fadeDuration),
         fadeDirection: direction,
       ),
     );
@@ -688,6 +920,10 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       _audioFadeStepDuration,
       (_) => fadeState.value,
     ).takeWhile((fade) => fade.fadeDirection != FadeDirection.none && !cancelled).forEach((state) async {
+      if (myGeneration != _fadeGeneration) {
+        cancelled = true;
+        return;
+      }
       switch (state.fadeDirection) {
         case FadeDirection.fadeIn:
           var newVolume = state.fadeVolume + state.volumeFadeInStepSize;
@@ -706,7 +942,9 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
             fadeState.add(state.copyWith(fadeDirection: FadeDirection.none));
             cancelled = true;
 
-            fut = _player.pause();
+            if (pauseOnFadeOutComplete) {
+              fut = _player.pause();
+            }
           }
           break;
         default:
@@ -771,6 +1009,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   Future<void> stopPlayback() async {
     try {
       clearSleepTimer();
+      await _abortCrossfadeIfInProgress();
 
       await _player.stop();
     } catch (e) {
@@ -790,7 +1029,8 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
         // while radio is enable, we should never reach the end of the queue
         // if we end up reaching it, e.g. because the current radio mode becomes available (offline, etc.), we want to pause without resetting the queue, so that the user can fix the radio issue and resume, if desired.
         // Seek back a bit to avoid resetting the track to position zero when the queue is updated
-        await seek(playbackPosition - Duration(milliseconds: 500));
+        final seekBackTarget = playbackPosition - Duration(milliseconds: 500);
+        await seek(seekBackTarget.isNegative ? Duration.zero : seekBackTarget);
       } else {
         if (_player.effectiveIndices.isNotEmpty) {
           await skipToIndex(0);
@@ -814,6 +1054,8 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     _lastSkipCommandAt = DateTime.now();
     bool doSkip = true;
 
+    _markManualSeek();
+    await _abortCrossfadeIfInProgress();
     try {
       if (_queueCallbackPreviousTrack != null) {
         doSkip = await _queueCallbackPreviousTrack!();
@@ -848,6 +1090,8 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       "skipToNext() start: playing=${_player.playing}, fadeDirection=${fadeState.value.fadeDirection}, hasNext=${_player.hasNext}, loopMode=${_player.loopMode}, currentIndex=${_player.currentIndex}, position=${_player.position}",
     );
     _lastSkipCommandAt = DateTime.now();
+    _markManualSeek();
+    await _abortCrossfadeIfInProgress();
     try {
       if (_player.loopMode == LoopMode.one || !_player.hasNext) {
         // if the user manually skips to the next track, they probably want to actually skip to the next track
@@ -865,6 +1109,8 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   Future<void> skipByOffset(int offset) async {
     _audioServiceBackgroundTaskLogger.fine("skipping by offset: $offset");
 
+    _markManualSeek();
+    await _abortCrossfadeIfInProgress();
     try {
       int queueIndex = _player.shuffleModeEnabled
           ? shuffleIndices.indexOf((_player.currentIndex ?? 0)) + offset
@@ -895,6 +1141,8 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   Future<void> skipToIndex(int index) async {
     _audioServiceBackgroundTaskLogger.fine("skipping to index: $index");
 
+    _markManualSeek();
+    await _abortCrossfadeIfInProgress();
     try {
       await _player.seek(Duration.zero, index: _player.shuffleModeEnabled ? shuffleIndices[index] : index);
     } catch (e) {
@@ -905,6 +1153,8 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
   @override
   Future<void> seek(Duration position) async {
+    _markManualSeek();
+    await _abortCrossfadeIfInProgress();
     try {
       await _player.seek(position);
     } catch (e) {
@@ -914,8 +1164,10 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   }
 
   Future<void> shuffle() async {
+    await _abortCrossfadeIfInProgress();
     try {
       await _player.shuffle();
+      unawaited(_mirrorToStandby((player) => player.shuffle()));
     } catch (e) {
       _audioServiceBackgroundTaskLogger.severe(e);
       return Future.error(e);
@@ -1166,7 +1418,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       );
       if (effectiveGainChange != null) {
         if (_loudnessEnhancerEffect != null) {
-          _loudnessEnhancerEffect.setTargetGain(effectiveGainChange);
+          _loudnessEnhancerEffect?.setTargetGain(effectiveGainChange);
         } else {
           final newVolume =
               iosBaseVolumeGainFactor *
@@ -1180,7 +1432,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       } else {
         if (_loudnessEnhancerEffect != null) {
           // reset gain offset
-          _loudnessEnhancerEffect.setTargetGain(0);
+          _loudnessEnhancerEffect?.setTargetGain(0);
         }
         _volume.setReplayGainVolume(
           iosBaseVolumeGainFactor,
@@ -1238,6 +1490,12 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
         .read(RadioServiceHelper.currentRadioAvailabilityStatusProvider)
         .isAvailable;
 
+    var reportedPosition = _player.position;
+    final trackDuration = _player.duration;
+    if (trackDuration != null && trackDuration > Duration.zero && reportedPosition > trackDuration) {
+      reportedPosition = trackDuration;
+    }
+
     return PlaybackState(
       controls: [
         MediaControl.skipToPrevious,
@@ -1286,7 +1544,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       playing: _player.playing,
       //!!! use the current player position, since there might be a delay before this event is processed.
       // Do **not** use [event.updatePosition] or [event.bufferedPosition], since that could lead to a discontinuity in the playback position (resetting to 0) and cause incorrect history entries
-      updatePosition: _player.position,
+      updatePosition: reportedPosition,
       bufferedPosition: _player.bufferedPosition,
       speed: _player.speed,
       queueIndex: _player.shuffleModeEnabled && shuffleIndices.isNotEmpty && event.currentIndex != null
@@ -1335,13 +1593,49 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       if (queueItem.item.extras!["isOffline"] as bool) {
         return Future.error("Offline mode enabled but downloaded track not found.");
       } else {
-        final trackUri = await _trackUri(queueItem.item);
-        return AudioSource.uri(trackUri, tag: queueItem);
-        // if (queueItem.item.extras!["shouldTranscode"] == true) {
-        //   return HlsAudioSource(trackUri, tag: queueItem);
-        // } else {
-        //   return AudioSource.uri(trackUri, tag: queueItem);
-        // }
+        final source = await _resolveStream(queueItem.item);
+        final headers = source.headers.isEmpty ? null : source.headers;
+
+        final transcoding = queueItem.item.extras!["shouldTranscode"] as bool;
+        final isYouTube = queueItem.baseItemId.sourceId == YouTubeService.sourceId;
+        final cache = GetIt.instance<StreamCacheService>();
+
+        // Runs once per track in the queue, so keep it off the default level.
+        _audioServiceBackgroundTaskLogger.finer(
+          "_queueItemToAudioSource: '${queueItem.item.title}' transcoding=$transcoding "
+          "container=${queueItem.baseItem.container}",
+        );
+        if (isYouTube && !source.isLocalFile) {
+          try {
+            final file = await cache.fileForId(queueItem.baseItemId.raw, source.container ?? "m4a");
+            return LockCachingAudioSource(source.uri, cacheFile: file, headers: headers, tag: queueItem);
+          } catch (e, stack) {
+            _audioServiceBackgroundTaskLogger.warning(
+              "Could not prepare '${queueItem.item.title}' for playback",
+              e,
+              stack,
+            );
+            return Future.error(e);
+          }
+        }
+
+        if (cache.enabled && !transcoding && !source.isLocalFile) {
+          try {
+            final item = jellyfin_models.BaseItemDto.fromJson(
+              queueItem.item.extras!["itemJson"] as Map<String, dynamic>,
+            );
+            final cacheFile = await cache.fileFor(item);
+            return LockCachingAudioSource(source.uri, cacheFile: cacheFile, headers: headers, tag: queueItem);
+          } catch (e, stack) {
+            _audioServiceBackgroundTaskLogger.warning(
+              "Could not cache '${queueItem.item.title}'; streaming it",
+              e,
+              stack,
+            );
+          }
+        }
+
+        return AudioSource.uri(source.uri, headers: headers, tag: queueItem);
       }
     } else {
       // We have to deserialise this because Dart is stupid and can't handle
@@ -1355,61 +1649,13 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     }
   }
 
-  Future<Uri> _trackUri(MediaItem mediaItem) async {
-    final finampUserHelper = GetIt.instance<FinampUserHelper>();
-    // When creating the MediaItem (usually in AudioServiceHelper), we specify
-    // whether or not to transcode. We used to pull from FinampSettings here,
-    // but since audio_service runs in an isolate (or at least, it does until
-    // 0.18), the value would be wrong if changed while a track was playing since
-    // Hive is bad at multi-isolate stuff.
-
-    final parsedBaseUrl = Uri.parse(finampUserHelper.currentUser!.baseURL);
-
-    List<String> builtPath = List.from(parsedBaseUrl.pathSegments);
-
-    Map<String, String> queryParameters = Map.from(parsedBaseUrl.queryParameters);
-
-    // We include the user token as a query parameter because just_audio used to
-    // have issues with headers in HLS, and this solution still works fine
-    queryParameters["ApiKey"] = finampUserHelper.currentUser!.accessToken;
-    // // indicate which play session this stream belongs to, this will be referenced when reporting playback progress
-    // queryParameters["PlaySessionId"] = _order.id; //!!! this currently breaks transcoding for some reason
-
-    if (mediaItem.extras!["shouldTranscode"] as bool) {
-      builtPath.addAll(["Audio", mediaItem.extras!["itemJson"]["Id"] as String, "main.m3u8"]);
-
-      queryParameters.addAll({
-        "audioCodec": FinampSettingsHelper.finampSettings.transcodingStreamingFormat.codec,
-        "playSessionId": mediaItem.extras!["playSessionId"] as String? ?? "",
-        // Ideally we'd switch between 44.1/48kHz depending on the source is,
-        // realistically it doesn't matter too much
-        // default to 44100, only use 48000 for opus because opus doesn't support 44100
-        "audioSampleRate": FinampSettingsHelper.finampSettings.transcodingStreamingFormat.sampleRate.toString(),
-        "segmentContainer": FinampSettingsHelper.finampSettings.transcodingStreamingFormat.container,
-      });
-
-      if (!FinampSettingsHelper.finampSettings.transcodingStreamingFormat.lossless) {
-        queryParameters.addAll({"audioBitRate": FinampSettingsHelper.finampSettings.transcodeBitrate.toString()});
-      }
-
-      if (FinampSettingsHelper.finampSettings.multichannelHandlingSetting ==
-              MultichannelHandlingSetting.stereoDownmixAll ||
-          (FinampSettingsHelper.finampSettings.multichannelHandlingSetting ==
-                  MultichannelHandlingSetting.stereoDownmixLossy &&
-              FinampSettingsHelper.finampSettings.transcodingStreamingFormat.codec != "flac")) {
-        queryParameters.addAll({"maxAudioChannels": "2"});
-      }
-    } else {
-      builtPath.addAll(["Items", mediaItem.extras!["itemJson"]["Id"] as String, "File"]);
-    }
-
-    return Uri(
-      host: parsedBaseUrl.host,
-      port: parsedBaseUrl.port,
-      scheme: parsedBaseUrl.scheme,
-      userInfo: parsedBaseUrl.userInfo,
-      pathSegments: builtPath,
-      queryParameters: queryParameters,
+  Future<PlayableSource> _resolveStream(MediaItem mediaItem) async {
+    final item = jellyfin_models.BaseItemDto.fromJson(mediaItem.extras!["itemJson"] as Map<String, dynamic>);
+    final backend = GetIt.instance<BackendRegistry>().backendFor(item);
+    return backend.resolveStream(
+      item,
+      transcode: mediaItem.extras!["shouldTranscode"] as bool,
+      playSessionId: mediaItem.extras!["playSessionId"] as String?,
     );
   }
 

@@ -17,11 +17,16 @@ on:
 
 env:
   if_condition: &integration_if github.event_name == 'workflow_dispatch' ||
-    (github.event_name == 'push' && github.repository == 'UnicornsOnLSD/finamp' )
+    (github.event_name == 'push' && github.repository == 'Nytuo/diapason-flutter' )
 
 # Due to a flutter bug, flutter build is not generating localizations
 # workaround by always running flutter pub get immediately before building,
 # and performing build for msix:create manually to allow implementing this workaround
+#
+# Desktop (Linux/Windows/macOS) is deliberately not built here. The supported
+# desktop app is the Tauri one at github.com/Nytuo/Diapason; this codebase
+# targets phones, tablets and TV. The desktop platform folders still build
+# locally for development, they are just not released.
 jobs:
   build-android:
     name: Build for Android
@@ -96,7 +101,7 @@ jobs:
 
     - uses: actions/upload-artifact@v6
       with:
-        name: finamp-android-debug.apk
+        name: diapason-android-debug.apk
         path: build/app/outputs/flutter-apk/app-debug.apk
         compression-level: 0 # no compression
 
@@ -199,240 +204,3 @@ jobs:
     - name: Run Integration Tests
       if: *integration_if
       run: flutter test integration_test/test_cases.dart -d 'iPhone 16'
-
-  build-linux:
-    name: Build for Linux
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-22.04
-            arch: x64
-          - os: ubuntu-22.04-arm
-            arch: arm64
-    steps:
-    - name: Clone repository
-      uses: actions/checkout@v6
-
-    - uses: actions/setup-java@v5
-      with:
-        distribution: 'zulu'
-        java-version: '17'
-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential cmake ninja-build libgtk-3-dev libmpv-dev
-
-    # - name: Determine Flutter stable version
-    #   uses: subosito/flutter-action@v2
-    #   id: flutter-version
-    #   with:
-    #     architecture: 'x64'
-    #     channel: 'stable'
-    #     dry-run: true
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        # Prebuilt ARM linux builds are not provided, so build flutter from source
-        channel: master
-        # flutter-version: "${{ steps.flutter-version.outputs.VERSION }}"
-        flutter-version: "3.41.9"
-        cache: false
-        pub-cache: true
-        # Include arch as linux aarch64 include isar overriding
-        # arch can be removed later once isar aarch64 is easily available on pub.dev and overriding is not needed anymore
-        pub-cache-key: "flutter-pub-:os:-:channel:-:version:-:arch:-:hash:"
-
-    - name: Cache Dart build cache
-      uses: actions/cache@v5
-      with:
-        path: |
-          .dart_tool
-          build
-        key: ${{ runner.os }}-${{ matrix.arch }}-dart-build-${{ hashFiles('pubspec.lock') }}
-        restore-keys: ${{ runner.os }}-${{ matrix.arch }}-dart-build-
-
-    - run: flutter doctor
-    - run: flutter pub get
-
-    - name: Clone isar repository
-      if: matrix.arch == 'arm64'
-      uses: actions/checkout@v6
-      with:
-        path: isar
-        repository: Komodo5197/isar-community
-        ref: a602cd8999048faba043f7e1ce7ba92f4d812762
-    
-    - name: Build isar core and inject into cached isar_flutter_libs
-      if: matrix.arch == 'arm64'
-      run: |
-        sh tool/build_linux.sh aarch64
-        mv libisar_linux_arm64.so $HOME/.pub-cache/git/isar_flutter_libs-*/linux/libisar.so
-      working-directory: isar
-    
-    - run: flutter build linux --release --no-pub
-    
-    # copy icon assets and desktop file next to bundle location for easy including in tar archive
-    - run: |
-        cp -r assets/icon/linux/ build/linux/${{ matrix.arch }}/release/icons \
-        && cp assets/finamp.desktop.m4 build/linux/${{ matrix.arch }}/release/ \
-        && cp assets/com.unicornsonlsd.finamp.metainfo.xml build/linux/${{ matrix.arch }}/release/
-    
-    # Create dynamic names based on architecture
-    - name: Set archive and checksum names
-      run: |
-        # For PR builds, use pr-<number>, else use branch or tag name
-        if [ "${{ github.event.pull_request.number }}" != "" ]; then
-          ref_name="pr-${{ github.event.pull_request.number }}"
-        else
-          ref_name="${{ github.ref_name }}"
-        fi
-        echo "TAR_NAME=finamp-${ref_name}-linux-${{ matrix.arch }}.tar.gz" >> $GITHUB_ENV
-        echo "SHA_NAME=finamp-${ref_name}-linux-${{ matrix.arch }}.tar.gz.sha256sum" >> $GITHUB_ENV
-    
-    # archive bundle and generate checksum
-    - run: |
-        tar -czf ${TAR_NAME} --directory build/linux/${{ matrix.arch }}/release/ bundle icons finamp.desktop.m4 com.unicornsonlsd.finamp.metainfo.xml \
-        && sha256sum ${TAR_NAME} > ${SHA_NAME}
-
-    - uses: actions/upload-artifact@v6
-      with:
-        name: ${{ env.TAR_NAME }}
-        path: ${{ env.TAR_NAME }}
-        compression-level: 0 # no compression
-    
-    - uses: actions/upload-artifact@v6
-      with:
-        name: ${{ env.SHA_NAME }}
-        path: ${{ env.SHA_NAME }}
-        compression-level: 0 # no compression
-
-    - name: Upload release archive
-      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-      uses: alexellis/upload-assets@0.4.1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        asset_paths: '["./${{ env.TAR_NAME }}", "./${{ env.SHA_NAME }}"]'
-
-    - name: Run Integration Tests
-      if: *integration_if
-      run: |
-        set +e
-        xvfb-run flutter test integration_test/test_cases.dart -d linux
-        exitcode=$?
-        if [[ $exitcode == 79 ]]; then
-          echo "Potential native crash - attempting to display"
-          timeout 2m xvfb-run flutter run -d linux
-        fi
-        exit $exitcode
-
-  build-windows:
-    name: Build for Windows
-    runs-on: windows-latest
-    steps:
-    - name: Support longpaths
-      run: git config --system core.longpaths true
-
-    - name: Clone repository
-      uses: actions/checkout@v6
-    # - uses: actions/setup-java@v2
-    #   with:
-    #     distribution: 'zulu'
-    #     java-version: '17'
-    - name: Set up Rust (for smtc_windows)
-      uses: hecrj/setup-rust-action@v2
-
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        channel: 'stable'
-        cache: false
-        pub-cache: true
-
-    - run: flutter doctor
-    - run: flutter pub get
-
-    - name: Cache Dart build cache
-      uses: actions/cache@v5
-      with:
-        path: |
-          build
-        key: ${{ runner.os }}-dart-build-${{ hashFiles('**/pubspec.yaml') }}
-        restore-keys: ${{ runner.os }}-dart-build-
-
-    - run: flutter build windows
-
-    - name: Set archive and msix base name
-      shell: bash
-      run: |
-        # For PR builds, use pr-<number>, else use branch or tag name
-        if [ "${{ github.event.pull_request.number }}" != "" ]; then
-          ref_name="pr-${{ github.event.pull_request.number }}"
-        else
-          ref_name="${{ github.ref_name }}"
-        fi
-        echo "BASE_NAME=Finamp-${ref_name}-Windows" >> $GITHUB_ENV
-
-    # TODO pack in redistributables?
-    # upload original, unzipped directory. GitHub will zip it anyway
-    - uses: actions/upload-artifact@v6
-      with:
-        name: ${{ env.BASE_NAME }}
-        path: build/windows/x64/runner/Release/
-
-    - run: |
-        dart run msix:create --install-certificate false
-        # move msix file with correct naming
-        mv build/windows/x64/runner/Release/finamp.msix ./${{ env.BASE_NAME }}.msix
-
-    #TODO would be nice to have an old-school installer here that can take the .exe + libraries and install them to the device + create a shortcut
-    - uses: actions/upload-artifact@v6
-      with:
-        name: ${{ env.BASE_NAME }}.msix
-        path: ./${{ env.BASE_NAME }}.msix
-        compression-level: 0 # no compression
-
-    - name: Prepare release archive
-      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-      run: |
-        # zip folder
-        powershell -Command "Compress-Archive -Path './build/windows/x64/runner/Release/*' -DestinationPath './${{ env.BASE_NAME }}.zip'"
-
-    - name: Upload release archive
-      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-      uses: alexellis/upload-assets@0.4.1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        # upload zip archive here, uploading the raw directory fails
-        asset_paths: '["./${{ env.BASE_NAME }}.msix", "./${{ env.BASE_NAME }}.zip"]'
-
-    - name: Run Integration Tests
-      if: *integration_if
-      shell: bash
-      run: |
-        set +e
-        flutter test integration_test/test_cases.dart -d windows
-        exitcode=$?
-        if [[ $exitcode == 79 ]]; then
-          echo "Potential native crash - attempting to display"
-          timeout 2m flutter run -d windows
-        fi
-        exit $exitcode
-
-  # build-macos:
-  #   name: Build for macOS
-  #   runs-on: macos-latest
-  #   steps:
-  #   - uses: actions/checkout@v6
-  #   - name: Set up Flutter
-  #     uses: subosito/flutter-action@v2
-  #     with:
-  #       channel: 'stable'
-  #       architecture: x64
-  #   - run: flutter doctor
-  #   - run: flutter pub get
-  #   - run: flutter build macos --release --no-pub

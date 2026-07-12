@@ -1,14 +1,14 @@
 import 'dart:math';
 
-import 'package:finamp/components/AlbumScreen/preset_chip.dart';
-import 'package:finamp/components/Buttons/simple_button.dart';
-import 'package:finamp/components/print_duration.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/music_player_background_task.dart';
-import 'package:finamp/services/progress_state_stream.dart';
-import 'package:finamp/services/queue_service.dart';
+import 'package:diapason/components/AlbumScreen/preset_chip.dart';
+import 'package:diapason/components/Buttons/simple_button.dart';
+import 'package:diapason/components/print_duration.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/music_player_background_task.dart';
+import 'package:diapason/services/progress_state_stream.dart';
+import 'package:diapason/services/queue_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';

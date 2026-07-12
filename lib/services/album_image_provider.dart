@@ -1,3 +1,4 @@
+import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -5,7 +6,7 @@ import 'package:file/file.dart' as cache;
 import 'package:file/local.dart';
 // Directly use LocalFile to avoid touching every cached file on initialization
 import 'package:file/src/backends/local/local_file.dart';
-import 'package:finamp/services/theme_provider.dart';
+import 'package:diapason/services/theme_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -127,17 +128,11 @@ albumImageProvider = Provider.autoDispose.family<AlbumImageInfo, AlbumImageReque
 
     // TODO maybe we can reuse cached player images or existing sufficiently larger image requests instead of fetching from server
 
-    Uri? imageUrl;
+    final aggregate = GetIt.instance<AggregateBackend>();
 
-    if (request.fullQuality) {
-      imageUrl = jellyfinApiHelper.getImageUrl(item: request.item, quality: null, format: null);
-    } else {
-      imageUrl = jellyfinApiHelper.getImageUrl(
-        item: request.item,
-        maxWidth: request.maxWidth,
-        maxHeight: request.maxHeight,
-      );
-    }
+    final Uri? imageUrl = request.fullQuality
+        ? aggregate.imageUrl(request.item, quality: null, format: null)
+        : aggregate.imageUrl(request.item, maxWidth: request.maxWidth, maxHeight: request.maxHeight);
 
     if (imageUrl == null) {
       return AlbumImageInfo.empty(request);

@@ -1,5 +1,5 @@
-import 'package:finamp/services/contains_login.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
+import 'package:diapason/services/contains_login.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 

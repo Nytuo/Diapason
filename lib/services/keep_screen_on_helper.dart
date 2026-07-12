@@ -1,8 +1,8 @@
 import 'package:battery_plus/battery_plus.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/screens/lyrics_screen.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/music_player_background_task.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/screens/lyrics_screen.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/music_player_background_task.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';

@@ -1,7 +1,7 @@
-import 'package:finamp/components/Shortcuts/music_control_shortcuts.dart';
+import 'package:diapason/components/Shortcuts/music_control_shortcuts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:finamp/utils/platform_helper.dart';
+import 'package:diapason/utils/platform_helper.dart';
 import 'package:logging/logging.dart';
 
 final shortcutLogger = Logger("KeyboardShortcut");

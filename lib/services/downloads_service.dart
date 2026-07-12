@@ -1,13 +1,14 @@
+import 'package:diapason/services/uploader/uploader_client.dart';
 import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -272,6 +273,11 @@ class DownloadsService {
               // will be moved back to enqueued on next app restart or sync.
               if (event.status != TaskStatus.canceled) {
                 updateItemState(listener, newState, alwaysPut: event.status == TaskStatus.complete);
+              }
+
+              if (event.status == TaskStatus.complete) {
+                final finished = listener;
+                Future.microtask(() => _uploadIfWanted(finished));
               }
             } else {
               _downloadsLogger.info(
@@ -881,6 +887,22 @@ class DownloadsService {
   /// the downloads status stream is updated and any parent items that may have changed
   /// state are recalculated.
   /// This should only be called inside an isar write transaction.
+  Future<void> _uploadIfWanted(DownloadItem item) async {
+    try {
+      final uploader = GetIt.instance<UploaderClient>();
+      if (!uploader.isReady) return;
+      if (item.type != DownloadItemType.track) return;
+
+      final baseItem = item.baseItem;
+      final file = item.file;
+      if (baseItem == null || file == null) return;
+
+      await uploader.upload(baseItem, file);
+    } catch (e) {
+      _downloadsLogger.fine("Uploading ${item.name} failed: $e");
+    }
+  }
+
   void updateItemState(DownloadItem item, DownloadItemState newState, {bool alwaysPut = false}) {
     if (item.state == newState) {
       if (alwaysPut) {

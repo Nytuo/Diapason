@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/menus/components/playbackActions/playback_action.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/music_models.dart';
-import 'package:finamp/services/queue_service.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/menus/components/playbackActions/playback_action.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/music_models.dart';
+import 'package:diapason/services/queue_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';

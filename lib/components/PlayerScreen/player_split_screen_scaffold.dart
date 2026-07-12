@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/screens/lyrics_screen.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/keep_screen_on_helper.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/screens/lyrics_screen.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/keep_screen_on_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';

@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:file_sizes/file_sizes.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/jellyfin_models.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -25,7 +26,7 @@ class DownloadDialog extends ConsumerStatefulWidget {
   });
 
   final DownloadStub item;
-  final BaseItemId viewId;
+  final BaseItemId? viewId;
   final String? downloadLocationId;
   final bool needsTranscode;
   final List<BaseItemDto>? children;
@@ -41,7 +42,7 @@ class DownloadDialog extends ConsumerStatefulWidget {
   static Future<void> show(BuildContext context, DownloadStub item, BaseItemId? viewId, {int? trackCount}) async {
     if (viewId == null) {
       final finampUserHelper = GetIt.instance<FinampUserHelper>();
-      viewId = finampUserHelper.currentUser!.currentViewId;
+      viewId = finampUserHelper.currentUser?.currentViewId;
     }
     bool needTranscode =
         FinampSettingsHelper.finampSettings.shouldTranscodeDownloads == TranscodeDownloadsSetting.ask &&
@@ -62,26 +63,25 @@ class DownloadDialog extends ConsumerStatefulWidget {
     // If transcoding an album or playlist, fetch children for size calculation.
     // If trackCount was not supplied, fetch children to calculate for all types
     // where this can be determined in one query.
-    JellyfinApiHelper jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
+    final aggregate = GetIt.instance<AggregateBackend>();
     List<BaseItemDto>? children;
     if ((item.baseItemType == BaseItemDtoType.album || item.baseItemType == BaseItemDtoType.playlist) &&
         (needTranscode || trackCount == null)) {
-      children = await jellyfinApiHelper.getItems(
+      children = await aggregate.getItems(
         parentItem: item.baseItem!,
         includeItemTypes: BaseItemDtoType.track.jellyfinName,
-        fields: "${jellyfinApiHelper.defaultFields},MediaSources,MediaStreams",
       );
-      trackCount = children?.length;
+      trackCount = children.length;
     } else if ((item.baseItemType == BaseItemDtoType.artist || item.baseItemType == BaseItemDtoType.genre) &&
         trackCount == null) {
       // Only track children are expected by dialog, so do not save album children.
-      List<BaseItemDto>? artistChildren = await jellyfinApiHelper.getItems(
+      final artistChildren = await aggregate.getItems(
         parentItem: item.baseItem!,
         includeItemTypes: BaseItemDtoType.album.jellyfinName,
       );
-      trackCount = artistChildren?.fold<int>(0, (count, item) => count + (item.childCount ?? 0));
+      trackCount = artistChildren.fold<int>(0, (count, item) => count + (item.childCount ?? 0));
     } else if (item.baseItemType == BaseItemDtoType.track) {
-      children = [await jellyfinApiHelper.getItemById(BaseItemId(item.id))];
+      children = [await aggregate.getItemById(BaseItemId(item.id)) ?? item.baseItem!];
       trackCount = 1;
     }
 
@@ -98,7 +98,7 @@ class DownloadDialog extends ConsumerStatefulWidget {
       GlobalSnackbar.message((scaffold) => AppLocalizations.of(scaffold)!.confirmDownloadStarted, isConfirmation: true);
       unawaited(
         downloadsService
-            .addDownload(stub: item, viewId: viewId!, transcodeProfile: profile)
+            .addDownload(stub: item, viewId: viewId, transcodeProfile: profile)
             // TODO only show the enqueued confirmation if the enqueuing took longer than ~10 seconds
             .then((value) => GlobalSnackbar.message((scaffold) => AppLocalizations.of(scaffold)!.downloadsQueued)),
       );
@@ -108,7 +108,7 @@ class DownloadDialog extends ConsumerStatefulWidget {
         context: context,
         builder: (context) => DownloadDialog._build(
           item: item,
-          viewId: viewId!,
+          viewId: viewId,
           downloadLocationId: downloadLocation,
           needsTranscode: needTranscode,
           children: children,

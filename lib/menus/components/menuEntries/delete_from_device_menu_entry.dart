@@ -1,8 +1,8 @@
-import 'package:finamp/components/delete_prompts.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/menus/components/menuEntries/menu_entry.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/services/downloads_service.dart';
+import 'package:diapason/components/delete_prompts.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/menus/components/menuEntries/menu_entry.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/downloads_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';

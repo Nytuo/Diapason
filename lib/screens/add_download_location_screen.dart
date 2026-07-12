@@ -1,16 +1,16 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:finamp/components/finamp_app_bar_back_button.dart';
+import 'package:diapason/components/finamp_app_bar_back_button.dart';
 import 'package:path/path.dart' as path_helper;
 import 'package:provider/provider.dart';
 import 'package:uuid/v4.dart';
-import 'package:finamp/components/AddDownloadLocationScreen/app_directory_location_form.dart';
-import 'package:finamp/components/AddDownloadLocationScreen/custom_download_location_form.dart';
-import 'package:finamp/components/confirmation_prompt_dialog.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/l10n/app_localizations.dart';
+import 'package:diapason/components/AddDownloadLocationScreen/app_directory_location_form.dart';
+import 'package:diapason/components/AddDownloadLocationScreen/custom_download_location_form.dart';
+import 'package:diapason/components/confirmation_prompt_dialog.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/l10n/app_localizations.dart';
 
 class AddDownloadLocationScreen extends StatefulWidget {
   const AddDownloadLocationScreen({super.key});

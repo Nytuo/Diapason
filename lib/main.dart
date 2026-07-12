@@ -7,62 +7,86 @@ import 'package:app_links/app_links.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
-import 'package:finamp/color_schemes.g.dart';
-import 'package:finamp/components/Buttons/cta_medium.dart';
-import 'package:finamp/gen/assets.gen.dart';
-import 'package:finamp/hive_registrar.g.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/models/locale_adapter.dart';
-import 'package:finamp/models/music_models.dart';
-import 'package:finamp/screens/accessibility_settings_screen.dart';
-import 'package:finamp/screens/album_settings_screen.dart';
-import 'package:finamp/screens/artist_settings_screen.dart';
-import 'package:finamp/screens/downloads_settings_screen.dart';
-import 'package:finamp/screens/genre_settings_screen.dart';
-import 'package:finamp/screens/home_screen_settings_screen.dart';
-import 'package:finamp/screens/interaction_settings_screen.dart';
-import 'package:finamp/screens/login_screen.dart';
-import 'package:finamp/screens/lyrics_settings_screen.dart';
-import 'package:finamp/screens/network_settings_screen.dart';
-import 'package:finamp/screens/playback_history_screen.dart';
-import 'package:finamp/screens/playback_reporting_settings_screen.dart';
-import 'package:finamp/screens/player_settings_screen.dart';
-import 'package:finamp/screens/playlist_edit_screen.dart';
-import 'package:finamp/screens/queue_restore_screen.dart';
-import 'package:finamp/services/album_image_provider.dart';
-import 'package:finamp/services/android_auto_helper.dart';
-import 'package:finamp/services/audio_service_smtc.dart';
-import 'package:finamp/services/carplay_helper.dart';
-import 'package:finamp/services/client_certificate_installer.dart';
-import 'package:finamp/services/data_source_service.dart';
-import 'package:finamp/services/dbus_manager.dart';
-import 'package:finamp/services/discord_rpc.dart';
-import 'package:finamp/services/downloads_service.dart';
-import 'package:finamp/services/downloads_service_backend.dart';
-import 'package:finamp/services/finamp_logs_helper.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/ios_helpers.dart';
-import 'package:finamp/services/item_by_id_provider.dart';
-import 'package:finamp/services/item_helper.dart';
-import 'package:finamp/services/keep_screen_on_helper.dart';
-import 'package:finamp/services/music_providers.dart';
-import 'package:finamp/services/network_manager.dart';
-import 'package:finamp/services/offline_listen_helper.dart';
-import 'package:finamp/services/playback_history_service.dart';
-import 'package:finamp/services/playon_service.dart';
-import 'package:finamp/services/queue_service.dart';
-import 'package:finamp/services/theme_provider.dart';
-import 'package:finamp/services/ui_overlay_setter_observer.dart';
-import 'package:finamp/services/widget_bindings_observer_provider.dart';
+import 'package:diapason/color_schemes.g.dart';
+import 'package:diapason/components/Buttons/cta_medium.dart';
+import 'package:diapason/gen/assets.gen.dart';
+import 'package:diapason/hive_registrar.g.dart';
+import 'package:diapason/models/media_source.dart';
+import 'package:diapason/models/library_shortcut.dart';
+import 'package:diapason/models/playback_event.dart';
+import 'package:diapason/services/shortcuts/shortcut_service.dart';
+import 'package:diapason/services/shortcuts/widget_sync_service.dart';
+import 'package:diapason/utils/device_form_factor.dart';
+import 'package:diapason/services/stats/stats_service.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/services/backends/backend_registry.dart';
+import 'package:diapason/services/backends/media_source_service.dart';
+import 'package:diapason/services/lyrics/lrclib_client.dart';
+import 'package:diapason/services/cast/cast_service.dart';
+import 'package:diapason/services/transfer/desktop_transfer_service.dart';
+import 'package:diapason/services/transfer/import_service.dart';
+import 'package:diapason/services/discovery/auto_radio_service.dart';
+import 'package:diapason/services/discovery/discovery_service.dart';
+import 'package:diapason/services/scrobbling/scrobble_service.dart';
+import 'package:diapason/services/stream_cache_service.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:diapason/services/connect/connect_player_bridge.dart';
+import 'package:diapason/services/connect/connect_service.dart';
+import 'package:diapason/services/uploader/uploader_client.dart';
+import 'package:diapason/services/youtube_service.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/models/locale_adapter.dart';
+import 'package:diapason/models/music_models.dart';
+import 'package:diapason/screens/accessibility_settings_screen.dart';
+import 'package:diapason/screens/album_settings_screen.dart';
+import 'package:diapason/screens/artist_settings_screen.dart';
+import 'package:diapason/screens/downloads_settings_screen.dart';
+import 'package:diapason/screens/genre_settings_screen.dart';
+import 'package:diapason/screens/home_screen_settings_screen.dart';
+import 'package:diapason/screens/interaction_settings_screen.dart';
+import 'package:diapason/screens/login_screen.dart';
+import 'package:diapason/components/desktop_unsupported_banner.dart';
+import 'package:diapason/screens/lyrics_settings_screen.dart';
+import 'package:diapason/screens/visualizer_settings_screen.dart';
+import 'package:diapason/screens/network_settings_screen.dart';
+import 'package:diapason/screens/playback_history_screen.dart';
+import 'package:diapason/screens/playback_reporting_settings_screen.dart';
+import 'package:diapason/screens/player_settings_screen.dart';
+import 'package:diapason/screens/playlist_edit_screen.dart';
+import 'package:diapason/screens/queue_restore_screen.dart';
+import 'package:diapason/services/album_image_provider.dart';
+import 'package:diapason/services/android_auto_helper.dart';
+import 'package:diapason/services/audio_service_smtc.dart';
+import 'package:diapason/services/carplay_helper.dart';
+import 'package:diapason/services/client_certificate_installer.dart';
+import 'package:diapason/services/data_source_service.dart';
+import 'package:diapason/services/dbus_manager.dart';
+import 'package:diapason/services/discord_rpc.dart';
+import 'package:diapason/services/downloads_service.dart';
+import 'package:diapason/services/downloads_service_backend.dart';
+import 'package:diapason/services/finamp_logs_helper.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/ios_helpers.dart';
+import 'package:diapason/services/item_by_id_provider.dart';
+import 'package:diapason/services/item_helper.dart';
+import 'package:diapason/services/keep_screen_on_helper.dart';
+import 'package:diapason/services/music_providers.dart';
+import 'package:diapason/services/network_manager.dart';
+import 'package:diapason/services/offline_listen_helper.dart';
+import 'package:diapason/services/playback_history_service.dart';
+import 'package:diapason/services/playon_service.dart';
+import 'package:diapason/services/queue_service.dart';
+import 'package:diapason/services/theme_provider.dart';
+import 'package:diapason/services/ui_overlay_setter_observer.dart';
+import 'package:diapason/services/widget_bindings_observer_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:flutter_user_certificates_android/flutter_user_certificates_android.dart';
 import 'package:gaimon/gaimon.dart';
@@ -103,6 +127,20 @@ import 'screens/logs_screen.dart';
 import 'screens/music_screen.dart';
 import 'screens/player_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/cache_settings_screen.dart';
+import 'screens/scrobbling_settings_screen.dart';
+import 'screens/connect_screen.dart';
+import 'screens/ipod/ipod_shell.dart';
+import 'screens/cast_screen.dart';
+import 'screens/import_screen.dart';
+import 'screens/shortcuts_screen.dart';
+import 'screens/radio_screen.dart';
+import 'screens/tv/tv_home_screen.dart';
+import 'screens/tv/tv_now_playing_screen.dart';
+import 'screens/watch/watch_screen.dart';
+import 'screens/wrapped_screen.dart';
+import 'screens/uploader_settings_screen.dart';
+import 'screens/sources_settings_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/tabs_settings_screen.dart';
 import 'screens/transcoding_settings_screen.dart';
@@ -136,9 +174,11 @@ Future<void> main({bool integrationTesting = false, bool loginTesting = false}) 
     _mainLog.info("Setup edge-to-edge overlay");
     await setupHive();
     _mainLog.info("Setup hive and isar");
+    await DeviceFormFactorDetector.detect();
     _migrateDownloadLocations();
     _migrateSortOptions();
     _migrateGridSize();
+    _migrateNewTabs();
     _migrateHomescreen();
     await _migrateThemeModeLocale();
     _mainLog.info("Completed applicable migrations");
@@ -150,6 +190,8 @@ Future<void> main({bool integrationTesting = false, bool loginTesting = false}) 
     _mainLog.info("Setup user helper");
     await _setupJellyfinApiData();
     _mainLog.info("setup jellyfin api");
+    await _setupMediaSources();
+    _mainLog.info("Setup media sources");
     _setupOfflineListenLogHelper();
     _mainLog.info("Setup offline listen tracking");
     await _setupDownloadsHelper();
@@ -162,6 +204,10 @@ Future<void> main({bool integrationTesting = false, bool loginTesting = false}) 
     _mainLog.info("Setup PlayOnService");
     await _setupPlaybackServices();
     _mainLog.info("Setup audio player");
+    await _setupConnect();
+    _mainLog.info("Setup Diapason Connect");
+    await GetIt.instance<WidgetSyncService>().start();
+    _mainLog.info("Setup home screen widget");
     await _setupKeepScreenOnHelper();
     _mainLog.info("Setup KeepScreenOnHelper");
     await _setupDiscordRpc();
@@ -227,6 +273,26 @@ Future<void> _setupEdgeToEdgeOverlayStyle() async {
 
 Future<void> _setupJellyfinApiData() async {
   GetIt.instance.registerSingleton(JellyfinApiHelper());
+}
+
+Future<void> _setupMediaSources() async {
+  GetIt.instance.registerSingleton(BackendRegistry());
+  GetIt.instance.registerSingleton(AggregateBackend());
+  GetIt.instance.registerSingleton(LrclibClient());
+  GetIt.instance.registerSingleton(StreamCacheService());
+  GetIt.instance.registerSingleton(YouTubeService());
+  GetIt.instance.registerSingleton(DiscoveryService());
+  GetIt.instance.registerSingleton(ScrobbleService());
+  GetIt.instance.registerSingleton(UploaderClient());
+  GetIt.instance.registerSingleton(StatsService());
+  GetIt.instance.registerSingleton(AutoRadioService());
+  GetIt.instance.registerSingleton(CastService());
+  GetIt.instance.registerSingleton(ImportService());
+  GetIt.instance.registerSingleton(DesktopTransferService());
+  GetIt.instance.registerSingleton(ShortcutService());
+  GetIt.instance.registerSingleton(WidgetSyncService());
+  GetIt.instance.registerSingleton(MediaSourceService());
+  await GetIt.instance<MediaSourceService>().loadSources();
 }
 
 void _setupOfflineListenLogHelper() {
@@ -328,7 +394,16 @@ Future<void> setupHive() async {
     compactFile.deleteSync();
   }
   final isar = await Isar.open(
-    [DownloadItemSchema, IsarTaskDataSchema, FinampUserSchema, DownloadedLyricsSchema],
+    [
+      DownloadItemSchema,
+      IsarTaskDataSchema,
+      FinampUserSchema,
+      DownloadedLyricsSchema,
+      MediaSourceConfigSchema,
+      PlaybackEventSchema,
+      PinnedItemSchema,
+      SearchHistoryEntrySchema,
+    ],
     directory: dir.path,
     name: isarDatabaseName,
     compactOnLaunch: CompactCondition(minBytes: 5 * 1024 * 1024),
@@ -401,7 +476,7 @@ Future<void> _setupOSIntegration() async {
   }
 
   if (Platform.isAndroid) {
-    var themeModeChannel = MethodChannel("com.unicornsonlsd.finamp/set_native_theme");
+    var themeModeChannel = MethodChannel("fr.nytuo.diapason/set_native_theme");
     GetIt.instance<ProviderContainer>().listen(finampSettingsProvider.themeMode, (_, mode) {
       _mainLog.info("Setting android native theme to $mode");
       themeModeChannel.invokeMethod("setNativeThemeMode", {
@@ -414,6 +489,27 @@ Future<void> _setupOSIntegration() async {
       // Fire on startup to correct desyncs and apply migration
     }, fireImmediately: true);
   }
+}
+
+Future<void> _setupConnect() async {
+  GetIt.instance.registerSingleton(ConnectService());
+  GetIt.instance.registerSingleton(ConnectPlayerBridge());
+  GetIt.instance<ConnectPlayerBridge>().attach();
+
+  try {
+    await GetIt.instance<ConnectService>().start(deviceName: await _connectDeviceName());
+  } catch (e) {
+    _mainLog.warning("Could not start Diapason Connect: $e");
+  }
+}
+
+Future<String> _connectDeviceName() async {
+  try {
+    final info = await DeviceInfoPlugin().deviceInfo;
+    final name = info.data["name"] ?? info.data["model"] ?? info.data["computerName"];
+    if (name is String && name.isNotEmpty) return "Diapason ($name)";
+  } catch (_) {}
+  return "Diapason";
 }
 
 Future<void> _setupPlaybackServices() async {
@@ -429,9 +525,9 @@ Future<void> _setupPlaybackServices() async {
     builder: () => MusicPlayerBackgroundTask(),
     config: AudioServiceConfig(
       androidStopForegroundOnPause: FinampSettingsHelper.finampSettings.androidStopForegroundOnPause,
-      androidNotificationChannelName: "Finamp",
+      androidNotificationChannelName: "Diapason",
       androidNotificationIcon: "mipmap/white",
-      androidNotificationChannelId: "com.unicornsonlsd.finamp.audio",
+      androidNotificationChannelId: "fr.nytuo.diapason.audio",
       // notificationColor: TODO use the theme color for older versions of Android,
       // We will handle preloading artwork ourselves
       preloadArtwork: false,
@@ -569,6 +665,21 @@ void _migrateSortOptions() {
 
 /// Migrates old grid size options to FinampSettings.gridImageSize
 // ignore: deprecated_member_use_from_same_package
+void _migrateNewTabs() {
+  final settings = FinampSettingsHelper.finampSettings;
+  final missing = DefaultSettings.tabOrder.where((tab) => !settings.tabOrder.contains(tab)).toList();
+  if (missing.isEmpty) return;
+
+  settings.tabOrder = [...settings.tabOrder, ...missing];
+  final showTabs = Map.of(settings.showTabs);
+  for (final tab in missing) {
+    showTabs[tab] ??= DefaultSettings.showTabs[tab] ?? false;
+  }
+  settings.showTabs = showTabs;
+  Hive.box<FinampSettings>("FinampSettings").put("FinampSettings", settings);
+  _mainLog.info("Added ${missing.length} new tab(s) to the tab order");
+}
+
 void _migrateGridSize() {
   final finampSettings = FinampSettingsHelper.finampSettings;
   // Use this bool being null as a flag to skip migration
@@ -645,7 +756,7 @@ Future<void> _migrateDownloadsFileOwner() async {
     return;
   }
   if (!FinampSettingsHelper.finampSettings.hasCompletedDownloadsFileOwnerMigration) {
-    var downloadsServiceChannel = MethodChannel("com.unicornsonlsd.finamp/downloads_service");
+    var downloadsServiceChannel = MethodChannel("fr.nytuo.diapason/downloads_service");
     var downloadLocations = FinampSettingsHelper.finampSettings.downloadLocationsMap;
     var downloadPaths = downloadLocations.values.map((e) => e.currentPath).toList();
     await downloadsServiceChannel.invokeMethod("fixDownloadsFileOwner", <String, dynamic>{
@@ -861,10 +972,24 @@ class FinampApp extends ConsumerWidget {
           )
         : null;
     return MaterialApp(
-      title: "Finamp",
+      title: "Diapason",
       routes: {
         SplashScreen.routeName: (context) => const SplashScreen(),
         LoginScreen.routeName: (context) => const LoginScreen(),
+        SourcesSettingsScreen.routeName: (context) => const SourcesSettingsScreen(),
+        CacheSettingsScreen.routeName: (context) => const CacheSettingsScreen(),
+        ScrobblingSettingsScreen.routeName: (context) => const ScrobblingSettingsScreen(),
+        UploaderSettingsScreen.routeName: (context) => const UploaderSettingsScreen(),
+        ConnectScreen.routeName: (context) => const ConnectScreen(),
+        WrappedScreen.routeName: (context) => const WrappedScreen(),
+        RadioScreen.routeName: (context) => const RadioScreen(),
+        CastScreen.routeName: (context) => const CastScreen(),
+        ImportScreen.routeName: (context) => const ImportScreen(),
+        ShortcutsScreen.routeName: (context) => const ShortcutsScreen(),
+        TvHomeScreen.routeName: (context) => const TvHomeScreen(),
+        TvNowPlayingScreen.routeName: (context) => const TvNowPlayingScreen(),
+        WatchScreen.routeName: (context) => const WatchScreen(),
+        IpodShell.routeName: (context) => const IpodShell(),
         ViewSelector.routeName: (context) => const ViewSelector(),
         MusicScreen.routeName: (context) => const MusicScreen(),
         AlbumScreen.routeName: (context) => const AlbumScreen(),
@@ -891,6 +1016,7 @@ class FinampApp extends ConsumerWidget {
         CustomizationSettingsScreen.routeName: (context) => const CustomizationSettingsScreen(),
         PlayerSettingsScreen.routeName: (context) => const PlayerSettingsScreen(),
         LyricsSettingsScreen.routeName: (context) => const LyricsSettingsScreen(),
+        VisualizerSettingsScreen.routeName: (context) => const VisualizerSettingsScreen(),
         LanguageSelectionScreen.routeName: (context) => const LanguageSelectionScreen(),
         AlbumSettingsScreen.routeName: (context) => const AlbumSettingsScreen(),
         ArtistSettingsScreen.routeName: (context) => const ArtistSettingsScreen(),
@@ -904,7 +1030,9 @@ class FinampApp extends ConsumerWidget {
       initialRoute: SplashScreen.routeName,
       navigatorObservers: [SplitScreenNavigatorObserver(), KeepScreenOnObserver()],
       builder: (BuildContext context, Widget? widget) {
-        return GlobalShortcutManager(child: buildPlayerSplitScreenScaffold(context, widget));
+        return GlobalShortcutManager(
+          child: DesktopUnsupportedBanner(child: buildPlayerSplitScreenScaffold(context, widget)),
+        );
       },
       theme: ThemeData(
         brightness: Brightness.light,
@@ -976,7 +1104,7 @@ class FinampErrorApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Finamp",
+      title: "Diapason",
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -1009,7 +1137,7 @@ class ErrorScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Hero(tag: "finamp_logo", child: SvgPicture.asset('images/finamp_cropped.svg', width: 75, height: 75)),
+              Hero(tag: "finamp_logo", child: Image.asset('images/diapason_cropped.png', width: 75, height: 75)),
               const SizedBox(height: 16.0),
               Text.rich(
                 TextSpan(

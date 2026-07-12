@@ -2,7 +2,7 @@
 //  CarPlaySceneDelegate.swift
 //  Runner
 //
-//  CarPlay scene delegate for Finamp - reproduces flutter_carplay plugin delegate logic
+//  CarPlay scene delegate for Diapason - reproduces flutter_carplay plugin delegate logic
 //
 
 import UIKit
@@ -23,13 +23,13 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
     override init() {
         super.init()
-        NSLog("[FINAMP-CarPlay] CarPlaySceneDelegate initialized")
+        NSLog("[DIAPASON-CarPlay] CarPlaySceneDelegate initialized")
     }
 
     @objc(templateApplicationScene:didConnectInterfaceController:)
     func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene,
                                    didConnect interfaceController: CPInterfaceController) {
-        NSLog("[FINAMP-CarPlay] didConnect interfaceController")
+        NSLog("[DIAPASON-CarPlay] didConnect interfaceController")
 
         CarPlaySceneDelegate.interfaceController = interfaceController
         interfaceController.delegate = self
@@ -49,13 +49,13 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
         // Notify Flutter that CarPlay connected
         methodChannel.invokeMethod("onCarplayConnectionChange", arguments: ["status": "connected"])
 
-        NSLog("[FINAMP-CarPlay] CarPlay connected successfully - notified Flutter")
+        NSLog("[DIAPASON-CarPlay] CarPlay connected successfully - notified Flutter")
     }
 
     @objc(templateApplicationScene:didDisconnectInterfaceController:)
     func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene,
                                    didDisconnectInterfaceController interfaceController: CPInterfaceController) {
-        NSLog("[FINAMP-CarPlay] didDisconnectInterfaceController")
+        NSLog("[DIAPASON-CarPlay] didDisconnectInterfaceController")
 
         // Notify Flutter of disconnection
         let methodChannel = FlutterMethodChannel(
@@ -67,12 +67,12 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
         interfaceController.delegate = nil
         CarPlaySceneDelegate.interfaceController = nil
 
-        NSLog("[FINAMP-CarPlay] CarPlay disconnected")
+        NSLog("[DIAPASON-CarPlay] CarPlay disconnected")
     }
 
     // Scene lifecycle events
     func sceneDidBecomeActive(_ scene: UIScene) {
-        NSLog("[FINAMP-CarPlay] sceneDidBecomeActive")
+        NSLog("[DIAPASON-CarPlay] sceneDidBecomeActive")
         let methodChannel = FlutterMethodChannel(
             name: makeFCPChannelId(event: ""),
             binaryMessenger: flutterEngine.binaryMessenger
@@ -81,7 +81,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
-        NSLog("[FINAMP-CarPlay] sceneDidEnterBackground")
+        NSLog("[DIAPASON-CarPlay] sceneDidEnterBackground")
         let methodChannel = FlutterMethodChannel(
             name: makeFCPChannelId(event: ""),
             binaryMessenger: flutterEngine.binaryMessenger
@@ -91,6 +91,6 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
     // CPInterfaceControllerDelegate method
     func templateDidDisappear(_ template: CPTemplate, animated: Bool) {
-        NSLog("[FINAMP-CarPlay] templateDidDisappear")
+        NSLog("[DIAPASON-CarPlay] templateDidDisappear")
     }
 }

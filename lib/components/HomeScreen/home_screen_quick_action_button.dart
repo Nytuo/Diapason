@@ -1,5 +1,5 @@
-import 'package:finamp/services/feedback_helper.dart';
-import 'package:finamp/utils/platform_helper.dart';
+import 'package:diapason/services/feedback_helper.dart';
+import 'package:diapason/utils/platform_helper.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreenQuickActionButton extends StatelessWidget {

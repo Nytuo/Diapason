@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/jellyfin_api.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/jellyfin_api.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:logging/logging.dart';
@@ -40,7 +40,7 @@ class OfflineListenLogHelper {
 
     final offlineListen = OfflineListen(
       timestamp: (timestamp ?? DateTime.now()).millisecondsSinceEpoch ~/ 1000,
-      userId: _finampUserHelper.currentUserId!,
+      userId: _finampUserHelper.currentUserId ?? "",
       itemId: itemJson["Id"] as String,
       name: itemJson["Name"] as String,
       artist: itemJson["AlbumArtist"] as String?,

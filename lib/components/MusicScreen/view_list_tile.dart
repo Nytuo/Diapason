@@ -1,5 +1,5 @@
-import 'package:finamp/components/AlbumScreen/download_button.dart';
-import 'package:finamp/components/toggleable_list_tile.dart';
+import 'package:diapason/components/AlbumScreen/download_button.dart';
+import 'package:diapason/components/toggleable_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

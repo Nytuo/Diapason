@@ -3,27 +3,28 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:balanced_text/balanced_text.dart';
-import 'package:finamp/components/Buttons/simple_button.dart';
-import 'package:finamp/components/PlayerScreen/control_area.dart';
-import 'package:finamp/components/PlayerScreen/player_screen_album_image.dart';
-import 'package:finamp/components/PlayerScreen/player_screen_appbar_title.dart';
-import 'package:finamp/components/PlayerScreen/player_split_screen_scaffold.dart';
-import 'package:finamp/components/PlayerScreen/queue_button.dart';
-import 'package:finamp/components/PlayerScreen/queue_list.dart';
-import 'package:finamp/components/PlayerScreen/track_name_content.dart';
-import 'package:finamp/components/finamp_app_bar_back_button.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/menus/output_menu.dart';
-import 'package:finamp/menus/playlist_actions_menu.dart';
-import 'package:finamp/menus/track_menu.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/screens/blurred_player_screen_background.dart';
-import 'package:finamp/screens/lyrics_screen.dart';
-import 'package:finamp/services/current_track_metadata_provider.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/music_player_background_task.dart';
-import 'package:finamp/services/queue_service.dart';
-import 'package:finamp/services/theme_provider.dart';
+import 'package:diapason/components/Buttons/simple_button.dart';
+import 'package:diapason/components/PlayerScreen/control_area.dart';
+import 'package:diapason/components/PlayerScreen/player_screen_album_image.dart';
+import 'package:diapason/components/PlayerScreen/player_screen_appbar_title.dart';
+import 'package:diapason/components/PlayerScreen/player_split_screen_scaffold.dart';
+import 'package:diapason/components/PlayerScreen/queue_button.dart';
+import 'package:diapason/components/PlayerScreen/queue_list.dart';
+import 'package:diapason/components/PlayerScreen/spectrum_visualizer.dart';
+import 'package:diapason/components/PlayerScreen/track_name_content.dart';
+import 'package:diapason/components/finamp_app_bar_back_button.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/menus/output_menu.dart';
+import 'package:diapason/menus/playlist_actions_menu.dart';
+import 'package:diapason/menus/track_menu.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/screens/blurred_player_screen_background.dart';
+import 'package:diapason/screens/lyrics_screen.dart';
+import 'package:diapason/services/current_track_metadata_provider.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/music_player_background_task.dart';
+import 'package:diapason/services/queue_service.dart';
+import 'package:diapason/services/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -208,6 +209,7 @@ class _PlayerScreenContent extends ConsumerWidget {
           body: Stack(
             children: [
               if (ref.watch(finampSettingsProvider.useCoverAsBackground)) const BlurredPlayerScreenBackground(),
+              const Positioned.fill(child: SpectrumVisualizer()),
               SafeArea(
                 minimum: EdgeInsets.only(top: toolbarHeight),
                 child: LayoutBuilder(

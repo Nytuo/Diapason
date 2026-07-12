@@ -1,11 +1,14 @@
 import 'dart:async';
 
-import 'package:finamp/components/LoginScreen/login_server_selection_page.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/screens/view_selector.dart';
-import 'package:finamp/services/client_certificate_installer.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
-import 'package:finamp/services/server_client_discovery_service.dart';
+import 'package:diapason/components/LoginScreen/login_server_selection_page.dart';
+import 'package:diapason/components/LoginScreen/login_source_type_page.dart';
+import 'package:diapason/models/media_source.dart';
+import 'package:diapason/services/backends/media_source_service.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/screens/view_selector.dart';
+import 'package:diapason/services/client_certificate_installer.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
+import 'package:diapason/services/server_client_discovery_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
@@ -17,7 +20,9 @@ import 'login_splash_page.dart';
 import 'login_user_selection_page.dart';
 
 class LoginFlow extends StatefulWidget {
-  const LoginFlow({super.key});
+  const LoginFlow({super.key, this.jellyfinOnly = false});
+
+  final bool jellyfinOnly;
 
   @override
   State<LoginFlow> createState() => _LoginFlowState();
@@ -25,8 +30,19 @@ class LoginFlow extends StatefulWidget {
 
 final loginNavigatorKey = GlobalKey<NavigatorState>();
 
+void popLoginStep(BuildContext context) {
+  final nested = loginNavigatorKey.currentState;
+  if (nested != null && nested.canPop()) {
+    nested.pop();
+  } else {
+    Navigator.of(context, rootNavigator: true).pop();
+  }
+}
+
 class _LoginFlowState extends State<LoginFlow> {
   ServerState serverState = ServerState(discoveredServers: {});
+
+  MediaSourceKind? pendingSourceKind;
   ConnectionState connectionState = ConnectionState();
 
   @override
@@ -54,7 +70,7 @@ class _LoginFlowState extends State<LoginFlow> {
       },
       child: Navigator(
         key: loginNavigatorKey,
-        initialRoute: LoginSplashPage.routeName,
+        initialRoute: widget.jellyfinOnly ? LoginServerSelectionPage.routeName : LoginSplashPage.routeName,
         onGenerateRoute: (RouteSettings settings) {
           Route route;
 
@@ -84,8 +100,44 @@ class _LoginFlowState extends State<LoginFlow> {
             case LoginSplashPage.routeName:
               route = createRoute(
                 LoginSplashPage(
-                  onGetStartedPressed: () =>
-                      loginNavigatorKey.currentState!.pushNamed(LoginServerSelectionPage.routeName),
+                  onGetStartedPressed: () => loginNavigatorKey.currentState!.pushNamed(LoginSourceTypePage.routeName),
+                ),
+              );
+              break;
+            case LoginSourceTypePage.routeName:
+              route = createRoute(
+                LoginSourceTypePage(
+                  onKindSelected: (kind) {
+                    if (kind == MediaSourceKind.jellyfin) {
+                      loginNavigatorKey.currentState!.pushNamed(LoginServerSelectionPage.routeName);
+                    } else {
+                      pendingSourceKind = kind;
+                      loginNavigatorKey.currentState!.pushNamed(LoginSourceFormPage.routeName);
+                    }
+                  },
+                ),
+              );
+              break;
+            case LoginSourceFormPage.routeName:
+              route = createRoute(
+                LoginSourceFormPage(
+                  kind: pendingSourceKind!,
+                  onSaved: (config) async {
+                    await GetIt.instance<MediaSourceService>().addSource(config);
+                    if (!context.mounted) return;
+
+                    loginNavigatorKey.currentState!.popUntil(
+                      (r) => r.settings.name == LoginSourceTypePage.routeName,
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          "${config.name} saved. Browsing it needs a Jellyfin server connected too, for now.",
+                        ),
+                        duration: const Duration(seconds: 6),
+                      ),
+                    );
+                  },
                 ),
               );
               break;

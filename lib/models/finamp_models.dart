@@ -3,16 +3,17 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:bits/bits.dart';
 import 'package:collection/collection.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
-import 'package:finamp/services/radio_service_helper.dart';
-import 'package:finamp/utils/platform_helper.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/radio_service_helper.dart';
+import 'package:diapason/utils/platform_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -113,6 +114,40 @@ class DefaultSettings {
   static const Color? accentColor = null;
   static const shouldTranscode = false;
   static const transcodeBitrate = 320000;
+  static const cacheStreamedTracks = true;
+  static const maxCacheSizeMegabytes = 1024;
+
+  static const interfaceMode = "modern";
+  static const autoRadioEnabled = false;
+  static const crossfadeSeconds = 0;
+  static const visualizerEnabled = true;
+  static const visualizerBins = 64;
+  static const visualizerFps = 30;
+  static const visualizerSmoothing = 0.8;
+  static const visualizerScale = 1.0;
+  static const visualizerHeightFactor = 0.35;
+  static const visualizerBottomOpacity = 0.5;
+  static const visualizerTopOpacity = 0.0;
+  static const visualizerUseSplines = true;
+  static const visualizerStrokeWidth = 1.5;
+  static const visualizerFillEnabled = true;
+  static const visualizerMinHz = 20.0;
+  static const visualizerMaxHz = 16000.0;
+  static const visualizerDbFloor = -100.0;
+  static const visualizerDbCeiling = -10.0;
+  static const visualizerLogScale = true;
+
+  static const uploaderEnabled = false;
+  static const uploaderUrl = "";
+  static const uploaderToken = "";
+  static const uploaderNetworkPolicy = "local";
+
+  static const listenBrainzToken = "";
+  static const lastFmApiKey = "";
+  static const lastFmApiSecret = "";
+  static const lastFmSessionKey = "";
+  static const lastFmUsername = "";
+
   static const androidStopForegroundOnPause = true;
   static const onlyShowFavorites = false;
   static const trackShuffleItemCount = 250;
@@ -150,6 +185,9 @@ class DefaultSettings {
     ContentType.playlists,
     ContentType.tracks,
     ContentType.genres,
+    ContentType.discover,
+    ContentType.youtube,
+    ContentType.downloads,
   ];
   static const showTabs = {
     ContentType.home: true,
@@ -160,6 +198,9 @@ class DefaultSettings {
     ContentType.playlists: true,
     ContentType.tracks: true,
     ContentType.genres: true,
+    ContentType.discover: true,
+    ContentType.youtube: true,
+    ContentType.downloads: true,
   };
   static const itemSwipeActionLeftToRight = ItemSwipeActions.nothing;
   static const itemSwipeActionRightToLeft = ItemSwipeActions.addToNextUp;
@@ -924,6 +965,110 @@ class FinampSettings {
   @HiveField(151, defaultValue: DefaultSettings.clientCertificate)
   ClientCertificate? clientCertificate = DefaultSettings.clientCertificate;
 
+  @HiveField(152, defaultValue: DefaultSettings.cacheStreamedTracks)
+  bool cacheStreamedTracks = DefaultSettings.cacheStreamedTracks;
+
+  @HiveField(153, defaultValue: DefaultSettings.maxCacheSizeMegabytes)
+  int maxCacheSizeMegabytes = DefaultSettings.maxCacheSizeMegabytes;
+
+  @HiveField(154, defaultValue: DefaultSettings.listenBrainzToken)
+  String listenBrainzToken = DefaultSettings.listenBrainzToken;
+
+  @HiveField(155, defaultValue: DefaultSettings.lastFmApiKey)
+  String lastFmApiKey = DefaultSettings.lastFmApiKey;
+
+  @HiveField(156, defaultValue: DefaultSettings.lastFmApiSecret)
+  String lastFmApiSecret = DefaultSettings.lastFmApiSecret;
+
+  @HiveField(157, defaultValue: DefaultSettings.lastFmSessionKey)
+  String lastFmSessionKey = DefaultSettings.lastFmSessionKey;
+
+  @HiveField(158, defaultValue: DefaultSettings.lastFmUsername)
+  String lastFmUsername = DefaultSettings.lastFmUsername;
+
+  @HiveField(159, defaultValue: DefaultSettings.uploaderEnabled)
+  bool uploaderEnabled = DefaultSettings.uploaderEnabled;
+
+  @HiveField(160, defaultValue: DefaultSettings.uploaderUrl)
+  String uploaderUrl = DefaultSettings.uploaderUrl;
+
+  @HiveField(161, defaultValue: DefaultSettings.uploaderToken)
+  String uploaderToken = DefaultSettings.uploaderToken;
+
+  @HiveField(162, defaultValue: DefaultSettings.uploaderNetworkPolicy)
+  String uploaderNetworkPolicy = DefaultSettings.uploaderNetworkPolicy;
+
+  @HiveField(163, defaultValue: DefaultSettings.interfaceMode)
+  String interfaceMode = DefaultSettings.interfaceMode;
+
+  @HiveField(164, defaultValue: DefaultSettings.autoRadioEnabled)
+  bool autoRadioEnabled = DefaultSettings.autoRadioEnabled;
+
+  @HiveField(165, defaultValue: DefaultSettings.crossfadeSeconds)
+  int crossfadeSeconds = DefaultSettings.crossfadeSeconds;
+
+  /// Whether the spectrum visualizer is drawn behind the player screen.
+  @HiveField(166, defaultValue: DefaultSettings.visualizerEnabled)
+  bool visualizerEnabled = DefaultSettings.visualizerEnabled;
+
+  /// Number of spectrum bands. Higher means a more detailed curve.
+  @HiveField(167, defaultValue: DefaultSettings.visualizerBins)
+  int visualizerBins = DefaultSettings.visualizerBins;
+
+  /// Redraw rate of the visualizer. Lower saves battery.
+  @HiveField(168, defaultValue: DefaultSettings.visualizerFps)
+  int visualizerFps = DefaultSettings.visualizerFps;
+
+  /// How much of the previous frame is kept each tick, between 0 and 1.
+  @HiveField(169, defaultValue: DefaultSettings.visualizerSmoothing)
+  double visualizerSmoothing = DefaultSettings.visualizerSmoothing;
+
+  /// Multiplier applied to band magnitudes before drawing.
+  @HiveField(170, defaultValue: DefaultSettings.visualizerScale)
+  double visualizerScale = DefaultSettings.visualizerScale;
+
+  /// Fraction of the screen height the visualizer occupies at the bottom.
+  @HiveField(171, defaultValue: DefaultSettings.visualizerHeightFactor)
+  double visualizerHeightFactor = DefaultSettings.visualizerHeightFactor;
+
+  @HiveField(172, defaultValue: DefaultSettings.visualizerBottomOpacity)
+  double visualizerBottomOpacity = DefaultSettings.visualizerBottomOpacity;
+
+  @HiveField(173, defaultValue: DefaultSettings.visualizerTopOpacity)
+  double visualizerTopOpacity = DefaultSettings.visualizerTopOpacity;
+
+  /// Smooth the curve with a Catmull-Rom spline instead of drawing straight
+  /// segments between bands.
+  @HiveField(174, defaultValue: DefaultSettings.visualizerUseSplines)
+  bool visualizerUseSplines = DefaultSettings.visualizerUseSplines;
+
+  /// Width of the curve outline. 0 disables the outline.
+  @HiveField(175, defaultValue: DefaultSettings.visualizerStrokeWidth)
+  double visualizerStrokeWidth = DefaultSettings.visualizerStrokeWidth;
+
+  @HiveField(176, defaultValue: DefaultSettings.visualizerFillEnabled)
+  bool visualizerFillEnabled = DefaultSettings.visualizerFillEnabled;
+
+  /// Lowest frequency the leftmost band covers.
+  @HiveField(178, defaultValue: DefaultSettings.visualizerMinHz)
+  double visualizerMinHz = DefaultSettings.visualizerMinHz;
+
+  /// Highest frequency the rightmost band covers.
+  @HiveField(179, defaultValue: DefaultSettings.visualizerMaxHz)
+  double visualizerMaxHz = DefaultSettings.visualizerMaxHz;
+
+  /// Level that maps to a flat curve. Raise it to cut background noise.
+  @HiveField(180, defaultValue: DefaultSettings.visualizerDbFloor)
+  double visualizerDbFloor = DefaultSettings.visualizerDbFloor;
+
+  /// Level that maps to a full-height curve. Lower it to make quiet music move more.
+  @HiveField(181, defaultValue: DefaultSettings.visualizerDbCeiling)
+  double visualizerDbCeiling = DefaultSettings.visualizerDbCeiling;
+
+  /// Space the bands logarithmically rather than linearly across the frequency range.
+  @HiveField(182, defaultValue: DefaultSettings.visualizerLogScale)
+  bool visualizerLogScale = DefaultSettings.visualizerLogScale;
+
   static Future<FinampSettings> create() async {
     final downloadLocation = await DownloadLocation.create(
       name: DownloadLocation.internalStorageName,
@@ -1120,7 +1265,16 @@ enum ContentType {
   @HiveField(10)
   inPerformingArtistAlbums(BaseItemDtoType.album),
   @HiveField(11)
-  inAlbumArtistAlbums(BaseItemDtoType.album);
+  inAlbumArtistAlbums(BaseItemDtoType.album),
+
+  @HiveField(12)
+  discover(null),
+
+  @HiveField(13)
+  youtube(null),
+
+  @HiveField(14)
+  downloads(null);
 
   const ContentType(this.itemType);
 
@@ -1147,6 +1301,12 @@ enum ContentType {
         return l10n.playlists;
       case ContentType.home:
         return l10n.home;
+      case ContentType.discover:
+        return "Discover";
+      case ContentType.youtube:
+        return "YouTube";
+      case ContentType.downloads:
+        return l10n.downloads;
       case ContentType.performingArtists:
         return l10n.performingArtists;
       case ContentType.albumArtists:
@@ -1191,6 +1351,9 @@ enum ContentType {
     ContentType.genres => true,
     ContentType.tracks => true,
     ContentType.home => true,
+    ContentType.discover => true,
+    ContentType.youtube => true,
+    ContentType.downloads => true,
     ContentType.performingArtists => true,
     ContentType.albumArtists => true,
     ContentType.inPlaylist => false,
@@ -1206,6 +1369,9 @@ enum ContentType {
     ContentType.genres => true,
     ContentType.tracks => true,
     ContentType.home => false,
+    ContentType.discover => false,
+    ContentType.youtube => false,
+    ContentType.downloads => false,
     ContentType.performingArtists => true,
     ContentType.albumArtists => true,
     ContentType.inPlaylist => false,
@@ -3566,7 +3732,7 @@ enum DiscordRpcIcon {
       case light:
         return "assets/icon/icon_square_bg-white.png";
       case transparent:
-        return "images/finamp_cropped.png";
+        return "images/diapason_cropped.png";
       case transparentWhite:
         return "assets/icon/icon_white_noborder.png";
       case jellyfinTransparent:
@@ -3861,7 +4027,10 @@ class FinampStorableQueueInfo extends FinampStorableQueueInfoLegacy {
       packedShuffleOrder == null ? null : _unpackIntList(packedShuffleOrder!, max(0, trackCount - 1)).toList();
 
   int get trackCount =>
-      (packedPreviousTracks.length + packedCurrentTrack.length + packedNextUp.length + packedQueue.length) ~/ 16;
+      _countIds(packedPreviousTracks) +
+      _countIds(packedCurrentTrack) +
+      _countIds(packedNextUp) +
+      _countIds(packedQueue);
 
   /// Source indexes in trackSourceIndexes are stored as n bit unsigned ints packed
   /// into a Uint8List, where n is the smallest number that can index into all entries
@@ -3881,28 +4050,74 @@ class FinampStorableQueueInfo extends FinampStorableQueueInfoLegacy {
     }
   }
 
+  static const _idPackMagic = [0x44, 0x51, 0x01, 0x00];
+
+  static bool _isPacked(Uint8List ids) {
+    if (ids.length < _idPackMagic.length) return false;
+    for (int i = 0; i < _idPackMagic.length; i++) {
+      if (ids[i] != _idPackMagic[i]) return false;
+    }
+    return true;
+  }
+
   static List<BaseItemId> _unpackIds(Uint8List ids) {
-    List<BaseItemId> out = [];
-    for (int i = 0; i < ids.length; i += 16) {
-      String id = "";
-      for (int j = 0; j < 16; j++) {
-        id += ids[i + j].toRadixString(16).padLeft(2, "0");
-      }
-      out.add(BaseItemId(id));
+    if (ids.isEmpty) return [];
+    if (!_isPacked(ids)) return _unpackLegacyIds(ids);
+
+    final out = <BaseItemId>[];
+    final bytes = ByteData.sublistView(ids);
+    int offset = _idPackMagic.length;
+    while (offset + 2 <= ids.length) {
+      final length = bytes.getUint16(offset);
+      offset += 2;
+      if (offset + length > ids.length) break; // truncated; salvage what we read
+      out.add(BaseItemId(utf8.decode(ids.sublist(offset, offset + length))));
+      offset += length;
     }
     return out;
   }
 
-  /// Pack a list of BaseItemIds into a Uint8Lis.  BaseItemIds are assumed to be
-  /// 16 byte values formatted as a hexadecimal string.
-  static Uint8List packIds(List<BaseItemId> ids) {
-    final buffer = Uint8List(ids.length * 16);
-    for (int i = 0; i < buffer.length; i++) {
-      final stringIndex = (i % 16) * 2;
-      final hex = ids[i ~/ 16].raw.substring(stringIndex, stringIndex + 2);
-      buffer[i] = int.parse(hex, radix: 16);
+  static List<BaseItemId> _unpackLegacyIds(Uint8List ids) {
+    final out = <BaseItemId>[];
+    for (int i = 0; i + 16 <= ids.length; i += 16) {
+      final id = StringBuffer();
+      for (int j = 0; j < 16; j++) {
+        id.write(ids[i + j].toRadixString(16).padLeft(2, "0"));
+      }
+      out.add(BaseItemId(id.toString()));
     }
-    return buffer;
+    return out;
+  }
+
+  static int _countIds(Uint8List ids) {
+    if (ids.isEmpty) return 0;
+    if (!_isPacked(ids)) return ids.length ~/ 16;
+
+    final bytes = ByteData.sublistView(ids);
+    int count = 0;
+    int offset = _idPackMagic.length;
+    while (offset + 2 <= ids.length) {
+      final length = bytes.getUint16(offset);
+      offset += 2 + length;
+      if (offset > ids.length) break;
+      count++;
+    }
+    return count;
+  }
+
+  static Uint8List packIds(List<BaseItemId> ids) {
+    final builder = BytesBuilder(copy: false)..add(_idPackMagic);
+    for (final id in ids) {
+      final encoded = utf8.encode(id.raw);
+      if (encoded.length > 0xFFFF) {
+        throw ArgumentError("Item id is too long to store in a queue: ${encoded.length} bytes");
+      }
+      final header = ByteData(2)..setUint16(0, encoded.length);
+      builder
+        ..add(header.buffer.asUint8List())
+        ..add(encoded);
+    }
+    return builder.toBytes();
   }
 
   @override

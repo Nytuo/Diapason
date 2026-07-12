@@ -1,4 +1,4 @@
-import 'package:finamp/extensions/color_extensions.dart';
+import 'package:diapason/extensions/color_extensions.dart';
 import 'package:flutter/material.dart';
 
 class FinampExtendedFloatingActionButton extends StatelessWidget {

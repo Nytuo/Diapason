@@ -1,5 +1,5 @@
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/services/censored_log.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/services/censored_log.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';

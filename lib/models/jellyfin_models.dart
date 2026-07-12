@@ -9,9 +9,9 @@
 library;
 
 import 'package:collection/collection.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -44,6 +44,22 @@ extension type BaseItemId._(String raw) implements LibraryId {
   /// Construct a BaseItemDto id from a raw string.  Please be sure you have a valid ID before using, and
   /// if you might not, consider the invalid ID's scope and if you can use an alternative, such as null
   const BaseItemId(this.raw);
+
+  static const String sourceSeparator = "~";
+
+  static BaseItemId scoped(String sourceId, String nativeId) => BaseItemId("$sourceId$sourceSeparator$nativeId");
+
+  bool get isScoped => raw.contains(sourceSeparator);
+
+  String get sourceId {
+    final i = raw.indexOf(sourceSeparator);
+    return i < 0 ? "" : raw.substring(0, i);
+  }
+
+  String get nativeId {
+    final i = raw.indexOf(sourceSeparator);
+    return i < 0 ? raw : raw.substring(i + 1);
+  }
 }
 
 extension type LibraryId._(String raw) {

@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:finamp/components/curated_item_filter_row.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/downloads_service.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
+import 'package:diapason/components/curated_item_filter_row.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/downloads_service.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -22,7 +22,7 @@ Future<(List<BaseItemDto>, CuratedItemSelectionType, Set<CuratedItemSelectionTyp
   BaseItemDto? libraryFilter,
   BaseItemId? genreFilter,
 }) async {
-  final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
+  final aggregate = GetIt.instance<AggregateBackend>();
   final bool isOffline = ref.watch(finampSettingsProvider.isOffline);
   final bool autoSwitchItemCurationTypeEnabled = ref.watch(finampSettingsProvider.autoSwitchItemCurationType);
   final Set<CuratedItemSelectionType> disabledFilters = {};
@@ -60,7 +60,7 @@ Future<(List<BaseItemDto>, CuratedItemSelectionType, Set<CuratedItemSelectionTyp
       return items;
     } else {
       // In Online Mode:
-      final List<BaseItemDto>? topAlbumArtistTracks = await jellyfinApiHelper.getItems(
+      final List<BaseItemDto> topAlbumArtistTracks = await aggregate.getItems(
         libraryFilter: libraryFilter?.id,
         parentItem: artist,
         genreFilter: genreFilter,
@@ -74,7 +74,7 @@ Future<(List<BaseItemDto>, CuratedItemSelectionType, Set<CuratedItemSelectionTyp
       // For everything except Favorites we can re-use the data from the other provider
       // The other provider would not limit the favorites but run a separate call anyway
       // so we would get a lot of overhead and therefore we are just doing it right here
-      final List<BaseItemDto>? topPerformingArtistTracks = (selectionType != CuratedItemSelectionType.favorites)
+      final List<BaseItemDto> topPerformingArtistTracks = (selectionType != CuratedItemSelectionType.favorites)
           ? await ref.watch(
               getPerformingArtistTracksProvider(
                 artist: artist,
@@ -82,7 +82,7 @@ Future<(List<BaseItemDto>, CuratedItemSelectionType, Set<CuratedItemSelectionTyp
                 genreFilter: genreFilter,
               ).future,
             )
-          : await jellyfinApiHelper.getItems(
+          : await aggregate.getItems(
               libraryFilter: libraryFilter?.id,
               parentItem: artist,
               genreFilter: genreFilter,
@@ -95,7 +95,7 @@ Future<(List<BaseItemDto>, CuratedItemSelectionType, Set<CuratedItemSelectionTyp
             );
 
       final Map<String, BaseItemDto> distinctMap = {
-        for (final track in [...?topAlbumArtistTracks, ...?topPerformingArtistTracks]) track.id.toString(): track,
+        for (final track in [...topAlbumArtistTracks, ...topPerformingArtistTracks]) track.id.toString(): track,
       };
 
       final List<BaseItemDto> distinctTracks = distinctMap.values.toList();
@@ -154,7 +154,7 @@ Future<List<BaseItemDto>> getArtistAlbums(
   SortBy sortBy = SortBy.premiereDate,
   SortOrder sortOrder = SortOrder.ascending,
 }) async {
-  final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
+  final aggregate = GetIt.instance<AggregateBackend>();
   final downloadsService = GetIt.instance<DownloadsService>();
   final bool isOffline = ref.watch(finampSettingsProvider.isOffline);
   // Get Items
@@ -175,7 +175,7 @@ Future<List<BaseItemDto>> getArtistAlbums(
   } else {
     // In Online Mode:
     // Get Albums where artist is Album Artist sorted by Premiere Date
-    final List<BaseItemDto>? artistAlbums = await jellyfinApiHelper.getItems(
+    final List<BaseItemDto> artistAlbums = await aggregate.getItems(
       libraryFilter: libraryFilter?.resolve(ref),
       parentItem: artist,
       genreFilter: genreFilter,
@@ -184,7 +184,7 @@ Future<List<BaseItemDto>> getArtistAlbums(
       includeItemTypes: [BaseItemDtoType.album.jellyfinName].join(","),
       artistType: ArtistType.albumArtist,
     );
-    return artistAlbums ?? [];
+    return artistAlbums;
   }
 }
 
@@ -200,7 +200,7 @@ Future<List<BaseItemDto>> getPerformingArtistAlbums(
   SortBy sortBy = SortBy.premiereDate,
   SortOrder sortOrder = SortOrder.ascending,
 }) async {
-  final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
+  final aggregate = GetIt.instance<AggregateBackend>();
   final downloadsService = GetIt.instance<DownloadsService>();
   final bool isOffline = ref.watch(finampSettingsProvider.isOffline);
   // Get Items
@@ -221,7 +221,7 @@ Future<List<BaseItemDto>> getPerformingArtistAlbums(
   } else {
     // In Online Mode:
     // Get Albums where artist is Performing Artist sorted by Premiere Date
-    final List<BaseItemDto>? performingArtistAlbums = await jellyfinApiHelper.getItems(
+    final List<BaseItemDto> performingArtistAlbums = await aggregate.getItems(
       libraryFilter: libraryFilter?.resolve(ref),
       parentItem: artist,
       genreFilter: genreFilter,
@@ -230,7 +230,7 @@ Future<List<BaseItemDto>> getPerformingArtistAlbums(
       includeItemTypes: [BaseItemDtoType.album.jellyfinName].join(","),
       artistType: ArtistType.artist,
     );
-    return performingArtistAlbums ?? [];
+    return performingArtistAlbums;
   }
 }
 
@@ -245,7 +245,7 @@ Future<List<BaseItemDto>> getPerformingArtistTracks(
   BaseItemId? genreFilter,
   bool onlyFavorites = false,
 }) async {
-  final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
+  final aggregate = GetIt.instance<AggregateBackend>();
   final downloadsService = GetIt.instance<DownloadsService>();
   final bool isOffline = ref.watch(finampSettingsProvider.isOffline);
 
@@ -274,7 +274,7 @@ Future<List<BaseItemDto>> getPerformingArtistTracks(
     return performingArtistTracks;
   } else {
     // In Online Mode:
-    final List<BaseItemDto>? allPerformingArtistTracks = await jellyfinApiHelper.getItems(
+    final List<BaseItemDto> allPerformingArtistTracks = await aggregate.getItems(
       libraryFilter: libraryFilter?.resolve(ref),
       parentItem: artist,
       genreFilter: genreFilter,
@@ -283,7 +283,7 @@ Future<List<BaseItemDto>> getPerformingArtistTracks(
       artistType: ArtistType.artist,
       isFavorite: (onlyFavorites == true) ? true : null,
     );
-    return allPerformingArtistTracks ?? [];
+    return allPerformingArtistTracks;
   }
 }
 
@@ -296,7 +296,7 @@ Future<List<BaseItemDto>> getArtistTracks(
   BaseItemId? genreFilter,
   bool onlyFavorites = false,
 }) async {
-  final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
+  final aggregate = GetIt.instance<AggregateBackend>();
   final downloadsService = GetIt.instance<DownloadsService>();
   final isOffline = ref.watch(finampSettingsProvider.isOffline);
   // Get Items
@@ -334,7 +334,7 @@ Future<List<BaseItemDto>> getArtistTracks(
   } else {
     // In Online Mode:
     // Fetch every album artist track
-    final allAlbumArtistTracksResponse = await jellyfinApiHelper.getItems(
+    final allAlbumArtistTracksResponse = await aggregate.getItems(
       libraryFilter: libraryFilter?.resolve(ref),
       parentItem: artist,
       genreFilter: genreFilter,
@@ -352,7 +352,7 @@ Future<List<BaseItemDto>> getArtistTracks(
       ).future,
     );
     // We now remove albumartist tracks from performance artist tracks to avoid duplicates
-    final allAlbumArtistTracks = allAlbumArtistTracksResponse ?? [];
+    final allAlbumArtistTracks = allAlbumArtistTracksResponse;
     final allPerformingTracks = allPerformingArtistTracks;
     final albumArtistTrackIds = allAlbumArtistTracks.map((item) => item.id).toSet();
     final filteredPerformingTracks = allPerformingTracks

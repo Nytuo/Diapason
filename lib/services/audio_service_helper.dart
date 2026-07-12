@@ -1,7 +1,8 @@
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/extensions/localizations.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/radio_service_helper.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/extensions/localizations.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/services/radio_service_helper.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 
@@ -42,9 +43,8 @@ class AudioServiceHelper {
         items = items.sublist(0, count);
       }
     } else {
-      // If online, get all audio items from the user's view
-      items = await _jellyfinApiHelper.getItems(
-        parentItem: _finampUserHelper.currentUser!.currentView,
+      items = await GetIt.instance<AggregateBackend>().getItems(
+        parentItem: _finampUserHelper.currentUser?.currentView,
         includeItemTypes: "Audio",
         filters: onlyShowFavorites ? "IsFavorite" : null,
         limit: itemCount ?? FinampSettingsHelper.finampSettings.trackShuffleItemCount,
@@ -78,11 +78,11 @@ class AudioServiceHelper {
 
   /// Start instant mix from item.
   Future<void> startInstantMixForItem(jellyfin_models.BaseItemDto item) async {
-    List<jellyfin_models.BaseItemDto>? items;
-
     try {
-      items = await _jellyfinApiHelper.getInstantMix(item);
-      if (items != null) {
+      final items = await GetIt.instance<AggregateBackend>().getInstantMix(item);
+      if (items.isEmpty) {
+        GlobalSnackbar.message((context) => context.l10n.noTracksFound);
+      } else {
         await _queueService.startPlayback(
           items: items,
           source: QueueItemSource(
@@ -111,13 +111,32 @@ class AudioServiceHelper {
     }
   }
 
+  List<jellyfin_models.BaseItemDto> _mergeMixResults(List<List<jellyfin_models.BaseItemDto>> perSeedResults) {
+    final merged = <jellyfin_models.BaseItemDto>[];
+    final seenIds = <BaseItemId>{};
+    var index = 0;
+    var addedAny = true;
+    while (addedAny) {
+      addedAny = false;
+      for (final seedResult in perSeedResults) {
+        if (index >= seedResult.length) continue;
+        final item = seedResult[index];
+        addedAny = true;
+        if (seenIds.add(item.id)) merged.add(item);
+      }
+      index++;
+    }
+    return merged;
+  }
+
   /// Start instant mix from a selection of artists.
   Future<void> startInstantMixForArtists(List<BaseItemDto> artists) async {
-    List<jellyfin_models.BaseItemDto>? items;
-
     try {
-      items = await _jellyfinApiHelper.getArtistMix(artists.map((e) => e.id).toList());
-      if (items != null) {
+      final aggregate = GetIt.instance<AggregateBackend>();
+      final items = _mergeMixResults(await Future.wait(artists.map((a) => aggregate.getInstantMix(a))));
+      if (items.isEmpty) {
+        GlobalSnackbar.message((context) => context.l10n.noTracksFound);
+      } else {
         await _queueService.startPlayback(
           items: items,
           source: QueueItemSource(
@@ -142,11 +161,12 @@ class AudioServiceHelper {
 
   /// Start instant mix from a selection of albums.
   Future<void> startInstantMixForAlbums(List<BaseItemDto> albums) async {
-    List<jellyfin_models.BaseItemDto>? items;
-
     try {
-      items = await _jellyfinApiHelper.getAlbumMix(albums.map((e) => e.id).toList());
-      if (items != null) {
+      final aggregate = GetIt.instance<AggregateBackend>();
+      final items = _mergeMixResults(await Future.wait(albums.map((a) => aggregate.getInstantMix(a))));
+      if (items.isEmpty) {
+        GlobalSnackbar.message((context) => context.l10n.noTracksFound);
+      } else {
         await _queueService.startPlayback(
           items: items,
           source: QueueItemSource(
@@ -171,11 +191,12 @@ class AudioServiceHelper {
 
   /// Start instant mix from a selection of genres.
   Future<void> startInstantMixForGenres(List<BaseItemDto> genres) async {
-    List<jellyfin_models.BaseItemDto>? items;
-
     try {
-      items = await _jellyfinApiHelper.getGenreMix(genres.map((e) => e.id).toList());
-      if (items != null) {
+      final aggregate = GetIt.instance<AggregateBackend>();
+      final items = _mergeMixResults(await Future.wait(genres.map((g) => aggregate.getInstantMix(g))));
+      if (items.isEmpty) {
+        GlobalSnackbar.message((context) => context.l10n.noTracksFound);
+      } else {
         await _queueService.startPlayback(
           items: items,
           source: QueueItemSource(
@@ -205,13 +226,13 @@ class AudioServiceHelper {
       GlobalSnackbar.message((context) => context.l10n.notAvailableInOfflineMode);
       return;
     }
-    final randomTracks = await _jellyfinApiHelper.getItems(
+    final randomTracks = await GetIt.instance<AggregateBackend>().getItems(
       parentItem: _finampUserHelper.currentUser?.currentView,
       includeItemTypes: [BaseItemDtoType.track.jellyfinName].join(","),
       limit: 1,
       sortBy: SortBy.random.jellyfinName(ContentType.tracks),
     );
-    if (randomTracks != null && randomTracks.isNotEmpty) {
+    if (randomTracks.isNotEmpty) {
       await GetIt.instance<QueueService>().startPlayback(
         items: randomTracks,
         source: QueueItemSource.fromBaseItem(randomTracks.first),
@@ -228,7 +249,7 @@ class AudioServiceHelper {
   Future<void> playRandomItem({bool favoritesOnly = false, List<BaseItemDtoType>? limitItemTypes}) async {
     // get random favorite (any item type)
     final randomFavorite = (await _jellyfinApiHelper.getItems(
-      parentItem: _finampUserHelper.currentUser!.currentView,
+      parentItem: _finampUserHelper.currentUser?.currentView,
       filters: favoritesOnly ? "IsFavorite" : null,
       // Jellyfin 10.10 and 10.11 use the [isFavorite] boolean filter instead of the list-based [filters] parameter for genres, so add that here
       // I guess part of the reason for this is that it's not possible to favorite a genre through the Jellyfin Web UI at all...

@@ -5,8 +5,8 @@ import 'dart:math';
 import 'package:archive/archive_io.dart';
 import 'package:clipboard/clipboard.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:finamp/services/censored_log.dart';
-import 'package:finamp/services/environment_metadata.dart';
+import 'package:diapason/services/censored_log.dart';
+import 'package:diapason/services/environment_metadata.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
@@ -23,9 +23,9 @@ class FinampLogsHelper {
     final basePath = (Platform.isAndroid || Platform.isIOS)
         ? await getApplicationDocumentsDirectory()
         : await getApplicationSupportDirectory();
-    final logFile = File(path_helper.join(basePath.path, "finamp-logs.txt"));
+    final logFile = File(path_helper.join(basePath.path, "diapason-logs.txt"));
     if (logFile.existsSync() && logFile.lengthSync() >= 1024 * 1024 * 10) {
-      logFile.renameSync(path_helper.join(basePath.path, "finamp-logs-old.txt"));
+      logFile.renameSync(path_helper.join(basePath.path, "diapason-logs-old.txt"));
     }
     _logFileWriter = logFile.openWrite(mode: FileMode.writeOnlyAppend);
   }
@@ -74,8 +74,8 @@ class FinampLogsHelper {
       final basePath = (Platform.isAndroid || Platform.isIOS)
           ? await getApplicationDocumentsDirectory()
           : await getApplicationSupportDirectory();
-      var oldLogs = File(path_helper.join(basePath.path, "finamp-logs-old.txt"));
-      var newLogs = File(path_helper.join(basePath.path, "finamp-logs.txt"));
+      var oldLogs = File(path_helper.join(basePath.path, "diapason-logs-old.txt"));
+      var newLogs = File(path_helper.join(basePath.path, "diapason-logs.txt"));
       if (oldLogs.existsSync()) {
         fullLogsBuffer.write(await oldLogs.readAsString());
       }
@@ -126,7 +126,7 @@ class FinampLogsHelper {
   }
 
   (String, String) _logExportName() {
-    final baseName = "finamp-logs-${DateTime.now().toIso8601String().replaceAll(RegExp(r'[/?<>:*|.\\"]'), "-")}";
+    final baseName = "diapason-logs-${DateTime.now().toIso8601String().replaceAll(RegExp(r'[/?<>:*|.\\"]'), "-")}";
     return ("$baseName.zip", "$baseName.txt");
   }
 }

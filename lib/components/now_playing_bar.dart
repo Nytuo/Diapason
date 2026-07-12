@@ -2,20 +2,20 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:audio_service/audio_service.dart';
-import 'package:finamp/color_schemes.g.dart';
-import 'package:finamp/components/AddToPlaylistScreen/add_to_playlist_button.dart';
-import 'package:finamp/components/audio_fade_progress_visualizer_container.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/components/one_line_marquee_helper.dart';
-import 'package:finamp/components/print_duration.dart';
-import 'package:finamp/extensions/color_extensions.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/services/current_track_metadata_provider.dart';
-import 'package:finamp/services/feedback_helper.dart';
-import 'package:finamp/services/queue_service.dart';
-import 'package:finamp/services/theme_provider.dart';
-import 'package:finamp/services/widget_bindings_observer_provider.dart';
+import 'package:diapason/color_schemes.g.dart';
+import 'package:diapason/components/AddToPlaylistScreen/add_to_playlist_button.dart';
+import 'package:diapason/components/audio_fade_progress_visualizer_container.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/components/one_line_marquee_helper.dart';
+import 'package:diapason/components/print_duration.dart';
+import 'package:diapason/extensions/color_extensions.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/current_track_metadata_provider.dart';
+import 'package:diapason/services/feedback_helper.dart';
+import 'package:diapason/services/queue_service.dart';
+import 'package:diapason/services/theme_provider.dart';
+import 'package:diapason/services/widget_bindings_observer_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -499,30 +499,34 @@ class NowPlayingBar extends ConsumerWidget {
         // The now playing bar must be enclosed in a SafeArea at all times so that the enclosing scaffold properly adds
         // bottom padding, even if the now playing bar itself is empty.
         child: SafeArea(
-          // use consumer to obtain ref of correct (player screen theme) ProviderContainer
-          child: Consumer(
-            builder: (context, ref, child) {
-              ref.listen(currentTrackMetadataProvider, (metadataOrNull, metadata) {}); // keep provider alive
-              return StreamBuilder<FinampQueueInfo?>(
-                stream: queueService.getQueueStream(),
-                initialData: queueService.getQueue(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData &&
-                      snapshot.data!.saveState == SavedQueueState.loading &&
-                      !usingPlayerSplitScreen) {
-                    return buildLoadingQueueBar(ref, null);
-                  } else if (snapshot.hasData &&
-                      snapshot.data!.saveState == SavedQueueState.failed &&
-                      !usingPlayerSplitScreen) {
-                    return buildLoadingQueueBar(ref, queueService.retryQueueLoad);
-                  } else if (snapshot.hasData && snapshot.data!.currentTrack != null && !usingPlayerSplitScreen) {
-                    return buildNowPlayingBar(ref, snapshot.data!.currentTrack!);
-                  } else {
-                    return const SizedBox.shrink();
-                  }
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Consumer(
+                builder: (context, ref, child) {
+                  ref.listen(currentTrackMetadataProvider, (metadataOrNull, metadata) {}); // keep provider alive
+                  return StreamBuilder<FinampQueueInfo?>(
+                    stream: queueService.getQueueStream(),
+                    initialData: queueService.getQueue(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData &&
+                          snapshot.data!.saveState == SavedQueueState.loading &&
+                          !usingPlayerSplitScreen) {
+                        return buildLoadingQueueBar(ref, null);
+                      } else if (snapshot.hasData &&
+                          snapshot.data!.saveState == SavedQueueState.failed &&
+                          !usingPlayerSplitScreen) {
+                        return buildLoadingQueueBar(ref, queueService.retryQueueLoad);
+                      } else if (snapshot.hasData && snapshot.data!.currentTrack != null && !usingPlayerSplitScreen) {
+                        return buildNowPlayingBar(ref, snapshot.data!.currentTrack!);
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    },
+                  );
                 },
-              );
-            },
+              ),
+            ],
           ),
         ),
       ),

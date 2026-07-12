@@ -1,11 +1,11 @@
-import 'package:finamp/components/album_image.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/menus/queue_restore_menu.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/datetime_helper.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/generate_subtitle.dart';
+import 'package:diapason/components/album_image.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/menus/queue_restore_menu.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/datetime_helper.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/generate_subtitle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

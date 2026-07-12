@@ -4,8 +4,8 @@
 import 'dart:io' show Platform;
 
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/jellyfin_api_helper.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/jellyfin_api_helper.dart';
 import 'package:get_it/get_it.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:logging/logging.dart';

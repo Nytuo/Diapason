@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:finamp/components/finamp_app_bar_back_button.dart';
-import 'package:finamp/components/DownloadsScreen/download_error_screen_button.dart';
-import 'package:finamp/components/DownloadsScreen/downloaded_items_list.dart';
-import 'package:finamp/components/DownloadsScreen/downloads_overview.dart';
-import 'package:finamp/components/DownloadsScreen/repair_downloads_button.dart';
-import 'package:finamp/components/DownloadsScreen/sync_downloads_button.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/components/padded_custom_scrollview.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
+import 'package:diapason/components/finamp_app_bar_back_button.dart';
+import 'package:diapason/components/DownloadsScreen/download_error_screen_button.dart';
+import 'package:diapason/components/DownloadsScreen/downloaded_items_list.dart';
+import 'package:diapason/components/DownloadsScreen/downloads_overview.dart';
+import 'package:diapason/components/DownloadsScreen/repair_downloads_button.dart';
+import 'package:diapason/components/DownloadsScreen/sync_downloads_button.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/components/padded_custom_scrollview.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
 
 class DownloadsScreen extends StatelessWidget {
   const DownloadsScreen({super.key});

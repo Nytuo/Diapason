@@ -1,9 +1,9 @@
-import 'package:finamp/color_schemes.g.dart';
-import 'package:finamp/extensions/color_extensions.dart';
-import 'package:finamp/extensions/string.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/widget_bindings_observer_provider.dart';
+import 'package:diapason/color_schemes.g.dart';
+import 'package:diapason/extensions/color_extensions.dart';
+import 'package:diapason/extensions/string.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/widget_bindings_observer_provider.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

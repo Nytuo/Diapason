@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:finamp/components/favorite_button.dart';
-import 'package:finamp/menus/track_menu.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/services/audio_service_helper.dart';
+import 'package:diapason/components/favorite_button.dart';
+import 'package:diapason/menus/track_menu.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/audio_service_helper.dart';
 import 'package:flutter/material.dart' hide ReorderableList;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

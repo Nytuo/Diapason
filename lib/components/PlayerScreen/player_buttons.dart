@@ -1,18 +1,18 @@
 import 'dart:async';
 
-import 'package:finamp/components/PlayerScreen/player_buttons_loop_mode.dart';
-import 'package:finamp/components/PlayerScreen/player_buttons_playback_order.dart';
-import 'package:finamp/components/Shortcuts/global_shortcut_manager.dart';
-import 'package:finamp/components/Shortcuts/music_control_shortcuts.dart';
-import 'package:finamp/components/audio_fade_progress_visualizer_container.dart';
-import 'package:finamp/screens/player_screen.dart';
-import 'package:finamp/services/feedback_helper.dart';
-import 'package:finamp/utils/locale_helper.dart';
+import 'package:diapason/components/PlayerScreen/player_buttons_loop_mode.dart';
+import 'package:diapason/components/PlayerScreen/player_buttons_playback_order.dart';
+import 'package:diapason/components/Shortcuts/global_shortcut_manager.dart';
+import 'package:diapason/components/Shortcuts/music_control_shortcuts.dart';
+import 'package:diapason/components/audio_fade_progress_visualizer_container.dart';
+import 'package:diapason/screens/player_screen.dart';
+import 'package:diapason/services/feedback_helper.dart';
+import 'package:diapason/utils/locale_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
-import 'package:finamp/l10n/app_localizations.dart';
+import 'package:diapason/l10n/app_localizations.dart';
 
 import '../../services/media_state_stream.dart';
 import '../../services/music_player_background_task.dart';

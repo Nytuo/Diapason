@@ -1,5 +1,5 @@
 import 'package:balanced_text/balanced_text.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:marquee/marquee.dart';

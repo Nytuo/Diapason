@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/models/jellyfin_models.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 

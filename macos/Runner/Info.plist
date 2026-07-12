@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>Finamp</string>
+	<string>Diapason</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -37,7 +37,7 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>I don&apos;t know why this permission is being requested, you should probably deny it. If you can, create a GitHub issue with a screenshot of this message.</string>
 	<key>NSAppleMusicUsageDescription</key>
-	<string>Finamp can use your media library to store downloaded songs. If you don&apos;t want this, Finamp can also download songs to the app&apos;s internal directory, which doesn&apos;t use any permissions.</string>
+	<string>Diapason can use your media library to store downloaded songs. If you don&apos;t want this, Diapason can also download songs to the app&apos;s internal directory, which doesn&apos;t use any permissions.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -48,13 +48,19 @@
 		<dict>
 			<key>CFBundleURLName</key>
 			<!-- abstract name for this URL type (you can leave it blank) -->
-			<string>finamp_scheme</string>
+			<string>diapason_scheme</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<!-- your schemes -->
-				<string>finamp</string>
+				<string>diapason</string>
 			</array>
 		</dict>
+	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Diapason uses the local network to find and control other Diapason devices (Diapason Connect).</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_diapason-connect._tcp</string>
 	</array>
 </dict>
 </plist>

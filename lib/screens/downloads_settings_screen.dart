@@ -1,14 +1,14 @@
 import 'dart:io';
 
-import 'package:finamp/components/AlbumScreen/download_button.dart';
-import 'package:finamp/components/finamp_app_bar_back_button.dart';
-import 'package:finamp/components/global_snackbar.dart';
-import 'package:finamp/l10n/app_localizations.dart';
-import 'package:finamp/models/finamp_models.dart';
-import 'package:finamp/screens/downloads_location_screen.dart';
-import 'package:finamp/services/downloads_service.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/finamp_user_helper.dart';
+import 'package:diapason/components/AlbumScreen/download_button.dart';
+import 'package:diapason/components/finamp_app_bar_back_button.dart';
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/screens/downloads_location_screen.dart';
+import 'package:diapason/services/downloads_service.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/finamp_user_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -52,19 +52,16 @@ class _DownloadsSettingsScreenState extends State<DownloadsSettingsScreen> {
               ),
             ),
           ),
-          ListTile(
-            // TODO real UI for this
-            title: Text(AppLocalizations.of(context)!.cacheLibraryImagesSettings),
-            subtitle: Text(AppLocalizations.of(context)!.cacheLibraryImagesSettingsSubtitle),
-            trailing: DownloadButton(
-              item: DownloadStub.fromFinampCollection(
-                FinampCollection(
-                  type: FinampCollectionType.libraryImages,
-                  library: userHelper.currentUser!.currentView!,
+          if (userHelper.currentUser?.currentView case final currentView?)
+            ListTile(
+              title: Text(AppLocalizations.of(context)!.cacheLibraryImagesSettings),
+              subtitle: Text(AppLocalizations.of(context)!.cacheLibraryImagesSettingsSubtitle),
+              trailing: DownloadButton(
+                item: DownloadStub.fromFinampCollection(
+                  FinampCollection(type: FinampCollectionType.libraryImages, library: currentView),
                 ),
               ),
             ),
-          ),
           ListTile(
             // TODO real UI for this
             title: Text(AppLocalizations.of(context)!.downloadFavoritesSetting),

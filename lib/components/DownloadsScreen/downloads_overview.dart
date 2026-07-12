@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:finamp/l10n/app_localizations.dart';
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
@@ -11,22 +11,36 @@ import '../global_snackbar.dart';
 
 const double downloadsOverviewCardLoadingHeight = 120;
 
-class DownloadsOverview extends StatelessWidget {
+class DownloadsOverview extends StatefulWidget {
   const DownloadsOverview({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final downloadsService = GetIt.instance<DownloadsService>();
+  State<DownloadsOverview> createState() => _DownloadsOverviewState();
+}
 
-    downloadsService.updateDownloadCounts();
-    downloadsService.restartDownloads();
-    Timer.periodic(const Duration(seconds: 4), (timer) {
-      if (context.mounted) {
-        downloadsService.updateDownloadCounts();
-      } else {
-        timer.cancel();
-      }
+class _DownloadsOverviewState extends State<DownloadsOverview> {
+  final _downloadsService = GetIt.instance<DownloadsService>();
+  Timer? _refreshTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _downloadsService.updateDownloadCounts();
+    _downloadsService.restartDownloads();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      _downloadsService.updateDownloadCounts();
     });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final downloadsService = _downloadsService;
 
     // This is refreshed once every 4 seconds by above timer
     return StreamBuilder<Map<String, int>>(
@@ -44,6 +58,7 @@ class DownloadsOverview extends StatelessWidget {
                   (snapshot.data?[DownloadItemState.needsRedownloadComplete] ?? 0) +
                   (snapshot.data?[DownloadItemState.needsRedownload] ?? 0) +
                   (snapshot.data?[DownloadItemState.failed] ?? 0) +
+                  (snapshot.data?[DownloadItemState.syncFailed] ?? 0) +
                   (snapshot.data?[DownloadItemState.enqueued] ?? 0) +
                   (snapshot.data?[DownloadItemState.downloading] ?? 0);
 

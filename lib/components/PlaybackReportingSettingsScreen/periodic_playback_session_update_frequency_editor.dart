@@ -1,5 +1,5 @@
-import 'package:finamp/components/SettingsScreen/subtitle_with_more_info_dialog.dart';
-import 'package:finamp/l10n/app_localizations.dart';
+import 'package:diapason/components/SettingsScreen/subtitle_with_more_info_dialog.dart';
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/finamp_settings_helper.dart';

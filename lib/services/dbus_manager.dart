@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:dbus/dbus.dart';
-import 'package:finamp/extensions/string.dart';
-import 'package:finamp/services/finamp_settings_helper.dart';
-import 'package:finamp/services/theme_provider.dart';
+import 'package:diapason/extensions/string.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/theme_provider.dart';
 import 'package:logging/logging.dart';
 
 final _logger = Logger("dBus");
@@ -32,11 +32,11 @@ Future<DBusMethodResponse> _setAccentColor(String text) async {
 }
 
 class _DBusEndpoints extends DBusObject {
-  _DBusEndpoints() : super(DBusObjectPath('/com/unicornsonlsd/Finamp'));
+  _DBusEndpoints() : super(DBusObjectPath('/fr/nytuo/Diapason'));
 
   @override
   Future<DBusMethodResponse> handleMethodCall(DBusMethodCall call) async {
-    if (call.interface != 'com.unicornsonlsd.Finamp') return DBusMethodErrorResponse.unknownInterface();
+    if (call.interface != 'fr.nytuo.Diapason') return DBusMethodErrorResponse.unknownInterface();
 
     switch (call.name) {
       case "updateAccentColor":
@@ -57,7 +57,7 @@ Future<void> initDBus() async {
   final client = DBusClient.session();
 
   try {
-    await client.requestName('com.unicornsonlsd.FinampSettings');
+    await client.requestName('fr.nytuo.DiapasonSettings');
     await client.registerObject(_DBusEndpoints());
   } catch (e) {
     _logger.warning("Failed to register object: $e");

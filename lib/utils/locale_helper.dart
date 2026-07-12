@@ -1,4 +1,4 @@
-import 'package:finamp/services/finamp_settings_helper.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/src/intl_helpers.dart';
