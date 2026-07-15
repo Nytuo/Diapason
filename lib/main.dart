@@ -846,6 +846,7 @@ class _FinampState extends State<Finamp> with WindowListener {
     if (Platform.isIOS) {
       GetIt.instance<CarPlayHelper>().setupCarplay();
       IosSiriHandler.setup();
+      IosWidgetControlHandler.setup();
     }
   }
 

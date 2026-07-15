@@ -41,7 +41,6 @@ class _SpectrumVisualizerState extends ConsumerState<SpectrumVisualizer> with Si
   Duration _pendingAt = Duration.zero;
   static const _staleAfter = Duration(milliseconds: 300);
 
-  Float32List _bars = Float32List(0);
   final _bars = _SpectrumBars();
   Float32List _incoming = Float32List(0);
 

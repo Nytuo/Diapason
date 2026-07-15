@@ -26,6 +26,9 @@ let flutterEngine = FlutterEngine(name: "SharedEngine", project: nil, allowHeadl
         // Set up method channel for Siri media intent handling
         setupSiriIntentChannel()
 
+        // Set up widget playback controls (Darwin notification -> Flutter)
+        setupWidgetControlChannel()
+
         // Exclude the documents and support folders from iCloud backup since we keep songs there.
         if let documentsDir = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true) {
             try? setExcludeFromiCloudBackup(documentsDir, isExcluded: true)
@@ -121,6 +124,39 @@ extension AppDelegate {
             default:
                 result(FlutterMethodNotImplemented)
             }
+        }
+    }
+}
+
+let widgetControlDarwinPrefix = "fr.nytuo.diapason.widget."
+
+private var widgetControlChannel: FlutterMethodChannel?
+
+extension AppDelegate {
+    /// Bridges the widget's play/pause/next/previous buttons to Flutter.
+    func setupWidgetControlChannel() {
+        widgetControlChannel = FlutterMethodChannel(
+            name: "\(Bundle.main.bundleIdentifier!)/widget_control",
+            binaryMessenger: flutterEngine.binaryMessenger
+        )
+
+        let center = CFNotificationCenterGetDarwinNotifyCenter()
+        for command in ["playpause", "next", "previous"] {
+            CFNotificationCenterAddObserver(
+                center,
+                nil,
+                { (_, _, name, _, _) in
+                    guard let raw = name?.rawValue as String? else { return }
+                    let command = (raw as NSString)
+                        .replacingOccurrences(of: widgetControlDarwinPrefix, with: "")
+                    DispatchQueue.main.async {
+                        widgetControlChannel?.invokeMethod("control", arguments: command)
+                    }
+                },
+                "\(widgetControlDarwinPrefix)\(command)" as CFString,
+                nil,
+                .deliverImmediately
+            )
         }
     }
 }

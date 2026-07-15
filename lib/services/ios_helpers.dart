@@ -7,6 +7,7 @@ import 'package:logging/logging.dart';
 import '../models/finamp_models.dart';
 import 'android_auto_helper.dart';
 import 'audio_service_helper.dart';
+import 'music_player_background_task.dart';
 
 /// iOS-specific helpers for playback state sync and Siri media intents.
 
@@ -35,6 +36,35 @@ class IosPlaybackStateSync {
     } catch (e) {
       _logger.warning('Failed to set iOS playback state: $e');
     }
+  }
+}
+
+/// Handles playback control commands sent from the iOS home-screen widget.
+class IosWidgetControlHandler {
+  static const _channel = MethodChannel('$_channelPrefix/widget_control');
+
+  static void setup() {
+    if (!Platform.isIOS) return;
+
+    _channel.setMethodCallHandler((call) async {
+      if (call.method != 'control') return;
+      final command = call.arguments as String?;
+      _logger.info("Received widget control command: $command");
+
+      final audioHandler = GetIt.instance<MusicPlayerBackgroundTask>();
+      switch (command) {
+        case 'playpause':
+          await audioHandler.togglePlayback();
+        case 'next':
+          await audioHandler.skipToNext();
+        case 'previous':
+          await audioHandler.skipToPrevious();
+        default:
+          _logger.warning("Unknown widget control command: $command");
+      }
+    });
+
+    _logger.info("Widget control handler set up");
   }
 }
 
