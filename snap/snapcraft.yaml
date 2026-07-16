@@ -48,6 +48,11 @@ parts:
       - curl
       - git
       - unzip
+      # flutter_discord_rpc builds Rust via cargokit, which shells out to cc as
+      # its linker driver. The GitHub runner image has these preinstalled, so
+      # the plain build-linux job never needed them; this build environment does.
+      - gcc
+      - build-essential
     stage-packages:
       # libmpv is loaded at runtime, not linked, so it has to be staged by name.
       - libmpv1
@@ -63,7 +68,13 @@ parts:
       flutter config --no-analytics --enable-linux-desktop
       flutter doctor
       flutter pub get
-      flutter build linux --release
+      # flutter hides the underlying ninja failure, so re-run ninja verbosely to
+      # surface the actual compiler/cargokit error before giving up.
+      flutter build linux --release --verbose || {
+        echo "=== flutter build failed; re-running ninja for the real error ==="
+        ninja -C build/linux/x64/release -v || true
+        exit 1
+      }
 
       mkdir -p "$CRAFT_PART_INSTALL/bin"
       cp -r build/linux/*/release/bundle/. "$CRAFT_PART_INSTALL/bin/"

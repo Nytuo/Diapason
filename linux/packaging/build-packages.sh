@@ -94,12 +94,26 @@ fpm "${common_fpm_args[@]}" \
 echo "==> Building AppImage"
 APPDIR="build/linux/AppDir"
 rm -rf "$APPDIR"
-install -d "$APPDIR"
-cp -r "$STAGING"/. "$APPDIR/"
+# linuxdeploy resolves the desktop file's Exec entry to a real file under
+# usr/bin, so the bundle is copied there directly instead of reusing the
+# staging tree, where usr/bin/diapason is only a symlink into usr/lib.
+install -d "$APPDIR/usr/bin"
+cp -r "$BUNDLE"/. "$APPDIR/usr/bin/"
+install -d "$APPDIR/usr/share"
+cp -r "$STAGING/usr/share/." "$APPDIR/usr/share/"
 
-# linuxdeploy only follows linked libraries, so name libmpv explicitly.
+# AppRun resolves the binary relative to the AppDir, so the Exec entry must be a
+# bare name rather than the /usr/bin path the deb/rpm entry uses.
+sed -e '/^dnl/d' -e "s|__INSTALL_PATH__/||g" \
+  assets/diapason.desktop.m4 > "$APPDIR/usr/share/applications/${APP_ID}.desktop"
+
+# linuxdeploy matches the desktop file's Exec entry against executables it was
+# explicitly given with -e, not against whatever happens to sit in the AppDir,
+# so the binary has to be named here even though it is already in place.
+#
+# It also only follows linked libraries, so name dlopen'd libmpv explicitly.
 MPV_LIB="$(ldconfig -p | awk '/libmpv\.so/ {print $NF; exit}')"
-deploy_args=(--appdir "$APPDIR" -d "$APPDIR/usr/share/applications/${APP_ID}.desktop" -i "assets/icon/linux/256x256/apps/${BINARY}.png")
+deploy_args=(--appdir "$APPDIR" -e "$APPDIR/usr/bin/${BINARY}" -d "$APPDIR/usr/share/applications/${APP_ID}.desktop" -i "assets/icon/linux/256x256/apps/${BINARY}.png")
 if [ -n "$MPV_LIB" ]; then
   deploy_args+=(-l "$MPV_LIB")
 else

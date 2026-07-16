@@ -163,7 +163,11 @@ class _LoginFlowState extends State<LoginFlow> {
                     connectionState.selectedUser = user;
                     loginNavigatorKey.currentState!.pushNamed(LoginAuthenticationPage.routeName);
                   },
-                  onAuthenticated: () {
+                  onAuthenticated: () async {
+                    // ViewSelector reads the registry, so the source has to exist
+                    // before we navigate to it.
+                    await GetIt.instance<MediaSourceService>().syncJellyfinSource();
+                    if (!context.mounted) return;
                     Navigator.of(context).pushReplacementNamed(ViewSelector.routeName);
                   },
                 ),
@@ -173,7 +177,9 @@ class _LoginFlowState extends State<LoginFlow> {
               route = createRoute(
                 LoginAuthenticationPage(
                   connectionState: connectionState,
-                  onAuthenticated: () {
+                  onAuthenticated: () async {
+                    await GetIt.instance<MediaSourceService>().syncJellyfinSource();
+                    if (!context.mounted) return;
                     Navigator.of(context).popAndPushNamed(ViewSelector.routeName);
                     final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
                     jellyfinApiHelper.updateCapabilities(

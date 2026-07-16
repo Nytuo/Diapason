@@ -1,23 +1,31 @@
 name: Build
 
+# Manual only: nothing builds on push, pull request or tag. Every run builds
+# and publishes a draft release. The slow, unreliable extras are opt-in toggles
+# so they can never block one.
+#   gh workflow run .github/workflows/build.yml --ref <branch name>
+#   gh workflow run .github/workflows/build.yml -f release_tag=0.10.0
 on:
-  # Integration tests are slow, so we don't trigger on forks or pull
-  # requests.  To run against one of those, you can trigger manually by
-  # installing github-cli and running
-  # gh workflow run .github/workflows/build.yml --ref <branch name>
   workflow_dispatch:
-  pull_request:
-  push:
-    # Trigger on tags OR set branches
-    tags:
-      - '*.*.*'
-    branches:
-      - main
-      - redesign
+    inputs:
+      release_tag:
+        description: 'Tag to publish (e.g. 0.10.0). Defaults to the pubspec version.'
+        required: false
+        default: ''
+      run_integration_tests:
+        description: 'Run the emulator integration tests'
+        type: boolean
+        default: false
+      build_extras:
+        description: 'Also build Snap and Flatpak'
+        type: boolean
+        default: false
 
 env:
-  if_condition: &integration_if github.event_name == 'workflow_dispatch' ||
-    (github.event_name == 'push' && github.repository == 'Nytuo/diapason-flutter' )
+  # Emulator-driven and slow, so they never run as part of ordinary builds or
+  # releases. Tick "Run the emulator integration tests" on a manual run instead.
+  # On non-dispatch events this input is null, so the steps are skipped.
+  if_condition: &integration_if inputs.run_integration_tests
 
 # Due to a flutter bug, flutter build is not generating localizations
 # workaround by always running flutter pub get immediately before building,
@@ -189,17 +197,30 @@ jobs:
 
     - run: flutter build ios --release --no-pub --no-codesign
 
-    # Pinning an exact model + a very new OS floor breaks whenever the runner
-    # image ships a different set. Match on the iPhone family and let the action
-    # pick whatever recent runtime is actually installed.
+    # No signing identity here (--no-codesign), so this is an unsigned IPA:
+    # useful as a release artifact / for resigning, not for direct install.
+    # An IPA is just a zip of a Payload/ dir containing the .app.
+    - name: Package IPA
+      run: |
+        mkdir -p build/ios/ipa/Payload
+        cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/Diapason.app
+        (cd build/ios/ipa && zip -qr "$GITHUB_WORKSPACE/diapason-ios.ipa" Payload)
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: diapason-ios
+        path: diapason-ios.ipa
+        compression-level: 0 # already compressed
+
+    # `model` is matched as a literal device name, not a regex, and both it and
+    # os_version shift with the runner image. Constrain to iOS only and let the
+    # action pick whatever device is actually installed.
     - name: Start simulator
       id: simulator
       if: *integration_if
       uses: futureware-tech/simulator-action@v5
       with:
-        model: 'iPhone.*'
         os: 'iOS'
-        os_version: '>= 17.0'
         wait_for_boot: true
         erase_before_boot: true
         boot_timeout_seconds: 360
@@ -269,8 +290,11 @@ jobs:
         path: build/linux/packages/*
         compression-level: 0 # already compressed
 
+  # Flatpak and Snap build in containers that need their own toolchain and are
+  # the least reliable jobs here, so they are opt-in and never gate a release.
   build-flatpak:
     name: Build Flatpak
+    if: inputs.build_extras
     runs-on: ubuntu-latest
     container:
       image: bilelmoussaoui/flatpak-github-actions:freedesktop-24.08
@@ -280,7 +304,13 @@ jobs:
 
     - name: Install build dependencies
       run: |
-        dnf install -y ninja-build cmake clang gtk3-devel lzma-sdk-devel mpv-libs-devel curl git unzip xz which
+        # jq is required by subosito/flutter-action's setup script. xz-devel is
+        # the Fedora liblzma (lzma-sdk-devel is the unrelated 7-Zip SDK), and
+        # pkgconf-pkg-config is needed for CMake's GTK lookup. gcc/rust are for
+        # flutter_discord_rpc's cargokit build, which the GitHub runner image
+        # provides preinstalled but this container does not.
+        dnf install -y ninja-build cmake clang gcc gtk3-devel xz-devel pkgconf-pkg-config \
+          mpv-libs-devel curl git unzip xz which jq rust cargo
 
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
@@ -297,7 +327,13 @@ jobs:
         git config --global --add safe.directory '*'
         flutter doctor
         flutter pub get
-        flutter build linux --release --no-pub
+        # flutter hides the underlying ninja failure, so re-run ninja verbosely
+        # to surface the actual compiler/cargokit error before giving up.
+        flutter build linux --release --no-pub --verbose || {
+          echo "=== flutter build failed; re-running ninja for the real error ==="
+          ninja -C build/linux/x64/release -v || true
+          exit 1
+        }
 
     - name: Stage bundle for the manifest
       run: |
@@ -316,6 +352,7 @@ jobs:
 
   build-snap:
     name: Build Snap
+    if: inputs.build_extras
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
@@ -403,9 +440,87 @@ jobs:
       run: |
         cd build/macos/Build/Products/Release
         zip -r -y "$GITHUB_WORKSPACE/diapason-macos.zip" Diapason.app
+        # A drag-to-Applications dmg, in addition to the zip: nicer UX for end
+        # users than unzipping. Unsigned/unnotarized either way, same as the zip.
+        mkdir -p "$GITHUB_WORKSPACE/dmg-staging"
+        cp -r Diapason.app "$GITHUB_WORKSPACE/dmg-staging/"
+        ln -s /Applications "$GITHUB_WORKSPACE/dmg-staging/Applications"
+        hdiutil create -volname Diapason -srcfolder "$GITHUB_WORKSPACE/dmg-staging" \
+          -ov -format UDZO "$GITHUB_WORKSPACE/diapason-macos.dmg"
 
     - uses: actions/upload-artifact@v6
       with:
         name: diapason-macos
-        path: diapason-macos.zip
+        path: |
+          diapason-macos.zip
+          diapason-macos.dmg
         compression-level: 0 # already compressed
+
+  # Publishes a draft release from the artifacts the jobs above produced.
+  # Flatpak and Snap are deliberately absent from needs — they are opt-in, and
+  # a skipped dependency would skip this job too.
+  release:
+    name: Create release
+    needs:
+      - build-android
+      - build-ios
+      - build-linux
+      - build-windows
+      - build-macos
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v6
+
+    # The run's ref_name is whatever branch was dispatched, not a version, so
+    # the tag comes from the input and falls back to the pubspec version.
+    - name: Resolve release tag
+      id: tag
+      run: |
+        set -eu
+        TAG="${{ inputs.release_tag }}"
+        if [ -z "$TAG" ]; then
+          TAG="$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -d+ -f1)"
+        fi
+        echo "Releasing as '$TAG'"
+        echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v6
+      with:
+        path: artifacts
+
+    - name: Collect release assets
+      run: |
+        set -eux
+        # A dedicated directory, not "assets" — the repo checkout already has
+        # an assets/ dir (app assets, e.g. assets/icon/) that "assets/*" would
+        # also glob, and gh release upload chokes on directory entries.
+        mkdir -p release-assets
+        # Windows uploads an uncompressed directory, so it needs zipping to
+        # become a single asset. Everything else is already one packaged file.
+        if [ -d artifacts/diapason-windows-x64 ]; then
+          (cd artifacts/diapason-windows-x64 && zip -qr "$GITHUB_WORKSPACE/release-assets/diapason-windows-x64.zip" .)
+        fi
+        find artifacts -type f \
+          \( -name '*.apk' -o -name '*.tar.gz' -o -name '*.deb' -o -name '*.rpm' \
+             -o -name '*.AppImage' -o -name '*.zip' -o -name '*.snap' -o -name '*.flatpak' \
+             -o -name '*.ipa' -o -name '*.dmg' \) \
+          -exec cp {} release-assets/ \;
+        ls -lh release-assets
+
+    # --target creates the tag at this commit when it doesn't already exist,
+    # which is the normal case for a manual run.
+    - name: Create release
+      env:
+        GH_TOKEN: ${{ github.token }}
+        TAG: ${{ steps.tag.outputs.tag }}
+      run: |
+        gh release create "$TAG" \
+          --repo "${{ github.repository }}" \
+          --target "${{ github.sha }}" \
+          --title "$TAG" \
+          --generate-notes \
+          --draft \
+          release-assets/*
