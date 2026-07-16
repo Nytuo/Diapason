@@ -3,6 +3,7 @@ import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:diapason/services/backends/jellyfin_backend.dart';
 import 'package:diapason/services/backends/local_backend.dart';
+import 'package:diapason/services/backends/mpd_backend.dart';
 import 'package:diapason/services/backends/plex_backend.dart';
 import 'package:diapason/services/backends/subsonic_backend.dart';
 import 'package:diapason/services/backends/youtube_backend.dart';
@@ -39,6 +40,7 @@ class MediaSourceService {
     MediaSourceKind.subsonic => SubsonicBackend(config),
     MediaSourceKind.plex => PlexBackend(config),
     MediaSourceKind.local => LocalBackend(config),
+    MediaSourceKind.mpd => MpdBackend(config),
     MediaSourceKind.youtube => YouTubeBackend(),
   };
 

@@ -24,13 +24,13 @@ abstract class SpectrumSource {
   Future<void> stop();
 }
 
-bool get spectrumSourceAvailable => Platform.isAndroid || Platform.isIOS;
+bool get spectrumSourceAvailable => Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
 
 SpectrumSource? createSpectrumSource({int? androidSessionId, required int fps}) {
   if (Platform.isAndroid) {
     return androidSessionId == null ? null : AndroidVisualizerSource(sessionId: androidSessionId, fps: fps);
   }
-  if (Platform.isIOS) return IosSpectrumTapSource();
+  if (Platform.isIOS || Platform.isMacOS) return DarwinSpectrumTapSource();
   return null;
 }
 
@@ -44,10 +44,10 @@ SpectrumSource? createSpectrumSource({int? androidSessionId, required int fps}) 
 ///
 /// One real limitation: an audio mix cannot attach to an HLS stream. If a track
 /// is served as HLS the tap sends nothing, and the curve stays hidden.
-class IosSpectrumTapSource implements SpectrumSource {
+class DarwinSpectrumTapSource implements SpectrumSource {
   static const _events = EventChannel("com.ryanheise.just_audio.spectrum");
 
-  static final _logger = Logger("IosSpectrumTapSource");
+  static final _logger = Logger("DarwinSpectrumTapSource");
 
   final _controller = StreamController<SpectrumFrame>.broadcast();
   StreamSubscription<dynamic>? _subscription;

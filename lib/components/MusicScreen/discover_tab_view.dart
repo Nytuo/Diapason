@@ -1,8 +1,10 @@
 import 'package:diapason/components/MusicScreen/similar_artists_section.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/screens/discover_playlist_screen.dart';
 import 'package:diapason/screens/scrobbling_settings_screen.dart';
 import 'package:diapason/services/discovery/discovery_service.dart';
+import 'package:diapason/services/discovery/youtube_discover_service.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/queue_service.dart';
 import 'package:flutter/material.dart';
@@ -21,9 +23,11 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
   DiscoveryService get _discovery => GetIt.instance<DiscoveryService>();
 
   late Future<List<FreshRelease>> _fresh = _discovery.freshReleases();
-  Future<List<({String mbid, String title})>>? _playlists;
+  Future<List<DiscoverPlaylist>>? _yourPlaylists;
+  Future<List<DiscoverPlaylist>>? _madeForYou;
 
   String? _importing;
+  String? _discovering;
 
   @override
   void initState() {
@@ -32,15 +36,24 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
   }
 
   void _loadPlaylists() {
-    final username = FinampSettingsHelper.finampSettings.lastFmUsername;
-    if (FinampSettingsHelper.finampSettings.listenBrainzToken.isEmpty || username.isEmpty) return;
-    setState(() => _playlists = _discovery.listenBrainzPlaylists(username));
+    if (FinampSettingsHelper.finampSettings.listenBrainzToken.isEmpty) return;
+    setState(() {
+      _yourPlaylists = _withUsername(_discovery.listenBrainzUserPlaylists);
+      _madeForYou = _withUsername(_discovery.listenBrainzCreatedForYou);
+    });
   }
 
-  Future<void> _playPlaylist(({String mbid, String title}) playlist) async {
-    setState(() => _importing = playlist.mbid);
+  Future<List<DiscoverPlaylist>> _withUsername(Future<List<DiscoverPlaylist>> Function(String) load) async {
+    final username =
+        await _discovery.listenBrainzUsername() ?? FinampSettingsHelper.finampSettings.lastFmUsername;
+    if (username.isEmpty) return const [];
+    return load(username);
+  }
+
+  Future<void> _playPlaylist(DiscoverPlaylist playlist) async {
+    setState(() => _importing = playlist.id);
     try {
-      final recommended = await _discovery.listenBrainzPlaylistTracks(playlist.mbid);
+      final recommended = await _discovery.discoverPlaylistTracks(playlist);
       final tracks = await _discovery.resolve(recommended);
 
       if (!mounted) return;
@@ -59,7 +72,7 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
             type: QueueItemSourceNameType.preTranslated,
             pretranslatedName: playlist.title,
           ),
-          id: BaseItemId(playlist.mbid),
+          id: BaseItemId(playlist.id),
         ),
       );
 
@@ -74,9 +87,105 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
     }
   }
 
+  Future<void> _discoverFromPlaylist(DiscoverPlaylist playlist) async {
+    setState(() => _discovering = playlist.id);
+    try {
+      final recommended = await _discovery.discoverPlaylistTracks(playlist);
+      final resolved = await _discovery.resolve(recommended);
+      if (!mounted) return;
+
+      final queue = await GetIt.instance<YouTubeDiscoverService>().radioFromPlaylistTail(resolved);
+      if (!mounted) return;
+      if (queue.isEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Couldn't start a discover queue from that playlist.")));
+        return;
+      }
+
+      await GetIt.instance<QueueService>().startPlayback(
+        items: queue,
+        source: QueueItemSource(
+          type: QueueItemSourceType.unknown,
+          name: QueueItemSourceName(
+            type: QueueItemSourceNameType.preTranslated,
+            pretranslatedName: "Discover · ${playlist.title}",
+          ),
+          id: BaseItemId(playlist.id),
+        ),
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Discovering ${queue.length} tracks")));
+      }
+    } finally {
+      if (mounted) setState(() => _discovering = null);
+    }
+  }
+
+  Widget _playlistTile(DiscoverPlaylist playlist) {
+    final busy = _importing != null || _discovering != null;
+    return ListTile(
+      leading: const Icon(TablerIcons.playlist),
+      title: Text(playlist.title),
+      subtitle: playlist.subtitle == null ? null : Text(playlist.subtitle!),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_discovering == playlist.id)
+            const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+          else
+            IconButton(
+              icon: const Icon(TablerIcons.radio),
+              tooltip: "Continue on YouTube from the end",
+              onPressed: busy ? null : () => _discoverFromPlaylist(playlist),
+            ),
+          if (_importing == playlist.id)
+            const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+          else
+            IconButton(
+              icon: const Icon(TablerIcons.player_play),
+              tooltip: "Play all",
+              onPressed: busy ? null : () => _playPlaylist(playlist),
+            ),
+          const Icon(TablerIcons.chevron_right),
+        ],
+      ),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => DiscoverPlaylistScreen(playlist: playlist)),
+      ),
+    );
+  }
+
+  Widget _playlistSection(String title, Future<List<DiscoverPlaylist>> future) {
+    return FutureBuilder<List<DiscoverPlaylist>>(
+      future: future,
+      builder: (context, snapshot) {
+        final playlists = snapshot.data;
+        if (playlists == null) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _SectionHeader(title),
+              const Padding(padding: EdgeInsets.all(16.0), child: LinearProgressIndicator()),
+            ],
+          );
+        }
+        if (playlists.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _SectionHeader(title),
+            for (final playlist in playlists) _playlistTile(playlist),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final connected = ref.watch(finampSettingsProvider.listenBrainzToken).isNotEmpty;
+    final lastFmConnected = ref.watch(finampSettingsProvider.lastFmApiKey).isNotEmpty;
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -98,38 +207,35 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
               ),
             ),
 
-          if (_playlists != null) ...[
-            const _SectionHeader("Your playlists"),
-            FutureBuilder<List<({String mbid, String title})>>(
-              future: _playlists,
-              builder: (context, snapshot) {
-                final playlists = snapshot.data;
-                if (playlists == null) {
-                  return const Padding(padding: EdgeInsets.all(16.0), child: LinearProgressIndicator());
-                }
-                if (playlists.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text("No ListenBrainz playlists yet."),
-                  );
-                }
-                return Column(
-                  children: [
-                    for (final playlist in playlists)
-                      ListTile(
-                        leading: const Icon(TablerIcons.playlist),
-                        title: Text(playlist.title),
-                        subtitle: const Text("Matched against your library, YouTube for the rest"),
-                        trailing: _importing == playlist.mbid
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                            : const Icon(TablerIcons.player_play),
-                        onTap: _importing == null ? () => _playPlaylist(playlist) : null,
-                      ),
-                  ],
-                );
-              },
+          if (!lastFmConnected)
+            Card(
+              margin: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: ListTile(
+                leading: const Icon(TablerIcons.chart_bar),
+                title: const Text("Add a Last.fm API key"),
+                subtitle: const Text("Unlocks charts, genre browsing and similar artists"),
+                trailing: const Icon(TablerIcons.chevron_right),
+                onTap: () => Navigator.of(context).pushNamed(ScrobblingSettingsScreen.routeName),
+              ),
             ),
-          ],
+
+          if (_madeForYou != null) _playlistSection("Made for you", _madeForYou!),
+
+          if (_yourPlaylists != null) _playlistSection("Your playlists", _yourPlaylists!),
+
+          Builder(
+            builder: (context) {
+              final genres = _discovery.lastFmGenrePlaylists();
+              if (genres.isEmpty) return const SizedBox.shrink();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const _SectionHeader("Charts & genres"),
+                  for (final playlist in genres) _playlistTile(playlist),
+                ],
+              );
+            },
+          ),
 
           const SimilarToNowPlaying(),
 

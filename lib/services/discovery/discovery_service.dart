@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
@@ -28,6 +29,23 @@ class FreshRelease {
   final String? mbid;
 
   Uri? get coverUrl => mbid == null ? null : Uri.parse("https://coverartarchive.org/release-group/$mbid/front-250");
+}
+
+enum DiscoverPlaylistKind {
+  listenBrainzPlaylist,
+
+  lastFmTag,
+
+  lastFmChart,
+}
+
+class DiscoverPlaylist {
+  const DiscoverPlaylist({required this.id, required this.title, this.subtitle, required this.kind});
+
+  final String id;
+  final String title;
+  final String? subtitle;
+  final DiscoverPlaylistKind kind;
 }
 
 class DiscoveryService {
@@ -145,6 +163,126 @@ class DiscoveryService {
         .toList();
   }
 
+  String? _cachedLbUsername;
+
+  Future<String?> listenBrainzUsername() async {
+    if (_cachedLbUsername != null) return _cachedLbUsername;
+    if (_lbToken.isEmpty) return null;
+
+    final body = await _getJson(_listenBrainz.replace(path: "/1/validate-token"), token: _lbToken);
+    if (body?["valid"] != true) return null;
+    final name = body?["user_name"] as String?;
+    if (name == null || name.isEmpty) return null;
+    return _cachedLbUsername = name;
+  }
+
+  Future<List<DiscoverPlaylist>> listenBrainzCreatedForYou(String username) async {
+    final body = await _getJson(
+      _listenBrainz.replace(path: "/1/user/$username/playlists/createdfor"),
+      token: _lbToken.isEmpty ? null : _lbToken,
+    );
+    final playlists = (body?["playlists"] as List<dynamic>?) ?? const [];
+
+    return playlists
+        .cast<Map<String, dynamic>>()
+        .map((p) => p["playlist"] as Map<String, dynamic>?)
+        .nonNulls
+        .map((p) {
+          final identifier = (p["identifier"] ?? "") as String;
+          return DiscoverPlaylist(
+            id: identifier.split("/").last,
+            title: (p["title"] ?? "Untitled") as String,
+            subtitle: "Made for you by ListenBrainz",
+            kind: DiscoverPlaylistKind.listenBrainzPlaylist,
+          );
+        })
+        .where((p) => p.id.isNotEmpty)
+        .toList();
+  }
+
+  Future<List<DiscoverPlaylist>> listenBrainzUserPlaylists(String username) async {
+    final raw = await listenBrainzPlaylists(username);
+    return raw
+        .map(
+          (p) => DiscoverPlaylist(
+            id: p.mbid,
+            title: p.title,
+            subtitle: "Matched against your library, YouTube for the rest",
+            kind: DiscoverPlaylistKind.listenBrainzPlaylist,
+          ),
+        )
+        .toList();
+  }
+
+  List<DiscoverPlaylist> lastFmGenrePlaylists() {
+    if (_lastFmKey.isEmpty) return const [];
+    const genres = <({String tag, String title})>[
+      (tag: "rock", title: "Rock"),
+      (tag: "pop", title: "Pop"),
+      (tag: "electronic", title: "Electronic"),
+      (tag: "hip-hop", title: "Hip-Hop"),
+      (tag: "jazz", title: "Jazz"),
+      (tag: "metal", title: "Metal"),
+      (tag: "indie", title: "Indie"),
+      (tag: "classical", title: "Classical"),
+      (tag: "r&b", title: "R&B"),
+      (tag: "folk", title: "Folk"),
+    ];
+    return [
+      const DiscoverPlaylist(
+        id: "__chart__",
+        title: "Global Top Tracks",
+        subtitle: "Trending on Last.fm",
+        kind: DiscoverPlaylistKind.lastFmChart,
+      ),
+      for (final g in genres)
+        DiscoverPlaylist(
+          id: g.tag,
+          title: "Top ${g.title}",
+          subtitle: "Popular on Last.fm",
+          kind: DiscoverPlaylistKind.lastFmTag,
+        ),
+    ];
+  }
+
+  Future<List<DiscoveredTrack>> discoverPlaylistTracks(DiscoverPlaylist playlist) {
+    switch (playlist.kind) {
+      case DiscoverPlaylistKind.listenBrainzPlaylist:
+        return listenBrainzPlaylistTracks(playlist.id);
+      case DiscoverPlaylistKind.lastFmTag:
+        return _lastFmTracks(method: "tag.gettoptracks", extra: {"tag": playlist.id});
+      case DiscoverPlaylistKind.lastFmChart:
+        return _lastFmTracks(method: "chart.gettoptracks");
+    }
+  }
+
+  Future<List<DiscoveredTrack>> _lastFmTracks({required String method, Map<String, String> extra = const {}}) async {
+    if (_lastFmKey.isEmpty) return const [];
+    final body = await _getJson(
+      _lastFm.replace(
+        queryParameters: {
+          "method": method,
+          ...extra,
+          "api_key": _lastFmKey,
+          "format": "json",
+          "limit": "50",
+        },
+      ),
+    );
+    final tracks = (body?["tracks"]?["track"] as List<dynamic>?) ?? const [];
+
+    return tracks
+        .cast<Map<String, dynamic>>()
+        .map(
+          (t) => DiscoveredTrack(
+            title: (t["name"] ?? "") as String,
+            artist: (t["artist"]?["name"] ?? "") as String,
+          ),
+        )
+        .where((t) => t.title.isNotEmpty && t.artist.isNotEmpty)
+        .toList();
+  }
+
   Future<List<DiscoveredTrack>> listenBrainzPlaylistTracks(String mbid) async {
     final body = await _getJson(
       _listenBrainz.replace(path: "/1/playlist/$mbid"),
@@ -165,23 +303,50 @@ class DiscoveryService {
         .toList();
   }
 
-  Future<List<BaseItemDto>> resolve(List<DiscoveredTrack> tracks, {bool youtubeFallback = true}) async {
-    final resolved = <BaseItemDto>[];
+  Future<List<BaseItemDto?>> matchInLibrary(List<DiscoveredTrack> tracks, {int concurrency = 6}) async {
+    final results = List<BaseItemDto?>.filled(tracks.length, null);
+    var next = 0;
 
-    for (final track in tracks) {
-      final owned = await _findInLibrary(track);
-      if (owned != null) {
-        resolved.add(owned);
+    Future<void> worker() async {
+      while (true) {
+        final index = next++;
+        if (index >= tracks.length) return;
+        results[index] = await _findInLibrary(tracks[index]);
+      }
+    }
+
+    await Future.wait(List.generate(min(concurrency, tracks.length), (_) => worker()));
+    return results;
+  }
+
+  Future<List<BaseItemDto>> youtubeCandidates(DiscoveredTrack track) async {
+    final results = await GetIt.instance<YouTubeService>().search("${track.artist} ${track.title}");
+    if (results.isEmpty) _log.fine("No YouTube results for '$track'");
+    return results;
+  }
+
+  Future<BaseItemDto?> findOnYouTube(DiscoveredTrack track) async {
+    final results = await youtubeCandidates(track);
+    return results.firstOrNull;
+  }
+
+  Future<List<BaseItemDto>> resolve(List<DiscoveredTrack> tracks, {bool youtubeFallback = true}) async {
+    final owned = await matchInLibrary(tracks);
+    final resolved = <BaseItemDto>[];
+    final youtube = GetIt.instance<YouTubeService>();
+
+    for (var i = 0; i < tracks.length; i++) {
+      final match = owned[i];
+      if (match != null) {
+        resolved.add(match);
         continue;
       }
       if (!youtubeFallback) continue;
 
-      final fromYouTube = await GetIt.instance<YouTubeService>().search("${track.artist} ${track.title}");
-      if (fromYouTube.isNotEmpty) {
-        resolved.add(fromYouTube.first);
-      } else {
-        _log.fine("Couldn't resolve '$track' anywhere");
-      }
+      if (youtube.isRateLimited) continue;
+
+      final fromYouTube = await findOnYouTube(tracks[i]);
+      if (fromYouTube != null) resolved.add(fromYouTube);
     }
 
     return resolved;

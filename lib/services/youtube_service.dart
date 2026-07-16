@@ -20,13 +20,71 @@ class YouTubeService {
   final YoutubeExplode _yt = YoutubeExplode();
   final ItemMapper _map = ItemMapper(sourceId);
 
+  static const _blockCooldown = Duration(minutes: 10);
+
+  DateTime? _blockedUntil;
+
+  bool get isRateLimited => _blockedUntil != null && DateTime.now().isBefore(_blockedUntil!);
+
+  static bool _looksLikeBlock(Object error) {
+    final text = error.toString();
+    return text.contains("google_abuse") ||
+        text.contains("Redirect limit exceeded") ||
+        text.contains("429") ||
+        text.contains("consent");
+  }
+
   Future<List<BaseItemDto>> search(String query) async {
-    if (query.trim().isEmpty) return const [];
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) return const [];
+
+    final videoId = parseVideoId(trimmed);
+    if (videoId != null) {
+      final item = await videoById(videoId);
+      return item == null ? const [] : [item];
+    }
+
+    if (isRateLimited) {
+      _log.fine("Skipping YouTube search for '$query': blocked until $_blockedUntil");
+      return const [];
+    }
+
     try {
-      final results = await _yt.search.search(query);
+      final results = await _yt.search.search(trimmed);
+      _blockedUntil = null;
       return results.map(_toItem).toList();
     } catch (e) {
-      _log.warning("YouTube search for '$query' failed: $e");
+      if (_looksLikeBlock(e)) {
+        _blockedUntil = DateTime.now().add(_blockCooldown);
+        _log.warning("YouTube is blocking searches; pausing them until $_blockedUntil");
+      } else {
+        _log.warning("YouTube search for '$query' failed: $e");
+      }
+      return const [];
+    }
+  }
+
+  String? parseVideoId(String input) => VideoId.parseVideoId(input.trim());
+
+  Future<BaseItemDto?> videoById(String idOrUrl) async {
+    final id = parseVideoId(idOrUrl);
+    if (id == null) return null;
+    try {
+      return _toItem(await _yt.videos.get(id));
+    } catch (e) {
+      _log.warning("Couldn't resolve YouTube video '$idOrUrl': $e");
+      return null;
+    }
+  }
+
+  Future<List<BaseItemDto>> relatedTracks(BaseItemDto item) async {
+    try {
+      final video = await _yt.videos.get(item.id.nativeId);
+      final related = await _yt.videos.getRelatedVideos(video);
+      if (related == null) return const [];
+      return related.map(_toItem).toList();
+    } catch (e) {
+      _log.warning("Couldn't fetch related videos for '${item.name}': $e");
       return const [];
     }
   }

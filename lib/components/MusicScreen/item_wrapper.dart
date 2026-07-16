@@ -19,6 +19,7 @@ import 'package:diapason/services/feedback_helper.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/finamp_user_helper.dart';
 import 'package:diapason/services/theme_provider.dart';
+import 'package:diapason/utils/platform_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -106,6 +107,10 @@ class _ItemCollectionWrapperState extends ConsumerState<ItemWrapper> {
                     showModalTrackMenu(context: context, item: mutableItem, source: widget.source);
                     break;
                   case BaseItemDtoType.artist:
+                    if (isDesktop) {
+                      Navigator.of(context).pushNamed(ArtistScreen.routeName, arguments: mutableItem);
+                      break;
+                    }
                     Navigator.of(context).push(
                       MaterialPageRoute<ArtistScreen>(
                         builder: (_) => ArtistScreen(
@@ -121,6 +126,10 @@ class _ItemCollectionWrapperState extends ConsumerState<ItemWrapper> {
                     Navigator.of(context).pushNamed(GenreScreen.routeName, arguments: mutableItem);
                     break;
                   case BaseItemDtoType.playlist:
+                    if (isDesktop) {
+                      Navigator.of(context).pushNamed(AlbumScreen.routeName, arguments: mutableItem);
+                      break;
+                    }
                     Navigator.of(context).push(
                       MaterialPageRoute<AlbumScreen>(
                         builder: (_) => AlbumScreen(

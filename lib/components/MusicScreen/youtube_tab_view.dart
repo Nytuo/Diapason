@@ -1,6 +1,7 @@
 import 'package:diapason/components/AlbumScreen/download_button.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/discovery/youtube_discover_service.dart';
 import 'package:diapason/services/queue_service.dart';
 import 'package:diapason/services/youtube_service.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ class _YouTubeTabViewState extends State<YouTubeTabView> {
   List<BaseItemDto> _results = const [];
   bool _searching = false;
   bool _searched = false;
+  bool _startingRadio = false;
 
   @override
   void dispose() {
@@ -60,6 +62,42 @@ class _YouTubeTabViewState extends State<YouTubeTabView> {
     }
   }
 
+  Future<void> _discover(BaseItemDto track) async {
+    if (_startingRadio) return;
+    setState(() => _startingRadio = true);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Building a discover queue from '${track.name ?? "this track"}'…")),
+    );
+    try {
+      final queue = await GetIt.instance<YouTubeDiscoverService>().radioFromSeed(track);
+      if (!mounted) return;
+      if (queue.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Nothing to discover from that track.")));
+        return;
+      }
+      await GetIt.instance<QueueService>().startPlayback(
+        items: queue,
+        source: QueueItemSource(
+          type: QueueItemSourceType.unknown,
+          name: QueueItemSourceName(
+            type: QueueItemSourceNameType.preTranslated,
+            pretranslatedName: "YouTube Discover · ${track.name ?? ""}".trim(),
+          ),
+          id: track.id,
+        ),
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Discovering ${queue.length} tracks")));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Couldn't start discover: $e")));
+      }
+    } finally {
+      if (mounted) setState(() => _startingRadio = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -71,7 +109,7 @@ class _YouTubeTabViewState extends State<YouTubeTabView> {
             textInputAction: TextInputAction.search,
             onSubmitted: (_) => _search(),
             decoration: InputDecoration(
-              hintText: "Search YouTube",
+              hintText: "Search YouTube or paste a link",
               prefixIcon: const Icon(TablerIcons.search),
               suffixIcon: IconButton(icon: const Icon(TablerIcons.arrow_right), onPressed: _search),
               border: const OutlineInputBorder(),
@@ -90,7 +128,11 @@ class _YouTubeTabViewState extends State<YouTubeTabView> {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(32.0),
-          child: Text("Find music that isn't in your libraries.", textAlign: TextAlign.center),
+          child: Text(
+            "Find music that isn't in your libraries.\n"
+            "Paste a YouTube link, or tap the radio icon on a result to start a discover queue.",
+            textAlign: TextAlign.center,
+          ),
         ),
       );
     }
@@ -126,6 +168,11 @@ class _YouTubeTabViewState extends State<YouTubeTabView> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(_duration(track.runTimeTicksDuration())),
+              IconButton(
+                icon: const Icon(TablerIcons.radio),
+                tooltip: "Start discover queue",
+                onPressed: _startingRadio ? null : () => _discover(track),
+              ),
               DownloadButton(item: DownloadStub.fromItem(type: DownloadItemType.track, item: track)),
             ],
           ),

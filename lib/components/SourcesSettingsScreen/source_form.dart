@@ -14,6 +14,7 @@ import 'package:get_it/get_it.dart';
   ),
   MediaSourceKind.plex => (icon: TablerIcons.player_play, label: "Plex", hint: "http://192.168.1.10:32400"),
   MediaSourceKind.local => (icon: TablerIcons.folder, label: "Local files", hint: "Choose a music folder"),
+  MediaSourceKind.mpd => (icon: TablerIcons.server_2, label: "MPD", hint: "localhost:6600"),
   MediaSourceKind.youtube => (icon: TablerIcons.brand_youtube, label: "YouTube", hint: ""),
 };
 
@@ -48,6 +49,7 @@ class _SourceFormState extends State<SourceForm> {
   bool? _reachable;
 
   bool get _isLocal => widget.kind == MediaSourceKind.local;
+  bool get _isMpd => widget.kind == MediaSourceKind.mpd;
 
   @override
   void dispose() {
@@ -64,13 +66,15 @@ class _SourceFormState extends State<SourceForm> {
     final service = GetIt.instance<MediaSourceService>();
     final fallbackName = _isLocal
         ? (_localPath.split(RegExp(r"[/\\]")).lastWhere((s) => s.isNotEmpty, orElse: () => "Local"))
+        : _isMpd
+        ? "MPD (${_address.text.trim()})"
         : (Uri.tryParse(_address.text.trim())?.host ?? sourceKindPresentation(widget.kind).label);
 
     return MediaSourceConfig(
       sourceId: widget.existing?.sourceId ?? service.newSourceId(widget.kind),
       kind: widget.kind,
       name: _name.text.trim().isEmpty ? fallbackName : _name.text.trim(),
-      publicAddress: _isLocal ? "" : _normalizeUrl(_address.text),
+      publicAddress: _isLocal ? "" : (_isMpd ? _address.text.trim() : _normalizeUrl(_address.text)),
       localAddress: _isLocal ? "" : _normalizeUrl(_localNetworkAddress.text),
       preferLocalNetwork: !_isLocal && _preferLocalNetwork,
       isLocal: widget.existing?.isLocal ?? false,
@@ -157,7 +161,28 @@ class _SourceFormState extends State<SourceForm> {
             ),
             const SizedBox(height: 16.0),
 
-            ExpansionTile(
+            if (_isMpd) ...[
+              TextFormField(
+                controller: _password,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: "Password (optional)"),
+              ),
+              const SizedBox(height: 16.0),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(TablerIcons.folder),
+                title: Text(_localPath.isEmpty ? "Music directory (recommended)" : _localPath),
+                subtitle: const Text(
+                  "Pick the server's music_directory so playback can read the files. "
+                  "Leave empty to auto-detect (local MPD only; may be blocked by the OS sandbox).",
+                ),
+                trailing: const Icon(TablerIcons.dots),
+                onTap: _pickFolder,
+              ),
+            ],
+
+            if (!_isMpd)
+              ExpansionTile(
               tilePadding: EdgeInsets.zero,
               title: const Text("Local network address (optional)"),
               subtitle: const Text("Switch to a faster address automatically when on this network"),

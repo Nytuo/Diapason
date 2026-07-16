@@ -27,10 +27,12 @@ import 'package:diapason/services/transfer/desktop_transfer_service.dart';
 import 'package:diapason/services/transfer/import_service.dart';
 import 'package:diapason/services/discovery/auto_radio_service.dart';
 import 'package:diapason/services/discovery/discovery_service.dart';
+import 'package:diapason/services/discovery/youtube_discover_service.dart';
 import 'package:diapason/services/scrobbling/scrobble_service.dart';
 import 'package:diapason/services/stream_cache_service.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:diapason/services/connect/connect_player_bridge.dart';
+import 'package:diapason/services/connect/connect_remote_controller.dart';
 import 'package:diapason/services/connect/connect_service.dart';
 import 'package:diapason/services/uploader/uploader_client.dart';
 import 'package:diapason/services/youtube_service.dart';
@@ -46,7 +48,6 @@ import 'package:diapason/screens/genre_settings_screen.dart';
 import 'package:diapason/screens/home_screen_settings_screen.dart';
 import 'package:diapason/screens/interaction_settings_screen.dart';
 import 'package:diapason/screens/login_screen.dart';
-import 'package:diapason/components/desktop_unsupported_banner.dart';
 import 'package:diapason/screens/lyrics_settings_screen.dart';
 import 'package:diapason/screens/visualizer_settings_screen.dart';
 import 'package:diapason/screens/network_settings_screen.dart';
@@ -125,6 +126,8 @@ import 'screens/language_selection_screen.dart';
 import 'screens/layout_settings_screen.dart';
 import 'screens/logs_screen.dart';
 import 'screens/music_screen.dart';
+import 'screens/desktop/desktop_shell.dart';
+import 'screens/smart_playlists_screen.dart';
 import 'screens/player_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/cache_settings_screen.dart';
@@ -158,8 +161,6 @@ final providerScopeKey = GlobalKey();
 
 Future<void> main({bool integrationTesting = false, bool loginTesting = false}) async {
   if (loginTesting) {
-    // Note that download baseDirectories cannot be redirected, so use of this flag
-    // causes errors in downloader on mobile platforms
     final data = await TestingPathProvider.baseDirectory();
     PathProviderPlatform.instance = TestingPathProvider(data);
     if (data.existsSync()) {
@@ -264,9 +265,6 @@ Future<void> _setupEdgeToEdgeOverlayStyle() async {
     final binding = WidgetsFlutterBinding.ensureInitialized();
     binding.addObserver(UIOverlaySetterObserver());
   } else if (Platform.isIOS) {
-    // On iOS, the status bar will have black icons by default on the login
-    // screen as it does not have an AppBar. To fix this, we set the
-    // brightness to dark manually on startup.
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(statusBarBrightness: Brightness.dark));
   }
 }
@@ -282,6 +280,7 @@ Future<void> _setupMediaSources() async {
   GetIt.instance.registerSingleton(StreamCacheService());
   GetIt.instance.registerSingleton(YouTubeService());
   GetIt.instance.registerSingleton(DiscoveryService());
+  GetIt.instance.registerSingleton(YouTubeDiscoverService());
   GetIt.instance.registerSingleton(ScrobbleService());
   GetIt.instance.registerSingleton(UploaderClient());
   GetIt.instance.registerSingleton(StatsService());
@@ -442,9 +441,12 @@ Future<void> _setupOSIntegration() async {
     WindowOptions windowOptions = WindowOptions(
       size: screenSize?.size ?? Size(1200, 800),
       center: screenSize == null,
-      backgroundColor: Colors.transparent,
+      // A transparent background with a normal macOS title bar renders a broken,
+      // see-through strip. Hide the title bar (keeping the traffic-light buttons)
+      // and paint an opaque window instead so the desktop shell owns the chrome.
+      backgroundColor: Platform.isMacOS ? Colors.black : Colors.transparent,
       skipTaskbar: false,
-      titleBarStyle: TitleBarStyle.normal,
+      titleBarStyle: Platform.isMacOS ? TitleBarStyle.hidden : TitleBarStyle.normal,
       minimumSize: Size(336, 607),
     );
     unawaited(
@@ -495,6 +497,8 @@ Future<void> _setupConnect() async {
   GetIt.instance.registerSingleton(ConnectService());
   GetIt.instance.registerSingleton(ConnectPlayerBridge());
   GetIt.instance<ConnectPlayerBridge>().attach();
+  GetIt.instance.registerSingleton(ConnectRemoteController());
+  GetIt.instance<ConnectRemoteController>().attach();
 
   try {
     await GetIt.instance<ConnectService>().start(deviceName: await _connectDeviceName());
@@ -836,13 +840,10 @@ class _FinampState extends State<Finamp> with WindowListener {
       });
     });
 
-    // If the app is running on desktop, we add a listener to the window manager
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
       WindowManager.instance.addListener(this);
-      // windowManager.setPreventClose(true); //!!! destroying the window manager instance doesn't seem to work on Windows release builds, the app just freezes instead
     }
 
-    // iOS-specific setup (CarPlay, Siri)
     if (Platform.isIOS) {
       GetIt.instance<CarPlayHelper>().setupCarplay();
       IosSiriHandler.setup();
@@ -856,7 +857,6 @@ class _FinampState extends State<Finamp> with WindowListener {
       case "internal":
         await state.pushNamed(uri.path);
 
-      // Also see _hasInitialPlayLink in QueueService
       case "play":
         switch (uri.pathSegments) {
           case ["surprisemix"]:
@@ -912,7 +912,6 @@ class _FinampState extends State<Finamp> with WindowListener {
       container: GetIt.instance<ProviderContainer>(),
       child: GestureDetector(
         onTap: () {
-          // Never rebuild FinampApp context, it breaks ProviderScope
           FocusScopeNode currentFocus = FocusScope.of(context, createDependency: false);
 
           if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null) {
@@ -942,7 +941,6 @@ class _FinampState extends State<Finamp> with WindowListener {
       return;
     }
 
-    // Destroy player on platforms using mediaKit.
     if (Platform.isWindows || Platform.isLinux) {
       await GetIt.instance<MusicPlayerBackgroundTask>().dispose();
       windowManagerLogger.info("Player disposed.");
@@ -956,7 +954,6 @@ class FinampApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final useSystemTheme = ref.watch(finampSettingsProvider.useSystemAccentColor);
-    // System Accent has priority over custom Accent
     Color? accentColor = ref.watch(
       useSystemTheme ? finampSettingsProvider.systemAccentColor : finampSettingsProvider.accentColor,
     );
@@ -965,13 +962,20 @@ class FinampApp extends ConsumerWidget {
     final locale = ref.watch(finampSettingsProvider.locale);
     final transitionBuilder = MediaQuery.disableAnimationsOf(context)
         ? PageTransitionsTheme(
-            // Disable page transitions on all platforms if [disableAnimations] is true, otherwise use default transitions
             builders: TargetPlatform.values.fold(
               <TargetPlatform, PageTransitionsBuilder>{},
               (previousValue, element) => previousValue..[element] = const NoTransitionPageTransitionsBuilder(),
             ),
           )
         : null;
+    final bool desktop = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+    final snackBarTheme = SnackBarThemeData(
+      behavior: desktop ? SnackBarBehavior.floating : null,
+      width: desktop ? 440.0 : null,
+      elevation: 10.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12.0))),
+      dismissDirection: DismissDirection.horizontal,
+    );
     return MaterialApp(
       title: "Diapason",
       routes: {
@@ -993,6 +997,8 @@ class FinampApp extends ConsumerWidget {
         IpodShell.routeName: (context) => const IpodShell(),
         ViewSelector.routeName: (context) => const ViewSelector(),
         MusicScreen.routeName: (context) => const MusicScreen(),
+        DesktopShell.routeName: (context) => const DesktopShell(),
+        SmartPlaylistsScreen.routeName: (context) => const SmartPlaylistsScreen(),
         AlbumScreen.routeName: (context) => const AlbumScreen(),
         ArtistScreen.routeName: (context) => const ArtistScreen(),
         GenreScreen.routeName: (context) => const GenreScreen(),
@@ -1026,14 +1032,21 @@ class FinampApp extends ConsumerWidget {
         AccessibilitySettingsScreen.routeName: (context) => const AccessibilitySettingsScreen(),
         PlaylistEditScreen.routeName: (context) =>
             PlaylistEditScreen(playlist: ModalRoute.settingsOf(context)!.arguments as BaseItemDto),
-        //ShowAllScreen.routeName: (context) => const ShowAllScreen(),
       },
       initialRoute: SplashScreen.routeName,
       navigatorObservers: [SplitScreenNavigatorObserver(), KeepScreenOnObserver()],
       builder: (BuildContext context, Widget? widget) {
-        return GlobalShortcutManager(
-          child: DesktopUnsupportedBanner(child: buildPlayerSplitScreenScaffold(context, widget)),
+        Widget child = GlobalShortcutManager(
+          child: buildPlayerSplitScreenScaffold(context, widget),
         );
+        if (Platform.isMacOS) {
+          final media = MediaQuery.of(context);
+          child = MediaQuery(
+            data: media.copyWith(padding: media.padding.copyWith(top: max(media.padding.top, 28.0))),
+            child: child,
+          );
+        }
+        return child;
       },
       theme: ThemeData(
         brightness: Brightness.light,
@@ -1045,34 +1058,14 @@ class FinampApp extends ConsumerWidget {
             systemNavigationBarIconBrightness: Brightness.dark,
           ),
         ),
-        snackBarTheme: const SnackBarThemeData(
-          //TODO get rid of floating action buttons and re-enable the floating behavior and insetPadding
-          // behavior: SnackBarBehavior.floating,
-          elevation: 10.0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12.0))),
-          // insetPadding: EdgeInsets.symmetric(
-          //   horizontal: 12.0,
-          //   vertical: 0.0,
-          // ),
-          dismissDirection: DismissDirection.horizontal,
-        ),
+        snackBarTheme: snackBarTheme,
         tooltipTheme: const TooltipThemeData(waitDuration: Duration(milliseconds: 800)),
         pageTransitionsTheme: transitionBuilder,
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         colorScheme: getColorScheme(accentColor, Brightness.dark, amoledTheme),
-        snackBarTheme: const SnackBarThemeData(
-          //TODO get rid of floating action buttons and re-enable the floating behavior and insetPadding
-          // behavior: SnackBarBehavior.floating,
-          elevation: 10.0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12.0))),
-          // insetPadding: EdgeInsets.symmetric(
-          //   horizontal: 12.0,
-          //   vertical: 0.0,
-          // ),
-          dismissDirection: DismissDirection.horizontal,
-        ),
+        snackBarTheme: snackBarTheme,
         pageTransitionsTheme: transitionBuilder,
       ),
       scrollBehavior: FinampScrollBehavior(),
@@ -1084,9 +1077,6 @@ class FinampApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
-      // We awkwardly put English as the first supported locale so
-      // that basicLocaleListResolution falls back to it instead of
-      // the first language in supportedLocales (Arabic as of writing)
       localeListResolutionCallback: (locales, supportedLocales) =>
           basicLocaleListResolution(locales, [const Locale("en")].followedBy(supportedLocales)),
       locale: locale,
@@ -1233,11 +1223,9 @@ class ErrorScreen extends StatelessWidget {
   }
 }
 
-// Show scrollbars on all vertically scrolling widgets by default
 class FinampScrollBehavior extends MaterialScrollBehavior {
   const FinampScrollBehavior({this.interactive, this.scrollbars = true});
 
-  // If interactive is null, platform default will be used
   final bool? interactive;
   final bool scrollbars;
 
@@ -1257,7 +1245,6 @@ class FinampScrollBehavior extends MaterialScrollBehavior {
 }
 
 class NoTransitionPageTransitionsBuilder extends PageTransitionsBuilder {
-  /// Constructs a page transition that doesn't animate anything.
   const NoTransitionPageTransitionsBuilder();
 
   @override
@@ -1284,12 +1271,8 @@ class FinampProviderObserver extends ProviderObserver {
   }
 }
 
-/// This is used by the login testing flag to redirect file accesses to the testing folder.
-/// Download base directories are not redirected, so loginTesting flag should be avoided on mobile.
 class TestingPathProvider extends PathProviderPlatform {
   static Future<Directory> baseDirectory() async {
-    // If we're on desktop, use the integration_test directory in the checkout tree
-    // If we're on mobile and that doesn't exist, use cache directory.
     Directory outerDirectory = Directory("integration_test");
     if (!outerDirectory.existsSync()) {
       outerDirectory = await getApplicationCacheDirectory();

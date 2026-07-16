@@ -51,6 +51,7 @@ class LoginSourceTypePage extends StatelessWidget {
     MediaSourceKind.subsonic => "Navidrome, Airsonic, Gonic and friends",
     MediaSourceKind.plex => "Connect to a Plex Media Server",
     MediaSourceKind.local => "Music already on this device",
+    MediaSourceKind.mpd => "Browse a Music Player Daemon library",
     MediaSourceKind.youtube => "",
   };
 }
@@ -127,6 +128,12 @@ class _SourceKindGuidance extends StatelessWidget {
       MediaSourceKind.local => Text(
         "Point Diapason at a folder of music files already on this device. "
         "No account, server or internet connection needed.",
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      MediaSourceKind.mpd => Text(
+        "Browse a Music Player Daemon library and play its files. "
+        "Set the server's music directory so playback can read the files locally.",
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.bodyMedium,
       ),

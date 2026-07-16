@@ -10,6 +10,7 @@ enum MediaSourceKind {
   plex,
   subsonic,
   local,
+  mpd,
 
   youtube;
 
@@ -18,6 +19,7 @@ enum MediaSourceKind {
     MediaSourceKind.plex => "px",
     MediaSourceKind.subsonic => "sub",
     MediaSourceKind.local => "loc",
+    MediaSourceKind.mpd => "mpd",
     MediaSourceKind.youtube => "yt",
   };
 

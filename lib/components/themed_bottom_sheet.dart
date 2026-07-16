@@ -16,6 +16,8 @@ import '../models/jellyfin_models.dart';
 import '../services/feedback_helper.dart';
 import '../services/finamp_settings_helper.dart';
 
+bool get _isDesktop => Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+
 typedef SliverBuilder = (double, List<Widget>) Function(BuildContext);
 
 typedef WrapperBuilder = Widget Function(BuildContext, DraggableScrollableController, ScrollBuilder);
@@ -40,6 +42,54 @@ Future<T?> showThemedBottomSheet<T>({
     minDraggableHeight: minDraggableHeight,
     showDragHandle: showDragHandle,
   );
+
+  Widget scope(BuildContext context, Widget child) => ProviderScope(
+    overrides: [
+      if (useDefaultTheme || item == null) localThemeProvider.overrideWith((_) => ColorScheme.of(context)),
+      if (!useDefaultTheme && item != null)
+        localThemeInfoProvider.overrideWithValue(ThemeInfo(item, useIsolate: false)),
+    ],
+    child: child,
+  );
+
+  if (_isDesktop) {
+    final desktopMenu = ThemedBottomSheet(
+      key: ValueKey("desktop:${item?.id.raw ?? ""}$routeName"),
+      buildSlivers: buildSlivers,
+      buildWrapper: buildWrapper,
+      minDraggableHeight: 0.0,
+      showDragHandle: false,
+      showBackground: false,
+    );
+    return await showDialog<T>(
+      context: context,
+      useRootNavigator: true,
+      routeSettings: RouteSettings(name: routeName),
+      barrierColor: Colors.black.withOpacity(0.45),
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        final scheme = ColorScheme.of(context);
+        return Dialog(
+          clipBehavior: Clip.antiAlias,
+          insetPadding: const EdgeInsets.all(24),
+          elevation: 12,
+          backgroundColor: ElevationOverlay.applySurfaceTint(scheme.surface, scheme.surfaceTint, 2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14.0),
+            side: BorderSide(color: scheme.outlineVariant.withOpacity(0.5)),
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: min(420, MediaQuery.sizeOf(context).width * 0.9),
+              maxHeight: MediaQuery.sizeOf(context).height * 0.8,
+            ),
+            child: scope(context, desktopMenu),
+          ),
+        );
+      },
+    );
+  }
+
   return await showModalBottomSheet<T>(
     context: context,
     shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.0))),
@@ -77,12 +127,15 @@ class ThemedBottomSheet extends ConsumerStatefulWidget {
     this.buildWrapper,
     required this.minDraggableHeight,
     required this.showDragHandle,
+    this.showBackground = true,
   });
 
   final SliverBuilder? buildSlivers;
   final WrapperBuilder? buildWrapper;
   final double minDraggableHeight;
   final bool showDragHandle;
+
+  final bool showBackground;
 
   static double calculateStackHeight({
     required BuildContext context,
@@ -176,7 +229,8 @@ class _ThemedBottomSheetState extends ConsumerState<ThemedBottomSheet> {
     var scrollview = PaddedCustomScrollview(controller: scrollController, slivers: slivers);
     return Stack(
       children: [
-        if (ref.watch(finampSettingsProvider.useCoverAsBackground)) const BlurredPlayerScreenBackground(),
+        if (widget.showBackground && ref.watch(finampSettingsProvider.useCoverAsBackground))
+          const BlurredPlayerScreenBackground(),
         widget.showDragHandle
             ? Column(
                 children: [

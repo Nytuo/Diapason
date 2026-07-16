@@ -1,0 +1,107 @@
+# Flatpak manifest for Diapason.
+#
+# This builds from a *pre-built* Flutter Linux bundle rather than compiling
+# Flutter inside the sandbox: the Flutter SDK isn't available as a Flatpak SDK
+# extension, and a network-isolated build can't run `pub get`. CI runs
+# `flutter build linux --release` first and this manifest packages the result.
+app-id: fr.nytuo.diapason
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+command: diapason
+separate-locales: false
+
+add-extensions:
+  org.freedesktop.Platform.ffmpeg-full:
+    directory: lib/ffmpeg
+    version: '24.08'
+    add-ld-path: .
+    no-autodownload: false
+    autodelete: false
+
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --device=dri
+  - --share=network
+  # Local music libraries and downloads.
+  - --filesystem=xdg-music
+  - --filesystem=xdg-download
+  # Secret storage and MPRIS/media-key integration.
+  - --talk-name=org.freedesktop.secrets
+  - --own-name=org.mpris.MediaPlayer2.diapason
+  - --talk-name=org.freedesktop.Notifications
+
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - /share/man
+  - '*.a'
+  - '*.la'
+
+modules:
+  - name: libass
+    cleanup:
+      - /include
+      - /lib/pkgconfig
+    config-opts:
+      - --disable-static
+    sources:
+      - type: archive
+        url: https://github.com/libass/libass/releases/download/0.17.3/libass-0.17.3.tar.gz
+        sha256: da7c348deb6fa6c24507afab2dee7545ba5dd5bbf90a137bfe9e738f7df68537
+
+  - name: uchardet
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_STATIC=0
+    cleanup:
+      - /bin
+      - /include
+      - /lib/pkgconfig
+    sources:
+      - type: archive
+        url: https://www.freedesktop.org/software/uchardet/releases/uchardet-0.0.8.tar.xz
+        sha256: e97a60cfc00a1c147a674b097bb1422abd9fa78a2d9ce3f3fdcc2e78a34ac5f0
+
+  # Diapason only needs libmpv (audio); the mpv CLI player is not built.
+  # mpv >= 0.38 also requires libplacebo, which the freedesktop runtime does not
+  # ship — if the build fails resolving it, add a libplacebo module before this
+  # one. See README.md in this directory.
+  - name: mpv
+    buildsystem: meson
+    config-opts:
+      - -Dlibmpv=true
+      - -Dcplayer=false
+      - -Dmanpage-build=disabled
+      - -Dlua=disabled
+      - -Djavascript=disabled
+    cleanup:
+      - /include
+      - /lib/pkgconfig
+      - /share/applications
+      - /share/icons
+    sources:
+      - type: archive
+        url: https://github.com/mpv-player/mpv/archive/refs/tags/v0.38.0.tar.gz
+        sha256: 86d9ef40b6058732f67b46d0bbda24a074fae860b3eaae05bab3145041303066
+
+  - name: diapason
+    buildsystem: simple
+    build-commands:
+      # The bundle is produced outside the sandbox by `flutter build linux`.
+      - install -d /app/lib/diapason
+      - cp -r bundle/. /app/lib/diapason/
+      - install -d /app/bin
+      - ln -sf /app/lib/diapason/diapason /app/bin/diapason
+      - install -Dm644 fr.nytuo.diapason.desktop /app/share/applications/fr.nytuo.diapason.desktop
+      - install -Dm644 fr.nytuo.diapason.metainfo.xml /app/share/metainfo/fr.nytuo.diapason.metainfo.xml
+      - install -Dm644 diapason.png /app/share/icons/hicolor/256x256/apps/fr.nytuo.diapason.png
+      # Mount point for the ffmpeg-full extension.
+      - install -d /app/lib/ffmpeg
+    sources:
+      - type: dir
+        path: staging

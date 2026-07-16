@@ -14,6 +14,7 @@ import 'package:diapason/screens/downloads_screen.dart';
 import 'package:diapason/screens/logs_screen.dart';
 import 'package:diapason/screens/playback_history_screen.dart';
 import 'package:diapason/screens/queue_restore_screen.dart';
+import 'package:diapason/screens/smart_playlists_screen.dart';
 import 'package:diapason/screens/settings_screen.dart';
 import 'package:diapason/services/downloads_service.dart';
 import 'package:diapason/services/feedback_helper.dart';
@@ -112,6 +113,14 @@ Future<void> showFinampMainMenu({required BuildContext context}) async {
                     leading: const Padding(padding: EdgeInsets.only(right: 16), child: Icon(Icons.auto_delete)),
                     title: Text(AppLocalizations.of(context)!.queuesScreen),
                     onTap: () => Navigator.of(context).pushNamed(QueueRestoreScreen.routeName),
+                  ),
+                ),
+                Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    leading: const Padding(padding: EdgeInsets.only(right: 16), child: Icon(TablerIcons.bolt)),
+                    title: const Text("Smart Playlists"),
+                    onTap: () => Navigator.of(context).pushNamed(SmartPlaylistsScreen.routeName),
                   ),
                 ),
                 const Divider(),
@@ -285,6 +294,11 @@ class MusicScreenDrawer extends ConsumerWidget {
                         leading: const Padding(padding: EdgeInsets.only(right: 16), child: Icon(Icons.auto_delete)),
                         title: Text(AppLocalizations.of(context)!.queuesScreen),
                         onTap: () => Navigator.of(context).pushNamed(QueueRestoreScreen.routeName),
+                      ),
+                      ListTile(
+                        leading: const Padding(padding: EdgeInsets.only(right: 16), child: Icon(TablerIcons.bolt)),
+                        title: const Text("Smart Playlists"),
+                        onTap: () => Navigator.of(context).pushNamed(SmartPlaylistsScreen.routeName),
                       ),
                       const Divider(),
                     ]),

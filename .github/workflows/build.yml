@@ -23,10 +23,8 @@ env:
 # workaround by always running flutter pub get immediately before building,
 # and performing build for msix:create manually to allow implementing this workaround
 #
-# Desktop (Linux/Windows/macOS) is deliberately not built here. The supported
-# desktop app is the Tauri one at github.com/Nytuo/Diapason; this codebase
-# targets phones, tablets and TV. The desktop platform folders still build
-# locally for development, they are just not released.
+# Desktop builds are unsigned: they are for testing and for the auto-updater's
+# release assets, not for store distribution.
 jobs:
   build-android:
     name: Build for Android
@@ -191,16 +189,223 @@ jobs:
 
     - run: flutter build ios --release --no-pub --no-codesign
 
+    # Pinning an exact model + a very new OS floor breaks whenever the runner
+    # image ships a different set. Match on the iPhone family and let the action
+    # pick whatever recent runtime is actually installed.
     - name: Start simulator
+      id: simulator
       if: *integration_if
       uses: futureware-tech/simulator-action@v5
       with:
-        model: 'iPhone 16'
-        os_version: '>= 26.0'
+        model: 'iPhone.*'
+        os: 'iOS'
+        os_version: '>= 17.0'
         wait_for_boot: true
         erase_before_boot: true
         boot_timeout_seconds: 360
 
     - name: Run Integration Tests
       if: *integration_if
-      run: flutter test integration_test/test_cases.dart -d 'iPhone 16'
+      run: flutter test integration_test/test_cases.dart -d ${{ steps.simulator.outputs.udid }}
+
+  build-linux:
+    name: Build for Linux
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    # libmpv/mpv are required by media_kit_libs_linux, the rest is the standard
+    # Flutter Linux desktop toolchain.
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libmpv-dev mpv
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+        cache: false
+        pub-cache: true
+
+    - name: Cache Dart build cache
+      uses: actions/cache@v5
+      with:
+        path: |
+          .dart_tool
+          build
+        key: ${{ runner.os }}-linux-dart-build-${{ hashFiles('pubspec.lock') }}
+        restore-keys: ${{ runner.os }}-linux-dart-build-
+
+    - run: flutter doctor
+    - run: flutter pub get
+    - run: flutter build linux --release --no-pub
+
+    - name: Package build
+      run: tar -czf diapason-linux-x64.tar.gz -C build/linux/x64/release/bundle .
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: diapason-linux-x64
+        path: diapason-linux-x64.tar.gz
+        compression-level: 0 # already compressed
+
+    # fpm builds both deb and rpm from one staging tree; rpm/rpmbuild is needed
+    # for the rpm target, and linuxdeploy assembles the AppImage.
+    - name: Install packaging tools
+      run: |
+        sudo apt-get install -y rpm ruby ruby-dev
+        sudo gem install --no-document fpm
+        curl -sSLo linuxdeploy.AppImage \
+          https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+        chmod +x linuxdeploy.AppImage
+
+    - name: Build deb / rpm / AppImage
+      run: linux/packaging/build-packages.sh
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: diapason-linux-packages
+        path: build/linux/packages/*
+        compression-level: 0 # already compressed
+
+  build-flatpak:
+    name: Build Flatpak
+    runs-on: ubuntu-latest
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:freedesktop-24.08
+      options: --privileged
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Install build dependencies
+      run: |
+        dnf install -y ninja-build cmake clang gtk3-devel lzma-sdk-devel mpv-libs-devel curl git unzip xz which
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+        cache: false
+        pub-cache: true
+
+    # Flutter can't build inside the flatpak sandbox (no network for pub get, no
+    # Flutter SDK extension), so the bundle is built here and the manifest just
+    # installs the staged tree.
+    - name: Build Flutter bundle
+      run: |
+        git config --global --add safe.directory '*'
+        flutter doctor
+        flutter pub get
+        flutter build linux --release --no-pub
+
+    - name: Stage bundle for the manifest
+      run: |
+        mkdir -p flatpak/staging
+        cp -r build/linux/*/release/bundle flatpak/staging/
+        sed -e '/^dnl/d' -e 's|__INSTALL_PATH__|/app/bin|g' \
+          assets/diapason.desktop.m4 > flatpak/staging/fr.nytuo.diapason.desktop
+        cp assets/fr.nytuo.diapason.metainfo.xml flatpak/staging/
+        cp assets/icon/linux/256x256/apps/diapason.png flatpak/staging/
+
+    - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+      with:
+        bundle: diapason.flatpak
+        manifest-path: flatpak/fr.nytuo.diapason.yml
+        cache-key: flatpak-builder-${{ github.sha }}
+
+  build-snap:
+    name: Build Snap
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: snapcore/action-build@v1
+      id: snapcraft
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: diapason-snap
+        path: ${{ steps.snapcraft.outputs.snap }}
+        compression-level: 0 # already compressed
+
+  build-windows:
+    name: Build for Windows
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+        cache: false
+        pub-cache: true
+
+    - name: Cache Dart build cache
+      uses: actions/cache@v5
+      with:
+        path: |
+          .dart_tool
+          build
+        key: ${{ runner.os }}-windows-dart-build-${{ hashFiles('pubspec.lock') }}
+        restore-keys: ${{ runner.os }}-windows-dart-build-
+
+    - run: flutter doctor
+    - run: flutter pub get
+    - run: flutter build windows --release --no-pub
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: diapason-windows-x64
+        path: build/windows/x64/runner/Release/
+
+  build-macos:
+    name: Build for macOS
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+        cache: false
+        pub-cache: true
+
+    - name: Cache CocoaPods
+      uses: actions/cache@v5
+      with:
+        path: |
+          macos/Pods
+          ~/.cocoapods
+        key: ${{ runner.os }}-macos-pods-${{ hashFiles('macos/Podfile.lock') }}
+        restore-keys: ${{ runner.os }}-macos-pods-
+
+    - name: Cache Dart build cache
+      uses: actions/cache@v5
+      with:
+        path: |
+          .dart_tool
+          build
+        key: ${{ runner.os }}-macos-dart-build-${{ hashFiles('pubspec.lock') }}
+        restore-keys: ${{ runner.os }}-macos-dart-build-
+
+    - run: flutter doctor
+    - run: flutter pub get
+    - run: flutter build macos --release --no-pub
+
+    - name: Package build
+      run: |
+        cd build/macos/Build/Products/Release
+        zip -r -y "$GITHUB_WORKSPACE/diapason-macos.zip" Diapason.app
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: diapason-macos
+        path: diapason-macos.zip
+        compression-level: 0 # already compressed

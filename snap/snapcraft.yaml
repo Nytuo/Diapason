@@ -1,0 +1,77 @@
+name: diapason
+base: core22
+adopt-info: diapason
+summary: A multi-source music player
+description: |
+  Diapason is an open source music player for Jellyfin, Plex,
+  Subsonic/Navidrome, MPD and local files. It merges every source you add into
+  a single library, with offline downloads, scrobbling and discovery built in.
+
+grade: stable
+confinement: strict
+
+architectures:
+  - build-on: amd64
+
+apps:
+  diapason:
+    command: bin/diapason
+    # Lets snapcraft rewrite Icon=/Exec= to snap-internal paths.
+    desktop: share/applications/diapason.desktop
+    extensions: [gnome]
+    plugs:
+      - home
+      - network
+      - network-bind
+      - audio-playback
+      - removable-media
+      - password-manager-service
+    environment:
+      # media_kit dlopen()s libmpv, so it must be findable inside the snap.
+      LD_LIBRARY_PATH: $SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/blas:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/lapack:$LD_LIBRARY_PATH
+
+parts:
+  diapason:
+    source: .
+    plugin: nil
+    override-pull: |
+      craftctl default
+      craftctl set version="$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -d+ -f1)"
+    build-packages:
+      - clang
+      - cmake
+      - ninja-build
+      - pkg-config
+      - libgtk-3-dev
+      - liblzma-dev
+      - libmpv-dev
+      - curl
+      - git
+      - unzip
+    stage-packages:
+      # libmpv is loaded at runtime, not linked, so it has to be staged by name.
+      - libmpv1
+      - mpv
+    override-build: |
+      set -eux
+      # Snapcraft's flutter plugin is unmaintained on core22, so drive the SDK
+      # directly and pin it to the same stable channel CI builds with.
+      if [ ! -d "$CRAFT_PART_BUILD/flutter-sdk" ]; then
+        git clone --depth 1 -b stable https://github.com/flutter/flutter.git "$CRAFT_PART_BUILD/flutter-sdk"
+      fi
+      export PATH="$CRAFT_PART_BUILD/flutter-sdk/bin:$PATH"
+      flutter config --no-analytics --enable-linux-desktop
+      flutter doctor
+      flutter pub get
+      flutter build linux --release
+
+      mkdir -p "$CRAFT_PART_INSTALL/bin"
+      cp -r build/linux/*/release/bundle/. "$CRAFT_PART_INSTALL/bin/"
+
+      # Desktop entry + icon so the snap shows up in launchers.
+      mkdir -p "$CRAFT_PART_INSTALL/share/applications"
+      sed -e '/^dnl/d' -e 's|__INSTALL_PATH__||g' -e 's|Exec=/diapason|Exec=diapason|' \
+        assets/diapason.desktop.m4 > "$CRAFT_PART_INSTALL/share/applications/diapason.desktop"
+      mkdir -p "$CRAFT_PART_INSTALL/share/icons/hicolor/256x256/apps"
+      cp assets/icon/linux/256x256/apps/diapason.png \
+        "$CRAFT_PART_INSTALL/share/icons/hicolor/256x256/apps/diapason.png"

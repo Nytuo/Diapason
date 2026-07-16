@@ -6,7 +6,9 @@ import 'package:diapason/components/AlbumScreen/album_screen_content.dart';
 import 'package:diapason/components/Buttons/cta_huge.dart';
 import 'package:diapason/components/LoginScreen/login_server_selection_page.dart';
 import 'package:diapason/components/MusicScreen/item_wrapper.dart';
+import 'package:diapason/components/SourcesSettingsScreen/source_form.dart';
 import 'package:diapason/main.dart' as app;
+import 'package:diapason/models/media_source.dart';
 import 'package:diapason/menus/components/playbackActions/playback_actions.dart';
 import 'package:diapason/screens/login_screen.dart';
 import 'package:diapason/screens/music_screen.dart';
@@ -114,6 +116,13 @@ void main() async {
       final startButton = find.byType(CTAHuge);
       await tester.tap(startButton);
       await tester.pump();
+
+      // Diapason supports several kinds of source, so it asks which one to add
+      // before the Jellyfin server picker.
+      final jellyfinOption = find.text(sourceKindPresentation(MediaSourceKind.jellyfin).label);
+      await tester.waitFor(jellyfinOption);
+      await tester.tap(jellyfinOption);
+      await tester.pump(const Duration(seconds: 1));
 
       final urlEntry = find.byType(TextFormField);
       await tester.enterText(urlEntry, "https://demo.jellyfin.org/stable");

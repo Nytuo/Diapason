@@ -11,6 +11,8 @@ import 'package:get_it/get_it.dart';
 import 'package:diapason/services/finamp_user_helper.dart';
 import 'package:diapason/screens/login_screen.dart';
 import 'package:diapason/screens/music_screen.dart';
+import 'package:diapason/screens/desktop/desktop_shell.dart';
+import 'package:diapason/utils/platform_helper.dart';
 import 'package:diapason/screens/view_selector.dart';
 
 class SplashScreen extends ConsumerWidget {
@@ -29,16 +31,18 @@ class SplashScreen extends ConsumerWidget {
 
     if (DeviceFormFactorDetector.current.isWatch) return const WatchScreen();
 
+    Widget home() => isDesktop ? const DesktopShell() : const MusicScreen();
+
     if (user == null) {
       final hasOtherSources = GetIt.instance<BackendRegistry>().configured.isNotEmpty;
       if (!hasOtherSources) return const LoginScreen();
-      return DeviceFormFactorDetector.current.isTv ? const TvHomeScreen() : const MusicScreen();
+      return DeviceFormFactorDetector.current.isTv ? const TvHomeScreen() : home();
     } else if (user.currentView == null) {
       return const ViewSelector();
     } else if (DeviceFormFactorDetector.current.isTv) {
       return const TvHomeScreen();
     } else {
-      return const MusicScreen();
+      return home();
     }
   }
 }

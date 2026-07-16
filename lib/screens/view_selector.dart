@@ -1,5 +1,7 @@
 import 'package:diapason/components/finamp_app_bar_back_button.dart';
+import 'package:diapason/screens/desktop/desktop_shell.dart';
 import 'package:diapason/screens/music_screen.dart';
+import 'package:diapason/utils/platform_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:diapason/l10n/app_localizations.dart';
@@ -165,7 +167,12 @@ class _ViewSelectorState extends State<ViewSelector> {
 
         // allow calling _submitChoice() while selector is being built by delaying
         // navigation changes
-        Future.microtask(() => Navigator.of(context).pushNamedAndRemoveUntil(MusicScreen.routeName, (route) => false));
+        Future.microtask(
+          () => Navigator.of(context).pushNamedAndRemoveUntil(
+            isDesktop ? DesktopShell.routeName : MusicScreen.routeName,
+            (route) => false,
+          ),
+        );
       } catch (e) {
         GlobalSnackbar.error(e);
       }

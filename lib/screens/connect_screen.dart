@@ -98,6 +98,10 @@ class _ConnectScreenState extends State<ConnectScreen> {
   }
 }
 
+/// Shown while we're driving another device. Deliberately not a remote control:
+/// the now-playing bar owns the transport, artwork and metadata, exactly as it
+/// does for local playback. This just states where audio is going and offers the
+/// actions that only make sense here.
 class _RemoteControl extends StatelessWidget {
   const _RemoteControl({required this.device, required this.onCast});
 
@@ -111,77 +115,38 @@ class _RemoteControl extends StatelessWidget {
     return ValueListenableBuilder<ConnectStatus?>(
       valueListenable: _connect.remoteStatus,
       builder: (context, status, _) {
-        final song = status?.song;
-
         return Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(TablerIcons.device_speaker),
-                title: Text("Controlling ${device.name}"),
-                subtitle: Text(status == null ? "Connecting…" : status.state),
-                trailing: TextButton(onPressed: _connect.disconnect, child: const Text("Disconnect")),
-              ),
-              const Divider(),
-              const Spacer(),
-
-              Text(
-                song?.title ?? "Nothing playing",
-                style: Theme.of(context).textTheme.headlineSmall,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (song != null) ...[
-                const SizedBox(height: 4.0),
-                Text(song.artist, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium),
-              ],
-
-              const SizedBox(height: 32.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  IconButton(
-                    iconSize: 36.0,
-                    icon: const Icon(TablerIcons.player_skip_back),
-                    onPressed: () => _connect.sendCommand("previous"),
-                  ),
-                  IconButton(
-                    iconSize: 56.0,
-                    icon: Icon(
-                      (status?.isPlaying ?? false) ? TablerIcons.player_pause : TablerIcons.player_play,
-                    ),
-                    onPressed: () => _connect.sendCommand((status?.isPlaying ?? false) ? "pause" : "play"),
-                  ),
-                  IconButton(
-                    iconSize: 36.0,
-                    icon: const Icon(TablerIcons.player_skip_forward),
-                    onPressed: () => _connect.sendCommand("next"),
-                  ),
-                ],
-              ),
-
+              Icon(TablerIcons.device_speaker, size: 56, color: Theme.of(context).colorScheme.primary),
               const SizedBox(height: 16.0),
-              Row(
-                children: [
-                  const Icon(TablerIcons.volume_2),
-                  Expanded(
-                    child: Slider(
-                      value: (status?.volume ?? 1).clamp(0.0, 1.0),
-                      onChanged: (value) => _connect.sendCommand("volume", volume: value),
-                    ),
-                  ),
-                ],
+              Text(
+                "Playing on ${device.name}",
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
-
-              const Spacer(),
+              const SizedBox(height: 8.0),
+              Text(
+                status == null
+                    ? "Connecting…"
+                    : "Use the player controls as usual — they're driving this device.",
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 32.0),
               FilledButton.icon(
                 onPressed: onCast,
                 icon: const Icon(TablerIcons.playlist),
                 label: const Text("Send my queue to this device"),
+              ),
+              const SizedBox(height: 8.0),
+              TextButton.icon(
+                onPressed: _connect.disconnect,
+                icon: const Icon(TablerIcons.plug_connected_x),
+                label: const Text("Disconnect"),
               ),
             ],
           ),

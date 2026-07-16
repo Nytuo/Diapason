@@ -42,6 +42,7 @@ class _SourcesSettingsScreenState extends State<SourcesSettingsScreen> {
       MediaSourceKind.subsonic,
       MediaSourceKind.plex,
       MediaSourceKind.local,
+      MediaSourceKind.mpd,
     ];
 
     final kind = await showModalBottomSheet<MediaSourceKind>(

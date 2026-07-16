@@ -4,6 +4,7 @@ import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/screens/lyrics_screen.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/keep_screen_on_helper.dart';
+import 'package:diapason/utils/platform_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -41,7 +42,7 @@ Widget buildPlayerSplitScreenScaffold(BuildContext context, Widget? widget) {
 
       return Consumer(
         builder: (context, ref, child) {
-          bool allowSplitScreen = ref.watch(finampSettingsProvider.allowSplitScreen);
+          bool allowSplitScreen = ref.watch(finampSettingsProvider.allowSplitScreen) && !isDesktop;
 
           return StreamBuilder<FinampQueueInfo?>(
             stream: queueService.getQueueStream(),
