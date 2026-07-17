@@ -103,15 +103,15 @@ jobs:
     - run: flutter doctor
     - run: flutter pub get
 
-    - run: flutter build apk --debug --no-pub
+    - run: flutter build apk --release --no-pub
 
     - uses: actions/upload-artifact@v6
       with:
-        name: diapason-android-debug.apk
-        path: build/app/outputs/flutter-apk/app-debug.apk
+        name: diapason-android-release.apk
+        path: build/app/outputs/flutter-apk/app-release.apk
         compression-level: 0 # no compression
 
-    - run: flutter build appbundle --debug --no-pub
+    - run: flutter build appbundle --release --no-pub
 
     - name: Enable KVM group perms
       if: *integration_if
