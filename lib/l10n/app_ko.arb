@@ -1268,7 +1268,7 @@
     },
     "favorites": "즐겨찾기",
     "exportLogs": "로그 저장",
-    "startupErrorCallToAction": "\"github.com/Nytuo/diapason-flutter\"에 문제점을 등록해주세요. 로그와 스크린샷을 함께 등록하시면 우리가 최대한 빠르게 조치할 수 있습니다.",
+    "startupErrorCallToAction": "\"github.com/Nytuo/diapason\"에 문제점을 등록해주세요. 로그와 스크린샷을 함께 등록하시면 우리가 최대한 빠르게 조치할 수 있습니다.",
     "@startupErrorCallToAction": {
         "description": "The subtitle / call to action for what to do after encountering a startup error"
     },

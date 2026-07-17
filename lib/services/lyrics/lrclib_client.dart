@@ -11,7 +11,7 @@ class LrclibClient {
   static final _log = Logger("LrclibClient");
   static final _base = Uri.parse("https://lrclib.net");
 
-  static const _userAgent = "Diapason (https://github.com/Nytuo/diapason-flutter)";
+  static const _userAgent = "Diapason (https://github.com/Nytuo/diapason)";
 
   final http.Client _http;
 

@@ -1489,7 +1489,7 @@
             }
         }
     },
-    "startupErrorCallToAction": "Por favor crie um registo em \"github.com/Nytuo/diapason-flutter\" com os relatórios (use o botão em baixo) e uma captura de ecrã desta página, para que possamos corrigir isto o mais rapidamente possível.",
+    "startupErrorCallToAction": "Por favor crie um registo em \"github.com/Nytuo/diapason\" com os relatórios (use o botão em baixo) e uma captura de ecrã desta página, para que possamos corrigir isto o mais rapidamente possível.",
     "@startupErrorCallToAction": {
         "description": "The subtitle / call to action for what to do after encountering a startup error"
     },

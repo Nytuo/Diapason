@@ -1574,7 +1574,7 @@
     "@librarySelectError": {
         "description": "Error shown when the library select screen fails to load."
     },
-    "startupErrorCallToAction": "Veuillez créer un ticket sur \"github.com/Nytuo/diapason-flutter\" avec les logs (utilisez le bouton ci-dessous) et une capture d'écran de cette page, afin que nous puissions le résoudre le plus rapidement possible.",
+    "startupErrorCallToAction": "Veuillez créer un ticket sur \"github.com/Nytuo/diapason\" avec les logs (utilisez le bouton ci-dessous) et une capture d'écran de cette page, afin que nous puissions le résoudre le plus rapidement possible.",
     "@startupErrorCallToAction": {
         "description": "The subtitle / call to action for what to do after encountering a startup error"
     },

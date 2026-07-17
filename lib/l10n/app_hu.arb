@@ -220,7 +220,7 @@
     "@startupErrorTitle": {
         "description": "The title for the error screen that shows when startup fails."
     },
-    "startupErrorCallToAction": "Kérjük, jelezze a hibát a \"github.com/Nytuo/diapason-flutter\" oldalon, csatolva a naplóbejegyzéseket (használd az alábbi gombot) és egy képernyőképet, hogy a lehető leggyorsabban meg tudjuk javítani.",
+    "startupErrorCallToAction": "Kérjük, jelezze a hibát a \"github.com/Nytuo/diapason\" oldalon, csatolva a naplóbejegyzéseket (használd az alábbi gombot) és egy képernyőképet, hogy a lehető leggyorsabban meg tudjuk javítani.",
     "@startupErrorCallToAction": {
         "description": "The subtitle / call to action for what to do after encountering a startup error"
     },

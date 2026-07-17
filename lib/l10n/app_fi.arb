@@ -1717,7 +1717,7 @@
         "description": "The title for the error screen that shows when startup fails."
     },
     "exportLogs": "Tallenna lokit",
-    "startupErrorCallToAction": "Ole hyvä ja luo tiketti osoitteessa \"github.com/Nytuo/diapason-flutter\", ja liitä mukaan lokitiedot (käytä nappia alla). Liitä myös näyttökuva tästä sivusta, jotta voimme korjata vian mahdollisimman sujuvasti.",
+    "startupErrorCallToAction": "Ole hyvä ja luo tiketti osoitteessa \"github.com/Nytuo/diapason\", ja liitä mukaan lokitiedot (käytä nappia alla). Liitä myös näyttökuva tästä sivusta, jotta voimme korjata vian mahdollisimman sujuvasti.",
     "@startupErrorCallToAction": {
         "description": "The subtitle / call to action for what to do after encountering a startup error"
     },

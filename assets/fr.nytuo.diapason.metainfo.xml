@@ -19,13 +19,13 @@
       Nytuo
     </name>
   </developer>
-  <url type="homepage">https://github.com/Nytuo/diapason-flutter</url>
-  <url type="vcs-browser">https://github.com/Nytuo/diapason-flutter/tree/redesign</url>
-  <url type="translate">https://github.com/Nytuo/diapason-flutter</url>
-  <url type="bugtracker">https://github.com/Nytuo/diapason-flutter/issues</url>
+  <url type="homepage">https://github.com/Nytuo/diapason</url>
+  <url type="vcs-browser">https://github.com/Nytuo/diapason/tree/redesign</url>
+  <url type="translate">https://github.com/Nytuo/diapason</url>
+  <url type="bugtracker">https://github.com/Nytuo/diapason/issues</url>
   <url
     type="contribute"
-  >https://github.com/Nytuo/diapason-flutter/blob/redesign/CONTRIBUTING.md</url>
+  >https://github.com/Nytuo/diapason/blob/redesign/CONTRIBUTING.md</url>
   <description>
     <p
     >Diapason is an open source, cross-platform Jellyfin music player that supports streaming playback and offline downloads, playlists, favorites and shuffle. Linux support is currently in Beta.</p>
@@ -62,7 +62,7 @@
     <release version="0.9.24-beta" date="2026-06-15">
       <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.24-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.24-beta</url>
       <description>
         <p>
           New Features
@@ -92,7 +92,7 @@
     <release version="0.9.23-beta" date="2026-03-18">
       <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.23-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.23-beta</url>
       <description>
         <p>
           New Features
@@ -120,7 +120,7 @@
     <release version="0.9.22-beta" date="2025-12-22">
       <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.22-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.22-beta</url>
       <description>
         <p>
           New Features
@@ -148,7 +148,7 @@
     <release version="0.9.21-beta" date="2025-12-15">
       <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.21-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.21-beta</url>
       <description>
         <p>
           New Features
@@ -184,7 +184,7 @@
     <release version="0.9.20-beta" date="2025-10-18">
       <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.20-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.20-beta</url>
       <description>
         <p>
           New Features
@@ -212,7 +212,7 @@
     <release version="0.9.19-beta" date="2025-07-28">
       <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.19-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.19-beta</url>
       <description>
         <p>
           New Features
@@ -243,7 +243,7 @@
     <release version="0.9.18-beta" date="2025-06-14">
       <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.18-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.18-beta</url>
       <description>
         <p>
           New Features
@@ -274,7 +274,7 @@
     <release version="0.9.16-beta" date="2025-04-17">
       <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.16-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.16-beta</url>
       <description>
         <p>
           "Diapasonlify" Hackathon Update! Lots of improvements!
@@ -308,7 +308,7 @@
     <release version="0.9.15-beta" date="2025-03-29">
       <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.15-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.15-beta</url>
       <description>
         <p>
           🚀 Join Diapason's first Hackathon, happening now until April 6th!
@@ -339,7 +339,7 @@
     <release version="0.9.14-beta" date="2025-02-27">
       <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.14-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.14-beta</url>
       <description>
         <p>
           New Features
@@ -366,7 +366,7 @@
     <release version="0.9.13-beta" date="2025-01-08">
       <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.13-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.13-beta</url>
       <description>
         <p>
           New Features
@@ -395,7 +395,7 @@
     <release version="0.9.12-beta" date="2024-11-12">
       <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.12-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.12-beta</url>
       <description>
         <p>
           New Features
@@ -423,7 +423,7 @@
     <release version="0.9.11-beta" date="2024-09-17">
       <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.11-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.11-beta</url>
       <description>
         <p>This is a hotfix for a bug introduced with 0.9.10</p>
         <p>
@@ -441,7 +441,7 @@
     <release version="0.9.10-beta" date="2024-09-15">
       <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.10-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.10-beta</url>
       <description>
         <p>
           New Features
@@ -467,7 +467,7 @@
     <release version="0.9.9-beta" date="2024-07-21">
       <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.9-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.9-beta</url>
       <description>
         <p>
           Bug Fixes
@@ -487,7 +487,7 @@
     <release version="0.9.8-beta" date="2024-06-13">
     <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.8-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.8-beta</url>
       <description>
         <p>
           Bug Fixes:
@@ -513,7 +513,7 @@
     <release version="0.9.7-beta" date="2024-05-23">
     <url
         type="details"
-      >https://github.com/Nytuo/diapason-flutter/releases/tag/0.9.7-beta</url>
+      >https://github.com/Nytuo/diapason/releases/tag/0.9.7-beta</url>
       <description>
         <p>
           New Features:

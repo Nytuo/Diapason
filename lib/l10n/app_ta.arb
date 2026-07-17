@@ -462,7 +462,7 @@
         "placeholders": {
             "sourceCodeLink": {
                 "type": "String",
-                "example": "https://github.com/Nytuo/diapason-flutter"
+                "example": "https://github.com/Nytuo/diapason"
             }
         }
     },
@@ -1498,7 +1498,7 @@
     "@albumScreen": {
         "description": "Name for the view/screen that shows albums"
     },
-    "startupErrorCallToAction": "பதிவுகள் (கீழே உள்ள பொத்தானைப் பயன்படுத்தவும்) மற்றும் இந்த பக்கத்தின் திரை சாட்டுடன் \"github.com/Nytuo/diapason-flutter\" இல் ஒரு சிக்கலை உருவாக்கவும், இதன் மூலம் அதை விரைவில் சரிசெய்ய முடியும்.",
+    "startupErrorCallToAction": "பதிவுகள் (கீழே உள்ள பொத்தானைப் பயன்படுத்தவும்) மற்றும் இந்த பக்கத்தின் திரை சாட்டுடன் \"github.com/Nytuo/diapason\" இல் ஒரு சிக்கலை உருவாக்கவும், இதன் மூலம் அதை விரைவில் சரிசெய்ய முடியும்.",
     "@startupErrorCallToAction": {
         "description": "The subtitle / call to action for what to do after encountering a startup error"
     },

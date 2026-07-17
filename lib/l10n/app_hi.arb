@@ -919,7 +919,7 @@
         "placeholders": {
             "sourceCodeLink": {
                 "type": "String",
-                "example": "https://github.com/Nytuo/diapason-flutter"
+                "example": "https://github.com/Nytuo/diapason"
             }
         }
     },
@@ -1602,7 +1602,7 @@
     "@startupErrorTitle": {
         "description": "The title for the error screen that shows when startup fails."
     },
-    "startupErrorCallToAction": "कृपया लॉग (नीचे दिए गए बटन का उपयोग करें) और इस पृष्ठ के स्क्रीनशॉट के साथ \"github.com/Nytuo/diapason-flutter\" पर एक समस्या बनाएं, ताकि हम इसे जल्द से जल्द ठीक कर सकें।",
+    "startupErrorCallToAction": "कृपया लॉग (नीचे दिए गए बटन का उपयोग करें) और इस पृष्ठ के स्क्रीनशॉट के साथ \"github.com/Nytuo/diapason\" पर एक समस्या बनाएं, ताकि हम इसे जल्द से जल्द ठीक कर सकें।",
     "@startupErrorCallToAction": {
         "description": "The subtitle / call to action for what to do after encountering a startup error"
     },

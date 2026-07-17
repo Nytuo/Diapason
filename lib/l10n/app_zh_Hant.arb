@@ -1709,7 +1709,7 @@
     "@libraryDownloads": {
         "description": "Title for the library downloads section on the downloads screen."
     },
-    "startupErrorCallToAction": "請在網站 \"github.com/Nytuo/diapason-flutter\" 提交問題描述並附上程式日誌檔 (可使用下方按鈕) 以及現在畫面的截圖, 以讓我們盡快修正此問題.",
+    "startupErrorCallToAction": "請在網站 \"github.com/Nytuo/diapason\" 提交問題描述並附上程式日誌檔 (可使用下方按鈕) 以及現在畫面的截圖, 以讓我們盡快修正此問題.",
     "@startupErrorCallToAction": {
         "description": "The subtitle / call to action for what to do after encountering a startup error"
     },

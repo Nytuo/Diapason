@@ -1718,7 +1718,7 @@
     "@showFavoriteButtonOnMediaNotificationTitle": {
         "description": "Title for the setting that controls if the media notification has a favorite button."
     },
-    "startupErrorCallToAction": "请在 \"github.com/Nytuo/diapason-flutter\" 上创建一个问题，并附上日志（使用下面的按钮）和此页面的屏幕截图，以便我们尽快修复它。",
+    "startupErrorCallToAction": "请在 \"github.com/Nytuo/diapason\" 上创建一个问题，并附上日志（使用下面的按钮）和此页面的屏幕截图，以便我们尽快修复它。",
     "@startupErrorCallToAction": {
         "description": "The subtitle / call to action for what to do after encountering a startup error"
     },

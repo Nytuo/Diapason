@@ -629,7 +629,7 @@
         }
     },
     "adaptive": "Kohanduv",
-    "startupErrorCallToAction": "Palun loo veateade lehel \\\"github.com/Nytuo/diapason-flutter\\\", lisades logid (kasuta allolevat nuppu) ja ekraanipildi sellest lehest, et saaksime vea võimalikult kiiresti parandada.",
+    "startupErrorCallToAction": "Palun loo veateade lehel \\\"github.com/Nytuo/diapason\\\", lisades logid (kasuta allolevat nuppu) ja ekraanipildi sellest lehest, et saaksime vea võimalikult kiiresti parandada.",
     "@startupErrorCallToAction": {
         "description": "The subtitle / call to action for what to do after encountering a startup error"
     },

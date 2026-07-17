@@ -15,7 +15,7 @@ set -euo pipefail
 APP_ID="fr.nytuo.diapason"
 BINARY="diapason"
 MAINTAINER="Nytuo <nne66vse2@mozmail.com>"
-HOMEPAGE="https://github.com/Nytuo/diapason-flutter"
+HOMEPAGE="https://github.com/Nytuo/diapason"
 DESCRIPTION="A multi-source music player for Jellyfin, Plex, Subsonic/Navidrome and local files"
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

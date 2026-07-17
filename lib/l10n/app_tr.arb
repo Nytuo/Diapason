@@ -1393,7 +1393,7 @@
         "description": "Default sorting order for playlists (server order)"
     },
     "exportLogs": "Günlükleri kaydet",
-    "startupErrorCallToAction": "Günlükler ve bu sayfanın bir ekran görüntüsünü de ekleyerek \"github.com/Nytuo/diapason-flutter\" adresine lütfen bir sorun oluşturun, böylece mümkün olduğunca çabuk düzeltebiliriz.",
+    "startupErrorCallToAction": "Günlükler ve bu sayfanın bir ekran görüntüsünü de ekleyerek \"github.com/Nytuo/diapason\" adresine lütfen bir sorun oluşturun, böylece mümkün olduğunca çabuk düzeltebiliriz.",
     "@startupErrorCallToAction": {
         "description": "The subtitle / call to action for what to do after encountering a startup error"
     },

@@ -1702,7 +1702,7 @@
     "@genreFilterPlaylistScreensSubtitle": {
         "description": "Description of the setting that controls if a genreFilter should get applied to PlaylistScreens when accessing the PlaylistScreens through a Genre."
     },
-    "startupErrorCallToAction": "Por favor crea una incidencia en \"github.com/Nytuo/diapason-flutter\" con los registros (utiliza el botón de abajo) y una captura de pantalla de esta página para que podamos resolverlo lo más rápido posible.",
+    "startupErrorCallToAction": "Por favor crea una incidencia en \"github.com/Nytuo/diapason\" con los registros (utiliza el botón de abajo) y una captura de pantalla de esta página para que podamos resolverlo lo más rápido posible.",
     "@startupErrorCallToAction": {
         "description": "The subtitle / call to action for what to do after encountering a startup error"
     },

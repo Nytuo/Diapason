@@ -27,7 +27,7 @@ class UpdateInfo {
 }
 
 class UpdateService {
-  UpdateService({this.repo = "Nytuo/diapason-flutter"});
+  UpdateService({this.repo = "Nytuo/diapason"});
 
   final String repo;
   final _log = Logger("UpdateService");

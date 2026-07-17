@@ -11,7 +11,7 @@
     "@startupErrorTitle": {
         "description": "The title for the error screen that shows when startup fails."
     },
-    "startupErrorCallToAction": "Please create an issue on \"github.com/Nytuo/diapason-flutter\" with the logs (use the button below) and a screenshot of this page, so that we can fix it as quickly as possible.",
+    "startupErrorCallToAction": "Please create an issue on \"github.com/Nytuo/diapason\" with the logs (use the button below) and a screenshot of this page, so that we can fix it as quickly as possible.",
     "@startupErrorCallToAction": {
         "description": "The subtitle / call to action for what to do after encountering a startup error"
     },
@@ -426,7 +426,7 @@
         "placeholders": {
             "sourceCodeLink": {
                 "type": "String",
-                "example": "https://github.com/Nytuo/diapason-flutter"
+                "example": "https://github.com/Nytuo/diapason"
             }
         }
     },

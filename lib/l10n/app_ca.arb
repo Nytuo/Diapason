@@ -411,7 +411,7 @@
         "placeholders": {
             "sourceCodeLink": {
                 "type": "String",
-                "example": "https://github.com/Nytuo/diapason-flutter"
+                "example": "https://github.com/Nytuo/diapason"
             }
         }
     },
@@ -782,7 +782,7 @@
             }
         }
     },
-    "startupErrorCallToAction": "Sisplau crea un issue a \"github.com/Nytuo/diapason-flutter\" amb els logs (utilitza el botó de sota) i una captura de pantalla d'aquesta pàgina, de tal manera que ho puguem resoldre tan ràpid com sigui possible.",
+    "startupErrorCallToAction": "Sisplau crea un issue a \"github.com/Nytuo/diapason\" amb els logs (utilitza el botó de sota) i una captura de pantalla d'aquesta pàgina, de tal manera que ho puguem resoldre tan ràpid com sigui possible.",
     "@startupErrorCallToAction": {
         "description": "The subtitle / call to action for what to do after encountering a startup error"
     },
