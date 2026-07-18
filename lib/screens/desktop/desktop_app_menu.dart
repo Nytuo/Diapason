@@ -1,4 +1,3 @@
-import 'package:diapason/components/update_dialog.dart';
 import 'package:diapason/screens/connect_screen.dart';
 import 'package:diapason/screens/desktop/desktop_theme.dart';
 import 'package:diapason/screens/downloads_screen.dart';
@@ -40,13 +39,6 @@ class DesktopAppMenu extends ConsumerWidget {
           value: () => FinampSetters.setRpcEnabled(!rpcEnabled),
           child: const Text("Discord Rich Presence"),
         ),
-        const PopupMenuDivider(),
-        _item(
-          p,
-          TablerIcons.arrow_up_circle,
-          "Check for updates",
-          () => checkForUpdatesInteractive(context, silentIfUpToDate: false),
-        ),
       ],
     );
   }
@@ -63,5 +55,4 @@ class DesktopAppMenu extends ConsumerWidget {
       ),
     );
   }
-
 }

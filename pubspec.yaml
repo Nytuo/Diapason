@@ -124,6 +124,9 @@ dependencies:
   app_links: ^6.4.0
   flutter_discord_rpc: ^1.0.0
   shared_preferences: ^2.5.3
+  # Android in-app updater: hands a downloaded APK to the system package
+  # installer (sideload builds only; the store build never shows the updater).
+  open_filex: ^4.7.0
   flex_color_picker: ^3.7.1
   dynamic_color: ^1.8.1
   dbus: ^0.7.11

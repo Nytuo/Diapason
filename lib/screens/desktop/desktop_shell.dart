@@ -1,4 +1,5 @@
 import 'package:diapason/components/update_dialog.dart';
+import 'package:diapason/services/updater_prefs.dart';
 import 'package:diapason/screens/desktop/desktop_content.dart';
 import 'package:diapason/screens/desktop/desktop_fullscreen_player.dart';
 import 'package:diapason/screens/desktop/desktop_header_bar.dart';
@@ -37,8 +38,10 @@ class _DesktopShellState extends State<DesktopShell> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) checkForUpdatesInteractive(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Respect the "check automatically" toggle in Settings → Updates.
+      if (!await UpdaterPrefs.isAutoCheckEnabled()) return;
+      if (mounted) await checkForUpdatesInteractive(context);
     });
   }
 
@@ -103,10 +106,7 @@ class _DesktopShellState extends State<DesktopShell> {
           final palette = DesktopPalette.fromScheme(Theme.of(context).colorScheme);
           return DesktopThemeScope(
             palette: palette,
-            child: Scaffold(
-              backgroundColor: palette.bg,
-              body: _body(palette),
-            ),
+            child: Scaffold(backgroundColor: palette.bg, body: _body(palette)),
           );
         },
       ),
@@ -135,9 +135,8 @@ class _DesktopShellState extends State<DesktopShell> {
                     onOpenPlaylist: _openPlaylistDetail,
                     openPlaylistId: _openPlaylist?.id,
                     brightness: palette.brightness,
-                    onToggleTheme: () => FinampSetters.setThemeMode(
-                      mode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark,
-                    ),
+                    onToggleTheme: () =>
+                        FinampSetters.setThemeMode(mode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark),
                   );
                 },
               ),
@@ -189,10 +188,15 @@ class _DesktopShellState extends State<DesktopShell> {
     return Container(
       height: 44,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: palette.borderSubtle))),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: palette.borderSubtle)),
+      ),
       child: Row(
         children: [
-          Text("Lyrics", style: TextStyle(color: palette.textPrimary, fontWeight: FontWeight.bold)),
+          Text(
+            "Lyrics",
+            style: TextStyle(color: palette.textPrimary, fontWeight: FontWeight.bold),
+          ),
           const Spacer(),
           IconButton(
             iconSize: 18,

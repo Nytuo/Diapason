@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:diapason/components/finamp_app_bar_back_button.dart';
+import 'package:diapason/components/update_dialog.dart';
+import 'package:diapason/services/updater_prefs.dart';
 import 'package:diapason/components/finamp_icon.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/menus/client_certificate_authentication_menu.dart';
@@ -56,8 +60,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   static const releaseNotesLink = "https://github.com/Nytuo/Diapason/releases";
   static const translationsLink = "https://hosted.weblate.org/projects/finamp";
 
-  bool get _hasJellyfinSource =>
-      GetIt.instance<BackendRegistry>().ofKind(MediaSourceKind.jellyfin).isNotEmpty;
+  bool get _hasJellyfinSource => GetIt.instance<BackendRegistry>().ofKind(MediaSourceKind.jellyfin).isNotEmpty;
+
+  // In-app updater (sideloaded Android + desktop). null while the pref loads.
+  bool? _autoUpdateEnabled;
+
+  // Android and desktop ship outside the stores, so they self-update from
+  // GitHub releases. iOS goes through the App Store and has no updater.
+  bool get _hasUpdater => Platform.isAndroid || isDesktop;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_hasUpdater) {
+      UpdaterPrefs.isAutoCheckEnabled().then((value) {
+        if (mounted) setState(() => _autoUpdateEnabled = value);
+      });
+    }
+  }
 
   Widget _sectionHeader(BuildContext context, String label) {
     final theme = Theme.of(context);
@@ -152,7 +172,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           const TextSpan(text: '\n\n\n'),
                           TextSpan(
                             text: isDesktop
-                                ? "The desktop version of Diapason is an independent build and is not derived from the Finamp fork."
+                                ? "The desktop version of Diapason, while based on the same codebase and backend features, is not derived from the Finamp fork."
                                 : localizations.forkNotice,
                           ),
                           const TextSpan(text: '\n\n\n'),
@@ -294,6 +314,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             onTap: () => Navigator.of(context).pushNamed(LanguageSelectionScreen.routeName),
           ),
+
+          // Android and desktop aren't distributed through the stores, so offer
+          // in-app updates straight from GitHub releases.
+          if (_hasUpdater) ...[
+            _sectionHeader(context, "Updates"),
+            SwitchListTile(
+              secondary: const Icon(TablerIcons.refresh),
+              title: const Text("Check for updates automatically"),
+              subtitle: const Text("Look for a newer version on GitHub when the app starts"),
+              value: _autoUpdateEnabled ?? true,
+              onChanged: _autoUpdateEnabled == null
+                  ? null
+                  : (value) async {
+                      setState(() => _autoUpdateEnabled = value);
+                      await UpdaterPrefs.setAutoCheckEnabled(value);
+                    },
+            ),
+            ListTile(
+              leading: const Icon(TablerIcons.download),
+              title: const Text("Check for updates now"),
+              subtitle: Text(
+                Platform.isAndroid
+                    ? "Download and install the latest release\nLong-press to reinstall the current version"
+                    : "Download the latest release from GitHub\nLong-press to reinstall the current version",
+              ),
+              isThreeLine: true,
+              onTap: () => checkForUpdatesInteractive(context, silentIfUpToDate: false),
+              onLongPress: () => checkForUpdatesInteractive(context, silentIfUpToDate: false, reinstall: true),
+            ),
+          ],
 
           if (_hasJellyfinSource) ...[
             _sectionHeader(context, "Jellyfin server"),

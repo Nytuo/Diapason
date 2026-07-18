@@ -279,7 +279,7 @@
     "@aboutContributionPrompt": {
         "description": "Text shown in the about screen, explaining that the app is made by volunteers and that the user could be one of them."
     },
-    "forkNotice": "Cette application est un fork du projet Finamp.",
+    "forkNotice": "Cette application est un fork du projet Finamp et diverge dans certains aspects.",
     "@forkNotice": {
         "description": "Notice shown in the about screen, explaining that the app is a fork of another project."
     },

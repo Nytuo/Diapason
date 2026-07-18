@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
   <!-- Android TV: leanback is what a TV provides, and touch is what it lacks.
        Both are declared not-required so the same APK still installs on phones. -->
   <uses-feature android:name="android.software.leanback" android:required="false"/>
@@ -17,6 +18,9 @@
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
+  <!-- In-app updater: allows prompting the user to install a downloaded APK
+       from GitHub releases. Only relevant to sideloaded builds. -->
+  <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
   <!-- The platform Visualizer effect is gated behind RECORD_AUDIO even when it only reads our own
        audio session. Requested at runtime, and only when the user turns the visualizer on. -->
   <uses-permission android:name="android.permission.RECORD_AUDIO"/>
@@ -91,6 +95,21 @@
             android:name=".MediaItemContentProvider"
             android:authorities="${applicationId}"
             android:exported="true" />
+    <!-- In-app updater (open_filex): override the plugin's bundled FileProvider
+         so we control exactly which directories the package installer can read
+         the downloaded APK from. Authority must stay ${applicationId}.fileProvider
+         to match what open_filex hands to the installer intent. -->
+    <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true"
+            tools:replace="android:authorities">
+      <meta-data
+              android:name="android.support.FILE_PROVIDER_PATHS"
+              android:resource="@xml/filepaths"
+              tools:replace="android:resource" />
+    </provider>
     <service android:name="com.ryanheise.audioservice.AudioService" android:foregroundServiceType="mediaPlayback" android:exported="true">
       <intent-filter>
         <action android:name="android.media.browse.MediaBrowserService" />

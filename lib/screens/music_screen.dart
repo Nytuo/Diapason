@@ -13,6 +13,8 @@ import 'package:diapason/components/MusicScreen/music_screen_tab_view.dart';
 import 'package:diapason/components/MusicScreen/sort_and_filter_row.dart';
 import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/components/now_playing_bar.dart';
+import 'package:diapason/components/update_dialog.dart';
+import 'package:diapason/services/updater_prefs.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/menus/music_screen_drawer.dart';
 import 'package:diapason/models/finamp_models.dart';
@@ -118,6 +120,14 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
   @override
   void initState() {
     super.initState();
+    // Android is sideloaded, so check GitHub for a newer APK on launch when the
+    // user hasn't opted out. Runs after first frame so it never blocks startup.
+    if (Platform.isAndroid) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!await UpdaterPrefs.isAutoCheckEnabled()) return;
+        if (mounted) await checkForUpdatesInteractive(context);
+      });
+    }
   }
 
   @override
