@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  WiX v5 source that packages an already-built Flutter Windows release bundle
+  into an .msi. Built from CI, e.g.:
+
+    wix build windows\packaging\diapason.wxs -arch x64 ^
+      -d Version=0.10.0 ^
+      -d SourceDir=build\windows\x64\runner\Release ^
+      -o installers\diapason-0.10.0_win_x64.msi
+
+  The whole bundle directory is harvested with the <Files> element (WiX v4+), so
+  no per-file authoring is needed. There is deliberately no Start Menu shortcut
+  here — the .exe (Inno Setup) installer is the shortcut-carrying, end-user
+  installer; this .msi targets silent / managed deployment.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="Diapason"
+           Manufacturer="Nytuo"
+           Version="$(Version)"
+           UpgradeCode="B2E8C4A1-9F63-4D02-8A5E-3C1F7B0D6E29"
+           Scope="perMachine">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Diapason is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Diapason">
+        <Files Include="$(SourceDir)\**" />
+      </Directory>
+    </StandardDirectory>
+  </Package>
+</Wix>

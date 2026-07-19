@@ -5,6 +5,11 @@ name: Build
 # so they can never block one.
 #   gh workflow run .github/workflows/build.yml --ref <branch name>
 #   gh workflow run .github/workflows/build.yml -f release_tag=0.10.0
+#
+# Desktop assets follow one naming scheme: diapason-<version>_<os>_<arch>.<ext>
+# (e.g. diapason-0.10.0_win_x64.exe, diapason-0.10.0_linux_aarch64.AppImage).
+# Windows and Linux ship both x64 and aarch64, built on native runners; macOS is
+# aarch64 only.
 on:
   workflow_dispatch:
     inputs:
@@ -40,12 +45,16 @@ jobs:
     steps:
     - name: Clone repository
       uses: actions/checkout@v6
-    
+
     - uses: actions/setup-java@v5
       with:
         distribution: 'zulu'
         java-version: '17'
-  
+
+    - name: Read app version
+      id: version
+      run: echo "version=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -d+ -f1)" >> "$GITHUB_OUTPUT"
+
     - name: Free up disk space
       run: |
         # Remove .NET SDKs
@@ -80,10 +89,10 @@ jobs:
         # arch can be removed later once isar aarch64 is easily available on pub.dev and overriding is not needed anymore
         pub-cache-key: "flutter-pub-:os:-:channel:-:version:-:arch:-:hash:"
 
-    
+
     - name: Gradle cache
       uses: actions/cache@v5
-      with: 
+      with:
         path: |
           ~/.gradle/caches
           ~/.gradle/wrapper
@@ -105,10 +114,14 @@ jobs:
 
     - run: flutter build apk --release --no-pub
 
+    # A single universal APK, so no arch token in the name.
+    - name: Rename APK
+      run: cp build/app/outputs/flutter-apk/app-release.apk "diapason-${{ steps.version.outputs.version }}_android.apk"
+
     - uses: actions/upload-artifact@v6
       with:
-        name: diapason-android-release.apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+        name: diapason-android
+        path: diapason-${{ steps.version.outputs.version }}_android.apk
         compression-level: 0 # no compression
 
     - run: flutter build appbundle --release --no-pub
@@ -174,6 +187,10 @@ jobs:
         cache: false
         pub-cache: true
 
+    - name: Read app version
+      id: version
+      run: echo "version=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -d+ -f1)" >> "$GITHUB_OUTPUT"
+
     - name: Cache CocoaPods
       uses: actions/cache@v5
       with:
@@ -204,12 +221,12 @@ jobs:
       run: |
         mkdir -p build/ios/ipa/Payload
         cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/Diapason.app
-        (cd build/ios/ipa && zip -qr "$GITHUB_WORKSPACE/diapason-ios.ipa" Payload)
+        (cd build/ios/ipa && zip -qr "$GITHUB_WORKSPACE/diapason-${{ steps.version.outputs.version }}_ios.ipa" Payload)
 
     - uses: actions/upload-artifact@v6
       with:
         name: diapason-ios
-        path: diapason-ios.ipa
+        path: diapason-${{ steps.version.outputs.version }}_ios.ipa
         compression-level: 0 # already compressed
 
     # `model` is matched as a literal device name, not a regex, and both it and
@@ -230,10 +247,30 @@ jobs:
       run: flutter test integration_test/test_cases.dart -d ${{ steps.simulator.outputs.udid }}
 
   build-linux:
-    name: Build for Linux
-    runs-on: ubuntu-latest
+    name: Build for Linux (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-latest
+            flutter_dir: x64
+            ld_arch: x86_64
+            # Prebuilt ARM Linux Flutter SDKs are not published on stable, so the
+            # aarch64 runner builds from the master channel; x64 stays on stable.
+            flutter_channel: stable
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+            flutter_dir: arm64
+            ld_arch: aarch64
+            flutter_channel: master
     steps:
     - uses: actions/checkout@v6
+
+    - name: Read app version
+      id: version
+      run: echo "version=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -d+ -f1)" >> "$GITHUB_OUTPUT"
 
     # libmpv/mpv are required by media_kit_libs_linux, the rest is the standard
     # Flutter Linux desktop toolchain.
@@ -245,7 +282,7 @@ jobs:
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
       with:
-        channel: 'stable'
+        channel: ${{ matrix.flutter_channel }}
         cache: false
         pub-cache: true
 
@@ -255,20 +292,20 @@ jobs:
         path: |
           .dart_tool
           build
-        key: ${{ runner.os }}-linux-dart-build-${{ hashFiles('pubspec.lock') }}
-        restore-keys: ${{ runner.os }}-linux-dart-build-
+        key: ${{ runner.os }}-linux-${{ matrix.arch }}-dart-build-${{ hashFiles('pubspec.lock') }}
+        restore-keys: ${{ runner.os }}-linux-${{ matrix.arch }}-dart-build-
 
     - run: flutter doctor
     - run: flutter pub get
     - run: flutter build linux --release --no-pub
 
     - name: Package build
-      run: tar -czf diapason-linux-x64.tar.gz -C build/linux/x64/release/bundle .
+      run: tar -czf "diapason-${{ steps.version.outputs.version }}_linux_${{ matrix.arch }}.tar.gz" -C build/linux/${{ matrix.flutter_dir }}/release/bundle .
 
     - uses: actions/upload-artifact@v6
       with:
-        name: diapason-linux-x64
-        path: diapason-linux-x64.tar.gz
+        name: diapason-linux-${{ matrix.arch }}
+        path: diapason-${{ steps.version.outputs.version }}_linux_${{ matrix.arch }}.tar.gz
         compression-level: 0 # already compressed
 
     # fpm builds both deb and rpm from one staging tree; rpm/rpmbuild is needed
@@ -278,7 +315,7 @@ jobs:
         sudo apt-get install -y rpm ruby ruby-dev
         sudo gem install --no-document fpm
         curl -sSLo linuxdeploy.AppImage \
-          https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-${{ matrix.ld_arch }}.AppImage
         chmod +x linuxdeploy.AppImage
 
     - name: Build deb / rpm / AppImage
@@ -286,7 +323,7 @@ jobs:
 
     - uses: actions/upload-artifact@v6
       with:
-        name: diapason-linux-packages
+        name: diapason-linux-packages-${{ matrix.arch }}
         path: build/linux/packages/*
         compression-level: 0 # already compressed
 
@@ -367,8 +404,20 @@ jobs:
         compression-level: 0 # already compressed
 
   build-windows:
-    name: Build for Windows
-    runs-on: windows-latest
+    name: Build for Windows (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: windows-latest
+            flutter_dir: x64
+            wix_arch: x64
+          - arch: aarch64
+            runner: windows-11-arm
+            flutter_dir: arm64
+            wix_arch: arm64
     steps:
     - uses: actions/checkout@v6
 
@@ -379,23 +428,72 @@ jobs:
         cache: false
         pub-cache: true
 
+    - name: Read app version
+      id: version
+      shell: pwsh
+      run: |
+        $line = (Select-String -Path pubspec.yaml -Pattern '^version:' | Select-Object -First 1).Line
+        $v = ($line -replace 'version:\s*', '' -replace '\+.*', '').Trim()
+        "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
     - name: Cache Dart build cache
       uses: actions/cache@v5
       with:
         path: |
           .dart_tool
           build
-        key: ${{ runner.os }}-windows-dart-build-${{ hashFiles('pubspec.lock') }}
-        restore-keys: ${{ runner.os }}-windows-dart-build-
+        key: ${{ runner.os }}-windows-${{ matrix.arch }}-dart-build-${{ hashFiles('pubspec.lock') }}
+        restore-keys: ${{ runner.os }}-windows-${{ matrix.arch }}-dart-build-
 
     - run: flutter doctor
     - run: flutter pub get
     - run: flutter build windows --release --no-pub
 
+    - name: Prepare installer output dir
+      shell: pwsh
+      run: New-Item -ItemType Directory -Force -Path installers | Out-Null
+
+    # A zip of the raw release bundle, alongside the two installers.
+    - name: Package portable zip
+      shell: pwsh
+      run: |
+        $base = "diapason-${{ steps.version.outputs.version }}_win_${{ matrix.arch }}"
+        Compress-Archive -Path "build/windows/${{ matrix.flutter_dir }}/runner/Release/*" -DestinationPath "installers/$base.zip"
+
+    # .exe installer via Inno Setup (6.3+ for the arm64 identifiers).
+    - name: Build .exe installer (Inno Setup)
+      shell: pwsh
+      run: |
+        choco install innosetup -y --no-progress
+        $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+        $base = "diapason-${{ steps.version.outputs.version }}_win_${{ matrix.arch }}"
+        & "$iscc" `
+          "/DMyAppVersion=${{ steps.version.outputs.version }}" `
+          "/DMyArch=${{ matrix.arch }}" `
+          "/DMySourceDir=build\windows\${{ matrix.flutter_dir }}\runner\Release" `
+          "/DMyOutputDir=$(Resolve-Path installers)" `
+          "/DMyOutputBaseFilename=$base" `
+          "windows\packaging\diapason.iss"
+
+    # .msi installer via WiX v5. Harvests the whole bundle dir with <Files>.
+    - name: Build .msi installer (WiX)
+      shell: pwsh
+      run: |
+        dotnet tool install --global wix --version 5.*
+        $wix = "$env:USERPROFILE\.dotnet\tools\wix.exe"
+        $base = "diapason-${{ steps.version.outputs.version }}_win_${{ matrix.arch }}"
+        & "$wix" build `
+          -arch ${{ matrix.wix_arch }} `
+          -d Version="${{ steps.version.outputs.version }}" `
+          -d SourceDir="build\windows\${{ matrix.flutter_dir }}\runner\Release" `
+          -o "installers\$base.msi" `
+          "windows\packaging\diapason.wxs"
+
     - uses: actions/upload-artifact@v6
       with:
-        name: diapason-windows-x64
-        path: build/windows/x64/runner/Release/
+        name: diapason-windows-${{ matrix.arch }}
+        path: installers/*
+        compression-level: 0 # installers are already compressed
 
   build-macos:
     name: Build for macOS
@@ -413,6 +511,10 @@ jobs:
         channel: 'stable'
         cache: false
         pub-cache: true
+
+    - name: Read app version
+      id: version
+      run: echo "version=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -d+ -f1)" >> "$GITHUB_OUTPUT"
 
     - name: Cache CocoaPods
       uses: actions/cache@v5
@@ -436,24 +538,34 @@ jobs:
     - run: flutter pub get
     - run: flutter build macos --release --no-pub
 
+    # macos-latest is an Apple-silicon runner, so the produced app is aarch64.
     - name: Package build
+      env:
+        VERSION: ${{ steps.version.outputs.version }}
       run: |
+        BASE="diapason-${VERSION}_macos_aarch64"
         cd build/macos/Build/Products/Release
-        zip -r -y "$GITHUB_WORKSPACE/diapason-macos.zip" Diapason.app
+        zip -r -y "$GITHUB_WORKSPACE/${BASE}.zip" Diapason.app
         # A drag-to-Applications dmg, in addition to the zip: nicer UX for end
         # users than unzipping. Unsigned/unnotarized either way, same as the zip.
         mkdir -p "$GITHUB_WORKSPACE/dmg-staging"
         cp -r Diapason.app "$GITHUB_WORKSPACE/dmg-staging/"
         ln -s /Applications "$GITHUB_WORKSPACE/dmg-staging/Applications"
         hdiutil create -volname Diapason -srcfolder "$GITHUB_WORKSPACE/dmg-staging" \
-          -ov -format UDZO "$GITHUB_WORKSPACE/diapason-macos.dmg"
+          -ov -format UDZO "$GITHUB_WORKSPACE/${BASE}.dmg"
+        # A .pkg installer that drops the app into /Applications. Unsigned, so
+        # Gatekeeper still prompts, same as the dmg/zip.
+        pkgbuild --identifier fr.nytuo.diapason --version "$VERSION" \
+          --install-location /Applications --component Diapason.app \
+          "$GITHUB_WORKSPACE/${BASE}.pkg"
 
     - uses: actions/upload-artifact@v6
       with:
         name: diapason-macos
         path: |
-          diapason-macos.zip
-          diapason-macos.dmg
+          diapason-${{ steps.version.outputs.version }}_macos_aarch64.zip
+          diapason-${{ steps.version.outputs.version }}_macos_aarch64.dmg
+          diapason-${{ steps.version.outputs.version }}_macos_aarch64.pkg
         compression-level: 0 # already compressed
 
   # Publishes a draft release from the artifacts the jobs above produced.
@@ -498,15 +610,14 @@ jobs:
         # an assets/ dir (app assets, e.g. assets/icon/) that "assets/*" would
         # also glob, and gh release upload chokes on directory entries.
         mkdir -p release-assets
-        # Windows uploads an uncompressed directory, so it needs zipping to
-        # become a single asset. Everything else is already one packaged file.
-        if [ -d artifacts/diapason-windows-x64 ]; then
-          (cd artifacts/diapason-windows-x64 && zip -qr "$GITHUB_WORKSPACE/release-assets/diapason-windows-x64.zip" .)
-        fi
+        # Every job now uploads already-named, single-file assets following the
+        # diapason-<version>_<os>_<arch>.<ext> scheme, so just gather them by
+        # extension.
         find artifacts -type f \
           \( -name '*.apk' -o -name '*.tar.gz' -o -name '*.deb' -o -name '*.rpm' \
              -o -name '*.AppImage' -o -name '*.zip' -o -name '*.snap' -o -name '*.flatpak' \
-             -o -name '*.ipa' -o -name '*.dmg' \) \
+             -o -name '*.ipa' -o -name '*.dmg' -o -name '*.exe' -o -name '*.msi' \
+             -o -name '*.pkg' \) \
           -exec cp {} release-assets/ \;
         ls -lh release-assets
 

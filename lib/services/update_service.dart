@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi' show Abi;
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
@@ -96,24 +97,56 @@ class UpdateService {
     }
   }
 
+  /// The arch tokens our release assets carry (see the
+  /// `diapason-<version>_<os>_<arch>.<ext>` naming scheme). Ordered by preference:
+  /// the running machine's native arch first, then any compatible fallback (an
+  /// x64 build runs fine under emulation on arm64 Windows/macOS).
+  static List<String> get _archTokens {
+    switch (Abi.current()) {
+      case Abi.windowsArm64:
+      case Abi.linuxArm64:
+      case Abi.macosArm64:
+        return const ["aarch64", "arm64", "x64", "x86_64", "amd64"];
+      default:
+        return const ["x64", "x86_64", "amd64"];
+    }
+  }
+
   String? _pickAsset(dynamic assets) {
     if (assets is! List) return null;
     bool matches(String name) {
       final n = name.toLowerCase();
       if (Platform.isAndroid) return n.endsWith(".apk");
-      if (Platform.isMacOS) return n.endsWith(".dmg") || n.contains("macos") || n.contains("darwin");
-      if (Platform.isWindows) return n.endsWith(".exe") || n.endsWith(".msi") || n.contains("windows");
+      if (Platform.isMacOS) return n.endsWith(".dmg") || n.endsWith(".pkg") || n.contains("macos") || n.contains("darwin");
+      if (Platform.isWindows) return n.endsWith(".exe") || n.endsWith(".msi") || n.contains("windows") || n.contains("_win_");
       if (Platform.isLinux) return n.endsWith(".appimage") || n.endsWith(".deb") || n.contains("linux");
       return false;
     }
 
+    String? url(dynamic asset) {
+      final u = asset is Map ? asset["browser_download_url"] : null;
+      return u is String ? u : null;
+    }
+
+    // Collect every platform-appropriate asset, then prefer one whose name
+    // carries this machine's architecture token before falling back to any.
+    // Android ships a single universal APK, so arch matching is skipped there.
+    final candidates = <String, String>{}; // name(lowercased) -> url
     for (final asset in assets) {
       if (asset is Map && asset["name"] is String && matches(asset["name"] as String)) {
-        final url = asset["browser_download_url"];
-        if (url is String) return url;
+        final u = url(asset);
+        if (u != null) candidates[(asset["name"] as String).toLowerCase()] = u;
       }
     }
-    return null;
+    if (candidates.isEmpty) return null;
+    if (!Platform.isAndroid) {
+      for (final token in _archTokens) {
+        for (final entry in candidates.entries) {
+          if (entry.key.contains(token)) return entry.value;
+        }
+      }
+    }
+    return candidates.values.first;
   }
 
   /// Whether [url]'s installer can be downloaded and launched from inside the

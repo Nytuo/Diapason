@@ -23,9 +23,12 @@ cd "$REPO_ROOT"
 
 VERSION="${1:-$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -d+ -f1)}"
 
+# FLUTTER_ARCH: the flutter build output dir. DEB_ARCH/RPM_ARCH: the arch label
+# each packager expects. ASSET_ARCH: the token used in our published file names
+# (see the appname-version_os_arch.ext scheme).
 case "$(uname -m)" in
-  x86_64)  FLUTTER_ARCH="x64";   DEB_ARCH="amd64";   RPM_ARCH="x86_64" ;;
-  aarch64) FLUTTER_ARCH="arm64"; DEB_ARCH="arm64";   RPM_ARCH="aarch64" ;;
+  x86_64)  FLUTTER_ARCH="x64";   DEB_ARCH="amd64";   RPM_ARCH="x86_64";   ASSET_ARCH="x64" ;;
+  aarch64) FLUTTER_ARCH="arm64"; DEB_ARCH="arm64";   RPM_ARCH="aarch64";  ASSET_ARCH="aarch64" ;;
   *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
 esac
 
@@ -76,7 +79,7 @@ echo "==> Building .deb"
 fpm "${common_fpm_args[@]}" \
   -t deb \
   -a "$DEB_ARCH" \
-  -p "$OUT/${BINARY}_${VERSION}_${DEB_ARCH}.deb" \
+  -p "$OUT/${BINARY}-${VERSION}_linux_${ASSET_ARCH}.deb" \
   --depends "libmpv2 | libmpv1" \
   --depends "libgtk-3-0" \
   --deb-no-default-config-files \
@@ -86,7 +89,7 @@ echo "==> Building .rpm"
 fpm "${common_fpm_args[@]}" \
   -t rpm \
   -a "$RPM_ARCH" \
-  -p "$OUT/${BINARY}-${VERSION}.${RPM_ARCH}.rpm" \
+  -p "$OUT/${BINARY}-${VERSION}_linux_${ASSET_ARCH}.rpm" \
   --depends "mpv-libs" \
   --depends "gtk3" \
   usr
@@ -122,7 +125,7 @@ fi
 
 export APPIMAGE_EXTRACT_AND_RUN=1 # CI runners have no FUSE
 export VERSION
-export OUTPUT="$OUT/${BINARY}-${VERSION}-${RPM_ARCH}.AppImage"
+export OUTPUT="$OUT/${BINARY}-${VERSION}_linux_${ASSET_ARCH}.AppImage"
 ./linuxdeploy.AppImage "${deploy_args[@]}" --output appimage
 
 echo "==> Done:"
