@@ -414,17 +414,21 @@ jobs:
             runner: windows-latest
             flutter_dir: x64
             wix_arch: x64
+            flutter_channel: stable
           - arch: aarch64
             runner: windows-11-arm
             flutter_dir: arm64
             wix_arch: arm64
+            # Prebuilt ARM Windows Flutter SDKs are not published on stable, so
+            # the arm64 runner builds from the master channel; x64 stays stable.
+            flutter_channel: master
     steps:
     - uses: actions/checkout@v6
 
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
       with:
-        channel: 'stable'
+        channel: ${{ matrix.flutter_channel }}
         cache: false
         pub-cache: true
 
@@ -470,7 +474,7 @@ jobs:
         & "$iscc" `
           "/DMyAppVersion=${{ steps.version.outputs.version }}" `
           "/DMyArch=${{ matrix.arch }}" `
-          "/DMySourceDir=build\windows\${{ matrix.flutter_dir }}\runner\Release" `
+          "/DMySourceDir=$(Resolve-Path "build\windows\${{ matrix.flutter_dir }}\runner\Release")" `
           "/DMyOutputDir=$(Resolve-Path installers)" `
           "/DMyOutputBaseFilename=$base" `
           "windows\packaging\diapason.iss"
