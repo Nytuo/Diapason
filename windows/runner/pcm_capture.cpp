@@ -6,26 +6,119 @@
 #include <flutter/method_channel.h>
 #include <flutter/standard_method_codec.h>
 
+#include <audioclient.h>
+#include <mmdeviceapi.h>
+#include <wrl/client.h>
+
+#include <atomic>
+#include <cstdio>
 #include <deque>
 #include <mutex>
+#include <string>
+#include <thread>
 #include <vector>
 
-#define MINIAUDIO_IMPLEMENTATION
-#define MA_NO_DECODING
-#define MA_NO_ENCODING
-#define MA_NO_GENERATION
-#define MA_NO_RESOURCE_MANAGER
-#include <miniaudio.h>
+// Process loopback (Windows 10 2004+).  Provide fallback definitions so the
+// code compiles even with an older SDK that lacks the header.
+#if __has_include(<audioclientactivationparams.h>)
+#include <audioclientactivationparams.h>
+#else
+#define VIRTUAL_AUDIO_DEVICE_PROCESS_LOOPBACK L"VAD\\Process_Loopback"
+
+typedef enum AUDIOCLIENT_ACTIVATION_TYPE {
+  AUDIOCLIENT_ACTIVATION_TYPE_DEFAULT,
+  AUDIOCLIENT_ACTIVATION_TYPE_PROCESS_LOOPBACK
+} AUDIOCLIENT_ACTIVATION_TYPE;
+
+typedef enum PROCESS_LOOPBACK_MODE {
+  PROCESS_LOOPBACK_MODE_INCLUDE_TARGET_PROCESS_TREE,
+  PROCESS_LOOPBACK_MODE_EXCLUDE_TARGET_PROCESS_TREE
+} PROCESS_LOOPBACK_MODE;
+
+typedef struct AUDIOCLIENT_PROCESS_LOOPBACK_PARAMS {
+  DWORD TargetProcessId;
+  PROCESS_LOOPBACK_MODE ProcessLoopbackMode;
+} AUDIOCLIENT_PROCESS_LOOPBACK_PARAMS;
+
+typedef struct AUDIOCLIENT_ACTIVATION_PARAMS {
+  AUDIOCLIENT_ACTIVATION_TYPE ActivationType;
+  union {
+    AUDIOCLIENT_PROCESS_LOOPBACK_PARAMS ProcessLoopbackParams;
+  };
+} AUDIOCLIENT_ACTIVATION_PARAMS;
+#endif
+
+// IEEE-float subtype GUID for WAVEFORMATEXTENSIBLE
+static const GUID kSubTypeFloat = {
+    0x00000003, 0x0000, 0x0010,
+    {0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71}};
 
 namespace {
 
 using flutter::EncodableMap;
 using flutter::EncodableValue;
+using Microsoft::WRL::ComPtr;
 
 constexpr size_t kMaxQueuedBuffers = 128;
 
 struct AudioBlock {
   std::vector<float> samples;
+};
+
+// Minimal COM implementation of IActivateAudioInterfaceCompletionHandler.
+class CompletionHandler : public IActivateAudioInterfaceCompletionHandler {
+ public:
+  CompletionHandler() { event_ = CreateEventW(nullptr, TRUE, FALSE, nullptr); }
+
+  // IUnknown
+  ULONG STDMETHODCALLTYPE AddRef() override {
+    return InterlockedIncrement(&ref_count_);
+  }
+  ULONG STDMETHODCALLTYPE Release() override {
+    ULONG count = InterlockedDecrement(&ref_count_);
+    if (count == 0) delete this;
+    return count;
+  }
+  HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,
+                                           void** ppv) override {
+    if (riid == __uuidof(IUnknown) ||
+        riid == __uuidof(IActivateAudioInterfaceCompletionHandler)) {
+      *ppv = static_cast<IActivateAudioInterfaceCompletionHandler*>(this);
+      AddRef();
+      return S_OK;
+    }
+    if (riid == __uuidof(IAgileObject)) {
+      *ppv = static_cast<IUnknown*>(this);
+      AddRef();
+      return S_OK;
+    }
+    *ppv = nullptr;
+    return E_NOINTERFACE;
+  }
+
+  // IActivateAudioInterfaceCompletionHandler
+  STDMETHOD(ActivateCompleted)
+  (IActivateAudioInterfaceAsyncOperation* op) override {
+    HRESULT hr_activate = E_FAIL;
+    ComPtr<IUnknown> unknown;
+    HRESULT hr = op->GetActivateResult(&hr_activate, &unknown);
+    if (SUCCEEDED(hr) && SUCCEEDED(hr_activate) && unknown) {
+      unknown.As(&client_);
+    }
+    result_ = SUCCEEDED(hr) ? hr_activate : hr;
+    SetEvent(event_);
+    return S_OK;
+  }
+
+  HANDLE event_ = nullptr;
+  ComPtr<IAudioClient> client_;
+  HRESULT result_ = E_FAIL;
+
+ private:
+  ~CompletionHandler() {
+    if (event_) CloseHandle(event_);
+  }
+  ULONG ref_count_ = 1;
 };
 
 }  // namespace
@@ -41,7 +134,12 @@ class PcmCaptureImpl {
     method_channel_->SetMethodCallHandler(
         [this](const auto& call, auto result) {
           if (call.method_name() == "start") {
-            result->Success(EncodableValue(Start()));
+            auto err = Start();
+            if (err.empty()) {
+              result->Success(EncodableValue(true));
+            } else {
+              result->Success(EncodableValue(err));
+            }
           } else if (call.method_name() == "stop") {
             Stop();
             result->Success();
@@ -57,12 +155,14 @@ class PcmCaptureImpl {
     event_channel_->SetStreamHandler(
         std::make_unique<flutter::StreamHandlerFunctions<EncodableValue>>(
             [this](const auto*, auto&& events)
-                -> std::unique_ptr<flutter::StreamHandlerError<EncodableValue>> {
+                -> std::unique_ptr<
+                    flutter::StreamHandlerError<EncodableValue>> {
               sink_ = std::move(events);
               return nullptr;
             },
             [this](const auto*)
-                -> std::unique_ptr<flutter::StreamHandlerError<EncodableValue>> {
+                -> std::unique_ptr<
+                    flutter::StreamHandlerError<EncodableValue>> {
               sink_.reset();
               return nullptr;
             }));
@@ -70,41 +170,89 @@ class PcmCaptureImpl {
 
   ~PcmCaptureImpl() { Stop(); }
 
-  bool Start() {
-    if (running_) return true;
-
-    if (!TryInit(true) && !TryInit(false)) {
-      return false;
-    }
-    channels_ = static_cast<int>(device_.capture.channels);
-    sample_rate_ = static_cast<int>(device_.sampleRate);
-
-    if (ma_device_start(&device_) != MA_SUCCESS) {
-      ma_device_uninit(&device_);
-      return false;
-    }
-    running_ = true;
-    return true;
+  static std::string HrMsg(const char* step, HRESULT hr) {
+    char buf[256];
+    snprintf(buf, sizeof(buf), "%s failed: HRESULT 0x%08lX", step,
+             static_cast<unsigned long>(hr));
+    return buf;
   }
 
-  bool TryInit(bool process_scoped) {
-    ma_device_config config = ma_device_config_init(ma_device_type_loopback);
-    config.capture.format = ma_format_f32;
-    config.capture.channels = 0;
-    config.sampleRate = 0;
-    config.dataCallback = &PcmCaptureImpl::DataCallback;
-    config.pUserData = this;
-    if (process_scoped) {
-      config.wasapi.loopbackProcessID = GetCurrentProcessId();
-      config.wasapi.loopbackProcessExclude = MA_FALSE;
+  // Returns empty string on success, error description on failure.
+  std::string Start() {
+    if (running_) return {};
+
+    // --- Activate process-scoped loopback via WASAPI ---
+    AUDIOCLIENT_ACTIVATION_PARAMS act_params{};
+    act_params.ActivationType =
+        AUDIOCLIENT_ACTIVATION_TYPE_PROCESS_LOOPBACK;
+    act_params.ProcessLoopbackParams.TargetProcessId = GetCurrentProcessId();
+    act_params.ProcessLoopbackParams.ProcessLoopbackMode =
+        PROCESS_LOOPBACK_MODE_INCLUDE_TARGET_PROCESS_TREE;
+
+    PROPVARIANT pv{};
+    pv.vt = VT_BLOB;
+    pv.blob.cbSize = sizeof(act_params);
+    pv.blob.pBlobData = reinterpret_cast<BYTE*>(&act_params);
+
+    auto* handler = new CompletionHandler();
+    ComPtr<IActivateAudioInterfaceAsyncOperation> async_op;
+    HRESULT hr = ActivateAudioInterfaceAsync(
+        VIRTUAL_AUDIO_DEVICE_PROCESS_LOOPBACK, __uuidof(IAudioClient), &pv,
+        handler, &async_op);
+    if (FAILED(hr)) {
+      handler->Release();
+      return HrMsg("ActivateAudioInterfaceAsync", hr);
     }
-    return ma_device_init(nullptr, &config, &device_) == MA_SUCCESS;
+
+    DWORD wait = WaitForSingleObject(handler->event_, 5000);
+    if (wait != WAIT_OBJECT_0) {
+      handler->Release();
+      return "ActivateAudioInterfaceAsync timed out";
+    }
+    if (FAILED(handler->result_)) {
+      auto msg = HrMsg("ActivateCompleted", handler->result_);
+      handler->Release();
+      return msg;
+    }
+    if (!handler->client_) {
+      handler->Release();
+      return "ActivateCompleted returned null client";
+    }
+
+    audio_client_ = handler->client_;
+    handler->Release();
+
+    // IAudioClient was created on MTA (completion handler thread).
+    // All further calls (GetMixFormat, Initialize, GetService, Start)
+    // must happen on MTA too — the capture thread handles this.
+    init_event_ = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    running_ = true;
+    capture_thread_ = std::thread(&PcmCaptureImpl::CaptureLoop, this);
+
+    WaitForSingleObject(init_event_, 5000);
+    CloseHandle(init_event_);
+    init_event_ = nullptr;
+
+    if (!init_error_.empty()) {
+      running_ = false;
+      capture_thread_.join();
+      capture_client_.Reset();
+      audio_client_.Reset();
+      auto err = std::move(init_error_);
+      init_error_.clear();
+      return err;
+    }
+
+    return {};
   }
 
   void Stop() {
     if (!running_) return;
     running_ = false;
-    ma_device_uninit(&device_);
+    if (capture_thread_.joinable()) capture_thread_.join();
+    if (audio_client_) audio_client_->Stop();
+    capture_client_.Reset();
+    audio_client_.Reset();
     std::lock_guard<std::mutex> lock(mutex_);
     queue_.clear();
   }
@@ -127,33 +275,138 @@ class PcmCaptureImpl {
   }
 
  private:
-  static void DataCallback(ma_device* device, void* /*output*/,
-                           const void* input, ma_uint32 frame_count) {
-    auto* self = static_cast<PcmCaptureImpl*>(device->pUserData);
-    if (input == nullptr || frame_count == 0) return;
+  void CaptureLoop() {
+    CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
-    const auto* in = static_cast<const float*>(input);
-    const size_t count =
-        static_cast<size_t>(frame_count) * device->capture.channels;
+    // --- Initialize audio client on MTA thread ---
+    // Process loopback IAudioClient may not implement GetMixFormat on
+    // recent Windows 11 builds.  Specify a float32 format directly and
+    // let WASAPI convert via AUTOCONVERTPCM.
+    WAVEFORMATEXTENSIBLE wfx{};
+    wfx.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
+    wfx.Format.nChannels = 2;
+    wfx.Format.nSamplesPerSec = 48000;
+    wfx.Format.wBitsPerSample = 32;
+    wfx.Format.nBlockAlign =
+        wfx.Format.nChannels * wfx.Format.wBitsPerSample / 8;
+    wfx.Format.nAvgBytesPerSec =
+        wfx.Format.nSamplesPerSec * wfx.Format.nBlockAlign;
+    wfx.Format.cbSize =
+        sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
+    wfx.Samples.wValidBitsPerSample = 32;
+    wfx.dwChannelMask = SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT;
+    wfx.SubFormat = kSubTypeFloat;
 
-    AudioBlock block;
-    block.samples.assign(in, in + count);
+    channels_ = wfx.Format.nChannels;
+    sample_rate_ = wfx.Format.nSamplesPerSec;
+    bits_per_sample_ = 32;
+    is_float_ = true;
 
-    {
-      std::lock_guard<std::mutex> lock(self->mutex_);
-      if (self->queue_.size() >= kMaxQueuedBuffers) {
-        self->queue_.pop_front();
-      }
-      self->queue_.push_back(std::move(block));
+    // Process loopback still requires AUDCLNT_STREAMFLAGS_LOOPBACK in
+    // Initialize (the activation params only select the target process).
+    // GetMixFormat returns E_NOTIMPL on recent Win 11 builds, so we
+    // specify a format and let WASAPI convert via AUTOCONVERTPCM.
+    const DWORD kLoopback = AUDCLNT_STREAMFLAGS_LOOPBACK;
+    const DWORD kAutoConvert = AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM |
+                               AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY;
+
+    HRESULT hr = audio_client_->Initialize(
+        AUDCLNT_SHAREMODE_SHARED, kLoopback | kAutoConvert, 0, 0,
+        &wfx.Format, nullptr);
+    if (FAILED(hr)) {
+      // Retry without AUTOCONVERTPCM in case it's not supported.
+      hr = audio_client_->Initialize(AUDCLNT_SHAREMODE_SHARED, kLoopback,
+                                     0, 0, &wfx.Format, nullptr);
     }
-    PostMessage(self->host_window_, PcmCapture::kPcmReadyMessage, 0, 0);
+    if (FAILED(hr)) {
+      init_error_ = HrMsg("IAudioClient::Initialize", hr);
+      SetEvent(init_event_);
+      CoUninitialize();
+      return;
+    }
+
+    hr = audio_client_->GetService(IID_PPV_ARGS(&capture_client_));
+    if (FAILED(hr)) {
+      init_error_ = HrMsg("GetService(IAudioCaptureClient)", hr);
+      SetEvent(init_event_);
+      CoUninitialize();
+      return;
+    }
+
+    hr = audio_client_->Start();
+    if (FAILED(hr)) {
+      capture_client_.Reset();
+      init_error_ = HrMsg("IAudioClient::Start", hr);
+      SetEvent(init_event_);
+      CoUninitialize();
+      return;
+    }
+
+    SetEvent(init_event_);
+
+    // --- Capture loop ---
+    while (running_) {
+      UINT32 packet_size = 0;
+      hr = capture_client_->GetNextPacketSize(&packet_size);
+      if (FAILED(hr)) break;
+
+      while (packet_size > 0) {
+        BYTE* data = nullptr;
+        UINT32 frames = 0;
+        DWORD flags = 0;
+        hr = capture_client_->GetBuffer(&data, &frames, &flags, nullptr,
+                                        nullptr);
+        if (FAILED(hr)) break;
+
+        if (running_ && frames > 0 && data != nullptr) {
+          const size_t sample_count =
+              static_cast<size_t>(frames) * channels_;
+          AudioBlock block;
+          block.samples.resize(sample_count);
+
+          if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
+            std::fill(block.samples.begin(), block.samples.end(), 0.0f);
+          } else if (is_float_ && bits_per_sample_ == 32) {
+            const auto* src = reinterpret_cast<const float*>(data);
+            std::copy(src, src + sample_count, block.samples.begin());
+          } else if (!is_float_ && bits_per_sample_ == 16) {
+            const auto* src = reinterpret_cast<const int16_t*>(data);
+            for (size_t i = 0; i < sample_count; i++)
+              block.samples[i] = src[i] / 32768.0f;
+          }
+
+          {
+            std::lock_guard<std::mutex> lock(mutex_);
+            if (queue_.size() >= kMaxQueuedBuffers) queue_.pop_front();
+            queue_.push_back(std::move(block));
+          }
+          PostMessage(host_window_, PcmCapture::kPcmReadyMessage, 0, 0);
+        }
+
+        capture_client_->ReleaseBuffer(frames);
+
+        if (!running_) break;
+        hr = capture_client_->GetNextPacketSize(&packet_size);
+        if (FAILED(hr)) break;
+      }
+
+      if (running_) Sleep(5);
+    }
+
+    CoUninitialize();
   }
 
   HWND host_window_;
-  ma_device device_{};
-  bool running_ = false;
+  ComPtr<IAudioClient> audio_client_;
+  ComPtr<IAudioCaptureClient> capture_client_;
+  std::thread capture_thread_;
+  std::atomic<bool> running_{false};
+  HANDLE init_event_ = nullptr;
+  std::string init_error_;
   int channels_ = 2;
   int sample_rate_ = 44100;
+  int bits_per_sample_ = 32;
+  bool is_float_ = true;
 
   std::mutex mutex_;
   std::deque<AudioBlock> queue_;

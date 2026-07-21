@@ -37,17 +37,7 @@ target_link_libraries(${BINARY_NAME} PRIVATE flutter flutter_wrapper_app)
 target_link_libraries(${BINARY_NAME} PRIVATE "dwmapi.lib")
 target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
 
-include(FetchContent)
-FetchContent_Declare(miniaudio
-  GIT_REPOSITORY https://github.com/mackron/miniaudio.git
-  GIT_TAG        0.11.21
-)
-FetchContent_GetProperties(miniaudio)
-if(NOT miniaudio_POPULATED)
-  FetchContent_Populate(miniaudio)
-endif()
-target_include_directories(${BINARY_NAME} PRIVATE "${miniaudio_SOURCE_DIR}")
-target_link_libraries(${BINARY_NAME} PRIVATE "ole32.lib" "winmm.lib")
+target_link_libraries(${BINARY_NAME} PRIVATE "ole32.lib" "mmdevapi.lib")
 
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)

@@ -34,6 +34,7 @@ class _SpectrumVisualizerState extends ConsumerState<SpectrumVisualizer> with Si
 
   SpectrumSource? _source;
   int? _sessionId;
+  int _attachGeneration = 0;
   StreamSubscription<int?>? _sessionSubscription;
   StreamSubscription<SpectrumFrame>? _frameSubscription;
 
@@ -70,6 +71,7 @@ class _SpectrumVisualizerState extends ConsumerState<SpectrumVisualizer> with Si
 
   Future<void> _attach(int? sessionId) async {
     _sessionId = sessionId;
+    final generation = ++_attachGeneration;
     await _detach();
     if (!FinampSettingsHelper.finampSettings.visualizerEnabled) return;
 
@@ -83,7 +85,7 @@ class _SpectrumVisualizerState extends ConsumerState<SpectrumVisualizer> with Si
       _logger.info("No spectrum source available; visualizer stays hidden");
       return;
     }
-    if (!mounted) {
+    if (!mounted || generation != _attachGeneration) {
       await source.stop();
       return;
     }

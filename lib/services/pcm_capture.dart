@@ -34,9 +34,9 @@ class NativeLoopbackPcmCapture implements PcmCaptureBackend {
 
   @override
   Future<bool> start() async {
+    Object? result;
     try {
-      final ok = await _methods.invokeMethod<bool>("start");
-      if (ok != true) return false;
+      result = await _methods.invokeMethod("start");
     } on MissingPluginException {
       _logger.info("PCM capture plugin not present on this platform");
       return false;
@@ -44,6 +44,12 @@ class NativeLoopbackPcmCapture implements PcmCaptureBackend {
       _logger.warning("Could not start PCM capture: ${e.message}");
       return false;
     }
+
+    if (result is String) {
+      _logger.warning("PCM capture start failed: $result");
+      return false;
+    }
+    if (result != true) return false;
 
     _subscription = _events.receiveBroadcastStream().listen(
       (event) {
