@@ -54,6 +54,7 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
 pkg_check_modules(DBUS REQUIRED dbus-1)
+pkg_check_modules(PIPEWIRE REQUIRED IMPORTED_TARGET libpipewire-0.3)
 
 add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}")
 
@@ -64,12 +65,27 @@ add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}")
 add_executable(${BINARY_NAME}
   "main.cc"
   "diapason_application.cc"
+  "pcm_capture.cc"
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
 )
 
 # Apply the standard set of build settings. This can be removed for applications
 # that need different build settings.
 apply_standard_settings(${BINARY_NAME})
+
+include(FetchContent)
+FetchContent_Declare(miniaudio
+  GIT_REPOSITORY https://github.com/mackron/miniaudio.git
+  GIT_TAG        0.11.21
+)
+FetchContent_GetProperties(miniaudio)
+if(NOT miniaudio_POPULATED)
+  FetchContent_Populate(miniaudio)
+endif()
+target_include_directories(${BINARY_NAME} PRIVATE "${miniaudio_SOURCE_DIR}")
+set_source_files_properties("pcm_capture.cc" PROPERTIES COMPILE_OPTIONS "-Wno-error")
+target_link_libraries(${BINARY_NAME} PRIVATE pthread ${CMAKE_DL_LIBS})
+target_link_libraries(${BINARY_NAME} PRIVATE PkgConfig::PIPEWIRE)
 
 # Add dependency libraries. Add any application-specific dependencies here.
 target_link_libraries(${BINARY_NAME} PRIVATE flutter)

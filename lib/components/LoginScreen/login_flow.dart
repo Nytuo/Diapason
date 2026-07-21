@@ -5,6 +5,7 @@ import 'package:diapason/components/LoginScreen/login_source_type_page.dart';
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/backends/media_source_service.dart';
 import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/screens/splash_screen.dart';
 import 'package:diapason/screens/view_selector.dart';
 import 'package:diapason/services/client_certificate_installer.dart';
 import 'package:diapason/services/jellyfin_api_helper.dart';
@@ -126,17 +127,7 @@ class _LoginFlowState extends State<LoginFlow> {
                     await GetIt.instance<MediaSourceService>().addSource(config);
                     if (!context.mounted) return;
 
-                    loginNavigatorKey.currentState!.popUntil(
-                      (r) => r.settings.name == LoginSourceTypePage.routeName,
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          "${config.name} saved. Browsing it needs a Jellyfin server connected too, for now.",
-                        ),
-                        duration: const Duration(seconds: 6),
-                      ),
-                    );
+                    Navigator.of(context).pushReplacementNamed(SplashScreen.routeName);
                   },
                 ),
               );

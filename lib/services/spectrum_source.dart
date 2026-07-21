@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
+
+import 'package:diapason/services/desktop_spectrum_source.dart';
+import 'package:diapason/services/pcm_capture.dart';
 
 /// One FFT frame: linear magnitudes in 0..1, one per frequency point, evenly
 /// spaced from 0 Hz to [sampleRate] / 2.
@@ -24,13 +26,17 @@ abstract class SpectrumSource {
   Future<void> stop();
 }
 
-bool get spectrumSourceAvailable => Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
+bool get spectrumSourceAvailable =>
+    Platform.isAndroid || Platform.isIOS || Platform.isMacOS || Platform.isWindows || Platform.isLinux;
 
 SpectrumSource? createSpectrumSource({int? androidSessionId, required int fps}) {
   if (Platform.isAndroid) {
     return androidSessionId == null ? null : AndroidVisualizerSource(sessionId: androidSessionId, fps: fps);
   }
   if (Platform.isIOS || Platform.isMacOS) return DarwinSpectrumTapSource();
+  if (Platform.isWindows || Platform.isLinux) {
+    return DesktopSpectrumSource(backend: NativeLoopbackPcmCapture(), fps: fps);
+  }
   return null;
 }
 

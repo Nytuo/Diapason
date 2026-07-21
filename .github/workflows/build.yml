@@ -277,7 +277,7 @@ jobs:
     - name: Install build dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libmpv-dev mpv
+        sudo apt-get install -y build-essential cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libmpv-dev mpv libpipewire-0.3-dev
 
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
@@ -347,7 +347,7 @@ jobs:
         # flutter_discord_rpc's cargokit build, which the GitHub runner image
         # provides preinstalled but this container does not.
         dnf install -y ninja-build cmake clang gcc gtk3-devel xz-devel pkgconf-pkg-config \
-          mpv-libs-devel curl git unzip xz which jq rust cargo
+          mpv-libs-devel pipewire-devel curl git unzip xz which jq rust cargo
 
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
@@ -419,8 +419,6 @@ jobs:
             runner: windows-11-arm
             flutter_dir: arm64
             wix_arch: arm64
-            # Prebuilt ARM Windows Flutter SDKs are not published on stable, so
-            # the arm64 runner builds from the master channel; x64 stays stable.
             flutter_channel: master
     steps:
     - uses: actions/checkout@v6
