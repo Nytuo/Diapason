@@ -23,7 +23,7 @@ dependencies:
   just_audio:
     git:
       url: https://github.com/Nytuo/just_audio_fork.git
-      ref: d245094a6859ddd35593a5acd9f6d668f17cd6c9
+      ref: diapason-spectrum-tap
       path: just_audio
   just_audio_media_kit:
     git:
