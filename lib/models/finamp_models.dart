@@ -314,6 +314,7 @@ class DefaultSettings {
   static const radioMode = RadioMode.similar;
   static const radioEnabled = false;
   static const duckOnAudioInterruption = true;
+  static const resumeOnBluetoothConnect = false;
   static const forceAudioOffloadingOnAndroid = false;
   static const previousTracksPersistenceMode = PreviousTracksPersistenceMode.persistent;
   static final homeScreenConfiguration = FinampHomeScreenConfiguration(
@@ -1068,6 +1069,10 @@ class FinampSettings {
   /// Space the bands logarithmically rather than linearly across the frequency range.
   @HiveField(182, defaultValue: DefaultSettings.visualizerLogScale)
   bool visualizerLogScale = DefaultSettings.visualizerLogScale;
+
+  /// Resume playback automatically when bluetooth headphones/speakers connect.
+  @HiveField(183, defaultValue: DefaultSettings.resumeOnBluetoothConnect)
+  bool resumeOnBluetoothConnect = DefaultSettings.resumeOnBluetoothConnect;
 
   static Future<FinampSettings> create() async {
     final downloadLocation = await DownloadLocation.create(

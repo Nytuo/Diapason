@@ -2837,6 +2837,14 @@
     "@duckOnAudioInterruptionSubtitle": {
         "description": "Subtitle for the setting that controls ducking."
     },
+    "resumeOnBluetoothConnectTitle": "Resume on Bluetooth Connect",
+    "@resumeOnBluetoothConnectTitle": {
+        "description": "Title for the setting that resumes playback when bluetooth headphones/speakers connect."
+    },
+    "resumeOnBluetoothConnectSubtitle": "Resume playback whenever bluetooth headphones or speakers connect while Diapason is still active.",
+    "@resumeOnBluetoothConnectSubtitle": {
+        "description": "Subtitle for the setting that resumes playback when bluetooth headphones/speakers connect."
+    },
     "forceAudioOffloadingOnAndroidTitle": "Force Audio Offloading",
     "@forceAudioOffloadingOnAndroidTitle": {
         "description": "Title for the setting that controls audio offloading on Android."

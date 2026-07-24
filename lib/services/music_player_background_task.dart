@@ -404,6 +404,21 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       session.devicesChangedEventStream.listen((event) {
         _outputLogger.info('Devices added:   ${event.devicesAdded}');
         _outputLogger.info('Devices removed: ${event.devicesRemoved}');
+
+        final addedBluetoothOutputDevices = event.devicesAdded.where(
+          (device) =>
+              device.isOutput &&
+              (device.type == AudioDeviceType.bluetoothA2dp ||
+                  device.type == AudioDeviceType.bluetoothSco ||
+                  device.type == AudioDeviceType.bluetoothLe),
+        );
+        if (addedBluetoothOutputDevices.isNotEmpty &&
+            FinampSettingsHelper.finampSettings.resumeOnBluetoothConnect) {
+          _audioServiceBackgroundTaskLogger.info(
+            "Resuming playback due to added bluetooth device(s): $addedBluetoothOutputDevices",
+          );
+          play();
+        }
       });
     });
 

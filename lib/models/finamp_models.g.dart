@@ -524,13 +524,16 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..visualizerDbCeiling = fields[181] == null
           ? -10.0
           : (fields[181] as num).toDouble()
-      ..visualizerLogScale = fields[182] == null ? true : fields[182] as bool;
+      ..visualizerLogScale = fields[182] == null ? true : fields[182] as bool
+      ..resumeOnBluetoothConnect = fields[183] == null
+          ? false
+          : fields[183] as bool;
   }
 
   @override
   void write(BinaryWriter writer, FinampSettings obj) {
     writer
-      ..writeByte(175)
+      ..writeByte(176)
       ..writeByte(0)
       ..write(obj.isOffline)
       ..writeByte(1)
@@ -880,7 +883,9 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..writeByte(181)
       ..write(obj.visualizerDbCeiling)
       ..writeByte(182)
-      ..write(obj.visualizerLogScale);
+      ..write(obj.visualizerLogScale)
+      ..writeByte(183)
+      ..write(obj.resumeOnBluetoothConnect);
   }
 
   @override
