@@ -3,6 +3,8 @@ import 'dart:math';
 
 import 'package:isar/isar.dart';
 
+import 'finamp_models.dart';
+
 part 'media_source.g.dart';
 
 enum MediaSourceKind {
@@ -29,6 +31,7 @@ enum MediaSourceKind {
 class BackendCapabilities {
   const BackendCapabilities({
     this.transcoding = false,
+    this.defaultTranscodingCodecs = const {},
     this.playlists = false,
     this.favorites = false,
     this.playbackReporting = false,
@@ -38,6 +41,13 @@ class BackendCapabilities {
   });
 
   final bool transcoding;
+
+  /// Codecs this backend can reliably transcode to without any extra,
+  /// non-default server-side configuration (e.g. a custom Subsonic
+  /// transcoding profile). Codecs outside this set may still work if the
+  /// server happens to be configured for them, but shouldn't be assumed to.
+  final Set<FinampTranscodingCodec> defaultTranscodingCodecs;
+
   final bool playlists;
   final bool favorites;
   final bool playbackReporting;

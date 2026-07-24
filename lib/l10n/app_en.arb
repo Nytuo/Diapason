@@ -1562,6 +1562,31 @@
         },
         "description": "Options in Select Download Codec dropdown"
     },
+    "losslessTranscodeDownloadWarning": "Warning: all downloads will be transcoded to this lossless format, even songs with lossy encoding. This will not restore lost quality and can use significantly more storage.",
+    "@losslessTranscodeDownloadWarning": {
+        "description": "Warning shown under the download codec selector when a lossless codec (FLAC, ALAC) is selected."
+    },
+    "downloadTranscodeCodecMaybeUnsupported": "May not be supported without extra server configuration on: {sources}",
+    "@downloadTranscodeCodecMaybeUnsupported": {
+        "description": "Warning shown when the selected download codec isn't among what a connected source transcodes to by default.",
+        "placeholders": {
+            "sources": {
+                "type": "String"
+            }
+        }
+    },
+    "streamingTranscodeCodecTitle": "Streaming Codec",
+    "@streamingTranscodeCodecTitle": {
+        "description": "Title for the streaming transcode codec dropdown, used by sources without Jellyfin's more detailed streaming format setting."
+    },
+    "streamingTranscodeCodecSubtitle": "Codec to transcode to when streaming, for sources without a more detailed streaming format setting.",
+    "@streamingTranscodeCodecSubtitle": {
+        "description": "Subtitle for the streaming transcode codec dropdown."
+    },
+    "losslessTranscodeStreamingWarning": "Warning: streaming will be transcoded to this lossless format, even songs with lossy encoding. This will not restore lost quality and uses much more bandwidth than a lossy stream.",
+    "@losslessTranscodeStreamingWarning": {
+        "description": "Warning shown under the streaming codec selector when a lossless codec (FLAC, ALAC) is selected."
+    },
     "downloadBitrate": "Download Bitrate",
     "@downloadBitrate": {
         "description": "Title for Download Bitrate settings slider"
