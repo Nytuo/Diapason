@@ -136,31 +136,63 @@ class DesktopSeekBar extends StatefulWidget {
   State<DesktopSeekBar> createState() => _DesktopSeekBarState();
 }
 
-class _DesktopSeekBarState extends State<DesktopSeekBar> {
+class _DesktopSeekBarState extends State<DesktopSeekBar> with SingleTickerProviderStateMixin {
   double? _dragValue;
+  late final AnimationController _loadingController;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadingController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _loadingController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final listenable = widget.positionListenable;
-    if (listenable != null) {
-      return ValueListenableBuilder<Duration>(
-        valueListenable: listenable,
-        builder: (context, position, _) => _bar(context, position),
-      );
-    }
-
     final audioHandler = GetIt.instance<MusicPlayerBackgroundTask>();
-    return StreamBuilder<Duration>(
-      stream: AudioService.position,
-      initialData: audioHandler.playbackState.value.position,
-      builder: (context, snapshot) => _bar(context, snapshot.data ?? Duration.zero),
+    
+    return StreamBuilder<PlaybackState>(
+      stream: audioHandler.playbackState,
+      initialData: audioHandler.playbackState.value,
+      builder: (context, stateSnap) {
+        final state = stateSnap.data;
+        final buffered = widget.positionListenable != null ? Duration.zero : (state?.bufferedPosition ?? Duration.zero);
+        final loading = widget.positionListenable == null &&
+            (state?.processingState == AudioProcessingState.loading ||
+                state?.processingState == AudioProcessingState.buffering);
+
+        final listenable = widget.positionListenable;
+        if (listenable != null) {
+          return ValueListenableBuilder<Duration>(
+            valueListenable: listenable,
+            builder: (context, position, _) => _bar(context, position, buffered, loading),
+          );
+        }
+
+        return StreamBuilder<Duration>(
+          stream: AudioService.position,
+          initialData: audioHandler.playbackState.value.position,
+          builder: (context, snapshot) => _bar(context, snapshot.data ?? Duration.zero, buffered, loading),
+        );
+      },
     );
   }
 
-  Widget _bar(BuildContext context, Duration position) {
+  Widget _bar(BuildContext context, Duration position, Duration buffered, bool loading) {
     final p = DesktopThemeScope.of(context);
     final totalMs = widget.duration.inMilliseconds;
     final value = _dragValue ?? (totalMs == 0 ? 0.0 : (position.inMilliseconds / totalMs).clamp(0.0, 1.0));
+    final bufferedValue = totalMs == 0 ? 0.0 : (buffered.inMilliseconds / totalMs).clamp(0.0, 1.0);
+
+    final showIndeterminate = loading && (totalMs == 0 || position <= Duration.zero);
 
     void seek(double v) {
       final to = Duration(milliseconds: (v * totalMs).round());
@@ -172,30 +204,87 @@ class _DesktopSeekBarState extends State<DesktopSeekBar> {
       setState(() => _dragValue = null);
     }
 
-    final slider = SliderTheme(
-      data: SliderThemeData(
-        trackHeight: 4,
-        activeTrackColor: p.accent,
-        inactiveTrackColor: p.surface,
-        thumbColor: p.accent,
-        overlayShape: SliderComponentShape.noOverlay,
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-      ),
-      child: Slider(
-        value: value.toDouble(),
-        onChanged: totalMs == 0 ? null : (v) => setState(() => _dragValue = v),
-        onChangeEnd: totalMs == 0 ? null : seek,
-      ),
-    );
+    final Widget track;
+    if (showIndeterminate) {
+      track = SizedBox(
+        height: 16,
+        child: Center(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: AnimatedBuilder(
+              animation: _loadingController,
+              builder: (context, _) => CustomPaint(
+                size: const Size(double.infinity, 4),
+                painter: _IndeterminatePainter(
+                  progress: _loadingController.value,
+                  track: p.surface,
+                  accent: p.accent,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    } else {
+      track = SliderTheme(
+        data: SliderThemeData(
+          trackHeight: 4,
+          activeTrackColor: p.accent,
+          inactiveTrackColor: p.surface,
+          secondaryActiveTrackColor: p.accent.withOpacity(0.28),
+          thumbColor: p.accent,
+          overlayShape: SliderComponentShape.noOverlay,
+          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+        ),
+        child: Slider(
+          value: value.toDouble(),
+          secondaryTrackValue: bufferedValue > value ? bufferedValue.toDouble() : null,
+          onChanged: totalMs == 0 ? null : (v) => setState(() => _dragValue = v),
+          onChangeEnd: totalMs == 0 ? null : seek,
+        ),
+      );
+    }
 
     return Row(
       children: [
         const SizedBox(width: 8),
-        Text(formatDuration(position), style: TextStyle(color: p.textTertiary, fontSize: 11)),
-        Expanded(child: slider),
+        Text(
+          showIndeterminate ? "--:--" : formatDuration(position),
+          style: TextStyle(color: p.textTertiary, fontSize: 11),
+        ),
+        Expanded(child: track),
         Text(formatDuration(widget.duration), style: TextStyle(color: p.textTertiary, fontSize: 11)),
         const SizedBox(width: 8),
       ],
     );
   }
+}
+
+class _IndeterminatePainter extends CustomPainter {
+  _IndeterminatePainter({required this.progress, required this.track, required this.accent});
+
+  final double progress;
+  final Color track;
+  final Color accent;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final trackPaint = Paint()..color = track;
+    canvas.drawRect(Offset.zero & size, trackPaint);
+
+    final segWidth = size.width * 0.35;
+    final travel = size.width + segWidth;
+    final start = progress * travel - segWidth;
+
+    final rect = Rect.fromLTWH(start, 0, segWidth, size.height);
+    final shader = LinearGradient(
+      colors: [accent.withOpacity(0.0), accent, accent.withOpacity(0.0)],
+      stops: const [0.0, 0.5, 1.0],
+    ).createShader(rect);
+    canvas.drawRect(rect, Paint()..shader = shader);
+  }
+
+  @override
+  bool shouldRepaint(_IndeterminatePainter old) =>
+      old.progress != progress || old.track != track || old.accent != accent;
 }
