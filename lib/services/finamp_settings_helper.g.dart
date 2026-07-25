@@ -1522,6 +1522,14 @@ extension FinampSetters on FinampSettingsHelper {
     ).put("FinampSettings", finampSettingsTemp);
   }
 
+  static void setResumeOnBluetoothConnect(bool newResumeOnBluetoothConnect) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.resumeOnBluetoothConnect = newResumeOnBluetoothConnect;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
   static void setStreamingTranscodingCodec(
     FinampTranscodingCodec newStreamingTranscodingCodec,
   ) {
@@ -2043,6 +2051,10 @@ extension FinampSettingsProviderSelectors on StreamProvider<FinampSettings> {
   ProviderListenable<FinampTranscodingCodec> get streamingTranscodingCodec =>
       finampSettingsProvider.select(
         (value) => value.requireValue.streamingTranscodingCodec,
+      );
+  ProviderListenable<bool> get resumeOnBluetoothConnect =>
+      finampSettingsProvider.select(
+        (value) => value.requireValue.resumeOnBluetoothConnect,
       );
   ProviderListenable<DownloadProfile> get downloadTranscodingProfile =>
       finampSettingsProvider.select(

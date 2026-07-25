@@ -527,7 +527,10 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..visualizerLogScale = fields[182] == null ? true : fields[182] as bool
       ..streamingTranscodingCodec = fields[183] == null
           ? FinampTranscodingCodec.mp3
-          : fields[183] as FinampTranscodingCodec;
+          : fields[183] as FinampTranscodingCodec
+      ..resumeOnBluetoothConnect = fields[184] == null
+          ? false
+          : fields[184] as bool;
   }
 
   @override
@@ -885,7 +888,10 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..writeByte(182)
       ..write(obj.visualizerLogScale)
       ..writeByte(183)
-      ..write(obj.streamingTranscodingCodec);
+      ..write(obj.streamingTranscodingCodec)
+      ..write(obj.visualizerLogScale)
+      ..writeByte(184)
+      ..write(obj.resumeOnBluetoothConnect);
   }
 
   @override

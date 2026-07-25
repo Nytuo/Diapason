@@ -44,6 +44,7 @@ class _AudioServiceSettingsScreenState extends State<AudioServiceSettingsScreen>
           if (Platform.isAndroid) const StopForegroundSelector(),
           if (Platform.isAndroid) const EnableDuckingOnInterruptionsToggle(),
           if (Platform.isAndroid) const ForceAudioOffloadingOnAndroidToggle(),
+          const ResumeOnBluetoothConnectToggle(),
           const TrackShuffleItemCountEditor(),
           const AudioFadeInDurationListTile(),
           const AudioFadeOutDurationListTile(),
@@ -265,6 +266,20 @@ class EnableDuckingOnInterruptionsToggle extends ConsumerWidget {
         FinampSetters.setDuckOnAudioInterruption(newValue);
         await MusicPlayerBackgroundTask.configureAudioSession();
       },
+    );
+  }
+}
+
+class ResumeOnBluetoothConnectToggle extends ConsumerWidget {
+  const ResumeOnBluetoothConnectToggle({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SwitchListTile.adaptive(
+      title: Text(AppLocalizations.of(context)!.resumeOnBluetoothConnectTitle),
+      subtitle: Text(AppLocalizations.of(context)!.resumeOnBluetoothConnectSubtitle),
+      value: ref.watch(finampSettingsProvider.resumeOnBluetoothConnect),
+      onChanged: FinampSetters.setResumeOnBluetoothConnect,
     );
   }
 }

@@ -317,6 +317,7 @@ class DefaultSettings {
   static const radioMode = RadioMode.similar;
   static const radioEnabled = false;
   static const duckOnAudioInterruption = true;
+  static const resumeOnBluetoothConnect = false;
   static const forceAudioOffloadingOnAndroid = false;
   static const previousTracksPersistenceMode = PreviousTracksPersistenceMode.persistent;
   static final homeScreenConfiguration = FinampHomeScreenConfiguration(
@@ -1077,6 +1078,10 @@ class FinampSettings {
   /// Subsonic). Ignored by backends that don't support choosing one.
   @HiveField(183, defaultValue: DefaultSettings.streamingTranscodingCodec)
   FinampTranscodingCodec streamingTranscodingCodec = DefaultSettings.streamingTranscodingCodec;
+
+  /// Resume playback automatically when bluetooth headphones/speakers connect.
+  @HiveField(184, defaultValue: DefaultSettings.resumeOnBluetoothConnect)
+  bool resumeOnBluetoothConnect = DefaultSettings.resumeOnBluetoothConnect;
 
   static Future<FinampSettings> create() async {
     final downloadLocation = await DownloadLocation.create(
