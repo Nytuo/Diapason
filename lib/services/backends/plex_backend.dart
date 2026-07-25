@@ -32,7 +32,10 @@ class PlexBackend implements MediaBackend {
 
   @override
   BackendCapabilities get capabilities => const BackendCapabilities(
-    transcoding: false,
+    transcoding: true,
+    // Plex's transcoder profiles are reliably tuned for these; lossless
+    // targets aren't a standard registered profile and are unverified.
+    defaultTranscodingCodecs: {FinampTranscodingCodec.aac, FinampTranscodingCodec.mp3, FinampTranscodingCodec.opus},
     playlists: false,
     favorites: false,
     playbackReporting: true,
@@ -269,8 +272,31 @@ class PlexBackend implements MediaBackend {
 
   @override
   Future<PlayableSource> resolveDownload(BaseItemDto item, {DownloadProfile? transcodingProfile}) async {
-    final source = await resolveStream(item, transcode: false);
-    return PlayableSource(source.uri.replace(queryParameters: {...source.uri.queryParameters, "download": "1"}));
+    final codec = transcodingProfile?.codec;
+    if (codec == null || codec == FinampTranscodingCodec.original) {
+      final source = await resolveStream(item, transcode: false);
+      return PlayableSource(source.uri.replace(queryParameters: {...source.uri.queryParameters, "download": "1"}));
+    }
+
+    // Plex has no simple "give me codec X" download endpoint like Jellyfin.
+    // We drive its Universal Transcoder instead, targeting the container
+    // that matches the requested codec.
+    final container = codec.container ?? "mp3";
+    final kbps = transcodingProfile!.stereoBitrate ~/ 1000;
+    return PlayableSource(
+      _url("/music/:/transcode/universal/start.$container", {
+        "path": "/library/metadata/${item.id.nativeId}",
+        "mediaIndex": "0",
+        "partIndex": "0",
+        "protocol": "http",
+        "directPlay": "0",
+        "directStream": "0",
+        if (!codec.isLossless) "musicBitrate": "$kbps",
+        "download": "1",
+        "X-Plex-Client-Identifier": config.sourceId,
+        "X-Plex-Product": "Diapason",
+      }),
+    );
   }
 
   @override

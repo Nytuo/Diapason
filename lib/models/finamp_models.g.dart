@@ -524,13 +524,16 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..visualizerDbCeiling = fields[181] == null
           ? -10.0
           : (fields[181] as num).toDouble()
-      ..visualizerLogScale = fields[182] == null ? true : fields[182] as bool;
+      ..visualizerLogScale = fields[182] == null ? true : fields[182] as bool
+      ..streamingTranscodingCodec = fields[183] == null
+          ? FinampTranscodingCodec.mp3
+          : fields[183] as FinampTranscodingCodec;
   }
 
   @override
   void write(BinaryWriter writer, FinampSettings obj) {
     writer
-      ..writeByte(175)
+      ..writeByte(176)
       ..writeByte(0)
       ..write(obj.isOffline)
       ..writeByte(1)
@@ -880,7 +883,9 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..writeByte(181)
       ..write(obj.visualizerDbCeiling)
       ..writeByte(182)
-      ..write(obj.visualizerLogScale);
+      ..write(obj.visualizerLogScale)
+      ..writeByte(183)
+      ..write(obj.streamingTranscodingCodec);
   }
 
   @override
@@ -2675,6 +2680,10 @@ class FinampTranscodingCodecAdapter
         return FinampTranscodingCodec.opus;
       case 3:
         return FinampTranscodingCodec.original;
+      case 4:
+        return FinampTranscodingCodec.flac;
+      case 5:
+        return FinampTranscodingCodec.alac;
       default:
         return FinampTranscodingCodec.aac;
     }
@@ -2691,6 +2700,10 @@ class FinampTranscodingCodecAdapter
         writer.writeByte(2);
       case FinampTranscodingCodec.original:
         writer.writeByte(3);
+      case FinampTranscodingCodec.flac:
+        writer.writeByte(4);
+      case FinampTranscodingCodec.alac:
+        writer.writeByte(5);
     }
   }
 
@@ -9276,12 +9289,16 @@ const _DownloadProfilecodecEnumValueMap = {
   'mp3': 1,
   'opus': 2,
   'original': 3,
+  'flac': 4,
+  'alac': 5,
 };
 const _DownloadProfilecodecValueEnumMap = {
   0: FinampTranscodingCodec.aac,
   1: FinampTranscodingCodec.mp3,
   2: FinampTranscodingCodec.opus,
   3: FinampTranscodingCodec.original,
+  4: FinampTranscodingCodec.flac,
+  5: FinampTranscodingCodec.alac,
 };
 
 extension DownloadProfileQueryFilter

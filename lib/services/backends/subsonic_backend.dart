@@ -37,6 +37,10 @@ class SubsonicBackend implements MediaBackend {
   @override
   BackendCapabilities get capabilities => const BackendCapabilities(
     transcoding: true,
+    // Navidrome (and most other Subsonic-API servers) only ship built-in
+    // transcoding profiles for these three; FLAC/ALAC need a custom
+    // server-side profile the admin has to add themselves.
+    defaultTranscodingCodecs: {FinampTranscodingCodec.aac, FinampTranscodingCodec.mp3, FinampTranscodingCodec.opus},
     playlists: true,
     favorites: true,
     playbackReporting: true,
@@ -452,22 +456,49 @@ class SubsonicBackend implements MediaBackend {
       return PlayableSource(Uri.parse(stationUrl));
     }
 
+    if (!transcode) {
+      return PlayableSource(_url("stream", {"id": item.id.nativeId, "format": "raw"}));
+    }
+
+    final codec = FinampSettingsHelper.finampSettings.streamingTranscodingCodec;
     final kbps = FinampSettingsHelper.finampSettings.transcodeBitrate ~/ 1000;
     return PlayableSource(
       _url("stream", {
         "id": item.id.nativeId,
-        if (transcode) ...{"format": "mp3", "maxBitRate": "$kbps"} else "format": "raw",
+        "format": _subsonicFormat(codec),
+        if (!codec.isLossless) "maxBitRate": "$kbps",
       }),
     );
   }
 
   @override
   Future<PlayableSource> resolveDownload(BaseItemDto item, {DownloadProfile? transcodingProfile}) async {
-    final original = transcodingProfile == null || transcodingProfile.codec == FinampTranscodingCodec.original;
+    final codec = transcodingProfile?.codec;
+    if (codec == null || codec == FinampTranscodingCodec.original) {
+      return PlayableSource(_url("download", {"id": item.id.nativeId, "format": "raw"}));
+    }
+
+    // The Subsonic "download" endpoint always returns the original file
+    // (per spec, it never transcodes), so we have to use "stream" instead to
+    // get a transcoded file to save.
+    final kbps = transcodingProfile!.stereoBitrate ~/ 1000;
     return PlayableSource(
-      _url("download", {"id": item.id.nativeId, if (original) "format": "raw"}),
+      _url("stream", {
+        "id": item.id.nativeId,
+        "format": _subsonicFormat(codec),
+        if (!codec.isLossless) "maxBitRate": "$kbps",
+      }),
     );
   }
+
+  static String _subsonicFormat(FinampTranscodingCodec codec) => switch (codec) {
+    FinampTranscodingCodec.aac => "aac",
+    FinampTranscodingCodec.mp3 => "mp3",
+    FinampTranscodingCodec.opus => "opus",
+    FinampTranscodingCodec.flac => "flac",
+    FinampTranscodingCodec.alac => "alac",
+    FinampTranscodingCodec.original => "raw",
+  };
 
   @override
   Uri? imageUrl(BaseItemDto item, {int? maxWidth, int? maxHeight, int? quality, String? format}) {

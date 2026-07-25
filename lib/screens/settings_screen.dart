@@ -62,6 +62,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   bool get _hasJellyfinSource => GetIt.instance<BackendRegistry>().ofKind(MediaSourceKind.jellyfin).isNotEmpty;
 
+  bool get _hasTranscodingSource =>
+      GetIt.instance<BackendRegistry>().enabled.any((backend) => backend.capabilities.transcoding);
+
   // In-app updater (sideloaded Android + desktop). null while the pref loads.
   bool? _autoUpdateEnabled;
 
@@ -357,11 +360,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onTap: () => Navigator.of(context).pushNamed(ViewSelector.routeName),
             ),
             ListTile(
-              leading: const Icon(Icons.compress),
-              title: Text(AppLocalizations.of(context)!.transcoding),
-              onTap: () => Navigator.of(context).pushNamed(TranscodingSettingsScreen.routeName),
-            ),
-            ListTile(
               leading: const Icon(TablerIcons.cast),
               title: Text(AppLocalizations.of(context)!.playbackReportingSettingsTitle),
               onTap: () => Navigator.of(context).pushNamed(PlaybackReportingSettingsScreen.routeName),
@@ -383,6 +381,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 onTap: () => showClientCertificateMenu(context: context),
               ),
+          ],
+          // Not folded into "Jellyfin server" above: Subsonic and Plex
+          // sources can transcode downloads too, so this has to be visible
+          // even when no Jellyfin source is configured.
+          if (_hasTranscodingSource) ...[
+            _sectionHeader(context, "Transcoding"),
+            ListTile(
+              leading: const Icon(Icons.compress),
+              title: Text(AppLocalizations.of(context)!.transcoding),
+              onTap: () => Navigator.of(context).pushNamed(TranscodingSettingsScreen.routeName),
+            ),
           ],
         ],
       ),

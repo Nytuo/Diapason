@@ -114,6 +114,9 @@ class DefaultSettings {
   static const Color? accentColor = null;
   static const shouldTranscode = false;
   static const transcodeBitrate = 320000;
+  // Used for streaming on backends without Jellyfin's more detailed
+  // transcodingStreamingFormat concept (currently just Subsonic).
+  static const streamingTranscodingCodec = FinampTranscodingCodec.mp3;
   static const cacheStreamedTracks = true;
   static const maxCacheSizeMegabytes = 1024;
 
@@ -1068,6 +1071,12 @@ class FinampSettings {
   /// Space the bands logarithmically rather than linearly across the frequency range.
   @HiveField(182, defaultValue: DefaultSettings.visualizerLogScale)
   bool visualizerLogScale = DefaultSettings.visualizerLogScale;
+
+  /// Codec to use for live streaming on backends without Jellyfin's more
+  /// detailed [transcodingStreamingFormat] concept (currently just
+  /// Subsonic). Ignored by backends that don't support choosing one.
+  @HiveField(183, defaultValue: DefaultSettings.streamingTranscodingCodec)
+  FinampTranscodingCodec streamingTranscodingCodec = DefaultSettings.streamingTranscodingCodec;
 
   static Future<FinampSettings> create() async {
     final downloadLocation = await DownloadLocation.create(
@@ -2730,7 +2739,12 @@ enum FinampTranscodingCodec {
   opus("ogg", false, 2.0),
   @HiveField(3)
   // Container is null to fall back to real original container per track
-  original(null, true, 99999999);
+  original(null, true, 99999999),
+  @HiveField(4)
+  flac("flac", true, 0.5),
+  @HiveField(5)
+  // Apple Lossless, stored in an M4A/MP4 container.
+  alac("m4a", true, 0.5);
 
   const FinampTranscodingCodec(this.container, this.iosCompatible, this.quality);
 
@@ -2741,6 +2755,11 @@ enum FinampTranscodingCodec {
 
   /// Allowed codecs with higher quality*bitrate are prioritized
   final double quality;
+
+  /// Whether this codec re-encodes without discarding any audio data.
+  /// Doesn't restore quality already lost to a lossy source, and has no
+  /// meaningful bitrate to configure.
+  bool get isLossless => this == flac || this == alac;
 }
 
 @embedded
