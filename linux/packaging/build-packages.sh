@@ -82,6 +82,7 @@ fpm "${common_fpm_args[@]}" \
   -p "$OUT/${BINARY}-${VERSION}_linux_${ASSET_ARCH}.deb" \
   --depends "libmpv2 | libmpv1" \
   --depends "libgtk-3-0" \
+  --depends "libpipewire-0.3-0" \
   --deb-no-default-config-files \
   usr
 
@@ -92,6 +93,7 @@ fpm "${common_fpm_args[@]}" \
   -p "$OUT/${BINARY}-${VERSION}_linux_${ASSET_ARCH}.rpm" \
   --depends "mpv-libs" \
   --depends "gtk3" \
+  --depends "pipewire-libs" \
   usr
 
 echo "==> Building AppImage"
