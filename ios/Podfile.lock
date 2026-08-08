@@ -62,6 +62,8 @@ PODS:
   - Mux-Stats-AVPlayer (3.5.1):
     - Mux-Stats-Core (= 4.6.0)
   - Mux-Stats-Core (4.6.0)
+  - open_filex (0.0.2):
+    - Flutter
   - SDWebImage (5.18.2):
     - SDWebImage/Core (= 5.18.2)
   - SDWebImage/Core (5.18.2)
@@ -74,6 +76,7 @@ DEPENDENCIES:
   - flutter_discord_rpc (from `.symlinks/plugins/flutter_discord_rpc/ios`)
   - flutter_to_airplay (from `.symlinks/plugins/flutter_to_airplay/ios`)
   - isar_flutter_libs (from `.symlinks/plugins/isar_flutter_libs/ios`)
+  - open_filex (from `.symlinks/plugins/open_filex/ios`)
 
 SPEC REPOS:
   trunk:
@@ -97,6 +100,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_to_airplay/ios"
   isar_flutter_libs:
     :path: ".symlinks/plugins/isar_flutter_libs/ios"
+  open_filex:
+    :path: ".symlinks/plugins/open_filex/ios"
 
 SPEC CHECKSUMS:
   CropViewController: 58fb440f30dac788b129d2a1f24cffdcb102669c
@@ -110,6 +115,7 @@ SPEC CHECKSUMS:
   isar_flutter_libs: 9fc2cfb928c539e1b76c481ba5d143d556d94920
   Mux-Stats-AVPlayer: 1b1a877e5d8b57ca22e0717fa0a4eefef7529c40
   Mux-Stats-Core: 53902e414f077b2239ea10d909a4cf072c0d4d5c
+  open_filex: 432f3cd11432da3e39f47fcc0df2b1603854eff1
   SDWebImage: c0de394d7cf7f9838aed1fd6bb6037654a4572e4
   SwiftyGif: 93a1cc87bf3a51916001cf8f3d63835fb64c819f
 
