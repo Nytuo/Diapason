@@ -44,6 +44,7 @@ import 'package:diapason/screens/accessibility_settings_screen.dart';
 import 'package:diapason/screens/album_settings_screen.dart';
 import 'package:diapason/screens/artist_settings_screen.dart';
 import 'package:diapason/screens/downloads_settings_screen.dart';
+import 'package:diapason/screens/equalizer_settings_screen.dart';
 import 'package:diapason/screens/genre_settings_screen.dart';
 import 'package:diapason/screens/home_screen_settings_screen.dart';
 import 'package:diapason/screens/interaction_settings_screen.dart';
@@ -1017,6 +1018,7 @@ class FinampApp extends ConsumerWidget {
         PlaybackReportingSettingsScreen.routeName: (context) => const PlaybackReportingSettingsScreen(),
         AudioServiceSettingsScreen.routeName: (context) => const AudioServiceSettingsScreen(),
         VolumeNormalizationSettingsScreen.routeName: (context) => const VolumeNormalizationSettingsScreen(),
+        EqualizerSettingsScreen.routeName: (context) => const EqualizerSettingsScreen(),
         InteractionSettingsScreen.routeName: (context) => const InteractionSettingsScreen(),
         TabsSettingsScreen.routeName: (context) => const TabsSettingsScreen(),
         LayoutSettingsScreen.routeName: (context) => const LayoutSettingsScreen(),

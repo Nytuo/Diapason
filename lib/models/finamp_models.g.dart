@@ -530,13 +530,20 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
           : fields[183] as FinampTranscodingCodec
       ..resumeOnBluetoothConnect = fields[184] == null
           ? false
-          : fields[184] as bool;
+          : fields[184] as bool
+      ..equalizerEnabled = fields[185] == null ? false : fields[185] as bool
+      ..equalizerBandGains = fields[186] == null
+          ? {}
+          : (fields[186] as Map).cast<int, double>()
+      ..equalizerActivePreset = fields[187] == null
+          ? 'Flat'
+          : fields[187] as String?;
   }
 
   @override
   void write(BinaryWriter writer, FinampSettings obj) {
     writer
-      ..writeByte(176)
+      ..writeByte(180)
       ..writeByte(0)
       ..write(obj.isOffline)
       ..writeByte(1)
@@ -889,9 +896,14 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..write(obj.visualizerLogScale)
       ..writeByte(183)
       ..write(obj.streamingTranscodingCodec)
-      ..write(obj.visualizerLogScale)
       ..writeByte(184)
-      ..write(obj.resumeOnBluetoothConnect);
+      ..write(obj.resumeOnBluetoothConnect)
+      ..writeByte(185)
+      ..write(obj.equalizerEnabled)
+      ..writeByte(186)
+      ..write(obj.equalizerBandGains)
+      ..writeByte(187)
+      ..write(obj.equalizerActivePreset);
   }
 
   @override

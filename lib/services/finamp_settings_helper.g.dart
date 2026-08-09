@@ -1266,6 +1266,38 @@ extension FinampSetters on FinampSettingsHelper {
     ).put("FinampSettings", finampSettingsTemp);
   }
 
+  static void setEqualizerEnabled(bool newEqualizerEnabled) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.equalizerEnabled = newEqualizerEnabled;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setEqualizerBandGains(int bandIndex, double newValue) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    try {
+      finampSettingsTemp.equalizerBandGains[bandIndex] = newValue;
+    } on UnsupportedError {
+      // We were using the default const map directly.  Clone to allow modifications.
+      finampSettingsTemp.equalizerBandGains = Map.from(
+        finampSettingsTemp.equalizerBandGains,
+      );
+      finampSettingsTemp.equalizerBandGains[bandIndex] = newValue;
+    }
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setEqualizerActivePreset(String? newEqualizerActivePreset) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.equalizerActivePreset = newEqualizerActivePreset;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
   static void setHomeScreenImageSize(int newHomeScreenImageSize) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
     finampSettingsTemp.homeScreenImageSize = newHomeScreenImageSize;
@@ -1522,19 +1554,19 @@ extension FinampSetters on FinampSettingsHelper {
     ).put("FinampSettings", finampSettingsTemp);
   }
 
-  static void setResumeOnBluetoothConnect(bool newResumeOnBluetoothConnect) {
-    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
-    finampSettingsTemp.resumeOnBluetoothConnect = newResumeOnBluetoothConnect;
-    Hive.box<FinampSettings>(
-      "FinampSettings",
-    ).put("FinampSettings", finampSettingsTemp);
-  }
-
   static void setStreamingTranscodingCodec(
     FinampTranscodingCodec newStreamingTranscodingCodec,
   ) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
     finampSettingsTemp.streamingTranscodingCodec = newStreamingTranscodingCodec;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setResumeOnBluetoothConnect(bool newResumeOnBluetoothConnect) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.resumeOnBluetoothConnect = newResumeOnBluetoothConnect;
     Hive.box<FinampSettings>(
       "FinampSettings",
     ).put("FinampSettings", finampSettingsTemp);
@@ -1972,6 +2004,16 @@ extension FinampSettingsProviderSelectors on StreamProvider<FinampSettings> {
       finampSettingsProvider.select((value) => value.requireValue.amoledTheme);
   ProviderListenable<bool> get useAndroidGainEffect => finampSettingsProvider
       .select((value) => value.requireValue.useAndroidGainEffect);
+  ProviderListenable<bool> get equalizerEnabled => finampSettingsProvider
+      .select((value) => value.requireValue.equalizerEnabled);
+  ProviderListenable<double?> equalizerBandGains(int bandIndex) =>
+      finampSettingsProvider.select(
+        (value) => value.requireValue.equalizerBandGains[bandIndex],
+      );
+  ProviderListenable<String?> get equalizerActivePreset =>
+      finampSettingsProvider.select(
+        (value) => value.requireValue.equalizerActivePreset,
+      );
   ProviderListenable<int> get homeScreenImageSize => finampSettingsProvider
       .select((value) => value.requireValue.homeScreenImageSize);
   ProviderListenable<ClientCertificate?> get clientCertificate =>

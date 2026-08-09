@@ -7,6 +7,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/equalizer_presets.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/stream_cache_service.dart';
@@ -158,11 +159,28 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   Stream<int?> get androidAudioSessionIdStream =>
       _activePlayerIndexSubject.switchMap((i) => (i == 0 ? _playerA : _playerB).androidAudioSessionIdStream);
 
-  late final AudioPipeline _audioPipeline;
-  late final List<AndroidAudioEffect> _androidAudioEffects;
-  late final List<DarwinAudioEffect> _iosAudioEffects;
+  // AudioPipeline/AudioEffect instances bind to a single AudioPlayer at
+  // construction and cannot be reattached, so every effect needs one
+  // instance per physical player (A and B), each in its own pipeline, or it
+  // silently drops out on every other track once crossfade swaps the active
+  // player.
+  late final AudioPipeline _audioPipelineA;
+  late final AudioPipeline _audioPipelineB;
+  late final List<AndroidAudioEffect> _androidAudioEffectsA;
+  late final List<AndroidAudioEffect> _androidAudioEffectsB;
+  late final List<DarwinAudioEffect> _iosAudioEffectsA;
+  late final List<DarwinAudioEffect> _iosAudioEffectsB;
 
-  AndroidLoudnessEnhancer? _loudnessEnhancerEffect;
+  AndroidLoudnessEnhancer? _loudnessEnhancerEffectA;
+  AndroidLoudnessEnhancer? _loudnessEnhancerEffectB;
+
+  AndroidEqualizer? _androidEqualizerA;
+  AndroidEqualizer? _androidEqualizerB;
+  DarwinEqualizer? _darwinEqualizerA;
+  DarwinEqualizer? _darwinEqualizerB;
+
+  /// Whether a real platform equalizer effect is available on this platform.
+  bool get equalizerAvailable => _androidEqualizerA != null || _darwinEqualizerA != null;
 
   final _audioServiceBackgroundTaskLogger = Logger("MusicPlayerBackgroundTask");
   final _volumeNormalizationLogger = Logger("VolumeNormalization");
@@ -338,17 +356,41 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       JustAudioMediaKit.ensureInitialized(linux: true, windows: true, macOS: false, iOS: false, android: false);
     }
 
-    _androidAudioEffects = [];
-    _iosAudioEffects = [];
+    _androidAudioEffectsA = [];
+    _androidAudioEffectsB = [];
+    _iosAudioEffectsA = [];
+    _iosAudioEffectsB = [];
 
     if (Platform.isAndroid && FinampSettingsHelper.finampSettings.useAndroidGainEffect) {
-      _loudnessEnhancerEffect = AndroidLoudnessEnhancer();
-      _androidAudioEffects.add(_loudnessEnhancerEffect!);
+      _loudnessEnhancerEffectA = AndroidLoudnessEnhancer();
+      _loudnessEnhancerEffectB = AndroidLoudnessEnhancer();
+      _androidAudioEffectsA.add(_loudnessEnhancerEffectA!);
+      _androidAudioEffectsB.add(_loudnessEnhancerEffectB!);
     } else {
-      _loudnessEnhancerEffect = null;
+      _loudnessEnhancerEffectA = null;
+      _loudnessEnhancerEffectB = null;
     }
 
-    _audioPipeline = AudioPipeline(androidAudioEffects: _androidAudioEffects, darwinAudioEffects: _iosAudioEffects);
+    if (Platform.isAndroid) {
+      _androidEqualizerA = AndroidEqualizer();
+      _androidEqualizerB = AndroidEqualizer();
+      _androidAudioEffectsA.add(_androidEqualizerA!);
+      _androidAudioEffectsB.add(_androidEqualizerB!);
+    } else if (Platform.isIOS || Platform.isMacOS) {
+      _darwinEqualizerA = DarwinEqualizer();
+      _darwinEqualizerB = DarwinEqualizer();
+      _iosAudioEffectsA.add(_darwinEqualizerA!);
+      _iosAudioEffectsB.add(_darwinEqualizerB!);
+    }
+
+    _audioPipelineA = AudioPipeline(
+      androidAudioEffects: _androidAudioEffectsA,
+      darwinAudioEffects: _iosAudioEffectsA,
+    );
+    _audioPipelineB = AudioPipeline(
+      androidAudioEffects: _androidAudioEffectsB,
+      darwinAudioEffects: _iosAudioEffectsB,
+    );
 
     Duration maxBufferDuration = Duration(
       seconds: max(minBufferDuration.inSeconds, FinampSettingsHelper.finampSettings.bufferDuration.inSeconds),
@@ -422,18 +464,21 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       });
     });
 
-    _playerA = _buildPlayer(audioPipeline: _audioPipeline, maxBufferDuration: maxBufferDuration);
-    _playerB = _buildPlayer(audioPipeline: AudioPipeline(), maxBufferDuration: maxBufferDuration);
+    _playerA = _buildPlayer(audioPipeline: _audioPipelineA, maxBufferDuration: maxBufferDuration);
+    _playerB = _buildPlayer(audioPipeline: _audioPipelineB, maxBufferDuration: maxBufferDuration);
     _volumeA = PlayerVolumeController(_playerA);
     _volumeB = PlayerVolumeController(_playerB);
 
     try {
-      _loudnessEnhancerEffect?.setEnabled(FinampSettingsHelper.finampSettings.volumeNormalizationActive);
-      _loudnessEnhancerEffect?.setTargetGain(0.0);
+      _loudnessEnhancerEffectA?.setEnabled(FinampSettingsHelper.finampSettings.volumeNormalizationActive);
+      _loudnessEnhancerEffectA?.setTargetGain(0.0);
+      _loudnessEnhancerEffectB?.setEnabled(FinampSettingsHelper.finampSettings.volumeNormalizationActive);
+      _loudnessEnhancerEffectB?.setTargetGain(0.0);
     } catch (_) {
       // Assume we've hit https://github.com/UnicornsOnLSD/finamp/issues/1343 and disable loudness enhancer effect permanently
       FinampSetters.setUseAndroidGainEffect(false);
-      _loudnessEnhancerEffect = null;
+      _loudnessEnhancerEffectA = null;
+      _loudnessEnhancerEffectB = null;
       GlobalSnackbar.message((context) => AppLocalizations.of(context)!.androidGainDisabled);
     }
 
@@ -441,9 +486,11 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     iosBaseVolumeGainFactor =
         pow(10.0, FinampSettingsHelper.finampSettings.volumeNormalizationIOSBaseGain / 20.0)
             as double; // https://sound.stackexchange.com/questions/38722/convert-db-value-to-linear-scale
-    if (_loudnessEnhancerEffect == null) {
+    if (_loudnessEnhancerEffectA == null) {
       _volumeNormalizationLogger.info("non-Android base volume gain factor: $iosBaseVolumeGainFactor");
     }
+
+    _restoreEqualizerState();
 
     // Propagate all events from the audio player to AudioService clients.
     int? replayQueueIndex;
@@ -483,10 +530,12 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
           pow(10.0, iosGain / 20.0)
               as double; // https://sound.stackexchange.com/questions/38722/convert-db-value-to-linear-scale
       if (normalizationActive) {
-        _loudnessEnhancerEffect?.setEnabled(true);
+        _loudnessEnhancerEffectA?.setEnabled(true);
+        _loudnessEnhancerEffectB?.setEnabled(true);
         _applyVolumeNormalization(mediaItem.valueOrNull);
       } else {
-        _loudnessEnhancerEffect?.setEnabled(false);
+        _loudnessEnhancerEffectA?.setEnabled(false);
+        _loudnessEnhancerEffectB?.setEnabled(false);
         _volume.setReplayGainVolume(1.0); // disable replay gain on iOS
         _volumeNormalizationLogger.info("Replay gain disabled");
       }
@@ -876,6 +925,104 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
   void setVolume(final double volume) async {
     return _volume.setInternalVolume(volume);
+  }
+
+  // ---------------------------------------------------------------------
+  // Equalizer
+  // ---------------------------------------------------------------------
+
+  Future<void> _forEachEqualizerPlayer(
+    Future<void> Function(AndroidEqualizer? android, DarwinEqualizer? darwin) action,
+  ) async {
+    await action(_androidEqualizerA, _darwinEqualizerA);
+    await action(_androidEqualizerB, _darwinEqualizerB);
+  }
+
+  /// The center frequency (Hz) of each equalizer band, in order. Empty if no
+  /// equalizer is available on this platform. Android bands are
+  /// device-reported; iOS/macOS use the fixed `darwinEqualizerCenterFrequencies`.
+  Future<List<double>> getEqualizerBandFrequencies() async {
+    if (_androidEqualizerA != null) {
+      final params = await _androidEqualizerA!.parameters;
+      return params.bands.map((band) => band.centerFrequency).toList();
+    }
+    if (_darwinEqualizerA != null) {
+      final params = await _darwinEqualizerA!.parameters;
+      return params.bands.map((band) => band.centerFrequency).toList();
+    }
+    return [];
+  }
+
+  Future<void> _applyEqualizerEnabled(bool enabled) async {
+    await _forEachEqualizerPlayer((android, darwin) async {
+      await android?.setEnabled(enabled);
+      await darwin?.setEnabled(enabled);
+    });
+  }
+
+  Future<void> setEqualizerEnabled(bool enabled) async {
+    FinampSetters.setEqualizerEnabled(enabled);
+    await _applyEqualizerEnabled(enabled);
+  }
+
+  Future<void> _applyEqualizerBandGain(int bandIndex, double gainDb) async {
+    gainDb = gainDb.clamp(-12.0, 12.0);
+    FinampSetters.setEqualizerBandGains(bandIndex, gainDb);
+    await _forEachEqualizerPlayer((android, darwin) async {
+      if (android != null) {
+        final params = await android.parameters;
+        if (bandIndex < params.bands.length) {
+          await params.bands[bandIndex].setGain(gainDb);
+        }
+      }
+      if (darwin != null) {
+        final params = await darwin.parameters;
+        if (bandIndex < params.bands.length) {
+          await params.bands[bandIndex].setGain(gainDb);
+        }
+      }
+    });
+  }
+
+  /// Sets a single band's gain (clamped to +/-12 dB), persists it, and marks
+  /// the active preset as custom (cleared).
+  Future<void> setEqualizerBandGain(int bandIndex, double gainDb) async {
+    await _applyEqualizerBandGain(bandIndex, gainDb);
+    FinampSetters.setEqualizerActivePreset(null);
+  }
+
+  /// Applies a named preset (see `equalizerPresets` in equalizer_presets.dart)
+  /// to every available band, mapping preset gains onto this platform's
+  /// actual band frequencies.
+  Future<void> applyEqualizerPreset(String presetName) async {
+    final frequencies = await getEqualizerBandFrequencies();
+    for (var i = 0; i < frequencies.length; i++) {
+      await _applyEqualizerBandGain(i, equalizerPresetGainForFrequency(presetName, frequencies[i]));
+    }
+    FinampSetters.setEqualizerActivePreset(presetName);
+  }
+
+  /// Restores the persisted equalizer enabled/gain state onto freshly
+  /// constructed effect instances. Some devices throw when equalizer effects
+  /// are attached (mirrors the loudness enhancer's fallback above; see
+  /// https://github.com/UnicornsOnLSD/finamp/issues/1343), so this disables
+  /// the equalizer permanently for this install rather than crashing.
+  void _restoreEqualizerState() {
+    if (!equalizerAvailable) return;
+    try {
+      final settings = FinampSettingsHelper.finampSettings;
+      for (final entry in settings.equalizerBandGains.entries) {
+        unawaited(_applyEqualizerBandGain(entry.key, entry.value));
+      }
+      unawaited(_applyEqualizerEnabled(settings.equalizerEnabled));
+    } catch (e, st) {
+      _audioServiceBackgroundTaskLogger.warning("Disabling equalizer after initialization error", e, st);
+      _androidEqualizerA = null;
+      _androidEqualizerB = null;
+      _darwinEqualizerA = null;
+      _darwinEqualizerB = null;
+      FinampSetters.setEqualizerEnabled(false);
+    }
   }
 
   @override
@@ -1432,8 +1579,9 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
         "normalization gain for '${baseItem.name}': $effectiveGainChange (track gain change: ${baseItem.normalizationGain})",
       );
       if (effectiveGainChange != null) {
-        if (_loudnessEnhancerEffect != null) {
-          _loudnessEnhancerEffect?.setTargetGain(effectiveGainChange);
+        if (_loudnessEnhancerEffectA != null) {
+          _loudnessEnhancerEffectA?.setTargetGain(effectiveGainChange);
+          _loudnessEnhancerEffectB?.setTargetGain(effectiveGainChange);
         } else {
           final newVolume =
               iosBaseVolumeGainFactor *
@@ -1445,9 +1593,10 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
           _volume.setReplayGainVolume(newVolume);
         }
       } else {
-        if (_loudnessEnhancerEffect != null) {
+        if (_loudnessEnhancerEffectA != null) {
           // reset gain offset
-          _loudnessEnhancerEffect?.setTargetGain(0);
+          _loudnessEnhancerEffectA?.setTargetGain(0);
+          _loudnessEnhancerEffectB?.setTargetGain(0);
         }
         _volume.setReplayGainVolume(
           iosBaseVolumeGainFactor,
