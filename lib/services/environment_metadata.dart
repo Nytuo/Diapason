@@ -6,6 +6,7 @@ import 'dart:io' show Platform;
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/jellyfin_api_helper.dart';
+import 'package:flutter_tvos/flutter_tvos.dart';
 import 'package:get_it/get_it.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:logging/logging.dart';
@@ -13,11 +14,24 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'finamp_user_helper.dart';
+import 'tvos/appletv_audio_channel.dart';
 
 part 'environment_metadata.g.dart';
 
 const _SharedPreferencesVersionHistoryKey = 'version_history';
 final _environmentMetadataLogger = Logger('EnvironmentMetadata');
+
+/// package_info_plus has no tvOS plugin implementation; see
+/// AppleTvSystemChannel.swift for why its tvOS fork isn't used instead.
+Future<PackageInfo> _tvOSPackageInfo() async {
+  final fields = await AppleTvSystemChannel.getPackageInfo();
+  return PackageInfo(
+    appName: fields['appName'] ?? '',
+    packageName: fields['packageName'] ?? '',
+    version: fields['version'] ?? '',
+    buildNumber: fields['buildNumber'] ?? '',
+  );
+}
 
 /// Contains information about the current device (id, model, OS, platform).
 @JsonSerializable()
@@ -45,6 +59,17 @@ class DeviceInfo {
         deviceModel: info.model,
         osVersion: info.version.release,
         platform: "Android${isTV ? ' (TV)' : ''}${isWatch ? ' (Watch)' : ''}",
+      );
+    } else if (TvOSInfo.isTvOS) {
+      // dart:io reports tvOS as iOS (Platform.isIOS is true here too), and
+      // device_info_plus has no tvOS channel implementation, so this has to
+      // be checked before the Platform.isIOS branch below. TvOSInfo reads
+      // straight from native symbols via dart:ffi, no plugin channel needed.
+      return DeviceInfo(
+        deviceName: TvOSInfo.deviceModel,
+        deviceModel: TvOSInfo.machineId,
+        osVersion: TvOSInfo.tvOSVersion,
+        platform: 'tvOS',
       );
     } else if (Platform.isIOS) {
       final info = await deviceInfoPlugin.iosInfo;
@@ -114,7 +139,7 @@ class AppInfo {
 
   /// Detects app metadata using package_info_plus and updates stored version history.
   static Future<AppInfo> fromPlatform() async {
-    final packageInfo = await PackageInfo.fromPlatform();
+    final packageInfo = TvOSInfo.isTvOS ? await _tvOSPackageInfo() : await PackageInfo.fromPlatform();
     final currentVersion = "${packageInfo.version} (${packageInfo.buildNumber})";
 
     final SharedPreferencesAsync prefs = SharedPreferencesAsync();
