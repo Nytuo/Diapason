@@ -13,11 +13,15 @@ import 'package:diapason/gen/assets.gen.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart' as jellyfin_models;
+import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/album_image_provider.dart';
+import 'package:diapason/services/backends/backend_registry.dart';
+import 'package:diapason/services/backends/media_backend.dart';
 import 'package:diapason/services/current_album_image_provider.dart';
 import 'package:diapason/services/downloads_service.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/embedded_chapter_parser.dart';
 import 'package:diapason/services/jellyfin_api_helper.dart';
 import 'package:diapason/services/music_player_background_task.dart';
 import 'package:diapason/services/playback_history_service.dart';
@@ -47,6 +51,11 @@ class QueueService {
   final _audioHandler = GetIt.instance<MusicPlayerBackgroundTask>();
   final _downloadsService = GetIt.instance<DownloadsService>();
   final _queueServiceLogger = Logger("QueueService");
+
+  /// Chapters parsed from embedded ID3 tags for backends (Navidrome/Subsonic,
+  /// Plex, local files) with no chapters API of their own, keyed by item id.
+  /// Jellyfin doesn't need this since it returns chapters directly.
+  final _embeddedChaptersCache = <String, List<jellyfin_models.ChapterInfo>>{};
   final _queuesBox = Hive.box<FinampStorableQueueInfo>("Queues");
   final _providers = GetIt.instance<ProviderContainer>();
   final _finampUserHelper = GetIt.instance<FinampUserHelper>();
@@ -310,6 +319,25 @@ class QueueService {
         (_, latest) => updateMediaItem(latest, false),
       );
       updateMediaItem(_providers.read(albumImageProvider(artRequest)), true);
+
+      if (item.chapters == null || item.chapters!.isEmpty) {
+        final originalMediaItemId = currentMediaItem!.id;
+        unawaited(
+          _resolveEmbeddedChapters(item).then((chapters) {
+            if (chapters.isEmpty) return;
+            // Bail if the user has moved on to a different track meanwhile.
+            if (_audioHandler.mediaItem.valueOrNull?.id != originalMediaItemId) return;
+            item.chapters = chapters;
+            // Build on top of currentMediaItem (not a captured snapshot of it) so
+            // this composes with the album art update above instead of one
+            // overwriting whichever finishes last.
+            currentMediaItem = currentMediaItem?.copyWith(
+              extras: {...?currentMediaItem?.extras, "itemJson": item.toJson(setOffline: false)},
+            );
+            _audioHandler.mediaItem.add(currentMediaItem);
+          }),
+        );
+      }
     }
     _audioHandler.queue.add(
       _queuePreviousTracks
@@ -336,6 +364,49 @@ class QueueService {
     if (FinampSettingsHelper.finampSettings.reportQueueToServer || FinampSettingsHelper.finampSettings.enablePlayon) {
       unawaited(playbackHistoryService.reportQueueStatus());
     }
+  }
+
+  /// Backends other than Jellyfin have no chapters API, so the only way to
+  /// get chapters for them is parsing embedded tags out of the track itself.
+  Future<List<jellyfin_models.ChapterInfo>> _resolveEmbeddedChapters(jellyfin_models.BaseItemDto item) async {
+    final itemKey = item.id.raw;
+    final cached = _embeddedChaptersCache[itemKey];
+    if (cached != null) {
+      _queueServiceLogger.info("Using ${cached.length} cached chapter(s) for '${item.name}'");
+      return cached;
+    }
+
+    final backend = GetIt.instance<BackendRegistry>().forItem(item);
+    if (backend == null) {
+      _queueServiceLogger.info("No backend found for '${item.name}' (${item.id.raw}); skipping embedded chapters");
+      return const [];
+    }
+    if (backend.config.kind == MediaSourceKind.jellyfin) return const [];
+
+    _queueServiceLogger.info("Resolving embedded chapters for '${item.name}' via ${backend.config.kind}");
+    try {
+      final downloadedFile = _downloadsService.getTrackDownload(item: item)?.file;
+      final chapters = downloadedFile != null
+          ? await parseEmbeddedChaptersFromFile(downloadedFile)
+          : await _resolveStreamedChapters(backend, item);
+      _queueServiceLogger.info("Resolved ${chapters.length} embedded chapter(s) for '${item.name}'");
+      _embeddedChaptersCache[itemKey] = chapters;
+      return chapters;
+    } catch (e, st) {
+      _queueServiceLogger.warning("Failed to parse embedded chapters for '${item.name}': $e", e, st);
+      return const [];
+    }
+  }
+
+  Future<List<jellyfin_models.ChapterInfo>> _resolveStreamedChapters(
+    MediaBackend backend,
+    jellyfin_models.BaseItemDto item,
+  ) async {
+    final source = await backend.resolveDownload(item);
+    _queueServiceLogger.info("Resolved chapter-fetch source for '${item.name}': ${source.uri}");
+    return source.isLocalFile
+        ? await parseEmbeddedChaptersFromFile(File(source.uri.toFilePath()))
+        : await parseEmbeddedChaptersFromUrl(source.uri, headers: source.headers);
   }
 
   FinampStorableQueueInfo _saveCurrentQueue({bool withPosition = false}) {
