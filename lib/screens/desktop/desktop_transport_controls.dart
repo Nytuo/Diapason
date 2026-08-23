@@ -1,5 +1,7 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:diapason/components/PlayerScreen/progress_slider.dart';
 import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/models/jellyfin_models.dart' as jellyfin_models;
 import 'package:diapason/screens/desktop/desktop_theme.dart';
 import 'package:diapason/services/music_player_background_task.dart';
 import 'package:diapason/services/queue_service.dart';
@@ -122,6 +124,7 @@ class DesktopSeekBar extends StatefulWidget {
     this.compact = false,
     this.positionListenable,
     this.onSeek,
+    this.chapters = const [],
   });
 
   final Duration duration;
@@ -131,6 +134,9 @@ class DesktopSeekBar extends StatefulWidget {
   /// them to drive a Connect-controlled device instead.
   final ValueListenable<Duration>? positionListenable;
   final ValueChanged<Duration>? onSeek;
+
+  /// Chapter tick marks to overlay on the track, if any.
+  final List<jellyfin_models.ChapterInfo> chapters;
 
   @override
   State<DesktopSeekBar> createState() => _DesktopSeekBarState();
@@ -226,7 +232,7 @@ class _DesktopSeekBarState extends State<DesktopSeekBar> with SingleTickerProvid
         ),
       );
     } else {
-      track = SliderTheme(
+      final slider = SliderTheme(
         data: SliderThemeData(
           trackHeight: 4,
           activeTrackColor: p.accent,
@@ -243,17 +249,49 @@ class _DesktopSeekBarState extends State<DesktopSeekBar> with SingleTickerProvid
           onChangeEnd: totalMs == 0 ? null : seek,
         ),
       );
+      track = widget.chapters.isEmpty || totalMs == 0
+          ? slider
+          : SizedBox(
+              height: 24,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  slider,
+                  ChapterMarkers(
+                    chapters: widget.chapters,
+                    duration: widget.duration,
+                    position: position,
+                    color: p.accent,
+                    onSeek: (to) async => seek(to.inMilliseconds / totalMs),
+                  ),
+                ],
+              ),
+            );
     }
+
+    // Fixed-width, tabular-figure time labels so a digit changing width in a
+    // proportional font (e.g. "1" vs "8") doesn't nudge the whole bar every
+    // second. Timestamps are given a little extra room once the track is an
+    // hour or longer.
+    final timeColumnWidth = widget.duration.inHours >= 1 ? 60.0 : 34.0;
+    final timeStyle = TextStyle(
+      color: p.textTertiary,
+      fontSize: 11,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
 
     return Row(
       children: [
         const SizedBox(width: 8),
-        Text(
-          showIndeterminate ? "--:--" : formatDuration(position),
-          style: TextStyle(color: p.textTertiary, fontSize: 11),
+        SizedBox(
+          width: timeColumnWidth,
+          child: Text(showIndeterminate ? "--:--" : formatDuration(position), style: timeStyle),
         ),
         Expanded(child: track),
-        Text(formatDuration(widget.duration), style: TextStyle(color: p.textTertiary, fontSize: 11)),
+        SizedBox(
+          width: timeColumnWidth,
+          child: Text(formatDuration(widget.duration), textAlign: TextAlign.right, style: timeStyle),
+        ),
         const SizedBox(width: 8),
       ],
     );

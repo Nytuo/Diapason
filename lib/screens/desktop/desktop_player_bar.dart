@@ -1,4 +1,5 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:diapason/components/PlayerScreen/progress_slider.dart';
 import 'package:diapason/components/PlayerScreen/spectrum_visualizer.dart';
 import 'package:diapason/components/album_image.dart';
 import 'package:diapason/screens/desktop/desktop_theme.dart';
@@ -186,7 +187,7 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
                   children: [
                     DesktopTransportControls(playing: playing, playSize: 32, iconSize: 26),
                     const SizedBox(height: 4),
-                    DesktopSeekBar(duration: item?.duration ?? Duration.zero),
+                    DesktopSeekBar(duration: item?.duration ?? Duration.zero, chapters: chaptersFromMediaItem(item)),
                   ],
                 ),
               ),

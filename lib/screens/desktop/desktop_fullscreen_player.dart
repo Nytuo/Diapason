@@ -1,3 +1,4 @@
+import 'package:diapason/components/PlayerScreen/progress_slider.dart';
 import 'package:diapason/components/PlayerScreen/spectrum_visualizer.dart';
 import 'package:diapason/screens/blurred_player_screen_background.dart';
 import 'package:diapason/components/album_image.dart';
@@ -100,7 +101,7 @@ class _DesktopFullscreenPlayerState extends ConsumerState<DesktopFullscreenPlaye
                                   const SizedBox(height: 12),
                                   const DesktopTrackInfoLine(fontSize: 13),
                                   const SizedBox(height: 28),
-                                  DesktopSeekBar(duration: item?.duration ?? Duration.zero),
+                                  DesktopSeekBar(duration: item?.duration ?? Duration.zero, chapters: chaptersFromMediaItem(item)),
                                   const SizedBox(height: 20),
                                   DesktopTransportControls(playing: playing, playSize: 34, iconSize: 28),
                                 ],

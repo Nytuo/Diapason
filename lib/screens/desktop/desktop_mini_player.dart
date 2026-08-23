@@ -1,3 +1,4 @@
+import 'package:diapason/components/PlayerScreen/progress_slider.dart';
 import 'package:diapason/components/album_image.dart';
 import 'package:diapason/screens/desktop/desktop_theme.dart';
 import 'package:diapason/screens/desktop/desktop_transport_controls.dart';
@@ -86,7 +87,7 @@ class DesktopMiniPlayer extends ConsumerWidget {
                   ],
                 ),
               ),
-              DesktopSeekBar(duration: item?.duration ?? Duration.zero),
+              DesktopSeekBar(duration: item?.duration ?? Duration.zero, chapters: chaptersFromMediaItem(item)),
               const SizedBox(height: 4),
               FittedBox(
                 fit: BoxFit.scaleDown,
