@@ -344,6 +344,8 @@ class DefaultSettings {
   static int get gridImageSize => isDesktop ? gridImageSizeDesktop : gridImageSizeMobile;
   static const useAndroidGainEffect = true;
   static const ClientCertificate? clientCertificate = null;
+  static const equalizerEnabled = false;
+  static const String? equalizerActivePreset = "Flat";
 }
 
 @HiveType(typeId: 28)
@@ -962,6 +964,23 @@ class FinampSettings {
 
   @HiveField(149, defaultValue: DefaultSettings.useAndroidGainEffect)
   bool useAndroidGainEffect;
+
+  /// Whether the graphic equalizer is enabled.
+  @HiveField(185, defaultValue: DefaultSettings.equalizerEnabled)
+  bool equalizerEnabled = DefaultSettings.equalizerEnabled;
+
+  /// Per-band gain in decibels, keyed by band index (matching the order of
+  /// the platform equalizer's band list: device-reported on Android,
+  /// [darwinEqualizerCenterFrequencies] on iOS/macOS). Bands with no entry
+  /// are treated as 0 dB.
+  @HiveField(186, defaultValue: <int, double>{})
+  @SettingsHelperMap("bandIndex")
+  Map<int, double> equalizerBandGains = {};
+
+  /// The name of the currently-applied equalizer preset, or `null` once the
+  /// user hand-tweaks a band away from the preset's values ("Custom").
+  @HiveField(187, defaultValue: DefaultSettings.equalizerActivePreset)
+  String? equalizerActivePreset = DefaultSettings.equalizerActivePreset;
 
   @HiveField(150, defaultValue: DefaultSettings.homeScreenImageSizeMobile)
   int homeScreenImageSize;

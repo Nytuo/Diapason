@@ -11,6 +11,7 @@ import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:diapason/screens/accessibility_settings_screen.dart';
 import 'package:diapason/screens/audio_service_settings_screen.dart';
 import 'package:diapason/screens/downloads_settings_screen.dart';
+import 'package:diapason/screens/equalizer_settings_screen.dart';
 import 'package:diapason/screens/home_screen_settings_screen.dart';
 import 'package:diapason/screens/cache_settings_screen.dart';
 import 'package:diapason/screens/connect_screen.dart';
@@ -237,6 +238,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leading: const Icon(Icons.equalizer_rounded),
             title: Text(AppLocalizations.of(context)!.volumeNormalizationSettingsTitle),
             onTap: () => Navigator.of(context).pushNamed(VolumeNormalizationSettingsScreen.routeName),
+          ),
+          ListTile(
+            leading: const Icon(Icons.graphic_eq),
+            title: const Text("Equalizer"),
+            subtitle: const Text("Per-band gain and presets"),
+            onTap: () => Navigator.of(context).pushNamed(EqualizerSettingsScreen.routeName),
           ),
           ListTile(
             leading: const Icon(TablerIcons.broadcast),
