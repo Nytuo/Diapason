@@ -1,0 +1,26 @@
+PODS:
+  - flutter_tvos (1.1.0)
+  - path_provider_tvos (0.0.2)
+  - shared_preferences_tvos (0.0.1)
+
+DEPENDENCIES:
+  - flutter_tvos (from `/Users/arnaud/.pub-cache/hosted/pub.dev/flutter_tvos-1.1.3/tvos`)
+  - path_provider_tvos (from `/Users/arnaud/.pub-cache/hosted/pub.dev/path_provider_tvos-0.0.3/tvos`)
+  - shared_preferences_tvos (from `/Users/arnaud/.pub-cache/hosted/pub.dev/shared_preferences_tvos-0.0.2/tvos`)
+
+EXTERNAL SOURCES:
+  flutter_tvos:
+    :path: "/Users/arnaud/.pub-cache/hosted/pub.dev/flutter_tvos-1.1.3/tvos"
+  path_provider_tvos:
+    :path: "/Users/arnaud/.pub-cache/hosted/pub.dev/path_provider_tvos-0.0.3/tvos"
+  shared_preferences_tvos:
+    :path: "/Users/arnaud/.pub-cache/hosted/pub.dev/shared_preferences_tvos-0.0.2/tvos"
+
+SPEC CHECKSUMS:
+  flutter_tvos: 41fcb764eb0d5a046553145ecd96a9045cc8ecdd
+  path_provider_tvos: 7631c19136678f81f38e73f2fdc807cecd584bad
+  shared_preferences_tvos: 6a2eea1a0bc1f35a5dc1225f2b7c1566a3eddd00
+
+PODFILE CHECKSUM: 4a73aa679e05490dcf465c8c8378a3db20efe594
+
+COCOAPODS: 1.16.2
