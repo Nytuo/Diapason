@@ -149,4 +149,38 @@ class MediaSourceConfig {
   };
 
   String toJsonString() => jsonEncode(toJson());
+
+  /// Full round-trip serialization used to persist configs in Hive on tvOS,
+  /// where Isar has no native binary. See [MediaSourceService]'s tvOS branch.
+  Map<String, dynamic> toTvOSStorageJson() => {
+    "sourceId": sourceId,
+    "kind": kind.name,
+    "name": name,
+    "publicAddress": publicAddress,
+    "localAddress": localAddress,
+    "preferLocalNetwork": preferLocalNetwork,
+    "isLocal": isLocal,
+    "accessToken": accessToken,
+    "username": username,
+    "password": password,
+    "userId": userId,
+    "localPath": localPath,
+    "enabled": enabled,
+  };
+
+  factory MediaSourceConfig.fromTvOSStorageJson(Map<String, dynamic> json) => MediaSourceConfig(
+    sourceId: json["sourceId"] as String,
+    kind: MediaSourceKind.values.byName(json["kind"] as String),
+    name: json["name"] as String,
+    publicAddress: json["publicAddress"] as String? ?? "",
+    localAddress: json["localAddress"] as String? ?? "",
+    preferLocalNetwork: json["preferLocalNetwork"] as bool? ?? false,
+    isLocal: json["isLocal"] as bool? ?? false,
+    accessToken: json["accessToken"] as String? ?? "",
+    username: json["username"] as String? ?? "",
+    password: json["password"] as String? ?? "",
+    userId: json["userId"] as String? ?? "",
+    localPath: json["localPath"] as String? ?? "",
+    enabled: json["enabled"] as bool? ?? true,
+  );
 }

@@ -13,6 +13,7 @@ PACKAGES = [
     'flutter_tvos-1.1.3',
     'path_provider_tvos-0.0.3',
     'shared_preferences_tvos-0.0.2',
+    'sqflite_tvos-0.0.2',
 ]
 
 repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))

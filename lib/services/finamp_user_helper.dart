@@ -3,6 +3,7 @@ import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/jellyfin_api.dart' as jellyfin_api;
 import 'package:diapason/services/jellyfin_api_helper.dart';
+import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce/hive.dart';
@@ -13,9 +14,15 @@ final finampUserHelperLogger = Logger("FinampUserHelper");
 
 /// Helper class for Finamp users. Note that this class does not talk to the
 /// Jellyfin server, so stuff like logging in/out is handled in JellyfinApiData.
+///
+/// Isar has no tvOS native binary, so on tvOS this stores the (single)
+/// current user directly in the "FinampUsers"/"CurrentUserId" Hive boxes
+/// instead of Isar - the same boxes/adapter [migrateFromHive] already used
+/// as a legacy migration source on other platforms.
 class FinampUserHelper {
   FinampUserHelper() {
-    _isar.finampUsers.watchObjectLazy(0).listen((event) {
+    if (_isTvOS) return;
+    _isar!.finampUsers.watchObjectLazy(0).listen((event) {
       _currentUserCache = null;
       setAuthHeader();
       if (GetIt.instance.isRegistered(type: ProviderContainer)) {
@@ -28,22 +35,30 @@ class FinampUserHelper {
     authorizationHeader = await jellyfin_api.getAuthHeader();
   }
 
-  final _isar = GetIt.instance<Isar>();
+  static bool get _isTvOS => AppleTvAudioChannel.isSupported;
+
+  final Isar? _isar = _isTvOS ? null : GetIt.instance<Isar>();
+
+  Box<FinampUser> get _tvOSUsers => Hive.box<FinampUser>("FinampUsers");
+  Box<String> get _tvOSCurrentUserId => Hive.box<String>("CurrentUserId");
 
   final List<void Function()> _postUserHooks = [];
 
   /// Checks if there are any saved users.
-  bool get isUsersEmpty => _isar.finampUsers.countSync() == 0;
+  bool get isUsersEmpty => _isTvOS ? _tvOSUsers.isEmpty : _isar!.finampUsers.countSync() == 0;
 
   /// Loads the id from CurrentUserId. Returns null if no id is stored.
-  String? get currentUserId => _isar.finampUsers.getSync(0)?.id;
+  String? get currentUserId => _isTvOS ? _tvOSCurrentUserId.get("CurrentUserId") : _isar!.finampUsers.getSync(0)?.id;
 
   /// Loads the FinampUser with the id from CurrentUserId. Returns null if no
   /// user exists.
-  FinampUser? get currentUser => _currentUserCache ??= _isar.finampUsers.getSync(0);
+  FinampUser? get currentUser =>
+      _currentUserCache ??= _isTvOS
+          ? (currentUserId == null ? null : _tvOSUsers.get(currentUserId))
+          : _isar!.finampUsers.getSync(0);
   FinampUser? _currentUserCache;
 
-  Iterable<FinampUser> get finampUsers => _isar.finampUsers.where().findAllSync();
+  Iterable<FinampUser> get finampUsers => _isTvOS ? _tvOSUsers.values : _isar!.finampUsers.where().findAllSync();
 
   late String authorizationHeader;
 
@@ -52,13 +67,14 @@ class FinampUserHelper {
   });
 
   Future<void> migrateFromHive() async {
+    if (_isTvOS) return; // tvOS already stores users straight in these boxes.
     await Hive.openBox<FinampUser>("FinampUsers");
     await Hive.openBox<String>("CurrentUserId");
     var currentUserId = Hive.box<String>("CurrentUserId").get("CurrentUserId");
     if (currentUserId != null) {
       var currentUser = Hive.box<FinampUser>("FinampUsers").get(currentUserId);
       if (currentUser != null) {
-        _isar.writeTxnSync(() {
+        _isar!.writeTxnSync(() {
           _isar.finampUsers.putSync(currentUser, saveLinks: false);
         });
       }
@@ -67,9 +83,15 @@ class FinampUserHelper {
 
   /// Saves a new user to the Hive box and sets the CurrentUserId.
   Future<void> saveUser(FinampUser newUser) async {
-    _isar.writeTxnSync(() {
-      _isar.finampUsers.putSync(newUser, saveLinks: false);
-    });
+    if (_isTvOS) {
+      await _tvOSUsers.put(newUser.id, newUser);
+      await _tvOSCurrentUserId.put("CurrentUserId", newUser.id);
+      _currentUserCache = null;
+    } else {
+      _isar!.writeTxnSync(() {
+        _isar.finampUsers.putSync(newUser, saveLinks: false);
+      });
+    }
     await setAuthHeader();
     while (_postUserHooks.isNotEmpty) {
       _postUserHooks.removeAt(0)();
@@ -91,9 +113,7 @@ class FinampUserHelper {
     currentUserTemp.views = Map<BaseItemId, BaseItemDto>.fromEntries(newViews.map((e) => MapEntry(e.id, e)));
     currentUserTemp.currentViewId = currentUserTemp.views.keys.first;
 
-    _isar.writeTxnSync(() {
-      _isar.finampUsers.putSync(currentUserTemp, saveLinks: false);
-    });
+    _persistCurrentUser(currentUserTemp);
   }
 
   void setCurrentUserCurrentViewId(BaseItemId newViewId) {
@@ -101,17 +121,33 @@ class FinampUserHelper {
 
     currentUserTemp.currentViewId = newViewId;
 
-    _isar.writeTxnSync(() {
-      _isar.finampUsers.putSync(currentUserTemp, saveLinks: false);
-    });
+    _persistCurrentUser(currentUserTemp);
+  }
+
+  void _persistCurrentUser(FinampUser user) {
+    if (_isTvOS) {
+      _tvOSUsers.put(user.id, user);
+      _currentUserCache = null;
+    } else {
+      _isar!.writeTxnSync(() {
+        _isar.finampUsers.putSync(user, saveLinks: false);
+      });
+    }
   }
 
   /// Removes the user with the given id. If the given id is the current user
   /// id, CurrentUserId is cleared.
   void removeUser(String id) {
-    _isar.writeTxnSync(() {
-      _isar.finampUsers.filter().idEqualTo(id).deleteAllSync();
-    });
+    if (_isTvOS) {
+      _tvOSUsers.delete(id);
+      if (_tvOSCurrentUserId.get("CurrentUserId") == id) {
+        _tvOSCurrentUserId.delete("CurrentUserId");
+      }
+    } else {
+      _isar!.writeTxnSync(() {
+        _isar.finampUsers.filter().idEqualTo(id).deleteAllSync();
+      });
+    }
     if (_currentUserCache?.id == id) {
       _currentUserCache = null;
     }

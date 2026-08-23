@@ -78,6 +78,59 @@ dart run build_runner build --delete-conflicting-outputs
 flutter run
 ```
 
+### Building for tvOS
+
+tvOS is outside stock Flutter's supported platforms, so building it requires
+[flutter-tvos](https://fluttertv.dev), a Flutter SDK fork/embedder that adds
+tvOS as a first-class target, alongside the standard Flutter SDK for
+everything else.
+
+```bash
+# one-time: install the flutter-tvos toolchain
+git clone https://github.com/fluttertv/flutter-tvos.git
+export PATH="$PATH:$PWD/flutter-tvos/bin"
+flutter-tvos precache
+flutter-tvos doctor
+
+# in the diapason repo
+flutter-tvos pub get
+python3 tvos/scripts/restore_tvos_plugins.py  # re-injects the tvos-only plugins
+                                               # into .flutter-plugins-dependencies
+                                               # (flutter pub get drops them)
+flutter-tvos run -d <tvos-device-or-simulator-id>
+```
+
+Run `restore_tvos_plugins.py` before every `pod install` / `flutter-tvos
+build`/`run`, since any regular `flutter` command regenerates
+`.flutter-plugins-dependencies` without the tvos key. If native files under
+`tvos/Runner/Playback` change, re-run `tvos/scripts/wire_tvos_player.rb` to
+wire them into `Runner.xcodeproj`.
+
+#### tvOS status
+
+The app boots, logs in, and plays audio. Isar (used elsewhere for downloads,
+playback stats, pinned shortcuts, and search history) has no tvOS native
+binary, so tvOS stores just the current user and media source configs in
+Hive instead (see `FinampUserHelper` and `MediaSourceService`'s tvOS
+branches) and those four Isar-only features stay unavailable there.
+
+`just_audio` / `audio_service` also have no tvOS implementation, so actual
+playback runs through `AppleTvAudioChannel` (native AVPlayer +
+`MPNowPlayingInfoCenter`) instead, driven from `MusicPlayerBackgroundTask`'s
+tvOS-specific fields and `_setupTvOSPlayback()`. `_player` (just_audio) is
+kept permanently idle there - never actually played - and reused purely as
+the existing queue data structure (`sequenceState`, shuffle, repeat) that
+`QueueService` already depends on; only real playback (load/play/pause/
+seek/position/duration/Now Playing) is re-routed to the native channel. This
+covers the core experience but intentionally has no equivalent of the other
+platforms' crossfade, gapless preload, equalizer, or replay gain/volume
+normalization - those are just_audio-effect-specific and stay unavailable on
+tvOS for now. It's been verified end-to-end against the native AVPlayer
+bridge itself (a public test file streamed, reported the correct duration,
+and advanced position in real time); the full queue integration hasn't been
+exercised against a real Jellyfin/Subsonic/Plex server yet, so treat it as
+functional-but-freshly-wired if you hit an edge case.
+
 ## Credits
 
 Diapason is a fork of [Finamp](https://github.com/finamp-app/finamp) by `jmshrv` and the Finamp contributors, used under the Mozilla Public License 2.0. The groundwork: the player, queue engine,

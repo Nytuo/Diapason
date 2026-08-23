@@ -150,6 +150,7 @@ dependencies:
   flutter_tvos: ^1.1.3
   path_provider_tvos: any
   shared_preferences_tvos: any
+  sqflite_tvos: any
 
   # These two carry native Android/iOS plugin code. As of Flutter 3.44, the
   # Gradle plugin loader excludes dev_dependency plugins from release builds,

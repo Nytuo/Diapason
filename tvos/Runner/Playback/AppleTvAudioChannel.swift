@@ -48,7 +48,8 @@ final class AppleTvAudioChannel: NSObject {
                 result(FlutterError(code: "bad_args", message: "load requires a url", details: nil))
                 return
             }
-            load(url: url)
+            let headers = args?["headers"] as? [String: String]
+            load(url: url, headers: headers)
             result(nil)
         case "play":
             player?.play()
@@ -82,10 +83,16 @@ final class AppleTvAudioChannel: NSObject {
         }
     }
 
-    private func load(url: URL) {
+    private func load(url: URL, headers: [String: String]?) {
         teardownPlayer()
 
-        let item = AVPlayerItem(url: url)
+        let asset: AVURLAsset
+        if let headers, !headers.isEmpty {
+            asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
+        } else {
+            asset = AVURLAsset(url: url)
+        }
+        let item = AVPlayerItem(asset: asset)
         let newPlayer = AVPlayer(playerItem: item)
         player = newPlayer
 

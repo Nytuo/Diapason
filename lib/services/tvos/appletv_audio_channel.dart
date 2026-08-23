@@ -52,7 +52,7 @@ class AppleTvAudioChannel {
   final _positionController = StreamController<Duration>.broadcast();
   final _completeController = StreamController<void>.broadcast();
   final _errorController = StreamController<String>.broadcast();
-  final _remoteCommandController = StreamController<AppleTvRemoteCommand>.broadcast();
+  final _remoteCommandController = StreamController<AppleTvRemoteCommandEvent>.broadcast();
 
   /// Fires once per [load] when the item becomes playable, with its duration.
   Stream<Duration> get onReady => _readyController.stream;
@@ -67,7 +67,7 @@ class AppleTvAudioChannel {
   Stream<String> get onError => _errorController.stream;
 
   /// Fires when the Siri Remote / Now Playing UI issues a transport command.
-  Stream<AppleTvRemoteCommand> get onRemoteCommand => _remoteCommandController.stream;
+  Stream<AppleTvRemoteCommandEvent> get onRemoteCommand => _remoteCommandController.stream;
 
   bool _handlerAttached = false;
 
@@ -94,16 +94,16 @@ class AppleTvAudioChannel {
         _errorController.add(message);
       case 'onRemoteCommand':
         final args = call.arguments as Map<dynamic, dynamic>;
-        final command = AppleTvRemoteCommand.fromWire(args);
-        if (command != null) _remoteCommandController.add(command);
+        final event = AppleTvRemoteCommandEvent.fromWire(args);
+        if (event != null) _remoteCommandController.add(event);
       default:
         _log.fine('unhandled native call: ${call.method}');
     }
   }
 
-  Future<void> load(String url) async {
+  Future<void> load(String url, {Map<String, String>? headers}) async {
     _ensureHandlerAttached();
-    await _channel.invokeMethod('load', {'url': url});
+    await _channel.invokeMethod('load', {'url': url, 'headers': headers});
   }
 
   Future<void> play() => _channel.invokeMethod('play');
@@ -153,25 +153,30 @@ class AppleTvSystemChannel {
   }
 }
 
-enum AppleTvRemoteCommand {
-  play,
-  pause,
-  next,
-  previous,
-  seek;
+enum AppleTvRemoteCommand { play, pause, next, previous, seek }
 
-  static AppleTvRemoteCommand? fromWire(Map<dynamic, dynamic> args) {
+/// A remote command plus, for [AppleTvRemoteCommand.seek], the target
+/// position (from the Now Playing UI's scrubber).
+class AppleTvRemoteCommandEvent {
+  const AppleTvRemoteCommandEvent(this.command, {this.position});
+
+  final AppleTvRemoteCommand command;
+  final Duration? position;
+
+  static AppleTvRemoteCommandEvent? fromWire(Map<dynamic, dynamic> args) {
+    final positionMs = args['positionMs'] as int?;
+    final position = positionMs != null ? Duration(milliseconds: positionMs) : null;
     switch (args['command'] as String?) {
       case 'play':
-        return AppleTvRemoteCommand.play;
+        return AppleTvRemoteCommandEvent(AppleTvRemoteCommand.play);
       case 'pause':
-        return AppleTvRemoteCommand.pause;
+        return AppleTvRemoteCommandEvent(AppleTvRemoteCommand.pause);
       case 'next':
-        return AppleTvRemoteCommand.next;
+        return AppleTvRemoteCommandEvent(AppleTvRemoteCommand.next);
       case 'previous':
-        return AppleTvRemoteCommand.previous;
+        return AppleTvRemoteCommandEvent(AppleTvRemoteCommand.previous);
       case 'seek':
-        return AppleTvRemoteCommand.seek;
+        return AppleTvRemoteCommandEvent(AppleTvRemoteCommand.seek, position: position);
       default:
         return null;
     }

@@ -1,5 +1,6 @@
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/backends/media_source_service.dart';
+import 'package:diapason/utils/tv_focus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -44,6 +45,13 @@ class _SourceFormState extends State<SourceForm> {
   late bool _preferLocalNetwork = widget.existing?.preferLocalNetwork ?? false;
   late String _localPath = widget.existing?.localPath ?? "";
 
+  late final _nameFocus = tvNavFocusNode(controller: _name);
+  late final _addressFocus = tvNavFocusNode(controller: _address);
+  late final _usernameFocus = tvNavFocusNode(controller: _username);
+  late final _passwordFocus = tvNavFocusNode(controller: _password);
+  late final _tokenFocus = tvNavFocusNode(controller: _token);
+  late final _localNetworkAddressFocus = tvNavFocusNode(controller: _localNetworkAddress);
+
   bool _testing = false;
 
   bool? _reachable;
@@ -59,6 +67,12 @@ class _SourceFormState extends State<SourceForm> {
     _password.dispose();
     _token.dispose();
     _localNetworkAddress.dispose();
+    _nameFocus.dispose();
+    _addressFocus.dispose();
+    _usernameFocus.dispose();
+    _passwordFocus.dispose();
+    _tokenFocus.dispose();
+    _localNetworkAddressFocus.dispose();
     super.dispose();
   }
 
@@ -131,6 +145,7 @@ class _SourceFormState extends State<SourceForm> {
         children: [
           TextFormField(
             controller: _name,
+            focusNode: _nameFocus,
             decoration: const InputDecoration(
               labelText: "Name (optional)",
               helperText: "How this source is labelled in your library",
@@ -154,6 +169,7 @@ class _SourceFormState extends State<SourceForm> {
           ] else ...[
             TextFormField(
               controller: _address,
+              focusNode: _addressFocus,
               autocorrect: false,
               keyboardType: TextInputType.url,
               decoration: InputDecoration(labelText: "Server address", hintText: presentation.hint),
@@ -164,6 +180,7 @@ class _SourceFormState extends State<SourceForm> {
             if (_isMpd) ...[
               TextFormField(
                 controller: _password,
+                focusNode: _passwordFocus,
                 obscureText: true,
                 decoration: const InputDecoration(labelText: "Password (optional)"),
               ),
@@ -190,6 +207,7 @@ class _SourceFormState extends State<SourceForm> {
               children: [
                 TextFormField(
                   controller: _localNetworkAddress,
+                  focusNode: _localNetworkAddressFocus,
                   autocorrect: false,
                   keyboardType: TextInputType.url,
                   decoration: const InputDecoration(
@@ -210,6 +228,7 @@ class _SourceFormState extends State<SourceForm> {
             if (widget.kind == MediaSourceKind.subsonic) ...[
               TextFormField(
                 controller: _username,
+                focusNode: _usernameFocus,
                 autocorrect: false,
                 decoration: const InputDecoration(labelText: "Username"),
                 validator: (v) => (v == null || v.trim().isEmpty) ? "A username is required" : null,
@@ -217,6 +236,7 @@ class _SourceFormState extends State<SourceForm> {
               const SizedBox(height: 16.0),
               TextFormField(
                 controller: _password,
+                focusNode: _passwordFocus,
                 obscureText: true,
                 decoration: const InputDecoration(
                   labelText: "Password",
@@ -229,6 +249,7 @@ class _SourceFormState extends State<SourceForm> {
             if (widget.kind == MediaSourceKind.plex)
               TextFormField(
                 controller: _token,
+                focusNode: _tokenFocus,
                 autocorrect: false,
                 decoration: const InputDecoration(labelText: "Plex token", helperText: "X-Plex-Token"),
                 validator: (v) => (v == null || v.trim().isEmpty) ? "A Plex token is required" : null,
