@@ -688,6 +688,8 @@
     "goToGenre": "Go to Genre",
     "removeFavorite": "Remove Favorite",
     "addFavorite": "Add Favorite",
+    "hideFromBrowse": "Hide from Browse",
+    "unhideFromBrowse": "Unhide from Browse",
     "confirmAddedToPlaylist": "Added to playlist.",
     "@confirmAddedToPlaylist": {
         "description": "Snackbar message that shows when the user successfully adds items to a playlist."

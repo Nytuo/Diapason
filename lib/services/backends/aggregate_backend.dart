@@ -4,6 +4,7 @@ import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:diapason/services/backends/media_backend.dart';
+import 'package:diapason/services/hidden_items_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 
@@ -31,7 +32,44 @@ class AggregateBackend {
     return results.expand((r) => r).toList();
   }
 
+  /// Fetches items across all enabled backends, then hides items the user
+  /// has locally marked as "not interested" (see [HiddenItemsService]).
+  /// Hiding is intentionally skipped when [searchTerm] is set, so a search
+  /// still surfaces items the user has hidden from browse/home views.
   Future<List<BaseItemDto>> getItems({
+    BaseItemDto? parentItem,
+    BaseItemId? libraryFilter,
+    String? includeItemTypes,
+    String? sortBy,
+    String? sortOrder,
+    String? searchTerm,
+    String? filters,
+    BaseItemId? genreFilter,
+    bool? isFavorite,
+    ArtistType? artistType,
+    int? startIndex,
+    int? limit,
+  }) async {
+    final items = await _getItemsUnfiltered(
+      parentItem: parentItem,
+      libraryFilter: libraryFilter,
+      includeItemTypes: includeItemTypes,
+      sortBy: sortBy,
+      sortOrder: sortOrder,
+      searchTerm: searchTerm,
+      filters: filters,
+      genreFilter: genreFilter,
+      isFavorite: isFavorite,
+      artistType: artistType,
+      startIndex: startIndex,
+      limit: limit,
+    );
+
+    if (searchTerm != null && searchTerm.trim().isNotEmpty) return items;
+    return items.where((item) => !HiddenItemsService.isHidden(item.id)).toList();
+  }
+
+  Future<List<BaseItemDto>> _getItemsUnfiltered({
     BaseItemDto? parentItem,
     BaseItemId? libraryFilter,
     String? includeItemTypes,
