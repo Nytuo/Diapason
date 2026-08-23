@@ -24,7 +24,24 @@ class AppleTvAudioChannel {
   static AppleTvAudioChannel? _instance;
 
   /// True only on a real tvOS runtime; false everywhere else, including iOS.
-  static bool get isSupported => TvOSInfo.isTvOS;
+  ///
+  /// flutter_tvos only links its native symbols into tvOS builds (see its
+  /// `ffiPlugin` platform declaration), so [TvOSInfo.isTvOS] throws
+  /// `Invalid argument(s): Failed to lookup symbol` on iOS/macOS/Android
+  /// instead of just returning false there. Guard the lookup and treat any
+  /// failure as "not tvOS".
+  static bool get isSupported => _isSupported ??= _probeIsTvOS();
+
+  static bool? _isSupported;
+
+  static bool _probeIsTvOS() {
+    try {
+      return TvOSInfo.isTvOS;
+    } catch (e, st) {
+      _log.warning('TvOSInfo.isTvOS lookup failed; assuming non-tvOS platform', e, st);
+      return false;
+    }
+  }
 
   static AppleTvAudioChannel get instance {
     assert(isSupported, 'AppleTvAudioChannel is only available on tvOS');

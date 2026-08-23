@@ -21,6 +21,12 @@ part 'environment_metadata.g.dart';
 const _SharedPreferencesVersionHistoryKey = 'version_history';
 final _environmentMetadataLogger = Logger('EnvironmentMetadata');
 
+/// Alias kept local so the two call sites below read as "is this app
+/// actually running on tvOS", matching [AppleTvAudioChannel.isSupported]'s
+/// safety guarantees (it never throws, unlike calling [TvOSInfo.isTvOS]
+/// directly — see that getter's doc comment).
+bool get _isTvOS => AppleTvAudioChannel.isSupported;
+
 /// package_info_plus has no tvOS plugin implementation; see
 /// AppleTvSystemChannel.swift for why its tvOS fork isn't used instead.
 Future<PackageInfo> _tvOSPackageInfo() async {
@@ -60,7 +66,7 @@ class DeviceInfo {
         osVersion: info.version.release,
         platform: "Android${isTV ? ' (TV)' : ''}${isWatch ? ' (Watch)' : ''}",
       );
-    } else if (TvOSInfo.isTvOS) {
+    } else if (_isTvOS) {
       // dart:io reports tvOS as iOS (Platform.isIOS is true here too), and
       // device_info_plus has no tvOS channel implementation, so this has to
       // be checked before the Platform.isIOS branch below. TvOSInfo reads
@@ -139,7 +145,7 @@ class AppInfo {
 
   /// Detects app metadata using package_info_plus and updates stored version history.
   static Future<AppInfo> fromPlatform() async {
-    final packageInfo = TvOSInfo.isTvOS ? await _tvOSPackageInfo() : await PackageInfo.fromPlatform();
+    final packageInfo = _isTvOS ? await _tvOSPackageInfo() : await PackageInfo.fromPlatform();
     final currentVersion = "${packageInfo.version} (${packageInfo.buildNumber})";
 
     final SharedPreferencesAsync prefs = SharedPreferencesAsync();
