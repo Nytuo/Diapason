@@ -2,7 +2,7 @@ name: diapason
 description: A multi-source music player for Jellyfin, Plex, Subsonic/Navidrome and local files
 
 publish_to: "none"
-version: 0.10.0
+version: 0.11.0
 
 environment:
   sdk: ^3.9.0
@@ -225,7 +225,7 @@ msix_config:
   display_name: Diapason
   publisher_display_name: Nytuo
   identity_name: fr.nytuo.diapason
-  msix_version: 0.10.0.0
+  msix_version: 0.11.0.0
   logo_path: ./images/diapason_cropped.png
   trim_logo: false 
   capabilities: internetClient,musicLibrary,privateNetworkClientServer
