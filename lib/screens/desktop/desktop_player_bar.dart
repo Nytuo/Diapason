@@ -1,4 +1,5 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/components/PlayerScreen/progress_slider.dart';
 import 'package:diapason/components/PlayerScreen/spectrum_visualizer.dart';
 import 'package:diapason/components/album_image.dart';
@@ -6,6 +7,8 @@ import 'package:diapason/screens/desktop/desktop_theme.dart';
 import 'package:diapason/screens/desktop/desktop_track_info.dart';
 import 'package:diapason/screens/desktop/desktop_transport_controls.dart';
 import 'package:diapason/services/connect/connect_remote_controller.dart';
+import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/current_album_image_provider.dart';
 import 'package:diapason/services/media_state_stream.dart';
 import 'package:diapason/services/music_player_background_task.dart';
@@ -21,12 +24,17 @@ class DesktopPlayerBar extends ConsumerStatefulWidget {
     required this.onToggleLyrics,
     required this.onMiniPlayer,
     required this.onFullscreen,
+    required this.onOpenLibraryItem,
   });
 
   final bool lyricsOpen;
   final VoidCallback onToggleLyrics;
   final VoidCallback onMiniPlayer;
   final VoidCallback onFullscreen;
+
+  /// Opens an already-resolved album or artist as a detail page in the main
+  /// content area.
+  final void Function(BaseItemDto item, {required bool isArtist}) onOpenLibraryItem;
 
   @override
   ConsumerState<DesktopPlayerBar> createState() => _DesktopPlayerBarState();
@@ -199,6 +207,9 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
   }
 
   Widget _trackInfo(BuildContext context, DesktopPalette p, MediaItem? item) {
+    final base = _baseItemOf(item);
+    final artistId = _firstArtistId(base);
+    final albumId = base?.albumId;
     return _trackInfoLayout(
       p,
       art: item == null
@@ -213,8 +224,38 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
       onArtTap: item == null ? null : widget.onFullscreen,
       title: item?.title ?? "No track playing",
       artist: item?.artist ?? "—",
+      onTitleTap: albumId == null ? null : () => _openResolved(albumId, isArtist: false),
+      onArtistTap: artistId == null ? null : () => _openResolved(artistId, isArtist: true),
       extra: const DesktopTrackInfoLine(),
     );
+  }
+
+  BaseItemDto? _baseItemOf(MediaItem? item) {
+    final json = item?.extras?["itemJson"];
+    if (json is! Map) return null;
+    try {
+      return BaseItemDto.fromJson(json.cast<String, dynamic>());
+    } catch (_) {
+      return null;
+    }
+  }
+
+  BaseItemId? _firstArtistId(BaseItemDto? base) {
+    if (base == null) return null;
+    if (base.artistItems?.isNotEmpty ?? false) return base.artistItems!.first.id;
+    if (base.albumArtists?.isNotEmpty ?? false) return base.albumArtists!.first.id;
+    return null;
+  }
+
+  Future<void> _openResolved(BaseItemId id, {required bool isArtist}) async {
+    try {
+      final resolved = await GetIt.instance<AggregateBackend>().getItemById(id);
+      if (resolved != null && mounted) {
+        widget.onOpenLibraryItem(resolved, isArtist: isArtist);
+      }
+    } catch (e) {
+      GlobalSnackbar.error(e);
+    }
   }
 
   Widget _trackInfoLayout(
@@ -224,7 +265,26 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
     required String title,
     required String artist,
     required Widget extra,
+    VoidCallback? onTitleTap,
+    VoidCallback? onArtistTap,
   }) {
+    Widget line(String text, TextStyle style, VoidCallback? onTap) {
+      final label = Text(text, maxLines: 1, overflow: TextOverflow.ellipsis, style: style);
+      if (onTap == null) return label;
+      return MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: style.copyWith(decoration: TextDecoration.underline, decorationColor: style.color),
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -239,18 +299,16 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                line(
                   title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: p.textPrimary, fontSize: 14, fontWeight: FontWeight.bold),
+                  TextStyle(color: p.textPrimary, fontSize: 14, fontWeight: FontWeight.bold),
+                  onTitleTap,
                 ),
                 const SizedBox(height: 2),
-                Text(
+                line(
                   artist,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: p.textSecondary, fontSize: 12),
+                  TextStyle(color: p.textSecondary, fontSize: 12),
+                  onArtistTap,
                 ),
                 const SizedBox(height: 2),
                 extra,
