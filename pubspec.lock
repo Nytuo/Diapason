@@ -1077,9 +1077,11 @@ packages:
   just_audio:
     dependency: "direct main"
     description:
-      path: "../just_audio_fork/just_audio"
-      relative: true
-    source: path
+      path: just_audio
+      ref: main
+      resolved-ref: "6f4c876d4766619fbeea4095417c86017b5374e4"
+      url: "https://github.com/Nytuo/just_audio_fork.git"
+    source: git
     version: "0.10.6"
   just_audio_media_kit:
     dependency: "direct main"
@@ -1093,9 +1095,11 @@ packages:
   just_audio_platform_interface:
     dependency: "direct overridden"
     description:
-      path: "../just_audio_fork/just_audio_platform_interface"
-      relative: true
-    source: path
+      path: just_audio_platform_interface
+      ref: main
+      resolved-ref: "6f4c876d4766619fbeea4095417c86017b5374e4"
+      url: "https://github.com/Nytuo/just_audio_fork.git"
+    source: git
     version: "4.6.0"
   just_audio_web:
     dependency: transitive

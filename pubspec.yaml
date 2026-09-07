@@ -18,12 +18,13 @@ dependencies:
   chopper: ^8.0.0
   get_it: ^8.2.0
   # just_audio: ^0.10.5
-  # Fork of LennartEnns/just_audio_fork carrying the SpectrumTap patch: an
-  # MTAudioProcessingTap + vDSP FFT that feeds the iOS visualizer.
+  # Fork carrying the Darwin SpectrumTap patch (MTAudioProcessingTap + vDSP
+  # FFT for the iOS visualizer) and the in-app Darwin equalizer. `main` is
+  # the consolidated branch; all fork work merges there.
   just_audio:
     git:
       url: https://github.com/Nytuo/just_audio_fork.git
-      ref: diapason-spectrum-tap
+      ref: main
       path: just_audio
   just_audio_media_kit:
     git:
@@ -187,14 +188,14 @@ dependency_overrides:
       url: https://github.com/Komodo5197/isar-community.git
       ref: a602cd8999048faba043f7e1ce7ba92f4d812762
       path: packages/isar
-  # Local dev override for the in-app equalizer work; points at a working
-  # copy of the fork so native iOS changes don't require GitHub round-trips.
-  # Remove once the diapason-equalizer branch is pushed and pubspec.yaml's
-  # just_audio ref above is updated to point at it.
-  just_audio:
-    path: ../just_audio_fork/just_audio
+  # The fork also patches just_audio_platform_interface (adds the Darwin
+  # equalizer request/response), so the transitive dep must resolve to the
+  # fork's copy rather than the pub.dev release.
   just_audio_platform_interface:
-    path: ../just_audio_fork/just_audio_platform_interface
+    git:
+      url: https://github.com/Nytuo/just_audio_fork.git
+      ref: main
+      path: just_audio_platform_interface
 
 flutter:
   uses-material-design: true
