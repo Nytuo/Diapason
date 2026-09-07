@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:collection/collection.dart';
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/backends/backend_registry.dart';
@@ -9,19 +11,39 @@ import 'package:diapason/services/backends/subsonic_backend.dart';
 import 'package:diapason/services/backends/youtube_backend.dart';
 import 'package:diapason/services/backends/media_backend.dart';
 import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 
+/// Isar has no tvOS native binary, so on tvOS this stores configs as JSON in
+/// a "MediaSourceConfigs" Hive box (key: sourceId) instead of Isar.
 class MediaSourceService {
   MediaSourceService();
 
   static final _log = Logger("MediaSourceService");
 
-  final Isar _isar = GetIt.instance<Isar>();
+  static bool get _isTvOS => AppleTvAudioChannel.isSupported;
+
+  final Isar? _isar = _isTvOS ? null : GetIt.instance<Isar>();
   BackendRegistry get _registry => GetIt.instance<BackendRegistry>();
 
-  List<MediaSourceConfig> get sources => _isar.mediaSourceConfigs.where().findAllSync();
+  Box<String> get _tvOSSources => Hive.box<String>("MediaSourceConfigs");
+
+  List<MediaSourceConfig> get sources => _isTvOS
+      ? _tvOSSources.values
+            .map((json) => MediaSourceConfig.fromTvOSStorageJson(jsonDecode(json) as Map<String, dynamic>))
+            .toList()
+      : _isar!.mediaSourceConfigs.where().findAllSync();
+
+  void _put(MediaSourceConfig config) {
+    if (_isTvOS) {
+      _tvOSSources.put(config.sourceId, jsonEncode(config.toTvOSStorageJson()));
+    } else {
+      _isar!.writeTxnSync(() => _isar.mediaSourceConfigs.putSync(config));
+    }
+  }
 
   Future<void> loadSources() async {
     await _migrateLegacyJellyfinUser();
@@ -45,7 +67,7 @@ class MediaSourceService {
   };
 
   Future<void> addSource(MediaSourceConfig config) async {
-    _isar.writeTxnSync(() => _isar.mediaSourceConfigs.putSync(config));
+    _put(config);
     _registry.register(_build(config));
   }
 
@@ -54,17 +76,21 @@ class MediaSourceService {
 
   Future<void> removeSource(String sourceId) async {
     await _registry.unregister(sourceId);
-    _isar.writeTxnSync(() => _isar.mediaSourceConfigs.filter().sourceIdEqualTo(sourceId).deleteAllSync());
+    if (_isTvOS) {
+      _tvOSSources.delete(sourceId);
+    } else {
+      _isar!.writeTxnSync(() => _isar.mediaSourceConfigs.filter().sourceIdEqualTo(sourceId).deleteAllSync());
+    }
   }
 
   Future<void> updateSource(MediaSourceConfig config) async {
-    _isar.writeTxnSync(() => _isar.mediaSourceConfigs.putSync(config));
+    _put(config);
     await _registry.unregister(config.sourceId);
     _registry.register(_build(config));
   }
 
   Future<void> persistSourceState(MediaSourceConfig config) async {
-    _isar.writeTxnSync(() => _isar.mediaSourceConfigs.putSync(config));
+    _put(config);
   }
 
   Future<bool> testConnection(MediaSourceConfig config) async {
@@ -79,7 +105,7 @@ class MediaSourceService {
   Future<void> _migrateLegacyJellyfinUser() async {
     final user = GetIt.instance<FinampUserHelper>().currentUser;
     if (user == null) return;
-    if (_isar.mediaSourceConfigs.where().findAllSync().any((s) => s.kind == MediaSourceKind.jellyfin)) {
+    if (sources.any((s) => s.kind == MediaSourceKind.jellyfin)) {
       return;
     }
 
@@ -94,7 +120,7 @@ class MediaSourceService {
       accessToken: user.accessToken,
       userId: user.id,
     );
-    _isar.writeTxnSync(() => _isar.mediaSourceConfigs.putSync(config));
+    _put(config);
     _log.info("Migrated the logged-in Jellyfin user into source ${config.sourceId}.");
   }
 

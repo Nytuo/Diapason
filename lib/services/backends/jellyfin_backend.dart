@@ -25,6 +25,15 @@ class JellyfinBackend implements MediaBackend {
   @override
   BackendCapabilities get capabilities => const BackendCapabilities(
     transcoding: true,
+    // Jellyfin's ffmpeg-based transcoder handles all of these out of the box,
+    // no server-side profile configuration needed.
+    defaultTranscodingCodecs: {
+      FinampTranscodingCodec.aac,
+      FinampTranscodingCodec.mp3,
+      FinampTranscodingCodec.opus,
+      FinampTranscodingCodec.flac,
+      FinampTranscodingCodec.alac,
+    },
     playlists: true,
     favorites: true,
     playbackReporting: true,

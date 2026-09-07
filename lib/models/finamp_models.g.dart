@@ -524,13 +524,26 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..visualizerDbCeiling = fields[181] == null
           ? -10.0
           : (fields[181] as num).toDouble()
-      ..visualizerLogScale = fields[182] == null ? true : fields[182] as bool;
+      ..visualizerLogScale = fields[182] == null ? true : fields[182] as bool
+      ..streamingTranscodingCodec = fields[183] == null
+          ? FinampTranscodingCodec.mp3
+          : fields[183] as FinampTranscodingCodec
+      ..resumeOnBluetoothConnect = fields[184] == null
+          ? false
+          : fields[184] as bool
+      ..equalizerEnabled = fields[185] == null ? false : fields[185] as bool
+      ..equalizerBandGains = fields[186] == null
+          ? {}
+          : (fields[186] as Map).cast<int, double>()
+      ..equalizerActivePreset = fields[187] == null
+          ? 'Flat'
+          : fields[187] as String?;
   }
 
   @override
   void write(BinaryWriter writer, FinampSettings obj) {
     writer
-      ..writeByte(175)
+      ..writeByte(180)
       ..writeByte(0)
       ..write(obj.isOffline)
       ..writeByte(1)
@@ -880,7 +893,17 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..writeByte(181)
       ..write(obj.visualizerDbCeiling)
       ..writeByte(182)
-      ..write(obj.visualizerLogScale);
+      ..write(obj.visualizerLogScale)
+      ..writeByte(183)
+      ..write(obj.streamingTranscodingCodec)
+      ..writeByte(184)
+      ..write(obj.resumeOnBluetoothConnect)
+      ..writeByte(185)
+      ..write(obj.equalizerEnabled)
+      ..writeByte(186)
+      ..write(obj.equalizerBandGains)
+      ..writeByte(187)
+      ..write(obj.equalizerActivePreset);
   }
 
   @override
@@ -2675,6 +2698,10 @@ class FinampTranscodingCodecAdapter
         return FinampTranscodingCodec.opus;
       case 3:
         return FinampTranscodingCodec.original;
+      case 4:
+        return FinampTranscodingCodec.flac;
+      case 5:
+        return FinampTranscodingCodec.alac;
       default:
         return FinampTranscodingCodec.aac;
     }
@@ -2691,6 +2718,10 @@ class FinampTranscodingCodecAdapter
         writer.writeByte(2);
       case FinampTranscodingCodec.original:
         writer.writeByte(3);
+      case FinampTranscodingCodec.flac:
+        writer.writeByte(4);
+      case FinampTranscodingCodec.alac:
+        writer.writeByte(5);
     }
   }
 
@@ -9276,12 +9307,16 @@ const _DownloadProfilecodecEnumValueMap = {
   'mp3': 1,
   'opus': 2,
   'original': 3,
+  'flac': 4,
+  'alac': 5,
 };
 const _DownloadProfilecodecValueEnumMap = {
   0: FinampTranscodingCodec.aac,
   1: FinampTranscodingCodec.mp3,
   2: FinampTranscodingCodec.opus,
   3: FinampTranscodingCodec.original,
+  4: FinampTranscodingCodec.flac,
+  5: FinampTranscodingCodec.alac,
 };
 
 extension DownloadProfileQueryFilter

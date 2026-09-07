@@ -8,6 +8,7 @@ import 'package:collection/collection.dart';
 import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/services/client_certificate_installer.dart';
 import 'package:diapason/services/http_aggregate_logging_interceptor.dart';
+import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,6 +48,14 @@ class JellyfinApiHelper {
   final _finampUserHelper = GetIt.instance<FinampUserHelper>();
 
   JellyfinApiHelper() {
+    if (AppleTvAudioChannel.isSupported) {
+      // The worker isolate reconstructs its own Isar-backed FinampUserHelper
+      // (Isar being isolate-safe, unlike Hive) to read the auth header. tvOS
+      // has neither Isar nor a Hive-in-isolate story, so it skips the
+      // isolate entirely; runInIsolate() below already falls back to
+      // running requests on the main isolate when _workerIsolatePort is null.
+      return;
+    }
     ReceivePort startupPort = ReceivePort();
     var rootToken = RootIsolateToken.instance!;
     // Pass client certificate to background isolates, since Hive isn't accessible from them.

@@ -6,7 +6,9 @@ import 'package:chopper/chopper.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/services/http_aggregate_logging_interceptor.dart';
+import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_tvos/flutter_tvos.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/io_client.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
@@ -17,7 +19,7 @@ import 'jellyfin_api_helper.dart';
 
 part 'jellyfin_api.chopper.dart';
 
-const String defaultFields = "ChildCount,DateCreated,DateLastMediaAdded,Etag,Genres,ParentId,ProviderIds,Tags";
+const String defaultFields = "ChildCount,DateCreated,DateLastMediaAdded,Etag,Genres,ParentId,ProviderIds,Tags,Chapters";
 
 @ChopperApi()
 abstract class JellyfinApi extends ChopperService {
@@ -684,8 +686,12 @@ Future<String> getAuthHeader() async {
   final deviceInfo = await getDeviceInfo();
   authHeader = '${authHeader}Device="${deviceInfo.name}",DeviceId="${deviceInfo.id}", ';
 
-  PackageInfo packageInfo = await PackageInfo.fromPlatform();
-  authHeader = '${authHeader}Version="${packageInfo.version}"';
+  // package_info_plus has no tvOS plugin implementation; see
+  // AppleTvSystemChannel.swift for why its tvOS fork isn't used instead.
+  final packageInfoVersion = AppleTvAudioChannel.isSupported
+      ? (await AppleTvSystemChannel.getPackageInfo())['version'] ?? ''
+      : (await PackageInfo.fromPlatform()).version;
+  authHeader = '${authHeader}Version="$packageInfoVersion"';
 
   // In some cases non-ASCII characters can end up in the header, usually via
   // iOS device name
@@ -706,6 +712,11 @@ Future<DeviceInfo> getDeviceInfo() async {
     AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
     final appSetId = await AppSetId().getIdentifier();
     info = DeviceInfo(name: androidDeviceInfo.name, id: "$appSetId-$idExtension");
+  } else if (AppleTvAudioChannel.isSupported) {
+    // device_info_plus has no tvOS plugin implementation (Platform.isIOS is
+    // also true here, so this check must come first); flutter_tvos exposes
+    // the same info via FFI instead.
+    info = DeviceInfo(name: TvOSInfo.deviceModel, id: "${TvOSInfo.machineId}-$idExtension");
   } else if (Platform.isIOS) {
     IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
     final appSetId = await AppSetId().getIdentifier();

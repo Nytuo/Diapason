@@ -6,10 +6,12 @@
 #endif
 
 #include "flutter/generated_plugin_registrant.h"
+#include "pcm_capture.h"
 
 struct _DiapasonApplication {
   GtkApplication parent_instance;
   char** dart_entrypoint_arguments;
+  PcmCapture* pcm_capture;
 };
 
 G_DEFINE_TYPE(DiapasonApplication, diapason_application, GTK_TYPE_APPLICATION);
@@ -67,6 +69,9 @@ static void diapason_application_activate(GApplication* application) {
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 
+  self->pcm_capture = pcm_capture_register(
+      fl_engine_get_binary_messenger(fl_view_get_engine(view)));
+
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }
 
@@ -93,6 +98,10 @@ static gboolean diapason_application_local_command_line(GApplication* applicatio
 static void diapason_application_dispose(GObject* object) {
   DiapasonApplication* self = DIAPASON_APPLICATION(object);
   g_clear_pointer(&self->dart_entrypoint_arguments, g_strfreev);
+  if (self->pcm_capture != nullptr) {
+    pcm_capture_free(self->pcm_capture);
+    self->pcm_capture = nullptr;
+  }
   G_OBJECT_CLASS(diapason_application_parent_class)->dispose(object);
 }
 

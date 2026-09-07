@@ -114,6 +114,9 @@ class DefaultSettings {
   static const Color? accentColor = null;
   static const shouldTranscode = false;
   static const transcodeBitrate = 320000;
+  // Used for streaming on backends without Jellyfin's more detailed
+  // transcodingStreamingFormat concept (currently just Subsonic).
+  static const streamingTranscodingCodec = FinampTranscodingCodec.mp3;
   static const cacheStreamedTracks = true;
   static const maxCacheSizeMegabytes = 1024;
 
@@ -314,6 +317,7 @@ class DefaultSettings {
   static const radioMode = RadioMode.similar;
   static const radioEnabled = false;
   static const duckOnAudioInterruption = true;
+  static const resumeOnBluetoothConnect = false;
   static const forceAudioOffloadingOnAndroid = false;
   static const previousTracksPersistenceMode = PreviousTracksPersistenceMode.persistent;
   static final homeScreenConfiguration = FinampHomeScreenConfiguration(
@@ -340,6 +344,8 @@ class DefaultSettings {
   static int get gridImageSize => isDesktop ? gridImageSizeDesktop : gridImageSizeMobile;
   static const useAndroidGainEffect = true;
   static const ClientCertificate? clientCertificate = null;
+  static const equalizerEnabled = false;
+  static const String? equalizerActivePreset = "Flat";
 }
 
 @HiveType(typeId: 28)
@@ -959,6 +965,23 @@ class FinampSettings {
   @HiveField(149, defaultValue: DefaultSettings.useAndroidGainEffect)
   bool useAndroidGainEffect;
 
+  /// Whether the graphic equalizer is enabled.
+  @HiveField(185, defaultValue: DefaultSettings.equalizerEnabled)
+  bool equalizerEnabled = DefaultSettings.equalizerEnabled;
+
+  /// Per-band gain in decibels, keyed by band index (matching the order of
+  /// the platform equalizer's band list: device-reported on Android,
+  /// [darwinEqualizerCenterFrequencies] on iOS/macOS). Bands with no entry
+  /// are treated as 0 dB.
+  @HiveField(186, defaultValue: <int, double>{})
+  @SettingsHelperMap("bandIndex")
+  Map<int, double> equalizerBandGains = {};
+
+  /// The name of the currently-applied equalizer preset, or `null` once the
+  /// user hand-tweaks a band away from the preset's values ("Custom").
+  @HiveField(187, defaultValue: DefaultSettings.equalizerActivePreset)
+  String? equalizerActivePreset = DefaultSettings.equalizerActivePreset;
+
   @HiveField(150, defaultValue: DefaultSettings.homeScreenImageSizeMobile)
   int homeScreenImageSize;
 
@@ -1068,6 +1091,16 @@ class FinampSettings {
   /// Space the bands logarithmically rather than linearly across the frequency range.
   @HiveField(182, defaultValue: DefaultSettings.visualizerLogScale)
   bool visualizerLogScale = DefaultSettings.visualizerLogScale;
+
+  /// Codec to use for live streaming on backends without Jellyfin's more
+  /// detailed [transcodingStreamingFormat] concept (currently just
+  /// Subsonic). Ignored by backends that don't support choosing one.
+  @HiveField(183, defaultValue: DefaultSettings.streamingTranscodingCodec)
+  FinampTranscodingCodec streamingTranscodingCodec = DefaultSettings.streamingTranscodingCodec;
+
+  /// Resume playback automatically when bluetooth headphones/speakers connect.
+  @HiveField(184, defaultValue: DefaultSettings.resumeOnBluetoothConnect)
+  bool resumeOnBluetoothConnect = DefaultSettings.resumeOnBluetoothConnect;
 
   static Future<FinampSettings> create() async {
     final downloadLocation = await DownloadLocation.create(
@@ -2730,7 +2763,12 @@ enum FinampTranscodingCodec {
   opus("ogg", false, 2.0),
   @HiveField(3)
   // Container is null to fall back to real original container per track
-  original(null, true, 99999999);
+  original(null, true, 99999999),
+  @HiveField(4)
+  flac("flac", true, 0.5),
+  @HiveField(5)
+  // Apple Lossless, stored in an M4A/MP4 container.
+  alac("m4a", true, 0.5);
 
   const FinampTranscodingCodec(this.container, this.iosCompatible, this.quality);
 
@@ -2741,6 +2779,11 @@ enum FinampTranscodingCodec {
 
   /// Allowed codecs with higher quality*bitrate are prioritized
   final double quality;
+
+  /// Whether this codec re-encodes without discarding any audio data.
+  /// Doesn't restore quality already lost to a lossy source, and has no
+  /// meaningful bitrate to configure.
+  bool get isLossless => this == flac || this == alac;
 }
 
 @embedded

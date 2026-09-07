@@ -7,6 +7,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/models/equalizer_presets.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/stream_cache_service.dart';
@@ -16,6 +17,7 @@ import 'package:diapason/models/jellyfin_models.dart' as jellyfin_models;
 import 'package:diapason/services/current_track_metadata_provider.dart';
 import 'package:diapason/services/favorite_provider.dart';
 import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:diapason/services/playback_history_service.dart';
 import 'package:diapason/services/queue_service.dart';
 import 'package:diapason/services/radio_service_helper.dart' as RadioServiceHelper;
@@ -158,11 +160,28 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   Stream<int?> get androidAudioSessionIdStream =>
       _activePlayerIndexSubject.switchMap((i) => (i == 0 ? _playerA : _playerB).androidAudioSessionIdStream);
 
-  late final AudioPipeline _audioPipeline;
-  late final List<AndroidAudioEffect> _androidAudioEffects;
-  late final List<DarwinAudioEffect> _iosAudioEffects;
+  // AudioPipeline/AudioEffect instances bind to a single AudioPlayer at
+  // construction and cannot be reattached, so every effect needs one
+  // instance per physical player (A and B), each in its own pipeline, or it
+  // silently drops out on every other track once crossfade swaps the active
+  // player.
+  late final AudioPipeline _audioPipelineA;
+  late final AudioPipeline _audioPipelineB;
+  late final List<AndroidAudioEffect> _androidAudioEffectsA;
+  late final List<AndroidAudioEffect> _androidAudioEffectsB;
+  late final List<DarwinAudioEffect> _iosAudioEffectsA;
+  late final List<DarwinAudioEffect> _iosAudioEffectsB;
 
-  AndroidLoudnessEnhancer? _loudnessEnhancerEffect;
+  AndroidLoudnessEnhancer? _loudnessEnhancerEffectA;
+  AndroidLoudnessEnhancer? _loudnessEnhancerEffectB;
+
+  AndroidEqualizer? _androidEqualizerA;
+  AndroidEqualizer? _androidEqualizerB;
+  DarwinEqualizer? _darwinEqualizerA;
+  DarwinEqualizer? _darwinEqualizerB;
+
+  /// Whether a real platform equalizer effect is available on this platform.
+  bool get equalizerAvailable => _androidEqualizerA != null || _darwinEqualizerA != null;
 
   final _audioServiceBackgroundTaskLogger = Logger("MusicPlayerBackgroundTask");
   final _volumeNormalizationLogger = Logger("VolumeNormalization");
@@ -201,6 +220,29 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
   final _audioFadeStepDuration = Duration(milliseconds: 50);
   late final BehaviorSubject<FadeState> fadeState;
+
+  // ---------------------------------------------------------------------
+  // tvOS playback (see AppleTvAudioChannel)
+  //
+  // just_audio/audio_service have no tvOS implementation, so on tvOS _player
+  // is kept permanently idle (never played/activated - see just_audio's
+  // AudioPlayer.seek(), which only engages the real native platform when
+  // `playing` is true) and used purely as the existing Dart-side queue data
+  // structure QueueService already reads via [sequenceState]. Actual audio
+  // decode/output is driven separately through [AppleTvAudioChannel], with
+  // these fields tracking the state that would normally come from _player.
+  // ---------------------------------------------------------------------
+  bool _tvPlaying = false;
+  Duration _tvPosition = Duration.zero;
+  Duration? _tvDuration;
+  bool _tvBuffering = false;
+  String? _tvLoadedItemId;
+  int _tvLoadGeneration = 0;
+
+  bool get _effectivePlaying =>
+      AppleTvAudioChannel.isSupported ? _tvPlaying : (_player.playing && fadeState.value.fadeDirection != FadeDirection.fadeOut);
+
+  FinampQueueItem? get _tvCurrentQueueItem => _player.sequenceState.currentSource?.tag as FinampQueueItem?;
 
   final outputSwitcherChannel = MethodChannel('fr.nytuo.diapason/output_switcher');
 
@@ -338,17 +380,44 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       JustAudioMediaKit.ensureInitialized(linux: true, windows: true, macOS: false, iOS: false, android: false);
     }
 
-    _androidAudioEffects = [];
-    _iosAudioEffects = [];
+    _androidAudioEffectsA = [];
+    _androidAudioEffectsB = [];
+    _iosAudioEffectsA = [];
+    _iosAudioEffectsB = [];
 
     if (Platform.isAndroid && FinampSettingsHelper.finampSettings.useAndroidGainEffect) {
-      _loudnessEnhancerEffect = AndroidLoudnessEnhancer();
-      _androidAudioEffects.add(_loudnessEnhancerEffect!);
+      _loudnessEnhancerEffectA = AndroidLoudnessEnhancer();
+      _loudnessEnhancerEffectB = AndroidLoudnessEnhancer();
+      _androidAudioEffectsA.add(_loudnessEnhancerEffectA!);
+      _androidAudioEffectsB.add(_loudnessEnhancerEffectB!);
     } else {
-      _loudnessEnhancerEffect = null;
+      _loudnessEnhancerEffectA = null;
+      _loudnessEnhancerEffectB = null;
     }
 
-    _audioPipeline = AudioPipeline(androidAudioEffects: _androidAudioEffects, darwinAudioEffects: _iosAudioEffects);
+    if (Platform.isAndroid) {
+      _androidEqualizerA = AndroidEqualizer();
+      _androidEqualizerB = AndroidEqualizer();
+      _androidAudioEffectsA.add(_androidEqualizerA!);
+      _androidAudioEffectsB.add(_androidEqualizerB!);
+    } else if (!AppleTvAudioChannel.isSupported && (Platform.isIOS || Platform.isMacOS)) {
+      // just_audio has no tvOS platform implementation (Platform.isIOS is
+      // also true on tvOS), so DarwinEqualizer would have nothing to attach
+      // to there.
+      _darwinEqualizerA = DarwinEqualizer();
+      _darwinEqualizerB = DarwinEqualizer();
+      _iosAudioEffectsA.add(_darwinEqualizerA!);
+      _iosAudioEffectsB.add(_darwinEqualizerB!);
+    }
+
+    _audioPipelineA = AudioPipeline(
+      androidAudioEffects: _androidAudioEffectsA,
+      darwinAudioEffects: _iosAudioEffectsA,
+    );
+    _audioPipelineB = AudioPipeline(
+      androidAudioEffects: _androidAudioEffectsB,
+      darwinAudioEffects: _iosAudioEffectsB,
+    );
 
     Duration maxBufferDuration = Duration(
       seconds: max(minBufferDuration.inSeconds, FinampSettingsHelper.finampSettings.bufferDuration.inSeconds),
@@ -404,21 +473,39 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       session.devicesChangedEventStream.listen((event) {
         _outputLogger.info('Devices added:   ${event.devicesAdded}');
         _outputLogger.info('Devices removed: ${event.devicesRemoved}');
+
+        final addedBluetoothOutputDevices = event.devicesAdded.where(
+          (device) =>
+              device.isOutput &&
+              (device.type == AudioDeviceType.bluetoothA2dp ||
+                  device.type == AudioDeviceType.bluetoothSco ||
+                  device.type == AudioDeviceType.bluetoothLe),
+        );
+        if (addedBluetoothOutputDevices.isNotEmpty &&
+            FinampSettingsHelper.finampSettings.resumeOnBluetoothConnect) {
+          _audioServiceBackgroundTaskLogger.info(
+            "Resuming playback due to added bluetooth device(s): $addedBluetoothOutputDevices",
+          );
+          play();
+        }
       });
     });
 
-    _playerA = _buildPlayer(audioPipeline: _audioPipeline, maxBufferDuration: maxBufferDuration);
-    _playerB = _buildPlayer(audioPipeline: AudioPipeline(), maxBufferDuration: maxBufferDuration);
+    _playerA = _buildPlayer(audioPipeline: _audioPipelineA, maxBufferDuration: maxBufferDuration);
+    _playerB = _buildPlayer(audioPipeline: _audioPipelineB, maxBufferDuration: maxBufferDuration);
     _volumeA = PlayerVolumeController(_playerA);
     _volumeB = PlayerVolumeController(_playerB);
 
     try {
-      _loudnessEnhancerEffect?.setEnabled(FinampSettingsHelper.finampSettings.volumeNormalizationActive);
-      _loudnessEnhancerEffect?.setTargetGain(0.0);
+      _loudnessEnhancerEffectA?.setEnabled(FinampSettingsHelper.finampSettings.volumeNormalizationActive);
+      _loudnessEnhancerEffectA?.setTargetGain(0.0);
+      _loudnessEnhancerEffectB?.setEnabled(FinampSettingsHelper.finampSettings.volumeNormalizationActive);
+      _loudnessEnhancerEffectB?.setTargetGain(0.0);
     } catch (_) {
       // Assume we've hit https://github.com/UnicornsOnLSD/finamp/issues/1343 and disable loudness enhancer effect permanently
       FinampSetters.setUseAndroidGainEffect(false);
-      _loudnessEnhancerEffect = null;
+      _loudnessEnhancerEffectA = null;
+      _loudnessEnhancerEffectB = null;
       GlobalSnackbar.message((context) => AppLocalizations.of(context)!.androidGainDisabled);
     }
 
@@ -426,9 +513,11 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     iosBaseVolumeGainFactor =
         pow(10.0, FinampSettingsHelper.finampSettings.volumeNormalizationIOSBaseGain / 20.0)
             as double; // https://sound.stackexchange.com/questions/38722/convert-db-value-to-linear-scale
-    if (_loudnessEnhancerEffect == null) {
+    if (_loudnessEnhancerEffectA == null) {
       _volumeNormalizationLogger.info("non-Android base volume gain factor: $iosBaseVolumeGainFactor");
     }
+
+    _restoreEqualizerState();
 
     // Propagate all events from the audio player to AudioService clients.
     int? replayQueueIndex;
@@ -468,10 +557,12 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
           pow(10.0, iosGain / 20.0)
               as double; // https://sound.stackexchange.com/questions/38722/convert-db-value-to-linear-scale
       if (normalizationActive) {
-        _loudnessEnhancerEffect?.setEnabled(true);
+        _loudnessEnhancerEffectA?.setEnabled(true);
+        _loudnessEnhancerEffectB?.setEnabled(true);
         _applyVolumeNormalization(mediaItem.valueOrNull);
       } else {
-        _loudnessEnhancerEffect?.setEnabled(false);
+        _loudnessEnhancerEffectA?.setEnabled(false);
+        _loudnessEnhancerEffectB?.setEnabled(false);
         _volume.setReplayGainVolume(1.0); // disable replay gain on iOS
         _volumeNormalizationLogger.info("Replay gain disabled");
       }
@@ -525,6 +616,151 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     _setupStreamCacheProgressTracking();
     _setupDurationReconciliation();
     _setupFlacSeekWarning();
+
+    if (AppleTvAudioChannel.isSupported) {
+      _setupTvOSPlayback();
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // tvOS playback wiring
+  // ---------------------------------------------------------------------
+
+  void _setupTvOSPlayback() {
+    final channel = AppleTvAudioChannel.instance;
+
+    // _player's currentIndex changes on every skip/skipToIndex/initial queue
+    // population (all safe, idle-only operations - see the field doc above),
+    // so this is the single place that needs to react to "the track that
+    // should be playing changed" and load it into the real native player.
+    _player.currentIndexStream.distinct().listen((index) {
+      if (index == null) return;
+      unawaited(_tvLoadCurrentTrack(autoplay: _tvPlaying));
+    });
+
+    channel.onReady.listen((duration) {
+      _tvDuration = duration;
+      _tvBuffering = false;
+      _pushTvPlaybackState();
+      final current = mediaItem.valueOrNull;
+      if (current != null) mediaItem.add(current.copyWith(duration: duration));
+      _tvPushNowPlayingInfo();
+    });
+
+    channel.onPositionChanged.listen((position) {
+      _tvPosition = position;
+      _pushTvPlaybackState();
+    });
+
+    channel.onComplete.listen((_) async {
+      final hasNext = _player.loopMode != LoopMode.off || _player.hasNext;
+      if (hasNext) {
+        await skipToNext();
+      } else {
+        await handleEndOfQueue();
+      }
+    });
+
+    channel.onError.listen((message) {
+      _audioServiceBackgroundTaskLogger.warning("tvOS native playback error: $message");
+      GlobalSnackbar.message((scaffold) => message);
+    });
+
+    channel.onRemoteCommand.listen((event) {
+      switch (event.command) {
+        case AppleTvRemoteCommand.play:
+          unawaited(play());
+        case AppleTvRemoteCommand.pause:
+          unawaited(pause());
+        case AppleTvRemoteCommand.next:
+          unawaited(skipToNext());
+        case AppleTvRemoteCommand.previous:
+          unawaited(skipToPrevious());
+        case AppleTvRemoteCommand.seek:
+          if (event.position != null) unawaited(seek(event.position!));
+      }
+    });
+  }
+
+  void _pushTvPlaybackState() {
+    playbackState.add(_transformEvent(_player.playbackEvent));
+  }
+
+  void _tvPushNowPlayingInfo() {
+    final current = mediaItem.valueOrNull;
+    if (current == null) return;
+    unawaited(
+      AppleTvAudioChannel.instance.setNowPlayingInfo(
+        title: current.title,
+        artist: current.artist,
+        album: current.album,
+        artworkUrl: current.artUri?.toString(),
+        duration: _tvDuration,
+        position: _tvPosition,
+      ),
+    );
+  }
+
+  /// Loads the current queue item's stream URL into the native tvOS player.
+  /// Safe to call repeatedly - a stale in-flight load is dropped if a newer
+  /// one (another skip) supersedes it before it finishes.
+  Future<void> _tvLoadCurrentTrack({required bool autoplay}) async {
+    final queueItem = _tvCurrentQueueItem;
+    if (queueItem == null) return;
+    final myGeneration = ++_tvLoadGeneration;
+    final channel = AppleTvAudioChannel.instance;
+
+    _tvDuration = null;
+    _tvPosition = Duration.zero;
+    _tvBuffering = true;
+    _tvLoadedItemId = null;
+    _pushTvPlaybackState();
+
+    try {
+      final source = await _resolveStream(queueItem.item);
+      if (myGeneration != _tvLoadGeneration) return;
+      await channel.load(source.uri.toString(), headers: source.headers.isEmpty ? null : source.headers);
+      if (myGeneration != _tvLoadGeneration) return;
+      await channel.setVolume(volume);
+      _tvLoadedItemId = queueItem.id;
+      if (autoplay) {
+        _tvPlaying = true;
+        await channel.play();
+      }
+      _tvBuffering = false;
+      _pushTvPlaybackState();
+      _tvPushNowPlayingInfo();
+    } catch (e, st) {
+      if (myGeneration != _tvLoadGeneration) return;
+      _audioServiceBackgroundTaskLogger.severe("tvOS: failed to load '${queueItem.item.title}'", e, st);
+      _tvBuffering = false;
+      _pushTvPlaybackState();
+      GlobalSnackbar.error(e);
+    }
+  }
+
+  Future<void> _tvPlay() async {
+    if (_shouldIgnorePlayPauseAfterRecentSkip) return;
+    final queueItem = _tvCurrentQueueItem;
+    if (queueItem == null) {
+      _tvPlaying = false;
+      _pushTvPlaybackState();
+      return;
+    }
+    if (_tvLoadedItemId != queueItem.id) {
+      await _tvLoadCurrentTrack(autoplay: true);
+    } else {
+      _tvPlaying = true;
+      await AppleTvAudioChannel.instance.play();
+      _pushTvPlaybackState();
+    }
+  }
+
+  Future<void> _tvPause() async {
+    if (_shouldIgnorePlayPauseAfterRecentSkip) return;
+    _tvPlaying = false;
+    await AppleTvAudioChannel.instance.pause();
+    _pushTvPlaybackState();
   }
 
   void _setupFlacSeekWarning() {
@@ -840,6 +1076,9 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     if (_shouldIgnorePlayPauseAfterRecentSkip) {
       return;
     }
+    if (AppleTvAudioChannel.isSupported) {
+      return _tvPlay();
+    }
     if (!disableFade && FinampSettingsHelper.finampSettings.audioFadeInDuration > Duration.zero) {
       return fadeInAndPlay();
     } else {
@@ -863,6 +1102,104 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     return _volume.setInternalVolume(volume);
   }
 
+  // ---------------------------------------------------------------------
+  // Equalizer
+  // ---------------------------------------------------------------------
+
+  Future<void> _forEachEqualizerPlayer(
+    Future<void> Function(AndroidEqualizer? android, DarwinEqualizer? darwin) action,
+  ) async {
+    await action(_androidEqualizerA, _darwinEqualizerA);
+    await action(_androidEqualizerB, _darwinEqualizerB);
+  }
+
+  /// The center frequency (Hz) of each equalizer band, in order. Empty if no
+  /// equalizer is available on this platform. Android bands are
+  /// device-reported; iOS/macOS use the fixed `darwinEqualizerCenterFrequencies`.
+  Future<List<double>> getEqualizerBandFrequencies() async {
+    if (_androidEqualizerA != null) {
+      final params = await _androidEqualizerA!.parameters;
+      return params.bands.map((band) => band.centerFrequency).toList();
+    }
+    if (_darwinEqualizerA != null) {
+      final params = await _darwinEqualizerA!.parameters;
+      return params.bands.map((band) => band.centerFrequency).toList();
+    }
+    return [];
+  }
+
+  Future<void> _applyEqualizerEnabled(bool enabled) async {
+    await _forEachEqualizerPlayer((android, darwin) async {
+      await android?.setEnabled(enabled);
+      await darwin?.setEnabled(enabled);
+    });
+  }
+
+  Future<void> setEqualizerEnabled(bool enabled) async {
+    FinampSetters.setEqualizerEnabled(enabled);
+    await _applyEqualizerEnabled(enabled);
+  }
+
+  Future<void> _applyEqualizerBandGain(int bandIndex, double gainDb) async {
+    gainDb = gainDb.clamp(-12.0, 12.0);
+    FinampSetters.setEqualizerBandGains(bandIndex, gainDb);
+    await _forEachEqualizerPlayer((android, darwin) async {
+      if (android != null) {
+        final params = await android.parameters;
+        if (bandIndex < params.bands.length) {
+          await params.bands[bandIndex].setGain(gainDb);
+        }
+      }
+      if (darwin != null) {
+        final params = await darwin.parameters;
+        if (bandIndex < params.bands.length) {
+          await params.bands[bandIndex].setGain(gainDb);
+        }
+      }
+    });
+  }
+
+  /// Sets a single band's gain (clamped to +/-12 dB), persists it, and marks
+  /// the active preset as custom (cleared).
+  Future<void> setEqualizerBandGain(int bandIndex, double gainDb) async {
+    await _applyEqualizerBandGain(bandIndex, gainDb);
+    FinampSetters.setEqualizerActivePreset(null);
+  }
+
+  /// Applies a named preset (see `equalizerPresets` in equalizer_presets.dart)
+  /// to every available band, mapping preset gains onto this platform's
+  /// actual band frequencies.
+  Future<void> applyEqualizerPreset(String presetName) async {
+    final frequencies = await getEqualizerBandFrequencies();
+    for (var i = 0; i < frequencies.length; i++) {
+      await _applyEqualizerBandGain(i, equalizerPresetGainForFrequency(presetName, frequencies[i]));
+    }
+    FinampSetters.setEqualizerActivePreset(presetName);
+  }
+
+  /// Restores the persisted equalizer enabled/gain state onto freshly
+  /// constructed effect instances. Some devices throw when equalizer effects
+  /// are attached (mirrors the loudness enhancer's fallback above; see
+  /// https://github.com/UnicornsOnLSD/finamp/issues/1343), so this disables
+  /// the equalizer permanently for this install rather than crashing.
+  void _restoreEqualizerState() {
+    if (!equalizerAvailable) return;
+    try {
+      final settings = FinampSettingsHelper.finampSettings;
+      for (final entry in settings.equalizerBandGains.entries) {
+        unawaited(_applyEqualizerBandGain(entry.key, entry.value));
+      }
+      unawaited(_applyEqualizerEnabled(settings.equalizerEnabled));
+    } catch (e, st) {
+      _audioServiceBackgroundTaskLogger.warning("Disabling equalizer after initialization error", e, st);
+      _androidEqualizerA = null;
+      _androidEqualizerB = null;
+      _darwinEqualizerA = null;
+      _darwinEqualizerB = null;
+      FinampSetters.setEqualizerEnabled(false);
+    }
+  }
+
   @override
   Future<void> pause({bool disableFade = false}) async {
     _audioServiceBackgroundTaskLogger.fine(
@@ -870,6 +1207,9 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     );
     if (_shouldIgnorePlayPauseAfterRecentSkip) {
       return;
+    }
+    if (AppleTvAudioChannel.isSupported) {
+      return _tvPause();
     }
     await _abortCrossfadeIfInProgress();
     if (!disableFade && FinampSettingsHelper.finampSettings.audioFadeOutDuration > Duration.zero) {
@@ -982,7 +1322,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   }
 
   Future<void> togglePlayback() {
-    if (_player.playing && fadeState.value.fadeDirection != FadeDirection.fadeOut) {
+    if (_effectivePlaying) {
       return pause();
     } else {
       return play();
@@ -1011,6 +1351,12 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       clearSleepTimer();
       await _abortCrossfadeIfInProgress();
 
+      if (AppleTvAudioChannel.isSupported) {
+        _tvPlaying = false;
+        _tvLoadedItemId = null;
+        await AppleTvAudioChannel.instance.stop();
+        _pushTvPlaybackState();
+      }
       await _player.stop();
     } catch (e) {
       _audioServiceBackgroundTaskLogger.severe(e);
@@ -1157,6 +1503,11 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     await _abortCrossfadeIfInProgress();
     try {
       await _player.seek(position);
+      if (AppleTvAudioChannel.isSupported) {
+        _tvPosition = position;
+        await AppleTvAudioChannel.instance.seek(position);
+        _pushTvPlaybackState();
+      }
     } catch (e) {
       _audioServiceBackgroundTaskLogger.severe(e);
       return Future.error(e);
@@ -1417,8 +1768,9 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
         "normalization gain for '${baseItem.name}': $effectiveGainChange (track gain change: ${baseItem.normalizationGain})",
       );
       if (effectiveGainChange != null) {
-        if (_loudnessEnhancerEffect != null) {
-          _loudnessEnhancerEffect?.setTargetGain(effectiveGainChange);
+        if (_loudnessEnhancerEffectA != null) {
+          _loudnessEnhancerEffectA?.setTargetGain(effectiveGainChange);
+          _loudnessEnhancerEffectB?.setTargetGain(effectiveGainChange);
         } else {
           final newVolume =
               iosBaseVolumeGainFactor *
@@ -1430,9 +1782,10 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
           _volume.setReplayGainVolume(newVolume);
         }
       } else {
-        if (_loudnessEnhancerEffect != null) {
+        if (_loudnessEnhancerEffectA != null) {
           // reset gain offset
-          _loudnessEnhancerEffect?.setTargetGain(0);
+          _loudnessEnhancerEffectA?.setTargetGain(0);
+          _loudnessEnhancerEffectB?.setTargetGain(0);
         }
         _volume.setReplayGainVolume(
           iosBaseVolumeGainFactor,
@@ -1474,9 +1827,12 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   PlaybackState _transformEvent(PlaybackEvent event) {
     jellyfin_models.BaseItemDto? currentItem;
     bool isFavorite = false;
+    final isTvOS = AppleTvAudioChannel.isSupported;
 
-    // Sync playback state to iOS for CarPlay Now Playing screen
-    IosPlaybackStateSync.setPlaybackState(isPlaying: _player.playing);
+    if (!isTvOS) {
+      // Sync playback state to iOS for CarPlay Now Playing screen
+      IosPlaybackStateSync.setPlaybackState(isPlaying: _player.playing);
+    }
 
     if (mediaItem.valueOrNull?.extras?["itemJson"] != null) {
       currentItem = jellyfin_models.BaseItemDto.fromJson(
@@ -1490,16 +1846,34 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
         .read(RadioServiceHelper.currentRadioAvailabilityStatusProvider)
         .isAvailable;
 
-    var reportedPosition = _player.position;
-    final trackDuration = _player.duration;
+    // On tvOS _player is kept idle (see the tvOS playback fields above), so
+    // playing/position/duration/processingState come from AppleTvAudioChannel
+    // instead - everything else (queue index, shuffle, repeat) still comes
+    // from _player, which stays the source of truth for the queue itself.
+    final playing = isTvOS ? _tvPlaying : _player.playing;
+
+    var reportedPosition = isTvOS ? _tvPosition : _player.position;
+    final trackDuration = isTvOS ? _tvDuration : _player.duration;
     if (trackDuration != null && trackDuration > Duration.zero && reportedPosition > trackDuration) {
       reportedPosition = trackDuration;
     }
 
+    final processingState = isTvOS
+        ? (_tvBuffering
+              ? AudioProcessingState.buffering
+              : (_tvCurrentQueueItem == null ? AudioProcessingState.idle : AudioProcessingState.ready))
+        : const {
+            ProcessingState.idle: AudioProcessingState.idle,
+            ProcessingState.loading: AudioProcessingState.loading,
+            ProcessingState.buffering: AudioProcessingState.buffering,
+            ProcessingState.ready: AudioProcessingState.ready,
+            ProcessingState.completed: AudioProcessingState.completed,
+          }[_player.processingState]!;
+
     return PlaybackState(
       controls: [
         MediaControl.skipToPrevious,
-        if (_player.playing) MediaControl.pause else MediaControl.play,
+        if (playing) MediaControl.pause else MediaControl.play,
         MediaControl.skipToNext,
         if (FinampSettingsHelper.finampSettings.showFavoriteButtonOnMediaNotification &&
             !FinampSettingsHelper.finampSettings.isOffline)
@@ -1534,18 +1908,12 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
           ? const {MediaAction.seek, MediaAction.seekForward, MediaAction.seekBackward}
           : {},
       androidCompactActionIndices: const [0, 1, 2],
-      processingState: const {
-        ProcessingState.idle: AudioProcessingState.idle,
-        ProcessingState.loading: AudioProcessingState.loading,
-        ProcessingState.buffering: AudioProcessingState.buffering,
-        ProcessingState.ready: AudioProcessingState.ready,
-        ProcessingState.completed: AudioProcessingState.completed,
-      }[_player.processingState]!,
-      playing: _player.playing,
+      processingState: processingState,
+      playing: playing,
       //!!! use the current player position, since there might be a delay before this event is processed.
       // Do **not** use [event.updatePosition] or [event.bufferedPosition], since that could lead to a discontinuity in the playback position (resetting to 0) and cause incorrect history entries
       updatePosition: reportedPosition,
-      bufferedPosition: _player.bufferedPosition,
+      bufferedPosition: isTvOS ? reportedPosition : _player.bufferedPosition,
       speed: _player.speed,
       queueIndex: _player.shuffleModeEnabled && shuffleIndices.isNotEmpty && event.currentIndex != null
           ? shuffleIndices.indexOf(event.currentIndex!)
@@ -1560,8 +1928,8 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       : _player.currentIndex;
   SequenceState get sequenceState => _player.sequenceState;
   double get volume => (_volume._internalVolume * 100).roundToDouble() / 100;
-  bool get paused => !_player.playing;
-  Duration get playbackPosition => _player.position;
+  bool get paused => !_effectivePlaying;
+  Duration get playbackPosition => AppleTvAudioChannel.isSupported ? _tvPosition : _player.position;
 
   void onQueueServiceAvailable() {
     // Moved here because currentTrackMetadataProvider depends on queueService

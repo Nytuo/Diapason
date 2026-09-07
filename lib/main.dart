@@ -44,6 +44,7 @@ import 'package:diapason/screens/accessibility_settings_screen.dart';
 import 'package:diapason/screens/album_settings_screen.dart';
 import 'package:diapason/screens/artist_settings_screen.dart';
 import 'package:diapason/screens/downloads_settings_screen.dart';
+import 'package:diapason/screens/equalizer_settings_screen.dart';
 import 'package:diapason/screens/genre_settings_screen.dart';
 import 'package:diapason/screens/home_screen_settings_screen.dart';
 import 'package:diapason/screens/interaction_settings_screen.dart';
@@ -96,6 +97,7 @@ import 'package:hive_ce_flutter/adapters.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl_standalone.dart';
 import 'package:isar/isar.dart';
+import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 import 'package:path/path.dart' as path_helper;
@@ -299,6 +301,14 @@ void _setupOfflineListenLogHelper() {
 }
 
 Future<void> _setupDownloadsHelper() async {
+  if (AppleTvAudioChannel.isSupported) {
+    // No Isar, and tvOS can't download to local storage anyway; register a
+    // DownloadsService whose constructor skips its Isar-backed setup (see
+    // its tvOS guard) instead of wiring up FileDownloader/IsarPersistentStorage.
+    GetIt.instance.registerSingleton(DownloadsService());
+    return;
+  }
+
   await Future.wait(
     FinampSettingsHelper.finampSettings.downloadLocationsMap.values.map((element) => element.updateCurrentPath()),
   );
@@ -380,12 +390,29 @@ Future<void> setupHive() async {
     Hive.openBox<FinampStorableQueueInfo>("Queues", path: dir.path),
     Hive.openBox<OfflineListen>("OfflineListens", path: dir.path),
     Hive.openBox<RawThemeResult>("CachedThemes", path: dir.path),
+    Hive.openBox<bool>("HiddenItems", path: dir.path),
   ]);
 
   // If the settings box is empty, we add an initial settings value here.
   Box<FinampSettings> finampSettingsBox = Hive.box("FinampSettings");
   if (finampSettingsBox.isEmpty) {
     await finampSettingsBox.put("FinampSettings", await FinampSettings.create());
+  }
+
+  if (AppleTvAudioChannel.isSupported) {
+    // Isar's native core has no tvOS binary, so tvOS never opens it (and
+    // never registers an Isar singleton). It stores the small slice of
+    // persistence it actually needs - the current user and media source
+    // configs - directly in Hive instead; see FinampUserHelper and
+    // MediaSourceService's tvOS branches. Downloads, playback stats, pinned
+    // shortcuts, and search history are Isar-only and stay unavailable on
+    // tvOS.
+    await Future.wait([
+      Hive.openBox<FinampUser>("FinampUsers"),
+      Hive.openBox<String>("CurrentUserId"),
+      Hive.openBox<String>("MediaSourceConfigs"),
+    ]);
+    return;
   }
 
   final compactFile = File(path_helper.join(dir.path, "$isarDatabaseName.isar.compact"));
@@ -521,32 +548,51 @@ Future<void> _setupPlaybackServices() async {
     AudioServiceSMTC.registerWith();
   }
 
-  await MusicPlayerBackgroundTask.configureAudioSession();
+  if (!AppleTvAudioChannel.isSupported) {
+    // audio_session (like just_audio/audio_service below) has no tvOS
+    // implementation; tvOS plays audio natively via AVPlayer instead, see
+    // AppleTvAudioChannel.
+    await MusicPlayerBackgroundTask.configureAudioSession();
+  }
 
   GetIt.instance.registerSingleton<AndroidAutoHelper>(AndroidAutoHelper());
 
-  final audioHandler = await AudioService.init(
-    builder: () => MusicPlayerBackgroundTask(),
-    config: AudioServiceConfig(
-      androidStopForegroundOnPause: FinampSettingsHelper.finampSettings.androidStopForegroundOnPause,
-      androidNotificationChannelName: "Diapason",
-      androidNotificationIcon: "mipmap/white",
-      androidNotificationChannelId: "fr.nytuo.diapason.audio",
-      // notificationColor: TODO use the theme color for older versions of Android,
-      // We will handle preloading artwork ourselves
-      preloadArtwork: false,
-      androidBrowsableRootExtras: <String, dynamic>{
-        // support showing search button on Android Auto as well as alternative search results on the player screen after voice search
-        "android.media.browse.SEARCH_SUPPORTED": true,
-        // see https://developer.android.com/reference/androidx/media/utils/MediaConstants#DESCRIPTION_EXTRAS_VALUE_CONTENT_STYLE_GRID_ITEM()
-        "android.media.browse.CONTENT_STYLE_BROWSABLE_HINT":
-            FinampSettingsHelper.finampSettings.contentViewType == ContentViewType.list ? 1 : 2,
-        "android.media.browse.CONTENT_STYLE_PLAYABLE_HINT":
-            FinampSettingsHelper.finampSettings.contentViewType == ContentViewType.list ? 1 : 2,
-      },
-    ),
-    cacheManager: StubImageCache(),
-  );
+  MusicPlayerBackgroundTask audioHandler;
+  if (AppleTvAudioChannel.isSupported) {
+    // audio_service has no tvOS implementation either (its whole job - lock
+    // screen/notification media controls via a native plugin handshake -
+    // doesn't apply there the same way), so AudioService.init() itself
+    // throws before ever calling its builder. Construct the handler
+    // directly instead: just_audio's AudioPlayer starts in an idle,
+    // native-channel-free state (see AudioPlayer's _IdleAudioPlayer), so
+    // this is safe even without a working just_audio/audio_service plugin -
+    // actual playback still needs AppleTvAudioChannel wired in as a
+    // follow-up (see its doc comment).
+    audioHandler = MusicPlayerBackgroundTask();
+  } else {
+    audioHandler = await AudioService.init(
+      builder: () => MusicPlayerBackgroundTask(),
+      config: AudioServiceConfig(
+        androidStopForegroundOnPause: FinampSettingsHelper.finampSettings.androidStopForegroundOnPause,
+        androidNotificationChannelName: "Diapason",
+        androidNotificationIcon: "mipmap/white",
+        androidNotificationChannelId: "fr.nytuo.diapason.audio",
+        // notificationColor: TODO use the theme color for older versions of Android,
+        // We will handle preloading artwork ourselves
+        preloadArtwork: false,
+        androidBrowsableRootExtras: <String, dynamic>{
+          // support showing search button on Android Auto as well as alternative search results on the player screen after voice search
+          "android.media.browse.SEARCH_SUPPORTED": true,
+          // see https://developer.android.com/reference/androidx/media/utils/MediaConstants#DESCRIPTION_EXTRAS_VALUE_CONTENT_STYLE_GRID_ITEM()
+          "android.media.browse.CONTENT_STYLE_BROWSABLE_HINT":
+              FinampSettingsHelper.finampSettings.contentViewType == ContentViewType.list ? 1 : 2,
+          "android.media.browse.CONTENT_STYLE_PLAYABLE_HINT":
+              FinampSettingsHelper.finampSettings.contentViewType == ContentViewType.list ? 1 : 2,
+        },
+      ),
+      cacheManager: StubImageCache(),
+    );
+  }
 
   GetIt.instance.registerSingleton<MusicPlayerBackgroundTask>(audioHandler);
   var queueService = QueueService();
@@ -555,7 +601,9 @@ Future<void> _setupPlaybackServices() async {
   GetIt.instance.registerSingleton(PlaybackHistoryService());
   GetIt.instance.registerSingleton(AudioServiceHelper());
 
-  if (Platform.isIOS) {
+  if (Platform.isIOS && !AppleTvAudioChannel.isSupported) {
+    // flutter_carplay has no tvOS implementation, and CarPlay isn't a tvOS
+    // concept anyway (Platform.isIOS is also true on tvOS).
     GetIt.instance.registerSingleton<CarPlayHelper>(CarPlayHelper());
   }
 
@@ -844,7 +892,7 @@ class _FinampState extends State<Finamp> with WindowListener {
       WindowManager.instance.addListener(this);
     }
 
-    if (Platform.isIOS) {
+    if (Platform.isIOS && !AppleTvAudioChannel.isSupported) {
       GetIt.instance<CarPlayHelper>().setupCarplay();
       IosSiriHandler.setup();
       IosWidgetControlHandler.setup();
@@ -900,7 +948,7 @@ class _FinampState extends State<Finamp> with WindowListener {
       WindowManager.instance.removeListener(this);
     }
 
-    if (Platform.isIOS) {
+    if (Platform.isIOS && !AppleTvAudioChannel.isSupported) {
       GetIt.instance<CarPlayHelper>().disposeCarplay();
     }
   }
@@ -1017,6 +1065,7 @@ class FinampApp extends ConsumerWidget {
         PlaybackReportingSettingsScreen.routeName: (context) => const PlaybackReportingSettingsScreen(),
         AudioServiceSettingsScreen.routeName: (context) => const AudioServiceSettingsScreen(),
         VolumeNormalizationSettingsScreen.routeName: (context) => const VolumeNormalizationSettingsScreen(),
+        EqualizerSettingsScreen.routeName: (context) => const EqualizerSettingsScreen(),
         InteractionSettingsScreen.routeName: (context) => const InteractionSettingsScreen(),
         TabsSettingsScreen.routeName: (context) => const TabsSettingsScreen(),
         LayoutSettingsScreen.routeName: (context) => const LayoutSettingsScreen(),

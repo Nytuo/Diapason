@@ -2890,6 +2890,8 @@ class ChapterInfo {
 
   String imageDateModified;
 
+  Duration get startPosition => Duration(microseconds: startPositionTicks ~/ 10);
+
   factory ChapterInfo.fromJson(Map<String, dynamic> json) => _$ChapterInfoFromJson(json);
   Map<String, dynamic> toJson() => _$ChapterInfoToJson(this);
 }

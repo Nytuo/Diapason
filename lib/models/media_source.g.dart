@@ -214,19 +214,19 @@ P _mediaSourceConfigDeserializeProp<P>(
 }
 
 const _MediaSourceConfigkindEnumValueMap = {
-  'mpd': 'mpd',
   r'jellyfin': r'jellyfin',
   r'plex': r'plex',
   r'subsonic': r'subsonic',
   r'local': r'local',
+  r'mpd': r'mpd',
   r'youtube': r'youtube',
 };
 const _MediaSourceConfigkindValueEnumMap = {
-  r'mpd': MediaSourceKind.mpd,
   r'jellyfin': MediaSourceKind.jellyfin,
   r'plex': MediaSourceKind.plex,
   r'subsonic': MediaSourceKind.subsonic,
   r'local': MediaSourceKind.local,
+  r'mpd': MediaSourceKind.mpd,
   r'youtube': MediaSourceKind.youtube,
 };
 

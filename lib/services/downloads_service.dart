@@ -9,6 +9,7 @@ import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/services/finamp_user_helper.dart';
 import 'package:diapason/services/jellyfin_api_helper.dart';
+import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,7 +30,9 @@ const repairStepTrackingName = "repairStep";
 
 class DownloadsService {
   final _downloadsLogger = Logger("downloadsService");
-  final _isar = GetIt.instance<Isar>();
+  // Lazy: tvOS has no Isar singleton registered at all, and the tvOS branch
+  // of this class's methods never reaches this getter.
+  Isar get _isar => GetIt.instance<Isar>();
   final _finampUserHelper = GetIt.instance<FinampUserHelper>();
 
   final _anchor = DownloadStub.fromId(id: BaseItemId("Anchor"), type: DownloadItemType.anchor, name: null);
@@ -163,6 +166,21 @@ class DownloadsService {
 
   /// Constructs the service.  startQueues should also be called to complete initialization.
   DownloadsService() {
+    downloadStatusesStream = _downloadStatusesStreamController.stream.throttleTime(
+      const Duration(milliseconds: 200),
+      leading: false,
+      trailing: true,
+    );
+    offlineDeletesStream = _offlineDeletesStreamController.stream;
+    downloadCountsStream = _downloadCountsStreamController.stream;
+
+    if (AppleTvAudioChannel.isSupported) {
+      // Isar has no tvOS native binary, and tvOS can't download to local
+      // storage anyway. Leave downloadStatuses/downloadCounts at their empty
+      // defaults and skip the FileDownloader/Isar wiring below entirely.
+      return;
+    }
+
     // Initialize downloadStatuses dict with actual counts of items in isar with
     // that state.  Calls to updateItemState will keep this up to date as the
     // state of an item is changed.
@@ -177,14 +195,6 @@ class DownloadsService {
           .stateEqualTo(state)
           .countSync();
     }
-
-    downloadStatusesStream = _downloadStatusesStreamController.stream.throttleTime(
-      const Duration(milliseconds: 200),
-      leading: false,
-      trailing: true,
-    );
-    offlineDeletesStream = _offlineDeletesStreamController.stream;
-    downloadCountsStream = _downloadCountsStreamController.stream;
 
     updateDownloadCounts();
 

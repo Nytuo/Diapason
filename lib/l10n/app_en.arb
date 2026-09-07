@@ -688,6 +688,8 @@
     "goToGenre": "Go to Genre",
     "removeFavorite": "Remove Favorite",
     "addFavorite": "Add Favorite",
+    "hideFromBrowse": "Hide from Browse",
+    "unhideFromBrowse": "Unhide from Browse",
     "confirmAddedToPlaylist": "Added to playlist.",
     "@confirmAddedToPlaylist": {
         "description": "Snackbar message that shows when the user successfully adds items to a playlist."
@@ -1561,6 +1563,31 @@
             }
         },
         "description": "Options in Select Download Codec dropdown"
+    },
+    "losslessTranscodeDownloadWarning": "Warning: all downloads will be transcoded to this lossless format, even songs with lossy encoding. This will not restore lost quality and can use significantly more storage.",
+    "@losslessTranscodeDownloadWarning": {
+        "description": "Warning shown under the download codec selector when a lossless codec (FLAC, ALAC) is selected."
+    },
+    "downloadTranscodeCodecMaybeUnsupported": "May not be supported without extra server configuration on: {sources}",
+    "@downloadTranscodeCodecMaybeUnsupported": {
+        "description": "Warning shown when the selected download codec isn't among what a connected source transcodes to by default.",
+        "placeholders": {
+            "sources": {
+                "type": "String"
+            }
+        }
+    },
+    "streamingTranscodeCodecTitle": "Streaming Codec",
+    "@streamingTranscodeCodecTitle": {
+        "description": "Title for the streaming transcode codec dropdown, used by sources without Jellyfin's more detailed streaming format setting."
+    },
+    "streamingTranscodeCodecSubtitle": "Codec to transcode to when streaming, for sources without a more detailed streaming format setting.",
+    "@streamingTranscodeCodecSubtitle": {
+        "description": "Subtitle for the streaming transcode codec dropdown."
+    },
+    "losslessTranscodeStreamingWarning": "Warning: streaming will be transcoded to this lossless format, even songs with lossy encoding. This will not restore lost quality and uses much more bandwidth than a lossy stream.",
+    "@losslessTranscodeStreamingWarning": {
+        "description": "Warning shown under the streaming codec selector when a lossless codec (FLAC, ALAC) is selected."
     },
     "downloadBitrate": "Download Bitrate",
     "@downloadBitrate": {
@@ -2836,6 +2863,14 @@
     "duckOnAudioInterruptionSubtitle": "Lower the volume (duck) when another app briefly plays audio. Requires a restart.",
     "@duckOnAudioInterruptionSubtitle": {
         "description": "Subtitle for the setting that controls ducking."
+    },
+    "resumeOnBluetoothConnectTitle": "Resume on Bluetooth Connect",
+    "@resumeOnBluetoothConnectTitle": {
+        "description": "Title for the setting that resumes playback when bluetooth headphones/speakers connect."
+    },
+    "resumeOnBluetoothConnectSubtitle": "Resume playback whenever bluetooth headphones or speakers connect while Diapason is still active.",
+    "@resumeOnBluetoothConnectSubtitle": {
+        "description": "Subtitle for the setting that resumes playback when bluetooth headphones/speakers connect."
     },
     "forceAudioOffloadingOnAndroidTitle": "Force Audio Offloading",
     "@forceAudioOffloadingOnAndroidTitle": {

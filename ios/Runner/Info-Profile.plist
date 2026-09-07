@@ -66,6 +66,7 @@
 	<array>
 		<string>_dartobservatory._tcp</string>
 		<string>_diapason-connect._tcp</string>
+		<string>_diapason-uploader._tcp</string>
 		<string>_googlecast._tcp</string>
 		<string>_F5D5D6EA._googlecast._tcp</string>
 	</array>

@@ -61,6 +61,7 @@
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_diapason-connect._tcp</string>
+		<string>_diapason-uploader._tcp</string>
 	</array>
 </dict>
 </plist>

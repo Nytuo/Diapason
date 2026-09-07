@@ -32,16 +32,27 @@ class DesktopSearchScope extends InheritedWidget {
 }
 
 class DesktopContent extends StatelessWidget {
-  const DesktopContent({super.key, required this.nav, this.openItem});
+  const DesktopContent({
+    super.key,
+    required this.nav,
+    this.openItem,
+    this.detailItem,
+    this.detailIsArtist = false,
+  });
 
   final DesktopNav nav;
 
   final BaseItemDto? openItem;
 
+  /// An album or artist opened as a detail page over the current tab, e.g. from
+  /// the player bar's "go to album/artist" actions.
+  final BaseItemDto? detailItem;
+  final bool detailIsArtist;
+
   @override
   Widget build(BuildContext context) {
     return Navigator(
-      key: ValueKey((nav, openItem?.id)),
+      key: ValueKey((nav, openItem?.id, detailItem?.id, detailIsArtist)),
       onGenerateInitialRoutes: (navigator, initialRoute) {
         final routes = <Route<dynamic>>[
           MaterialPageRoute(builder: (_) => _DesktopNavRoot(nav: nav)),
@@ -51,6 +62,19 @@ class DesktopContent extends StatelessWidget {
             MaterialPageRoute(
               settings: RouteSettings(name: AlbumScreen.routeName, arguments: openItem),
               builder: (_) => DesktopAlbumDetail(parent: openItem!),
+            ),
+          );
+        }
+        if (detailItem != null) {
+          routes.add(
+            MaterialPageRoute(
+              settings: RouteSettings(
+                name: detailIsArtist ? ArtistScreen.routeName : AlbumScreen.routeName,
+                arguments: detailItem,
+              ),
+              builder: (_) => detailIsArtist
+                  ? DesktopArtistDetail(artist: detailItem!)
+                  : DesktopAlbumDetail(parent: detailItem!),
             ),
           );
         }

@@ -1,5 +1,6 @@
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/uploader/uploader_client.dart';
+import 'package:diapason/services/uploader/uploader_discovery_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -16,9 +17,21 @@ class UploaderSettingsScreen extends ConsumerStatefulWidget {
 class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen> {
   late final _url = TextEditingController(text: FinampSettingsHelper.finampSettings.uploaderUrl);
   late final _token = TextEditingController(text: FinampSettingsHelper.finampSettings.uploaderToken);
+  final _discovery = UploaderDiscoveryService();
+
+  @override
+  void initState() {
+    super.initState();
+    _discovery.devices.addListener(_onDevicesChanged);
+    _discovery.start();
+  }
+
+  void _onDevicesChanged() => setState(() {});
 
   @override
   void dispose() {
+    _discovery.devices.removeListener(_onDevicesChanged);
+    _discovery.stop();
     _url.dispose();
     _token.dispose();
     super.dispose();
@@ -29,6 +42,22 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
     FinampSetters.setUploaderToken(_token.text.trim());
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Uploader saved")));
     setState(() {});
+  }
+
+  void _useDiscovered(DiscoveredUploader device) {
+    _url.text = device.baseUrl;
+    if (device.isPairable) {
+      _token.text = device.pairingToken!;
+    }
+    FinampSetters.setUploaderEnabled(true);
+    _save();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          device.isPairable ? "Paired with ${device.name}" : "Using ${device.name} — enter its token below",
+        ),
+      ),
+    );
   }
 
   @override
@@ -57,6 +86,42 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
             onChanged: (value) => FinampSetters.setUploaderEnabled(value),
           ),
           const SizedBox(height: 8.0),
+
+          if (_discovery.devices.value.isNotEmpty) ...[
+            Text("Found on your network", style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: 4.0),
+            for (final device in _discovery.devices.value)
+              Card(
+                margin: const EdgeInsets.only(bottom: 8.0),
+                child: ListTile(
+                  leading: Icon(device.isPairable ? TablerIcons.link : TablerIcons.server),
+                  title: Text(device.name),
+                  subtitle: Text(device.isPairable ? "${device.baseUrl} • ready to pair" : device.baseUrl),
+                  trailing: FilledButton.tonal(
+                    onPressed: () => _useDiscovered(device),
+                    child: Text(device.isPairable ? "Pair" : "Use"),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 8.0),
+          ] else if (_discovery.isDiscovering)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16.0),
+              child: Row(
+                children: [
+                  const SizedBox(
+                    width: 16.0,
+                    height: 16.0,
+                    child: CircularProgressIndicator(strokeWidth: 2.0),
+                  ),
+                  const SizedBox(width: 12.0),
+                  Text(
+                    "Looking for uploaders on your network…",
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
 
           TextField(
             controller: _url,

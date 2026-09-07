@@ -30,6 +30,8 @@ class _DesktopShellState extends State<DesktopShell> {
   final _searchController = TextEditingController();
   String _searchQuery = "";
   BaseItemDto? _openPlaylist;
+  BaseItemDto? _detailItem;
+  bool _detailIsArtist = false;
   bool _lyricsOpen = false;
   bool _fullscreen = false;
   bool _miniMode = false;
@@ -52,10 +54,11 @@ class _DesktopShellState extends State<DesktopShell> {
   }
 
   void _select(DesktopNav nav) {
-    if (nav == _nav && _openPlaylist == null) return;
+    if (nav == _nav && _openPlaylist == null && _detailItem == null) return;
     setState(() {
       _nav = nav;
       _openPlaylist = null;
+      _detailItem = null;
       _searchController.clear();
       _searchQuery = "";
     });
@@ -65,6 +68,19 @@ class _DesktopShellState extends State<DesktopShell> {
     setState(() {
       _nav = DesktopNav.playlists;
       _openPlaylist = playlist;
+      _detailItem = null;
+      _searchController.clear();
+      _searchQuery = "";
+    });
+  }
+
+  /// Opens an already-resolved album or artist as a detail page over the
+  /// current tab — used by the player bar's "go to album/artist" actions.
+  void _openDetail(BaseItemDto item, {required bool isArtist}) {
+    setState(() {
+      _openPlaylist = null;
+      _detailItem = item;
+      _detailIsArtist = isArtist;
       _searchController.clear();
       _searchQuery = "";
     });
@@ -151,7 +167,12 @@ class _DesktopShellState extends State<DesktopShell> {
                     Expanded(
                       child: DesktopSearchScope(
                         query: _searchQuery,
-                        child: DesktopContent(nav: _nav, openItem: _openPlaylist),
+                        child: DesktopContent(
+                          nav: _nav,
+                          openItem: _openPlaylist,
+                          detailItem: _detailItem,
+                          detailIsArtist: _detailIsArtist,
+                        ),
                       ),
                     ),
                   ],
@@ -179,6 +200,7 @@ class _DesktopShellState extends State<DesktopShell> {
           onToggleLyrics: () => setState(() => _lyricsOpen = !_lyricsOpen),
           onMiniPlayer: _enterMiniMode,
           onFullscreen: _toggleFullscreen,
+          onOpenLibraryItem: _openDetail,
         ),
       ],
     );

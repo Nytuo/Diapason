@@ -11,6 +11,7 @@ import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:diapason/screens/accessibility_settings_screen.dart';
 import 'package:diapason/screens/audio_service_settings_screen.dart';
 import 'package:diapason/screens/downloads_settings_screen.dart';
+import 'package:diapason/screens/equalizer_settings_screen.dart';
 import 'package:diapason/screens/home_screen_settings_screen.dart';
 import 'package:diapason/screens/cache_settings_screen.dart';
 import 'package:diapason/screens/connect_screen.dart';
@@ -61,6 +62,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   static const translationsLink = "https://hosted.weblate.org/projects/finamp";
 
   bool get _hasJellyfinSource => GetIt.instance<BackendRegistry>().ofKind(MediaSourceKind.jellyfin).isNotEmpty;
+
+  bool get _hasTranscodingSource =>
+      GetIt.instance<BackendRegistry>().enabled.any((backend) => backend.capabilities.transcoding);
 
   // In-app updater (sideloaded Android + desktop). null while the pref loads.
   bool? _autoUpdateEnabled;
@@ -236,6 +240,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onTap: () => Navigator.of(context).pushNamed(VolumeNormalizationSettingsScreen.routeName),
           ),
           ListTile(
+            leading: const Icon(Icons.graphic_eq),
+            title: const Text("Equalizer"),
+            subtitle: const Text("Per-band gain and presets"),
+            onTap: () => Navigator.of(context).pushNamed(EqualizerSettingsScreen.routeName),
+          ),
+          ListTile(
             leading: const Icon(TablerIcons.broadcast),
             title: const Text("Scrobbling"),
             subtitle: const Text("Last.fm and ListenBrainz"),
@@ -357,11 +367,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onTap: () => Navigator.of(context).pushNamed(ViewSelector.routeName),
             ),
             ListTile(
-              leading: const Icon(Icons.compress),
-              title: Text(AppLocalizations.of(context)!.transcoding),
-              onTap: () => Navigator.of(context).pushNamed(TranscodingSettingsScreen.routeName),
-            ),
-            ListTile(
               leading: const Icon(TablerIcons.cast),
               title: Text(AppLocalizations.of(context)!.playbackReportingSettingsTitle),
               onTap: () => Navigator.of(context).pushNamed(PlaybackReportingSettingsScreen.routeName),
@@ -383,6 +388,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 onTap: () => showClientCertificateMenu(context: context),
               ),
+          ],
+          // Not folded into "Jellyfin server" above: Subsonic and Plex
+          // sources can transcode downloads too, so this has to be visible
+          // even when no Jellyfin source is configured.
+          if (_hasTranscodingSource) ...[
+            _sectionHeader(context, "Transcoding"),
+            ListTile(
+              leading: const Icon(Icons.compress),
+              title: Text(AppLocalizations.of(context)!.transcoding),
+              onTap: () => Navigator.of(context).pushNamed(TranscodingSettingsScreen.routeName),
+            ),
           ],
         ],
       ),
