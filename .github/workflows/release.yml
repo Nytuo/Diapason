@@ -1,22 +1,34 @@
-name: Build
+name: release
 
-# Manual only: nothing builds on push, pull request or tag. Every run builds
-# and publishes a draft release. The slow, unreliable extras are opt-in toggles
-# so they can never block one.
-#   gh workflow run .github/workflows/build.yml --ref <branch name>
-#   gh workflow run .github/workflows/build.yml -f release_tag=0.10.0
+# Manual only.
 #
-# Desktop assets follow one naming scheme: diapason-<version>_<os>_<arch>.<ext>
-# (e.g. diapason-0.10.0_win_x64.exe, diapason-0.10.0_linux_aarch64.AppImage).
-# Windows and Linux ship both x64 and aarch64, built on native runners; macOS is
-# aarch64 only.
+#   1. version  — derive the next semver from the conventional commits since
+#                 the last v* tag, or take the explicit override input.
+#   2. build    — build every platform with that version patched into the
+#                 manifests. The patch happens in the runner workspace only.
+#   3. release  — a DRAFT GitHub release tagged v<version>, changelog as the
+#                 body, artifacts attached.
+
 on:
   workflow_dispatch:
     inputs:
-      release_tag:
-        description: 'Tag to publish (e.g. 0.10.0). Defaults to the pubspec version.'
+      bump:
+        description: "Version bump — 'auto' derives it from conventional commits"
+        type: choice
+        default: auto
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+      version:
+        description: 'Explicit version, e.g. 1.4.0 (overrides "bump")'
+        type: string
         required: false
-        default: ''
+      prerelease:
+        description: 'Mark the release as a prerelease'
+        type: boolean
+        default: false
       run_integration_tests:
         description: 'Run the emulator integration tests'
         type: boolean
@@ -27,9 +39,6 @@ on:
         default: false
 
 env:
-  # Emulator-driven and slow, so they never run as part of ordinary builds or
-  # releases. Tick "Run the emulator integration tests" on a manual run instead.
-  # On non-dispatch events this input is null, so the steps are skipped.
   if_condition: &integration_if inputs.run_integration_tests
 
 # Due to a flutter bug, flutter build is not generating localizations
@@ -39,7 +48,158 @@ env:
 # Desktop builds are unsigned: they are for testing and for the auto-updater's
 # release assets, not for store distribution.
 jobs:
+  version:
+    name: Resolve version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.semver.outputs.version }}
+      tag: ${{ steps.semver.outputs.tag }}
+      previous_tag: ${{ steps.semver.outputs.previous_tag }}
+      changelog: ${{ steps.semver.outputs.changelog }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute version and changelog
+        id: semver
+        shell: bash
+        env:
+          BUMP_INPUT: ${{ inputs.bump }}
+          VERSION_INPUT: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+
+          D="$RUNNER_TEMP/changelog"
+          mkdir -p "$D"
+
+          # Baseline = the most recently created release tag, accepting every
+          # scheme this repo has used (1.2.3, v1.2.3, app-v1.2.3) so a rename
+          # never makes the next version go backwards.
+          # New tags are always emitted as plain v<semver>.
+          PREV=$(git tag --list --sort=-creatordate \
+            | grep -E '^([A-Za-z][A-Za-z0-9_.-]*-)?v?[0-9]+\.[0-9]+\.[0-9]+$' \
+            | head -n1 || true)
+          if [ -n "$PREV" ]; then
+            RANGE="${PREV}..HEAD"
+            BASE=$(printf '%s' "$PREV" | sed -E 's/^([A-Za-z][A-Za-z0-9_.-]*-)?v?//')
+          else
+            RANGE=""
+            BASE="0.0.0"
+          fi
+          IFS=. read -r MAJOR MINOR PATCH <<<"$BASE"
+          MAJOR=${MAJOR:-0}; MINOR=${MINOR:-0}; PATCH=${PATCH:-0}
+
+          if [ -n "$RANGE" ]; then
+            git log --no-merges --format='%h%x1f%s%x1f%b%x1e' "$RANGE" > "$D/commits"
+          else
+            git log --no-merges --format='%h%x1f%s%x1f%b%x1e' > "$D/commits"
+          fi
+
+          HAS_FEAT=0; HAS_BREAKING=0; COUNT=0
+          while IFS=$'\x1f' read -r -d $'\x1e' SHA SUBJECT BODY; do
+            SHA="${SHA#$'\n'}"
+            [ -z "$SHA" ] && continue
+            COUNT=$((COUNT + 1))
+
+            if [[ "$SUBJECT" =~ ^([a-zA-Z]+)(\(([^\)]*)\))?(!)?:[[:space:]]*(.*)$ ]]; then
+              TYPE=$(printf '%s' "${BASH_REMATCH[1]}" | tr '[:upper:]' '[:lower:]')
+              SCOPE="${BASH_REMATCH[3]}"
+              BANG="${BASH_REMATCH[4]}"
+              DESC="${BASH_REMATCH[5]}"
+            else
+              TYPE="other"; SCOPE=""; BANG=""; DESC="$SUBJECT"
+            fi
+
+            IS_BREAKING=0
+            [ -n "$BANG" ] && IS_BREAKING=1
+            if printf '%s' "$BODY" | grep -qE '^BREAKING[ -]CHANGE'; then
+              IS_BREAKING=1
+            fi
+
+            if [ -n "$SCOPE" ]; then
+              ENTRY="- **${SCOPE}:** ${DESC} (${SHA})"
+            else
+              ENTRY="- ${DESC} (${SHA})"
+            fi
+
+            case "$TYPE" in
+              feat|feature) HAS_FEAT=1; echo "$ENTRY" >> "$D/feat" ;;
+              fix|bugfix)   echo "$ENTRY" >> "$D/fix" ;;
+              perf)         echo "$ENTRY" >> "$D/perf" ;;
+              refactor)     echo "$ENTRY" >> "$D/refactor" ;;
+              docs)         echo "$ENTRY" >> "$D/docs" ;;
+              *)            echo "$ENTRY" >> "$D/misc" ;;
+            esac
+            [ "$IS_BREAKING" = 1 ] && echo "$ENTRY" >> "$D/breaking"
+          done < "$D/commits"
+
+          if [ -n "$VERSION_INPUT" ]; then
+            VERSION="${VERSION_INPUT#v}"
+            if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-+].*)?$ ]]; then
+              echo "::error::'$VERSION_INPUT' is not a valid semver version (expected e.g. 1.4.0)"
+              exit 1
+            fi
+          else
+            if [ "$COUNT" -eq 0 ]; then
+              echo "::error::No commits since ${PREV:-the start of history} — nothing to release."
+              exit 1
+            fi
+            BUMP="$BUMP_INPUT"
+            if [ "$BUMP" = "auto" ]; then
+              if   [ "$HAS_BREAKING" = 1 ]; then BUMP="major"
+              elif [ "$HAS_FEAT" = 1 ];     then BUMP="minor"
+              else                               BUMP="patch"
+              fi
+            fi
+            case "$BUMP" in
+              major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+              minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+              patch) PATCH=$((PATCH + 1)) ;;
+            esac
+            VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          fi
+
+          TAG="v${VERSION}"
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "::error::Tag ${TAG} already exists. Pass an explicit 'version' input to pick another."
+            exit 1
+          fi
+
+          {
+            if [ -s "$D/breaking" ]; then echo "### ⚠ BREAKING CHANGES"; echo; cat "$D/breaking"; echo; fi
+            if [ -s "$D/feat" ];     then echo "### Features";           echo; cat "$D/feat";     echo; fi
+            if [ -s "$D/fix" ];      then echo "### Bug Fixes";          echo; cat "$D/fix";      echo; fi
+            if [ -s "$D/perf" ];     then echo "### Performance";        echo; cat "$D/perf";     echo; fi
+            if [ -s "$D/refactor" ]; then echo "### Refactoring";        echo; cat "$D/refactor"; echo; fi
+            if [ -s "$D/docs" ];     then echo "### Documentation";      echo; cat "$D/docs";     echo; fi
+            if [ -s "$D/misc" ];     then echo "### Other";              echo; cat "$D/misc";     echo; fi
+            if [ -n "$PREV" ]; then
+              echo "**Full changelog**: https://github.com/${GITHUB_REPOSITORY}/compare/${PREV}...${TAG}"
+            else
+              echo "**Full changelog**: https://github.com/${GITHUB_REPOSITORY}/commits/${TAG}"
+            fi
+          } > "$D/changelog.md"
+
+          {
+            echo "version=${VERSION}"
+            echo "tag=${TAG}"
+            echo "previous_tag=${PREV}"
+            echo "changelog<<__CHANGELOG_EOF__"
+            cat "$D/changelog.md"
+            echo "__CHANGELOG_EOF__"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## ${TAG}"
+            echo
+            echo "Previous tag: \`${PREV:-none}\` · commits analysed: ${COUNT}"
+            echo
+            cat "$D/changelog.md"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   build-android:
+    needs: version
     name: Build for Android
     runs-on: ubuntu-latest
     steps:
@@ -51,9 +211,16 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
 
-    - name: Read app version
+    - name: Apply release version
       id: version
-      run: echo "version=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -d+ -f1)" >> "$GITHUB_OUTPUT"
+      env:
+        VERSION: ${{ needs.version.outputs.version }}
+      run: |
+        set -eu
+        BUILD=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -s -d+ -f2)
+        if [ -n "$BUILD" ]; then NEW="$VERSION+$BUILD"; else NEW="$VERSION"; fi
+        perl -pi -e "s/^version:.*/version: $NEW/" pubspec.yaml
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
     - name: Free up disk space
       run: |
@@ -171,6 +338,7 @@ jobs:
             timeout 13m flutter test integration_test/test_cases.dart -d emulator
 
   build-ios:
+    needs: version
     name: Build for iOS
     runs-on: macos-latest
     steps:
@@ -187,9 +355,19 @@ jobs:
         cache: false
         pub-cache: true
 
-    - name: Read app version
+    # Stamps the dispatched version into pubspec.yaml so the built binaries and
+    # the asset filenames below agree with the release tag. Workspace only —
+    # never committed back to the repo.
+    - name: Apply release version
       id: version
-      run: echo "version=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -d+ -f1)" >> "$GITHUB_OUTPUT"
+      env:
+        VERSION: ${{ needs.version.outputs.version }}
+      run: |
+        set -eu
+        BUILD=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -s -d+ -f2)
+        if [ -n "$BUILD" ]; then NEW="$VERSION+$BUILD"; else NEW="$VERSION"; fi
+        perl -pi -e "s/^version:.*/version: $NEW/" pubspec.yaml
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
     - name: Cache CocoaPods
       uses: actions/cache@v5
@@ -247,6 +425,7 @@ jobs:
       run: flutter test integration_test/test_cases.dart -d ${{ steps.simulator.outputs.udid }}
 
   build-linux:
+    needs: version
     name: Build for Linux (${{ matrix.arch }})
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -267,13 +446,17 @@ jobs:
             flutter_channel: master
     steps:
     - uses: actions/checkout@v6
-
-    - name: Read app version
+    - name: Apply release version
       id: version
-      run: echo "version=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -d+ -f1)" >> "$GITHUB_OUTPUT"
+      env:
+        VERSION: ${{ needs.version.outputs.version }}
+      run: |
+        set -eu
+        BUILD=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -s -d+ -f2)
+        if [ -n "$BUILD" ]; then NEW="$VERSION+$BUILD"; else NEW="$VERSION"; fi
+        perl -pi -e "s/^version:.*/version: $NEW/" pubspec.yaml
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-    # libmpv/mpv are required by media_kit_libs_linux, the rest is the standard
-    # Flutter Linux desktop toolchain.
     - name: Install build dependencies
       run: |
         sudo apt-get update
@@ -306,7 +489,7 @@ jobs:
       with:
         name: diapason-linux-${{ matrix.arch }}
         path: diapason-${{ steps.version.outputs.version }}_linux_${{ matrix.arch }}.tar.gz
-        compression-level: 0 # already compressed
+        compression-level: 0
 
     # fpm builds both deb and rpm from one staging tree; rpm/rpmbuild is needed
     # for the rpm target, and linuxdeploy assembles the AppImage.
@@ -325,11 +508,12 @@ jobs:
       with:
         name: diapason-linux-packages-${{ matrix.arch }}
         path: build/linux/packages/*
-        compression-level: 0 # already compressed
+        compression-level: 0
 
   # Flatpak and Snap build in containers that need their own toolchain and are
   # the least reliable jobs here, so they are opt-in and never gate a release.
   build-flatpak:
+    needs: version
     name: Build Flatpak
     if: inputs.build_extras
     runs-on: ubuntu-latest
@@ -388,6 +572,7 @@ jobs:
         cache-key: flatpak-builder-${{ github.sha }}
 
   build-snap:
+    needs: version
     name: Build Snap
     if: inputs.build_extras
     runs-on: ubuntu-latest
@@ -401,9 +586,10 @@ jobs:
       with:
         name: diapason-snap
         path: ${{ steps.snapcraft.outputs.snap }}
-        compression-level: 0 # already compressed
+        compression-level: 0
 
   build-windows:
+    needs: version
     name: Build for Windows (${{ matrix.arch }})
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -455,7 +641,6 @@ jobs:
       shell: pwsh
       run: New-Item -ItemType Directory -Force -Path installers | Out-Null
 
-    # A zip of the raw release bundle, alongside the two installers.
     - name: Package portable zip
       shell: pwsh
       run: |
@@ -495,9 +680,10 @@ jobs:
       with:
         name: diapason-windows-${{ matrix.arch }}
         path: installers/*
-        compression-level: 0 # installers are already compressed
+        compression-level: 0
 
   build-macos:
+    needs: version
     name: Build for macOS
     runs-on: macos-latest
     steps:
@@ -514,9 +700,16 @@ jobs:
         cache: false
         pub-cache: true
 
-    - name: Read app version
+    - name: Apply release version
       id: version
-      run: echo "version=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -d+ -f1)" >> "$GITHUB_OUTPUT"
+      env:
+        VERSION: ${{ needs.version.outputs.version }}
+      run: |
+        set -eu
+        BUILD=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -s -d+ -f2)
+        if [ -n "$BUILD" ]; then NEW="$VERSION+$BUILD"; else NEW="$VERSION"; fi
+        perl -pi -e "s/^version:.*/version: $NEW/" pubspec.yaml
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
     - name: Cache CocoaPods
       uses: actions/cache@v5
@@ -548,15 +741,11 @@ jobs:
         BASE="diapason-${VERSION}_macos_aarch64"
         cd build/macos/Build/Products/Release
         zip -r -y "$GITHUB_WORKSPACE/${BASE}.zip" Diapason.app
-        # A drag-to-Applications dmg, in addition to the zip: nicer UX for end
-        # users than unzipping. Unsigned/unnotarized either way, same as the zip.
         mkdir -p "$GITHUB_WORKSPACE/dmg-staging"
         cp -r Diapason.app "$GITHUB_WORKSPACE/dmg-staging/"
         ln -s /Applications "$GITHUB_WORKSPACE/dmg-staging/Applications"
         hdiutil create -volname Diapason -srcfolder "$GITHUB_WORKSPACE/dmg-staging" \
           -ov -format UDZO "$GITHUB_WORKSPACE/${BASE}.dmg"
-        # A .pkg installer that drops the app into /Applications. Unsigned, so
-        # Gatekeeper still prompts, same as the dmg/zip.
         pkgbuild --identifier fr.nytuo.diapason --version "$VERSION" \
           --install-location /Applications --component Diapason.app \
           "$GITHUB_WORKSPACE/${BASE}.pkg"
@@ -568,14 +757,12 @@ jobs:
           diapason-${{ steps.version.outputs.version }}_macos_aarch64.zip
           diapason-${{ steps.version.outputs.version }}_macos_aarch64.dmg
           diapason-${{ steps.version.outputs.version }}_macos_aarch64.pkg
-        compression-level: 0 # already compressed
+        compression-level: 0
 
-  # Publishes a draft release from the artifacts the jobs above produced.
-  # Flatpak and Snap are deliberately absent from needs — they are opt-in, and
-  # a skipped dependency would skip this job too.
   release:
     name: Create release
     needs:
+      - version
       - build-android
       - build-ios
       - build-linux
@@ -587,18 +774,11 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
-    # The run's ref_name is whatever branch was dispatched, not a version, so
-    # the tag comes from the input and falls back to the pubspec version.
-    - name: Resolve release tag
-      id: tag
+    - name: Write changelog
       run: |
-        set -eu
-        TAG="${{ inputs.release_tag }}"
-        if [ -z "$TAG" ]; then
-          TAG="$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -d+ -f1)"
-        fi
-        echo "Releasing as '$TAG'"
-        echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+        cat > "$RUNNER_TEMP/notes.md" <<'__NOTES__'
+        ${{ needs.version.outputs.changelog }}
+        __NOTES__
 
     - name: Download build artifacts
       uses: actions/download-artifact@v6
@@ -623,17 +803,16 @@ jobs:
           -exec cp {} release-assets/ \;
         ls -lh release-assets
 
-    # --target creates the tag at this commit when it doesn't already exist,
-    # which is the normal case for a manual run.
     - name: Create release
       env:
         GH_TOKEN: ${{ github.token }}
-        TAG: ${{ steps.tag.outputs.tag }}
+        TAG: ${{ needs.version.outputs.tag }}
       run: |
         gh release create "$TAG" \
           --repo "${{ github.repository }}" \
           --target "${{ github.sha }}" \
           --title "$TAG" \
-          --generate-notes \
+          --notes-file "$RUNNER_TEMP/notes.md" \
           --draft \
+          ${{ inputs.prerelease && '--prerelease' || '' }} \
           release-assets/*
