@@ -4,8 +4,9 @@
        Both are declared not-required so the same APK still installs on phones. -->
   <uses-feature android:name="android.software.leanback" android:required="false"/>
   <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
-  <!-- Wear OS -->
-  <uses-feature android:name="android.hardware.type.watch" android:required="false"/>
+  <!-- No android.hardware.type.watch here: Google Play rejects a bundle that lists the watch feature as optional.
+       A bundle either targets watches (required="true") or does not mention it; this one is for phones and TVs.
+       The app still recognises a watch at run time (see DeviceFormFactorDetector). -->
 
   <uses-permission android:name="android.permission.INTERNET"/>
   <!-- Diapason Connect: mDNS/Bonjour discovery over the local network. -->
