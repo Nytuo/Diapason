@@ -794,17 +794,18 @@ jobs:
         export APP_STORE_CONNECT_KEY_ID="$APPLE_API_KEY"
         export APP_STORE_CONNECT_ISSUER_ID="$APPLE_API_ISSUER"
 
-        # Signed device build: also signs the engine with the Apple
-        # Distribution certificate and stages the frameworks the archive embeds.
-        flutter-tvos build tvos --release
+        # Stage the Dart build and the frameworks the archive embeds. flutter-tvos signs the engine with the
+        # Apple Distribution certificate in the keychain (Apple's ITMS-91065 check wants that signature on the
+        # engine itself), but the app is not signed here: a "Release" build signs with a development identity, and
+        # a development provisioning profile cannot be made on a team that has no registered devices.
+        flutter-tvos build tvos --release --no-codesign
 
+        # Archive without signing, then let the export sign it for the App Store: with automatic signing and the
+        # API key, Xcode makes the distribution profile (no devices needed) and signs with the certificate.
         cd tvos
         xcodebuild -workspace Runner.xcworkspace -scheme Runner -destination 'generic/platform=tvOS' \
           -configuration Release -archivePath "$RUNNER_TEMP/RunnerTV.xcarchive" \
-          archive -allowProvisioningUpdates \
-          -authenticationKeyPath "$APP_STORE_CONNECT_KEY_PATH" \
-          -authenticationKeyID "$APPLE_API_KEY" \
-          -authenticationKeyIssuerID "$APPLE_API_ISSUER"
+          archive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
 
         cat > "$RUNNER_TEMP/ExportOptionsTV.plist" <<'PLIST'
         <?xml version="1.0" encoding="UTF-8"?>
@@ -815,6 +816,8 @@ jobs:
           <string>app-store-connect</string>
           <key>signingStyle</key>
           <string>automatic</string>
+          <key>teamID</key>
+          <string>U5WGLFU24B</string>
         </dict>
         </plist>
         PLIST
