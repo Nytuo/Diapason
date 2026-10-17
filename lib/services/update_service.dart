@@ -65,7 +65,10 @@ class UpdateService {
       final info = await PackageInfo.fromPlatform();
       final current = info.version;
 
-      final response = await (_client?.get ?? http.get)(_latestReleaseUri, headers: const {"Accept": "application/vnd.github+json"}).timeout(const Duration(seconds: 10));
+      final response = await (_client?.get ?? http.get)(
+        _latestReleaseUri,
+        headers: const {"Accept": "application/vnd.github+json"},
+      ).timeout(const Duration(seconds: 10));
       if (response.statusCode != 200) {
         _log.warning("Update check failed: HTTP ${response.statusCode}");
         return null;
@@ -116,8 +119,10 @@ class UpdateService {
     bool matches(String name) {
       final n = name.toLowerCase();
       if (Platform.isAndroid) return n.endsWith(".apk");
-      if (Platform.isMacOS) return n.endsWith(".dmg") || n.endsWith(".pkg") || n.contains("macos") || n.contains("darwin");
-      if (Platform.isWindows) return n.endsWith(".exe") || n.endsWith(".msi") || n.contains("windows") || n.contains("_win_");
+      if (Platform.isMacOS)
+        return n.endsWith(".dmg") || n.endsWith(".pkg") || n.contains("macos") || n.contains("darwin");
+      if (Platform.isWindows)
+        return n.endsWith(".exe") || n.endsWith(".msi") || n.contains("windows") || n.contains("_win_");
       if (Platform.isLinux) return n.endsWith(".appimage") || n.endsWith(".deb") || n.contains("linux");
       return false;
     }

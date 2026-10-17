@@ -28,6 +28,5 @@ class LrcParser {
     return LyricDto(lyrics: lines.map((text) => LyricLine(text: text)).toList());
   }
 
-  static bool isSynced(LyricDto? lyrics) =>
-      lyrics?.lyrics?.any((line) => line.start != null) ?? false;
+  static bool isSynced(LyricDto? lyrics) => lyrics?.lyrics?.any((line) => line.start != null) ?? false;
 }

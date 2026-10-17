@@ -11,6 +11,7 @@ import 'package:diapason/services/backends/subsonic_backend.dart';
 import 'package:diapason/services/backends/youtube_backend.dart';
 import 'package:diapason/services/backends/media_backend.dart';
 import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/tv/tv_profile_service.dart';
 import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce/hive.dart';
@@ -19,7 +20,7 @@ import 'package:logging/logging.dart';
 
 /// Isar has no tvOS native binary, so on tvOS this stores configs as JSON in
 /// a "MediaSourceConfigs" Hive box (key: sourceId) instead of Isar.
-class MediaSourceService {
+class MediaSourceService implements TvProfileSources {
   MediaSourceService();
 
   static final _log = Logger("MediaSourceService");
@@ -69,13 +70,23 @@ class MediaSourceService {
   Future<void> addSource(MediaSourceConfig config) async {
     _put(config);
     _registry.register(_build(config));
+    // On a shared TV a new account belongs to whoever is listening.
+    final profiles = GetIt.instance.isRegistered<TvProfileService>() ? GetIt.instance<TvProfileService>() : null;
+    await profiles?.attachSource(config.sourceId);
   }
 
-  String newSourceId(MediaSourceKind kind) =>
-      MediaSourceConfig.newSourceId(kind, sources.map((s) => s.sourceId));
+  String newSourceId(MediaSourceKind kind) => MediaSourceConfig.newSourceId(kind, sources.map((s) => s.sourceId));
+
+  @override
+  Future<void> setEnabled(MediaSourceConfig config, bool enabled) async {
+    config.enabled = enabled;
+    await updateSource(config);
+  }
 
   Future<void> removeSource(String sourceId) async {
     await _registry.unregister(sourceId);
+    if (GetIt.instance.isRegistered<TvProfileService>())
+      await GetIt.instance<TvProfileService>().detachSource(sourceId);
     if (_isTvOS) {
       _tvOSSources.delete(sourceId);
     } else {

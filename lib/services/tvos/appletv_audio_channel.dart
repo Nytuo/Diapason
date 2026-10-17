@@ -112,8 +112,7 @@ class AppleTvAudioChannel {
 
   Future<void> stop() => _channel.invokeMethod('stop');
 
-  Future<void> seek(Duration position) =>
-      _channel.invokeMethod('seek', {'positionMs': position.inMilliseconds});
+  Future<void> seek(Duration position) => _channel.invokeMethod('seek', {'positionMs': position.inMilliseconds});
 
   Future<void> setVolume(double volume) => _channel.invokeMethod('setVolume', {'volume': volume});
 

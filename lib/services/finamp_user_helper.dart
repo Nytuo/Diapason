@@ -52,10 +52,9 @@ class FinampUserHelper {
 
   /// Loads the FinampUser with the id from CurrentUserId. Returns null if no
   /// user exists.
-  FinampUser? get currentUser =>
-      _currentUserCache ??= _isTvOS
-          ? (currentUserId == null ? null : _tvOSUsers.get(currentUserId))
-          : _isar!.finampUsers.getSync(0);
+  FinampUser? get currentUser => _currentUserCache ??= _isTvOS
+      ? (currentUserId == null ? null : _tvOSUsers.get(currentUserId))
+      : _isar!.finampUsers.getSync(0);
   FinampUser? _currentUserCache;
 
   Iterable<FinampUser> get finampUsers => _isTvOS ? _tvOSUsers.values : _isar!.finampUsers.where().findAllSync();

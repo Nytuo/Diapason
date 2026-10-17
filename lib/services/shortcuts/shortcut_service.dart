@@ -22,8 +22,7 @@ class ShortcutService {
     }
   }
 
-  List<PinnedItem> get pins =>
-      _isar.pinnedItems.where().sortBySortIndex().thenByPinnedAt().findAllSync();
+  List<PinnedItem> get pins => _isar.pinnedItems.where().sortBySortIndex().thenByPinnedAt().findAllSync();
 
   bool isPinned(BaseItemId id) => _isar.pinnedItems.getSync(PinnedItem.fastHash(id.raw)) != null;
 
@@ -91,9 +90,7 @@ class ShortcutService {
   }
 
   Future<void> removeSearch(String query) async {
-    _isar.writeTxnSync(
-      () => _isar.searchHistoryEntrys.deleteSync(PinnedItem.fastHash(query.toLowerCase())),
-    );
+    _isar.writeTxnSync(() => _isar.searchHistoryEntrys.deleteSync(PinnedItem.fastHash(query.toLowerCase())));
   }
 
   Future<void> clearSearchHistory() async {

@@ -29,18 +29,21 @@ class MpdClient {
     final socket = await Socket.connect(host, port, timeout: const Duration(seconds: 5));
     _socket = socket;
     final greeting = Completer<void>();
-    _sub = utf8.decoder.bind(socket).transform(const LineSplitter()).listen(
-      (line) => _onLine(line, greeting),
-      onError: (Object e) {
-        _log.warning("MPD socket error: $e");
-        _failAll(e);
-      },
-      onDone: () {
-        _log.info("MPD connection closed");
-        _failAll(const SocketException("MPD connection closed"));
-        _socket = null;
-      },
-    );
+    _sub = utf8.decoder
+        .bind(socket)
+        .transform(const LineSplitter())
+        .listen(
+          (line) => _onLine(line, greeting),
+          onError: (Object e) {
+            _log.warning("MPD socket error: $e");
+            _failAll(e);
+          },
+          onDone: () {
+            _log.info("MPD connection closed");
+            _failAll(const SocketException("MPD connection closed"));
+            _socket = null;
+          },
+        );
     await greeting.future.timeout(const Duration(seconds: 5));
     if (password != null && password!.isNotEmpty) {
       await command("password ${_quote(password!)}");

@@ -121,9 +121,7 @@ class DesktopTransferService {
         state.value = TransferImporting("Downloading ${index + 1}/${files.length}: $name");
 
         try {
-          final response = await _http
-              .get(Uri.parse("${peer.url}/file/$index"))
-              .timeout(const Duration(minutes: 2));
+          final response = await _http.get(Uri.parse("${peer.url}/file/$index")).timeout(const Duration(minutes: 2));
           if (response.statusCode != 200) continue;
 
           final written = await importer.writeImported(name, response.bodyBytes);

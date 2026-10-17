@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:diapason/services/tvos/appletv_audio_channel.dart';
+
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:logging/logging.dart';
 
@@ -26,6 +28,8 @@ class DeviceFormFactorDetector {
   static DeviceFormFactor get current => _current;
 
   static Future<DeviceFormFactor> detect() async {
+    // Apple TV runs the iOS embedder, so Platform says iOS: ask the tvOS probe instead.
+    if (AppleTvAudioChannel.isSupported) return _current = DeviceFormFactor.tv;
     if (!Platform.isAndroid) return _current = DeviceFormFactor.handheld;
 
     try {

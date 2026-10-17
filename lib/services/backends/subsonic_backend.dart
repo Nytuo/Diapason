@@ -13,7 +13,9 @@ import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 
 class SubsonicBackend implements MediaBackend {
-  SubsonicBackend(this.config, {http.Client? client}) : _map = ItemMapper(config.sourceId), _http = client ?? http.Client();
+  SubsonicBackend(this.config, {http.Client? client})
+    : _map = ItemMapper(config.sourceId),
+      _http = client ?? http.Client();
 
   static final _log = Logger("SubsonicBackend");
   static const _apiVersion = "1.16.1";
@@ -216,10 +218,9 @@ class SubsonicBackend implements MediaBackend {
     }
 
     return switch (includeItemTypes) {
-      "MusicArtist" => _list((await _get("getArtists"))?["artists"]?["index"])
-          .expand((index) => _list(index["artist"]))
-          .map(_artist)
-          .toList(),
+      "MusicArtist" => _list(
+        (await _get("getArtists"))?["artists"]?["index"],
+      ).expand((index) => _list(index["artist"])).map(_artist).toList(),
       "Playlist" => _list((await _get("getPlaylists"))?["playlists"]?["playlist"]).map(_playlist).toList(),
       "MusicGenre" => _list((await _get("getGenres"))?["genres"]?["genre"]).map(_genre).toList(),
       "Audio" => _allTracks(sortBy: sortBy, sortOrder: sortOrder, limit: limit, offset: startIndex),
@@ -244,8 +245,6 @@ class SubsonicBackend implements MediaBackend {
       _trackList = await _fetchTrackList();
     }
     final tracks = _trackList!;
-
-
 
     if (tracks.length >= _trackListCap) {
       final response = await _get("search3", {
@@ -394,15 +393,18 @@ class SubsonicBackend implements MediaBackend {
     if (!_connected && !await ping()) return const [];
 
     final response = await _get("getInternetRadioStations");
-    return _list(response?["internetRadioStations"]?["internetRadioStation"]).map((station) {
-      final item = _map.track(
-        nativeId: station["id"].toString(),
-        name: (station["name"] ?? "Unknown Station") as String,
-        artist: "Internet Radio",
-      );
-      item.path = station["streamUrl"] as String?;
-      return item;
-    }).where((item) => (item.path ?? "").isNotEmpty).toList();
+    return _list(response?["internetRadioStations"]?["internetRadioStation"])
+        .map((station) {
+          final item = _map.track(
+            nativeId: station["id"].toString(),
+            name: (station["name"] ?? "Unknown Station") as String,
+            artist: "Internet Radio",
+          );
+          item.path = station["streamUrl"] as String?;
+          return item;
+        })
+        .where((item) => (item.path ?? "").isNotEmpty)
+        .toList();
   }
 
   @override
@@ -428,10 +430,7 @@ class SubsonicBackend implements MediaBackend {
 
   @override
   Future<List<BaseItemDto>> getInstantMix(BaseItemDto item, {int? limit}) async {
-    final response = await _get("getSimilarSongs2", {
-      "id": item.id.nativeId,
-      "count": "${limit ?? 50}",
-    });
+    final response = await _get("getSimilarSongs2", {"id": item.id.nativeId, "count": "${limit ?? 50}"});
     return _list(response?["similarSongs2"]?["song"]).map(_song).toList();
   }
 
@@ -546,10 +545,7 @@ class SubsonicBackend implements MediaBackend {
 
   @override
   Future<void> removeFromPlaylist(BaseItemDto playlist, List<String> playlistItemIds) async {
-    await _get("updatePlaylist", {
-      "playlistId": playlist.id.nativeId,
-      "songIndexToRemove": playlistItemIds,
-    });
+    await _get("updatePlaylist", {"playlistId": playlist.id.nativeId, "songIndexToRemove": playlistItemIds});
   }
 
   @override

@@ -32,13 +32,7 @@ class FreshRelease {
   Uri? get coverUrl => mbid == null ? null : Uri.parse("https://coverartarchive.org/release-group/$mbid/front-250");
 }
 
-enum DiscoverPlaylistKind {
-  listenBrainzPlaylist,
-
-  lastFmTag,
-
-  lastFmChart,
-}
+enum DiscoverPlaylistKind { listenBrainzPlaylist, lastFmTag, lastFmChart }
 
 class DiscoverPlaylist {
   const DiscoverPlaylist({required this.id, required this.title, this.subtitle, required this.kind});
@@ -62,7 +56,9 @@ class DiscoveryService {
   String get _lastFmKey => FinampSettingsHelper.finampSettings.lastFmApiKey;
 
   Future<List<FreshRelease>> freshReleases() async {
-    final body = await _getJson(_listenBrainz.replace(path: "/1/explore/fresh-releases", queryParameters: {"days": "30"}));
+    final body = await _getJson(
+      _listenBrainz.replace(path: "/1/explore/fresh-releases", queryParameters: {"days": "30"}),
+    );
     final releases = (body?["payload"]?["releases"] as List<dynamic>?) ?? const [];
 
     return releases
@@ -97,12 +93,7 @@ class DiscoveryService {
 
     return tracks
         .cast<Map<String, dynamic>>()
-        .map(
-          (t) => DiscoveredTrack(
-            title: (t["name"] ?? "") as String,
-            artist: (t["artist"]?["name"] ?? "") as String,
-          ),
-        )
+        .map((t) => DiscoveredTrack(title: (t["name"] ?? "") as String, artist: (t["artist"]?["name"] ?? "") as String))
         .where((t) => t.title.isNotEmpty && t.artist.isNotEmpty)
         .toList();
   }
@@ -125,12 +116,7 @@ class DiscoveryService {
 
     return artists
         .cast<Map<String, dynamic>>()
-        .map(
-          (a) => (
-            name: (a["name"] ?? "") as String,
-            match: double.tryParse("${a["match"] ?? 0}") ?? 0,
-          ),
-        )
+        .map((a) => (name: (a["name"] ?? "") as String, match: double.tryParse("${a["match"] ?? 0}") ?? 0))
         .where((a) => a.name.isNotEmpty)
         .toList();
   }
@@ -263,25 +249,14 @@ class DiscoveryService {
     if (_lastFmKey.isEmpty) return const [];
     final body = await _getJson(
       _lastFm.replace(
-        queryParameters: {
-          "method": method,
-          ...extra,
-          "api_key": _lastFmKey,
-          "format": "json",
-          "limit": "50",
-        },
+        queryParameters: {"method": method, ...extra, "api_key": _lastFmKey, "format": "json", "limit": "50"},
       ),
     );
     final tracks = (body?["tracks"]?["track"] as List<dynamic>?) ?? const [];
 
     return tracks
         .cast<Map<String, dynamic>>()
-        .map(
-          (t) => DiscoveredTrack(
-            title: (t["name"] ?? "") as String,
-            artist: (t["artist"]?["name"] ?? "") as String,
-          ),
-        )
+        .map((t) => DiscoveredTrack(title: (t["name"] ?? "") as String, artist: (t["artist"]?["name"] ?? "") as String))
         .where((t) => t.title.isNotEmpty && t.artist.isNotEmpty)
         .toList();
   }
@@ -372,10 +347,7 @@ class DiscoveryService {
       final title = (candidate.name ?? "").toLowerCase().trim();
       if (title != wantedTitle) continue;
 
-      final artists = [
-        candidate.albumArtist ?? "",
-        ...?candidate.artists,
-      ].map((a) => a.toLowerCase().trim());
+      final artists = [candidate.albumArtist ?? "", ...?candidate.artists].map((a) => a.toLowerCase().trim());
       if (artists.any((a) => a == wantedArtist)) return candidate;
     }
     return null;

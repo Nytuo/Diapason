@@ -57,8 +57,7 @@ class CastService {
     GoogleCastDiscoveryManager.instance.stopDiscovery();
   }
 
-  Future<void> connect(GoogleCastDevice device) =>
-      GoogleCastSessionManager.instance.startSessionWithDevice(device);
+  Future<void> connect(GoogleCastDevice device) => GoogleCastSessionManager.instance.startSessionWithDevice(device);
 
   Future<void> disconnect() => GoogleCastSessionManager.instance.endSessionAndStopCasting();
 
@@ -108,8 +107,6 @@ class CastService {
   Future<void> pause() => GoogleCastRemoteMediaClient.instance.pause();
   Future<void> stop() => GoogleCastRemoteMediaClient.instance.stop();
 
-  Future<void> seek(Duration position) => GoogleCastRemoteMediaClient.instance.seek(
-    GoogleCastMediaSeekOption(position: position),
-  );
-
+  Future<void> seek(Duration position) =>
+      GoogleCastRemoteMediaClient.instance.seek(GoogleCastMediaSeekOption(position: position));
 }

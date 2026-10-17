@@ -2,7 +2,11 @@ import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/queue_service.dart';
 import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/screens/tv/tv_connect_screen.dart';
 import 'package:diapason/screens/tv/tv_now_playing_screen.dart';
+import 'package:diapason/screens/tv/tv_profile_picker_screen.dart';
+import 'package:diapason/screens/tv/tv_widgets.dart';
+import 'package:diapason/services/tv/tv_profile_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -79,10 +83,7 @@ class _TvHomeScreenState extends State<TvHomeScreen> {
           children: [
             Row(
               children: [
-                Text(
-                  "Diapason",
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.white),
-                ),
+                Text("Diapason", style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.white)),
                 const SizedBox(width: 48.0),
                 Expanded(
                   child: TextField(
@@ -104,6 +105,14 @@ class _TvHomeScreenState extends State<TvHomeScreen> {
                   label: "Now playing",
                   onPressed: () => Navigator.of(context).pushNamed(TvNowPlayingScreen.routeName),
                 ),
+                const SizedBox(width: 16.0),
+                _TvButton(
+                  icon: TablerIcons.device_speaker,
+                  label: "Connect",
+                  onPressed: () => Navigator.of(context).pushNamed(TvConnectScreen.routeName),
+                ),
+                const SizedBox(width: 16.0),
+                const _ProfileChip(),
               ],
             ),
 
@@ -141,10 +150,7 @@ class _TvRow extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 32.0, 0, 12.0),
-              child: Text(
-                title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),
-              ),
+              child: Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white)),
             ),
             SizedBox(
               height: 220.0,
@@ -275,6 +281,33 @@ class _TvButtonState extends State<_TvButton> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Who is listening; select it to switch to someone else.
+class _ProfileChip extends StatelessWidget {
+  const _ProfileChip();
+
+  @override
+  Widget build(BuildContext context) {
+    final profiles = GetIt.instance<TvProfileService>();
+    return ListenableBuilder(
+      listenable: profiles,
+      builder: (context, _) {
+        final profile = profiles.active;
+        if (profile == null) return const SizedBox.shrink();
+        return TvFocusable(
+          onPressed: () => Navigator.of(context).pushNamed(TvProfilePickerScreen.routeName),
+          builder: (context, focused) => Row(
+            children: [
+              TvAvatar(color: Color(profile.colorValue), initial: profile.initial, size: 48.0, focused: focused),
+              const SizedBox(width: 12.0),
+              Text(profile.name, style: TextStyle(color: focused ? Colors.white : Colors.white70, fontSize: 18.0)),
+            ],
+          ),
+        );
+      },
     );
   }
 }

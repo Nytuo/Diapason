@@ -3,26 +3,26 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:diapason/services/connect/connect_mdns.dart';
 import 'package:diapason/services/connect/connect_models.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
-import 'package:nsd/nsd.dart' as nsd;
 
 class ConnectService {
-  ConnectService({http.Client? httpClient}) : _http = httpClient ?? http.Client();
+  ConnectService({http.Client? httpClient, ConnectMdns? mdns})
+    : _http = httpClient ?? http.Client(),
+      _mdns = mdns ?? defaultConnectMdns();
 
   static final _log = Logger("ConnectService");
   static const serviceType = "_diapason-connect._tcp";
   static const _pollInterval = Duration(seconds: 2);
 
-  static void _allowLongServiceName() => nsd.disableServiceTypeValidation(true);
-
   final http.Client _http;
+  final ConnectMdns _mdns;
 
   HttpServer? _server;
-  nsd.Registration? _registration;
-  nsd.Discovery? _discovery;
+  bool _discovering = false;
   Timer? _pollTimer;
 
   String _token = "";
@@ -67,15 +67,7 @@ class ConnectService {
     unawaited(_serve(server));
 
     try {
-      _allowLongServiceName();
-      _registration = await nsd.register(
-        nsd.Service(
-          name: deviceName,
-          type: serviceType,
-          port: _port,
-          txt: {"token": Uint8List.fromList(utf8.encode(_token))},
-        ),
-      );
+      await _mdns.register(name: deviceName, type: serviceType, port: _port, txt: {"token": _token});
       _log.info("Connect is serving on port $_port and advertising as '$deviceName'");
     } catch (e) {
       _log.warning("Could not advertise over mDNS: $e");
@@ -87,12 +79,9 @@ class ConnectService {
     _pollTimer = null;
     await stopDiscovery();
 
-    if (_registration != null) {
-      try {
-        await nsd.unregister(_registration!);
-      } catch (_) {}
-      _registration = null;
-    }
+    try {
+      await _mdns.unregister();
+    } catch (_) {}
     await _server?.close(force: true);
     _server = null;
     _port = 0;
@@ -193,40 +182,39 @@ class ConnectService {
   }
 
   Future<void> startDiscovery() async {
-    if (_discovery != null) return;
+    if (_discovering) return;
     devices.value = const [];
 
     try {
-      _allowLongServiceName();
-      final discovery = await nsd.startDiscovery(serviceType, ipLookupType: nsd.IpLookupType.v4);
-      _discovery = discovery;
-      discovery.addListener(() {
-        devices.value = discovery.services.map(_toDevice).nonNulls.where(_isNotUs).toList();
+      _discovering = true;
+      await _mdns.startBrowse(serviceType, (services) {
+        devices.value = services.map(_toDevice).nonNulls.where(_isNotUs).toList();
       });
     } catch (e) {
+      _discovering = false;
       _log.warning("Could not browse for Connect devices: $e");
     }
   }
 
   Future<void> stopDiscovery() async {
-    if (_discovery == null) return;
+    if (!_discovering) return;
+    _discovering = false;
     try {
-      await nsd.stopDiscovery(_discovery!);
+      await _mdns.stopBrowse();
     } catch (_) {}
-    _discovery = null;
   }
 
-  ConnectDevice? _toDevice(nsd.Service service) {
+  ConnectDevice? _toDevice(MdnsService service) {
     final host = service.host;
     final port = service.port;
-    final tokenBytes = service.txt?["token"];
-    if (host == null || port == null || tokenBytes == null) return null;
-
-    final token = utf8.decode(tokenBytes);
-    if (token.isEmpty) return null;
+    final token = service.txt["token"];
+    if (host == null || port == null || token == null || token.isEmpty) return null;
 
     final normalized = host.endsWith(".") ? host.substring(0, host.length - 1) : host;
-    return ConnectDevice(name: service.name ?? "Diapason", baseUrl: "http://$normalized:$port/$token/connect");
+    return ConnectDevice(
+      name: service.name.isEmpty ? "Diapason" : service.name,
+      baseUrl: "http://$normalized:$port/$token/connect",
+    );
   }
 
   bool _isNotUs(ConnectDevice device) => !device.baseUrl.contains("/$_token/");

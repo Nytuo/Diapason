@@ -9,23 +9,22 @@
 /* Begin PBXBuildFile section */
 		0D6A307D72F7A7DD0D9F9C53 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F8E5C5919A29AB1A79CABB9 /* Pods_Runner.framework */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
-		3D8C4DCBE473D0725366395C /* AppleTvAudioChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DD6FEE8CEFA66E29258DE41 /* AppleTvAudioChannel.swift */; };
+		1DF637891BF14FB826E9C44D /* AppleTvBonjourChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B91A2F313ACDA69E2691876 /* AppleTvBonjourChannel.swift */; };
 		7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */; };
-		8371DC9ADAFF81B51074C533 /* AppleTvSystemChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 223002EC258F550317A9AF3C /* AppleTvSystemChannel.swift */; };
+		8125EF79EA1FE537870E39A7 /* AppleTvSystemChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDCA6C06B2624992B3104102 /* AppleTvSystemChannel.swift */; };
 		97C146FB1CF9000082B4168C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000082B4168C /* AppDelegate.swift */; };
 		97C1470A1CF9000082B4168D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000082B4168D /* Main.storyboard */; };
 		97C1470B1CF9000082B4168D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000082B4168E /* LaunchScreen.storyboard */; };
 		97C1470F1CF9000082B4168C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000082B4168C /* Assets.xcassets */; };
 		AAF20000000000000000F00D /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = AAF30000000000000000F00D /* FlutterGeneratedPluginSwiftPackage */; };
+		BA1B86CC9BBEFB644ED9F4BE /* AppleTvAudioChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F78BF923A144AA11AE25AAE5 /* AppleTvAudioChannel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
-		223002EC258F550317A9AF3C /* AppleTvSystemChannel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppleTvSystemChannel.swift; sourceTree = "<group>"; };
 		2F8E5C5919A29AB1A79CABB9 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B3967151E833CAB004F5970 /* Flutter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Flutter.framework; path = Flutter/Flutter.framework; sourceTree = "<group>"; };
-		6DD6FEE8CEFA66E29258DE41 /* AppleTvAudioChannel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppleTvAudioChannel.swift; sourceTree = "<group>"; };
 		6F3907031F19DB6FBE69A542 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
 		6F96D80F6521FD5120D23EB5 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
@@ -39,7 +38,10 @@
 		97C146FE1CF9000082B4168C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		97C146FF1CF9000082B4168D /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Main.storyboard; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		97C146FF1CF9000082B4168E /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		9B91A2F313ACDA69E2691876 /* AppleTvBonjourChannel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppleTvBonjourChannel.swift; sourceTree = "<group>"; };
 		AAA000000000000000000003 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
+		F78BF923A144AA11AE25AAE5 /* AppleTvAudioChannel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppleTvAudioChannel.swift; sourceTree = "<group>"; };
+		FDCA6C06B2624992B3104102 /* AppleTvSystemChannel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppleTvSystemChannel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,8 +60,9 @@
 		4A1F33FB8368A2442D139DB9 /* Playback */ = {
 			isa = PBXGroup;
 			children = (
-				6DD6FEE8CEFA66E29258DE41 /* AppleTvAudioChannel.swift */,
-				223002EC258F550317A9AF3C /* AppleTvSystemChannel.swift */,
+				F78BF923A144AA11AE25AAE5 /* AppleTvAudioChannel.swift */,
+				9B91A2F313ACDA69E2691876 /* AppleTvBonjourChannel.swift */,
+				FDCA6C06B2624992B3104102 /* AppleTvSystemChannel.swift */,
 			);
 			name = Playback;
 			path = Runner/Playback;
@@ -325,8 +328,9 @@
 				97C146FB1CF9000082B4168C /* AppDelegate.swift in Sources */,
 				7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
-				3D8C4DCBE473D0725366395C /* AppleTvAudioChannel.swift in Sources */,
-				8371DC9ADAFF81B51074C533 /* AppleTvSystemChannel.swift in Sources */,
+				BA1B86CC9BBEFB644ED9F4BE /* AppleTvAudioChannel.swift in Sources */,
+				1DF637891BF14FB826E9C44D /* AppleTvBonjourChannel.swift in Sources */,
+				8125EF79EA1FE537870E39A7 /* AppleTvSystemChannel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

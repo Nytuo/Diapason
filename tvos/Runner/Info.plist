@@ -30,6 +30,15 @@
     path that does not exist on a physical device. `FLTAssetsPath` points
     the engine at the directory the build actually produces.
   -->
+  <!-- Diapason Connect finds other Diapason devices with Bonjour, which tvOS treats as local network access. -->
+  <key>NSLocalNetworkUsageDescription</key>
+  <string>Diapason looks for your other devices on the network so you can play on them and control them.</string>
+  <key>NSBonjourServices</key>
+  <array>
+    <string>_diapason-connect._tcp</string>
+    <!-- Debug and profile builds publish the Dart VM service here, for hot reload and DevTools. -->
+    <string>_dartVmService._tcp</string>
+  </array>
   <key>FLTAssetsPath</key>
   <string>flutter_assets</string>
   <key>UIApplicationSceneManifest</key>

@@ -6,6 +6,7 @@ import UIKit
   // Held for the life of the app: the channels stop answering once they are released.
   private var appleTvAudioChannel: AppleTvAudioChannel?
   private var appleTvSystemChannel: AppleTvSystemChannel?
+  private var appleTvBonjourChannel: AppleTvBonjourChannel?
 
   override func application(
     _ application: UIApplication,
@@ -21,5 +22,7 @@ import UIKit
     let messenger = engineBridge.applicationRegistrar.messenger()
     appleTvAudioChannel = AppleTvAudioChannel(messenger: messenger)
     appleTvSystemChannel = AppleTvSystemChannel(messenger: messenger)
+    // Diapason Connect: announcing this TV and finding the other devices.
+    appleTvBonjourChannel = AppleTvBonjourChannel(messenger: messenger)
   }
 }

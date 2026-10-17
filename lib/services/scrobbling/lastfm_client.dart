@@ -35,8 +35,7 @@ class LastFmClient {
     return body?["token"] as String?;
   }
 
-  Uri authorizationUrl(String token) =>
-      Uri.parse("https://www.last.fm/api/auth/?api_key=$apiKey&token=$token");
+  Uri authorizationUrl(String token) => Uri.parse("https://www.last.fm/api/auth/?api_key=$apiKey&token=$token");
 
   Future<({String sessionKey, String username})?> session(String token) async {
     final body = await _call({"method": "auth.getSession", "token": token}, signed: true, post: false);
@@ -84,9 +83,7 @@ class LastFmClient {
     all["format"] = "json";
 
     try {
-      final response = post
-          ? await _http.post(_base, body: all)
-          : await _http.get(_base.replace(queryParameters: all));
+      final response = post ? await _http.post(_base, body: all) : await _http.get(_base.replace(queryParameters: all));
 
       final body = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
       if (body["error"] != null) {

@@ -76,10 +76,9 @@ class PlexBackend implements MediaBackend {
   @override
   Future<bool> ping() async {
     final container = await _get("/library/sections");
-    final section = _list(container?["Directory"]).firstWhere(
-      (d) => d["type"] == "artist" || d["type"] == "music",
-      orElse: () => const {},
-    );
+    final section = _list(
+      container?["Directory"],
+    ).firstWhere((d) => d["type"] == "artist" || d["type"] == "music", orElse: () => const {});
     _musicSection = section["key"]?.toString();
     _connected = _musicSection != null;
     return _connected;

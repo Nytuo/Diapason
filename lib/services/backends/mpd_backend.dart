@@ -94,7 +94,10 @@ class MpdBackend implements MediaBackend {
             .toList();
       case "MusicGenre":
         final lines = await client.command("list genre");
-        return lines.where((l) => l.key == "Genre" && l.value.isNotEmpty).map((l) => _map.genre(name: l.value)).toList();
+        return lines
+            .where((l) => l.key == "Genre" && l.value.isNotEmpty)
+            .map((l) => _map.genre(name: l.value))
+            .toList();
       case "Audio":
         return _allTracks(client, limit: limit, offset: startIndex);
       case "MusicAlbum":
@@ -144,7 +147,10 @@ class MpdBackend implements MediaBackend {
   Future<List<BaseItemDto>> _search(MpdClient client, String term, String? includeItemTypes) async {
     if (includeItemTypes == "MusicArtist") {
       final lines = await client.command("list albumartist albumartist ${MpdClient.quote(term)}");
-      return lines.where((l) => l.key == "AlbumArtist" && l.value.isNotEmpty).map((l) => _map.artist(nativeId: l.value, name: l.value)).toList();
+      return lines
+          .where((l) => l.key == "AlbumArtist" && l.value.isNotEmpty)
+          .map((l) => _map.artist(nativeId: l.value, name: l.value))
+          .toList();
     }
     if (includeItemTypes == "MusicAlbum") {
       return _albumsWhere(client, "album", term);
@@ -228,7 +234,12 @@ class MpdBackend implements MediaBackend {
   Future<void> reportPlaybackStart(BaseItemDto item, {String? playSessionId}) async {}
 
   @override
-  Future<void> reportPlaybackProgress(BaseItemDto item, {required Duration position, required bool isPaused, String? playSessionId}) async {}
+  Future<void> reportPlaybackProgress(
+    BaseItemDto item, {
+    required Duration position,
+    required bool isPaused,
+    String? playSessionId,
+  }) async {}
 
   @override
   Future<void> reportPlaybackStopped(BaseItemDto item, {required Duration position, String? playSessionId}) async {}

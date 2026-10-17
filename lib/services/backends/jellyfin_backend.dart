@@ -203,11 +203,7 @@ class JellyfinBackend implements MediaBackend {
   @override
   Future<void> updatePlaylistMetadata(BaseItemDto playlist, {String? name, bool? isPublic}) => _api.updatePlaylist(
     itemId: playlist.id,
-    newPlaylist: NewPlaylist(
-      name: name,
-      isPublic: isPublic,
-      userId: GetIt.instance<FinampUserHelper>().currentUserId,
-    ),
+    newPlaylist: NewPlaylist(name: name, isPublic: isPublic, userId: GetIt.instance<FinampUserHelper>().currentUserId),
   );
 
   @override

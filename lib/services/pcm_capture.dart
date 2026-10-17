@@ -51,19 +51,16 @@ class NativeLoopbackPcmCapture implements PcmCaptureBackend {
     }
     if (result != true) return false;
 
-    _subscription = _events.receiveBroadcastStream().listen(
-      (event) {
-        if (event is! Map) return;
-        final pcm = event["pcm"];
-        final sampleRate = event["sampleRate"];
-        final channels = event["channels"];
-        if (pcm is! Float32List || sampleRate is! int || channels is! int || channels < 1) {
-          return;
-        }
-        _controller.add(PcmChunk(pcm, sampleRate, channels));
-      },
-      onError: (Object e) => _logger.warning("PCM capture stream error: $e"),
-    );
+    _subscription = _events.receiveBroadcastStream().listen((event) {
+      if (event is! Map) return;
+      final pcm = event["pcm"];
+      final sampleRate = event["sampleRate"];
+      final channels = event["channels"];
+      if (pcm is! Float32List || sampleRate is! int || channels is! int || channels < 1) {
+        return;
+      }
+      _controller.add(PcmChunk(pcm, sampleRate, channels));
+    }, onError: (Object e) => _logger.warning("PCM capture stream error: $e"));
     return true;
   }
 

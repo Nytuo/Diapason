@@ -200,7 +200,9 @@ class AggregateBackend {
     bool isPublic = true,
   }) async {
     final backend =
-        source ?? (itemIds.isNotEmpty ? _registry.forItemId(itemIds.first) : null) ?? playlistCapableSources.firstOrNull;
+        source ??
+        (itemIds.isNotEmpty ? _registry.forItemId(itemIds.first) : null) ??
+        playlistCapableSources.firstOrNull;
     if (backend == null || !backend.capabilities.playlists) return null;
 
     final ownItemIds = itemIds.where((id) => _registry.forItemId(id) == backend).toList();

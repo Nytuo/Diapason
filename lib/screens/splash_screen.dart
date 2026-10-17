@@ -1,4 +1,5 @@
-import 'package:diapason/screens/tv/tv_home_screen.dart';
+import 'package:diapason/screens/tv/tv_landing.dart';
+import 'package:diapason/services/tv/tv_profile_service.dart';
 import 'package:diapason/screens/watch/watch_screen.dart';
 import 'package:diapason/utils/device_form_factor.dart';
 import 'package:diapason/services/backends/backend_registry.dart';
@@ -31,16 +32,21 @@ class SplashScreen extends ConsumerWidget {
 
     if (DeviceFormFactorDetector.current.isWatch) return const WatchScreen();
 
+    // A TV with profiles always starts at its landing screen, even before anyone has added an account.
+    if (DeviceFormFactorDetector.current.isTv && GetIt.instance<TvProfileService>().profiles.isNotEmpty) {
+      return const TvLanding();
+    }
+
     Widget home() => isDesktop ? const DesktopShell() : const MusicScreen();
 
     if (user == null) {
       final hasOtherSources = GetIt.instance<BackendRegistry>().configured.isNotEmpty;
       if (!hasOtherSources) return const LoginScreen();
-      return DeviceFormFactorDetector.current.isTv ? const TvHomeScreen() : home();
+      return DeviceFormFactorDetector.current.isTv ? const TvLanding() : home();
     } else if (user.currentView == null) {
       return const ViewSelector();
     } else if (DeviceFormFactorDetector.current.isTv) {
-      return const TvHomeScreen();
+      return const TvLanding();
     } else {
       return home();
     }

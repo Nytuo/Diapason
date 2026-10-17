@@ -10,8 +10,7 @@ class BackendRegistry {
 
   Iterable<MediaBackend> get all => _backends.values;
 
-  Iterable<MediaBackend> get enabled =>
-      _backends.values.where((b) => b.config.enabled && b.config.kind.isConfigurable);
+  Iterable<MediaBackend> get enabled => _backends.values.where((b) => b.config.enabled && b.config.kind.isConfigurable);
 
   Iterable<MediaBackend> get configured => _backends.values.where((b) => b.config.kind.isConfigurable);
 

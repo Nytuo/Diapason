@@ -209,7 +209,9 @@ Future<void> _switchNonJellyfinSourcesTargetUrl() async {
     }
     config.isLocal = reachable;
     if (reachable != wasLocal) {
-      _networKSwitcherLogger.info("Changed ${config.name}'s active network to ${reachable ? "local" : "public"} address");
+      _networKSwitcherLogger.info(
+        "Changed ${config.name}'s active network to ${reachable ? "local" : "public"} address",
+      );
       await mediaSourceService.updateSource(config);
     }
   }

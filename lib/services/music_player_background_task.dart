@@ -240,8 +240,9 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   String? _tvLoadedItemId;
   int _tvLoadGeneration = 0;
 
-  bool get _effectivePlaying =>
-      AppleTvAudioChannel.isSupported ? _tvPlaying : (_player.playing && fadeState.value.fadeDirection != FadeDirection.fadeOut);
+  bool get _effectivePlaying => AppleTvAudioChannel.isSupported
+      ? _tvPlaying
+      : (_player.playing && fadeState.value.fadeDirection != FadeDirection.fadeOut);
 
   FinampQueueItem? get _tvCurrentQueueItem => _player.sequenceState.currentSource?.tag as FinampQueueItem?;
 
@@ -411,14 +412,8 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       _iosAudioEffectsB.add(_darwinEqualizerB!);
     }
 
-    _audioPipelineA = AudioPipeline(
-      androidAudioEffects: _androidAudioEffectsA,
-      darwinAudioEffects: _iosAudioEffectsA,
-    );
-    _audioPipelineB = AudioPipeline(
-      androidAudioEffects: _androidAudioEffectsB,
-      darwinAudioEffects: _iosAudioEffectsB,
-    );
+    _audioPipelineA = AudioPipeline(androidAudioEffects: _androidAudioEffectsA, darwinAudioEffects: _iosAudioEffectsA);
+    _audioPipelineB = AudioPipeline(androidAudioEffects: _androidAudioEffectsB, darwinAudioEffects: _iosAudioEffectsB);
 
     Duration maxBufferDuration = Duration(
       seconds: max(minBufferDuration.inSeconds, FinampSettingsHelper.finampSettings.bufferDuration.inSeconds),
@@ -482,8 +477,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
                   device.type == AudioDeviceType.bluetoothSco ||
                   device.type == AudioDeviceType.bluetoothLe),
         );
-        if (addedBluetoothOutputDevices.isNotEmpty &&
-            FinampSettingsHelper.finampSettings.resumeOnBluetoothConnect) {
+        if (addedBluetoothOutputDevices.isNotEmpty && FinampSettingsHelper.finampSettings.resumeOnBluetoothConnect) {
           _audioServiceBackgroundTaskLogger.info(
             "Resuming playback due to added bluetooth device(s): $addedBluetoothOutputDevices",
           );

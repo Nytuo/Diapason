@@ -5,26 +5,9 @@ import 'package:chopper/chopper.dart' as chopper;
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 
-
-
-enum ErrorSource {
-
-  connection,
-
-
-  uploader,
-
-
-  ytdlp,
-
-
-  device,
-
-  unknown,
-}
+enum ErrorSource { connection, uploader, ytdlp, device, unknown }
 
 extension ErrorSourceLabel on ErrorSource {
-
   String get label => switch (this) {
     ErrorSource.connection => "Connection",
     ErrorSource.uploader => "Your uploader",
@@ -34,28 +17,19 @@ extension ErrorSourceLabel on ErrorSource {
   };
 }
 
-
-
-
-
-
-
 class AppException implements Exception {
   const AppException(this.message, {this.source = ErrorSource.unknown, this.code, this.detail, this.requestId});
 
   final String message;
   final ErrorSource source;
 
-
   final String? code;
   final String? detail;
-
 
   final String? requestId;
 
   @override
   String toString() => message;
-
 
   String get technical => [
     "source=${source.name}",
@@ -65,13 +39,10 @@ class AppException implements Exception {
   ].join(" ");
 }
 
-
 class FriendlyError {
   static final _log = Logger("FriendlyError");
 
-
   static String message(Object? error) => describe(error).message;
-
 
   static ({String message, ErrorSource source, String technical}) describe(Object? error) {
     if (error is AppException) {
@@ -144,14 +115,11 @@ class FriendlyError {
     );
   }
 
-
-
   static String report(Logger logger, String what, Object error, [StackTrace? stack]) {
     final d = describe(error);
     logger.warning("$what failed [${d.source.name}]: ${d.technical}", error, stack);
     return d.message;
   }
-
 
   static String reportGlobal(String what, Object error, [StackTrace? stack]) => report(_log, what, error, stack);
 }

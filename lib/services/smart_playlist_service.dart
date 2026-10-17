@@ -19,7 +19,8 @@ class SmartPlaylistService {
 
   Future<List<SmartPlaylist>> list() async {
     final box = await _openBox();
-    return box.values.map(SmartPlaylist.decode).toList()..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return box.values.map(SmartPlaylist.decode).toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
   }
 
   Future<void> save(SmartPlaylist playlist) async {

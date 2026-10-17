@@ -1397,10 +1397,7 @@ class DownloadsSyncService {
       DownloadItemType? typeOverride;
       switch (collection.type) {
         case FinampCollectionType.favorites:
-          outputItems = await aggregate.getItems(
-            includeItemTypes: "Audio,MusicAlbum,Playlist",
-            filters: "IsFavorite",
-          );
+          outputItems = await aggregate.getItems(includeItemTypes: "Audio,MusicAlbum,Playlist", filters: "IsFavorite");
           outputItems.addAll(await aggregate.getItems(includeItemTypes: "MusicArtist", filters: "IsFavorite"));
         case FinampCollectionType.allPlaylists:
         case FinampCollectionType.allPlaylistsMetadata:

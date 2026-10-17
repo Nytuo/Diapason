@@ -100,6 +100,10 @@ import 'package:hive_ce_flutter/adapters.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl_standalone.dart';
 import 'package:isar/isar.dart';
+import 'package:diapason/screens/tv/tv_connect_screen.dart';
+import 'package:diapason/screens/tv/tv_profile_edit_screen.dart';
+import 'package:diapason/screens/tv/tv_profile_picker_screen.dart';
+import 'package:diapason/services/tv/tv_profile_service.dart';
 import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
@@ -302,6 +306,14 @@ Future<void> _setupMediaSources() async {
   GetIt.instance.registerSingleton(WidgetSyncService());
   GetIt.instance.registerSingleton(MediaSourceService());
   await GetIt.instance<MediaSourceService>().loadSources();
+  GetIt.instance.registerSingleton(
+    TvProfileService.hive(Hive.box<String>(TvProfileService.boxName), GetIt.instance<MediaSourceService>()),
+  );
+  if (kDebugMode && const bool.fromEnvironment('DIAPASON_DEMO_PROFILES')) {
+    await GetIt.instance<TvProfileService>().seedDemoProfiles();
+  }
+  // Accounts set up before profiles existed become the first profile, so nothing disappears on a TV.
+  if (DeviceFormFactorDetector.current.isTv) await GetIt.instance<TvProfileService>().adoptExistingSources();
 
   // YouTube runs on yt-dlp (local on desktop, or via the uploader). Detect what's
   // available without delaying startup: the UI hides YouTube until this settles.
@@ -412,6 +424,9 @@ Future<void> setupHive() async {
   if (finampSettingsBox.isEmpty) {
     await finampSettingsBox.put("FinampSettings", await FinampSettings.create());
   }
+
+  // The TV's profiles (who is listening) are a few small JSON strings; every platform keeps them in Hive.
+  await Hive.openBox<String>(TvProfileService.boxName);
 
   if (AppleTvAudioChannel.isSupported) {
     // Isar's native core has no tvOS binary, so tvOS never opens it (and
@@ -1056,6 +1071,10 @@ class FinampApp extends ConsumerWidget {
         ImportScreen.routeName: (context) => const ImportScreen(),
         ShortcutsScreen.routeName: (context) => const ShortcutsScreen(),
         TvHomeScreen.routeName: (context) => const TvHomeScreen(),
+        TvProfilePickerScreen.routeName: (context) => const TvProfilePickerScreen(),
+        TvProfileEditScreen.routeName: (context) =>
+            TvProfileEditScreen(profileId: ModalRoute.settingsOf(context)!.arguments as String),
+        TvConnectScreen.routeName: (context) => const TvConnectScreen(),
         TvNowPlayingScreen.routeName: (context) => const TvNowPlayingScreen(),
         WatchScreen.routeName: (context) => const WatchScreen(),
         IpodShell.routeName: (context) => const IpodShell(),
@@ -1101,9 +1120,7 @@ class FinampApp extends ConsumerWidget {
       initialRoute: SplashScreen.routeName,
       navigatorObservers: [SplitScreenNavigatorObserver(), KeepScreenOnObserver()],
       builder: (BuildContext context, Widget? widget) {
-        Widget child = GlobalShortcutManager(
-          child: buildPlayerSplitScreenScaffold(context, widget),
-        );
+        Widget child = GlobalShortcutManager(child: buildPlayerSplitScreenScaffold(context, widget));
         if (Platform.isMacOS) {
           final media = MediaQuery.of(context);
           child = MediaQuery(

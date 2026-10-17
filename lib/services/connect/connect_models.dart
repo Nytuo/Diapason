@@ -40,12 +40,7 @@ class ConnectStatus {
     volume: ((json["volume"] ?? 1) as num).toDouble(),
   );
 
-  Map<String, dynamic> toJson() => {
-    "song": song?.toJson(),
-    "state": state,
-    "position": position,
-    "volume": volume,
-  };
+  Map<String, dynamic> toJson() => {"song": song?.toJson(), "state": state, "position": position, "volume": volume};
 }
 
 class ConnectSong {

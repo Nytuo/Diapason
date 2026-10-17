@@ -20,14 +20,8 @@ enum WrappedPeriod {
   ({DateTime start, DateTime end}) range([DateTime? now]) {
     final today = now ?? DateTime.now();
     return switch (this) {
-      WrappedPeriod.thisMonth => (
-        start: DateTime(today.year, today.month),
-        end: DateTime(today.year, today.month + 1),
-      ),
-      WrappedPeriod.lastMonth => (
-        start: DateTime(today.year, today.month - 1),
-        end: DateTime(today.year, today.month),
-      ),
+      WrappedPeriod.thisMonth => (start: DateTime(today.year, today.month), end: DateTime(today.year, today.month + 1)),
+      WrappedPeriod.lastMonth => (start: DateTime(today.year, today.month - 1), end: DateTime(today.year, today.month)),
       WrappedPeriod.thisYear => (start: DateTime(today.year), end: DateTime(today.year + 1)),
     };
   }
@@ -135,24 +129,14 @@ class StatsService {
       period: period,
       totalPlays: listens.length,
       minutesListened: minutes,
-      topTracks: _rank(
-        listens,
-        key: (e) => e.trackId,
-        name: (e) => e.trackTitle,
-        subtitle: (e) => e.artistName,
-      ),
+      topTracks: _rank(listens, key: (e) => e.trackId, name: (e) => e.trackTitle, subtitle: (e) => e.artistName),
       topAlbums: _rank(
         listens.where((e) => (e.albumTitle ?? "").isNotEmpty),
         key: (e) => e.albumId ?? e.albumTitle!,
         name: (e) => e.albumTitle!,
         subtitle: (e) => e.artistName,
       ),
-      topArtists: _rank(
-        listens,
-        key: (e) => e.artistName,
-        name: (e) => e.artistName,
-        subtitle: (e) => "",
-      ),
+      topArtists: _rank(listens, key: (e) => e.artistName, name: (e) => e.artistName, subtitle: (e) => ""),
       dominantGenre: _dominant(listens.map((e) => e.genre).nonNulls.where((g) => g.isNotEmpty)),
       streakDays: longestStreak(listens),
       distinctArtists: listens.map((e) => e.artistName).toSet().length,
@@ -178,13 +162,7 @@ class StatsService {
     final ranked = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
     return ranked
         .take(limit)
-        .map(
-          (e) => WrappedEntry(
-            name: name(examples[e.key]!),
-            subtitle: subtitle(examples[e.key]!),
-            plays: e.value,
-          ),
-        )
+        .map((e) => WrappedEntry(name: name(examples[e.key]!), subtitle: subtitle(examples[e.key]!), plays: e.value))
         .toList();
   }
 
@@ -201,9 +179,8 @@ class StatsService {
   static int longestStreak(List<PlaybackEvent> events) {
     if (events.isEmpty) return 0;
 
-    final days =
-        events.map((e) => DateTime(e.timestamp.year, e.timestamp.month, e.timestamp.day)).toSet().toList()
-          ..sort();
+    final days = events.map((e) => DateTime(e.timestamp.year, e.timestamp.month, e.timestamp.day)).toSet().toList()
+      ..sort();
 
     var longest = 1;
     var current = 1;
