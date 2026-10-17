@@ -94,17 +94,18 @@ flutter-tvos doctor
 
 # in the diapason repo
 flutter-tvos pub get
-python3 tvos/scripts/restore_tvos_plugins.py  # re-injects the tvos-only plugins
-                                               # into .flutter-plugins-dependencies
-                                               # (flutter pub get drops them)
-flutter-tvos run -d <tvos-device-or-simulator-id>
+flutter-tvos run -d <tvos-device-or-simulator-id>          # e.g. an Apple TV simulator
+flutter-tvos build tvos --release --no-codesign            # unsigned build, as CI does
 ```
 
-Run `restore_tvos_plugins.py` before every `pod install` / `flutter-tvos
-build`/`run`, since any regular `flutter` command regenerates
-`.flutter-plugins-dependencies` without the tvos key. If native files under
-`tvos/Runner/Playback` change, re-run `tvos/scripts/wire_tvos_player.rb` to
-wire them into `Runner.xcodeproj`.
+`flutter-tvos` wires the tvOS plugins into the Xcode project itself (Swift Package Manager for the ones that ship
+a `Package.swift`, CocoaPods for the rest). The CI release job pins the toolchain with `FLUTTER_TVOS_REF` in
+`.github/workflows/release.yml`; use the same tag locally to reproduce it.
+
+If native files under `tvos/Runner/Playback` are added or removed, run `tvos/scripts/wire_tvos_player.rb` (needs the
+`xcodeproj` gem, which CocoaPods ships) to wire them into `Runner.xcodeproj`. The app icon and top shelf images are
+drawn from `assets/icon` by `python3 tvos/scripts/generate_brand_assets.py` (needs Pillow); App Store validation
+wants every size at 1x and 2x, so they are not kept by hand.
 
 #### tvOS status
 

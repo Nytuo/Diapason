@@ -696,13 +696,10 @@ jobs:
     - run: flutter-tvos precache
     - run: flutter-tvos doctor -v
 
+    # flutter-tvos reads the tvOS plugins itself and wires them into the Xcode project (Swift Package Manager for
+    # the ones that ship a Package.swift, CocoaPods for the rest), so there is nothing to restore by hand.
     - name: Fetch packages
-      run: |
-        set -eux
-        flutter-tvos pub get
-        # A regular flutter command regenerates .flutter-plugins-dependencies
-        # without the tvos plugins; put them back before pod install / build.
-        python3 tvos/scripts/restore_tvos_plugins.py
+      run: flutter-tvos pub get
 
     # Xcode ships the tvOS SDK but the platform (device support) is a separate
     # download on some runner images; building without it fails with "tvOS is
@@ -717,32 +714,13 @@ jobs:
           echo "tvOS platform already installed."
         fi
 
-    # Dart/AOT side first, without any signing: this always runs and stages the
-    # frameworks the Xcode project embeds.
-    - name: Build Flutter side (unsigned)
-      run: flutter-tvos build tvos --release --no-codesign
-
-    # flutter-tvos does not run pod install itself; without Pods the Xcode
-    # workspace cannot build. The tvos plugins must be re-injected first.
-    - name: Install CocoaPods dependencies
-      env:
-        LANG: en_US.UTF-8
-        LC_ALL: en_US.UTF-8
-      run: |
-        set -eux
-        python3 tvos/scripts/restore_tvos_plugins.py
-        (cd tvos && pod install)
-
-    # flutter-tvos --no-codesign stops after the Dart compile; Xcode links the
-    # app. This also yields the unsigned artifact for the GitHub release.
-    - name: Link the tvOS app and package an unsigned IPA
+    # One command builds the Dart side and the Xcode app, unsigned. It also yields the IPA for the GitHub release.
+    - name: Build the tvOS app (unsigned) and package an IPA
       run: |
         set -euxo pipefail
-        xcodebuild -workspace tvos/Runner.xcworkspace -scheme Runner -configuration Release \
-          -destination 'generic/platform=tvOS' -derivedDataPath "$RUNNER_TEMP/dd-tv" \
-          CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
-        APP=$(find "$RUNNER_TEMP/dd-tv/Build/Products" -type d -name '*.app' -path '*appletvos*' | head -1)
-        test -n "$APP" || { echo "::error::No tvOS .app was produced"; exit 1; }
+        flutter-tvos build tvos --release --no-codesign
+        APP=build/tvos/Release-appletvos/Runner.app
+        test -d "$APP" || { echo "::error::No tvOS .app was produced at $APP"; exit 1; }
         rm -rf ipa && mkdir -p ipa/Payload
         cp -R "$APP" ipa/Payload/Diapason.app
         (cd ipa && zip -qr "$GITHUB_WORKSPACE/diapason-${{ steps.version.outputs.version }}_tvos.ipa" Payload)
