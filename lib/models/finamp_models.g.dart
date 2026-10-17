@@ -537,13 +537,28 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
           : (fields[186] as Map).cast<int, double>()
       ..equalizerActivePreset = fields[187] == null
           ? 'Flat'
-          : fields[187] as String?;
+          : fields[187] as String?
+      ..uploaderYtProxy = fields[188] == null ? true : fields[188] as bool
+      ..uploaderAllowInsecure = fields[189] == null
+          ? false
+          : fields[189] as bool
+      ..ytdlpConfigJson = fields[190] == null ? '' : fields[190] as String
+      ..uploaderWifiOnly = fields[191] == null ? false : fields[191] as bool
+      ..youtubeResultCount = fields[192] == null
+          ? 20
+          : (fields[192] as num).toInt()
+      ..youtubeShowHits = fields[193] == null ? true : fields[193] as bool
+      ..youtubeShowNew = fields[194] == null ? true : fields[194] as bool
+      ..youtubeSearchByDefault = fields[195] == null
+          ? false
+          : fields[195] as bool
+      ..logLevel = fields[196] == null ? 'all' : fields[196] as String;
   }
 
   @override
   void write(BinaryWriter writer, FinampSettings obj) {
     writer
-      ..writeByte(180)
+      ..writeByte(189)
       ..writeByte(0)
       ..write(obj.isOffline)
       ..writeByte(1)
@@ -903,7 +918,25 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..writeByte(186)
       ..write(obj.equalizerBandGains)
       ..writeByte(187)
-      ..write(obj.equalizerActivePreset);
+      ..write(obj.equalizerActivePreset)
+      ..writeByte(188)
+      ..write(obj.uploaderYtProxy)
+      ..writeByte(189)
+      ..write(obj.uploaderAllowInsecure)
+      ..writeByte(190)
+      ..write(obj.ytdlpConfigJson)
+      ..writeByte(191)
+      ..write(obj.uploaderWifiOnly)
+      ..writeByte(192)
+      ..write(obj.youtubeResultCount)
+      ..writeByte(193)
+      ..write(obj.youtubeShowHits)
+      ..writeByte(194)
+      ..write(obj.youtubeShowNew)
+      ..writeByte(195)
+      ..write(obj.youtubeSearchByDefault)
+      ..writeByte(196)
+      ..write(obj.logLevel);
   }
 
   @override

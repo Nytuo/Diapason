@@ -10,6 +10,7 @@ import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/finamp_user_helper.dart';
 import 'package:diapason/services/queue_service.dart';
 import 'package:diapason/services/youtube_service.dart';
+import 'package:diapason/services/youtube/youtube_availability.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -63,9 +64,10 @@ class _YouTubePicker extends StatelessWidget {
                     ),
                     title: Text(candidate.name ?? "Unknown", maxLines: 2, overflow: TextOverflow.ellipsis),
                     subtitle: Text(
-                      [candidate.albumArtist, _duration(candidate.runTimeTicksDuration())]
-                          .where((s) => s != null && s.isNotEmpty)
-                          .join(" · "),
+                      [
+                        candidate.albumArtist,
+                        _duration(candidate.runTimeTicksDuration()),
+                      ].where((s) => s != null && s.isNotEmpty).join(" · "),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -146,10 +148,7 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
 
   QueueItemSource get _source => QueueItemSource(
     type: QueueItemSourceType.unknown,
-    name: QueueItemSourceName(
-      type: QueueItemSourceNameType.preTranslated,
-      pretranslatedName: widget.playlist.title,
-    ),
+    name: QueueItemSourceName(type: QueueItemSourceNameType.preTranslated, pretranslatedName: widget.playlist.title),
     id: BaseItemId(widget.playlist.id),
   );
 
@@ -165,6 +164,12 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
 
   Future<void> _pickFromYouTube(_Entry entry) async {
     if (entry.searching) return;
+    if (!isYouTubeAvailable) {
+      GlobalSnackbar.message(
+        (_) => "YouTube isn't set up. Add a yt-dlp in Settings → YouTube (yt-dlp) or connect an uploader.",
+      );
+      return;
+    }
     if (_youtube.isRateLimited) {
       GlobalSnackbar.message((_) => "YouTube is rate-limiting us right now — try again in a few minutes.");
       return;
@@ -173,7 +178,7 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
     setState(() => entry.searching = true);
     List<BaseItemDto> candidates;
     try {
-      candidates = await _discovery.youtubeCandidates(entry.requested);
+      candidates = await _discovery.youtubeCandidates(entry.requested, throwOnError: true);
     } catch (e) {
       if (mounted) setState(() => entry.searching = false);
       GlobalSnackbar.error(e);
@@ -302,10 +307,7 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
         _actions(entries),
         const Divider(height: 1),
         Expanded(
-          child: ListView.builder(
-            itemCount: entries.length,
-            itemBuilder: (context, index) => _row(entries[index]),
-          ),
+          child: ListView.builder(itemCount: entries.length, itemBuilder: (context, index) => _row(entries[index])),
         ),
       ],
     );
@@ -347,14 +349,18 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
       trailing: entry.searching
           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
           : resolved == null
-          ? IconButton(
-              icon: const Icon(TablerIcons.brand_youtube),
-              tooltip: "Choose a YouTube match",
-              onPressed: () => _pickFromYouTube(entry),
-            )
-          : DownloadButton(item: DownloadStub.fromItem(type: DownloadItemType.track, item: resolved)),
+          ? !isYouTubeAvailable
+                ? null
+                : IconButton(
+                    icon: const Icon(TablerIcons.brand_youtube),
+                    tooltip: "Choose a YouTube match",
+                    onPressed: () => _pickFromYouTube(entry),
+                  )
+          : DownloadButton(
+              item: DownloadStub.fromItem(type: DownloadItemType.track, item: resolved),
+            ),
       onTap: resolved == null
-          ? () => _pickFromYouTube(entry)
+          ? (isYouTubeAvailable ? () => _pickFromYouTube(entry) : null)
           : () => _play(tracks, startingIndex: tracks.indexOf(resolved)),
     );
   }
@@ -370,7 +376,7 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
         children: [
           Text(
             "${playable.length} of ${entries.length} ready"
-            "${missing > 0 ? " · $missing need a YouTube match" : ""}",
+            "${missing > 0 ? (isYouTubeAvailable ? " · $missing need a YouTube match" : " · $missing not in your library") : ""}",
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 10),
@@ -397,7 +403,7 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
               ),
             ],
           ),
-          if (missing > 0) ...[
+          if (missing > 0 && isYouTubeAvailable) ...[
             const SizedBox(height: 8),
             Text(
               "Tap a greyed-out track to pick its YouTube match. Only tracks you've matched are played or downloaded.",

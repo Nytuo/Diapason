@@ -7,6 +7,7 @@ import 'package:file/local.dart';
 // Directly use LocalFile to avoid touching every cached file on initialization
 import 'package:file/src/backends/local/local_file.dart';
 import 'package:diapason/services/theme_provider.dart';
+import 'package:diapason/services/youtube_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -62,6 +63,23 @@ Future<void> initImageCache() async {
     );
   }
   await _imageCache.config.repo.close();
+}
+
+/// Disk space used by cached cover art.
+Future<int> albumImageCacheBytes() async {
+  final dir = Directory(path_helper.join((await getTemporaryDirectory()).path, _imageCache.config.cacheKey));
+  if (!dir.existsSync()) return 0;
+  var total = 0;
+  await for (final entity in dir.list(recursive: true, followLinks: false)) {
+    if (entity is File) total += await entity.length();
+  }
+  return total;
+}
+
+/// Deletes all cached cover art; it is downloaded again when needed.
+Future<void> clearAlbumImageCache() async {
+  await _imageCache.emptyCache();
+  _playerImageCache.clear();
 }
 
 final Map<String?, AlbumImageRequest> albumRequestsCache = {};
@@ -138,11 +156,21 @@ albumImageProvider = Provider.autoDispose.family<AlbumImageInfo, AlbumImageReque
       return AlbumImageInfo.empty(request);
     }
 
+    // Only YouTube art can need credentials here (it's relayed by the uploader's
+    // proxy); other backends authenticate through the URL itself.
+    final imageHeaders = request.item.id.sourceId == YouTubeService.sourceId
+        ? aggregate.imageHeaders(request.item)
+        : const <String, String>{};
+
     if (request.fullQuality) {
       // If we want full quality player images, retrieve them via the image cache instead of linking directly.
       // In most cases, the initial null value will only be seen by the precache logic.
       Future.sync(() async {
-        FileInfo imageFile = await _imageCache.downloadFile(imageUrl.toString(), key: key);
+        FileInfo imageFile = await _imageCache.downloadFile(
+          imageUrl.toString(),
+          key: key,
+          authHeaders: imageHeaders.isEmpty ? null : imageHeaders,
+        );
         if (blurhashKey) {
           // The default validTill length is 7 days.  Images fetched by blurhash cannot change, as that would change the
           // blurhash, so update vaildTill to one year.
@@ -163,7 +191,10 @@ albumImageProvider = Provider.autoDispose.family<AlbumImageInfo, AlbumImageReque
     } else {
       // Allow drawing albums up to 4X intrinsic size by setting scale
       return AlbumImageInfo(
-        CachedImage(NetworkImage(imageUrl.toString(), scale: 0.25), key),
+        CachedImage(
+          NetworkImage(imageUrl.toString(), scale: 0.25, headers: imageHeaders.isEmpty ? null : imageHeaders),
+          key,
+        ),
         request,
         imageUrl,
         fullQuality: request.fullQuality,

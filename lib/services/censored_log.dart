@@ -89,6 +89,13 @@ extension CensoredMessage on LogRecord {
       );
     }
 
+    // Credentials carried in URL query strings, whatever the server type: Subsonic/Navidrome (t = password hash,
+    // s = salt, p = password), Plex, Emby and generic API keys. These appear in logged media and cover URLs.
+    workingLogString = workingLogString.replaceAllMapped(
+      RegExp(r"""([?&](?:t|s|p|token|api_key|apikey|x-plex-token|x-emby-token)=)[^&\s"'<>]+""", caseSensitive: false),
+      (match) => "${match[1]}CENSORED",
+    );
+
     workingLogString = workingLogString.replaceAll("\n", "\n\t\t");
 
     return workingLogString;

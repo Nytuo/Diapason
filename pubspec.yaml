@@ -139,7 +139,6 @@ dependencies:
   diacritic: ^0.1.6
   crypto: ^3.0.7
   audio_metadata_reader: ^1.6.0
-  youtube_explode_dart: ^3.1.0
   http_parser: ^4.1.2
   nsd: ^5.0.1
   flutter_chrome_cast: ^1.4.6

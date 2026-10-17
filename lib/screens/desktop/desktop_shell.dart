@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:diapason/components/YtDlp/youtube_setup_view.dart';
 import 'package:diapason/components/update_dialog.dart';
 import 'package:diapason/services/updater_prefs.dart';
 import 'package:diapason/screens/desktop/desktop_content.dart';
@@ -40,6 +43,9 @@ class _DesktopShellState extends State<DesktopShell> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (mounted) unawaited(offerYtDlpSetupIfNeeded(context));
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Respect the "check automatically" toggle in Settings → Updates.
       if (!await UpdaterPrefs.isAutoCheckEnabled()) return;

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Persisted preferences for the in-app updater.
@@ -14,8 +15,12 @@ class UpdaterPrefs {
   // Legacy key from when this was Android-only; read for backwards compat.
   static const _legacyAndroidKey = "android_updater_auto_check";
 
+  @visibleForTesting
+  static bool? autoCheckOverrideForTests;
+
   /// Whether to check GitHub for a newer build on launch. Defaults to `true`.
   static Future<bool> isAutoCheckEnabled() async {
+    if (autoCheckOverrideForTests != null) return autoCheckOverrideForTests!;
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_autoCheckKey) ?? prefs.getBool(_legacyAndroidKey) ?? true;
   }

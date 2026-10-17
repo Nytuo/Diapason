@@ -1,108 +1,118 @@
 # Flatpak manifest for Diapason.
 #
-# This builds from a *pre-built* Flutter Linux bundle rather than compiling
-# Flutter inside the sandbox: the Flutter SDK isn't available as a Flatpak SDK
-# extension, and a network-isolated build can't run `pub get`. CI runs
-# `flutter build linux --release` first and this manifest packages the result.
+# Flutter has no Flatpak SDK extension and `pub get` needs the network, so
+# (like Finamp on Flathub) this packages the Linux bundle published with each
+# GitHub release instead of compiling Flutter in the sandbox. media_kit
+# dlopen()s libmpv at runtime, so libmpv is built from source here.
+
 app-id: fr.nytuo.diapason
 runtime: org.freedesktop.Platform
-runtime-version: '24.08'
+runtime-version: '25.08'
 sdk: org.freedesktop.Sdk
 command: diapason
-separate-locales: false
-
-add-extensions:
-  org.freedesktop.Platform.ffmpeg-full:
-    directory: lib/ffmpeg
-    version: '24.08'
-    add-ld-path: .
-    no-autodownload: false
-    autodelete: false
-
 finish-args:
   - --share=ipc
   - --socket=fallback-x11
   - --socket=wayland
-  - --socket=pulseaudio
-  - --socket=pipewire
   - --device=dri
+  - --socket=pulseaudio
+  # PCM capture for the spectrum visualizer.
+  - --filesystem=xdg-run/pipewire-0:ro
+  # Jellyfin, Plex, Subsonic, MPD servers and Diapason Connect.
   - --share=network
-  # Local music libraries and downloads.
+  # Local music libraries.
   - --filesystem=xdg-music
-  - --filesystem=xdg-download
-  # Secret storage and MPRIS/media-key integration.
-  - --talk-name=org.freedesktop.secrets
-  - --own-name=org.mpris.MediaPlayer2.diapason
-  - --talk-name=org.freedesktop.Notifications
-
+  # MPRIS media controls (audio_service_mpris names the service after the
+  # notification channel id plus the PID).
+  - --own-name=org.mpris.MediaPlayer2.fr.nytuo.diapason.audio.*
+  # Discord Rich Presence.
+  - --filesystem=xdg-run/app/com.discordapp.Discord:create
 cleanup:
   - /include
+  - /lib/cmake
   - /lib/pkgconfig
+  - /share/doc
   - /share/man
-  - '*.a'
   - '*.la'
+  - '*.a'
 
 modules:
-  - name: libass
-    cleanup:
-      - /include
-      - /lib/pkgconfig
-    config-opts:
-      - --disable-static
-    sources:
-      - type: archive
-        url: https://github.com/libass/libass/releases/download/0.17.3/libass-0.17.3.tar.gz
-        sha256: da7c348deb6fa6c24507afab2dee7545ba5dd5bbf90a137bfe9e738f7df68537
-
-  - name: uchardet
-    buildsystem: cmake-ninja
-    config-opts:
-      - -DCMAKE_BUILD_TYPE=Release
-      - -DBUILD_STATIC=0
-    cleanup:
-      - /bin
-      - /include
-      - /lib/pkgconfig
-    sources:
-      - type: archive
-        url: https://www.freedesktop.org/software/uchardet/releases/uchardet-0.0.8.tar.xz
-        sha256: e97a60cfc00a1c147a674b097bb1422abd9fa78a2d9ce3f3fdcc2e78a34ac5f0
-
-  # Diapason only needs libmpv (audio); the mpv CLI player is not built.
-  # mpv >= 0.38 also requires libplacebo, which the freedesktop runtime does not
-  # ship — if the build fails resolving it, add a libplacebo module before this
-  # one. See README.md in this directory.
-  - name: mpv
+  - name: libmpv
     buildsystem: meson
     config-opts:
       - -Dlibmpv=true
       - -Dcplayer=false
+      - -Dbuild-date=false
       - -Dmanpage-build=disabled
+      - -Dalsa=disabled
       - -Dlua=disabled
       - -Djavascript=disabled
+      - -Drubberband=disabled
+      - -Duchardet=disabled
     cleanup:
-      - /include
-      - /lib/pkgconfig
       - /share/applications
+      - /share/bash-completion
+      - /share/fish
       - /share/icons
+      - /share/zsh
     sources:
       - type: archive
-        url: https://github.com/mpv-player/mpv/archive/refs/tags/v0.38.0.tar.gz
-        sha256: 86d9ef40b6058732f67b46d0bbda24a074fae860b3eaae05bab3145041303066
+        url: https://github.com/mpv-player/mpv/archive/v0.41.0.tar.gz
+        sha256: ee21092a5ee427353392360929dc64645c54479aefdb5babc5cfbb5fad626209
+    modules:
+      - name: libass
+        config-opts:
+          - --disable-static
+        sources:
+          - type: archive
+            url: https://github.com/libass/libass/releases/download/0.17.4/libass-0.17.4.tar.gz
+            sha256: a886b3b80867f437bc55cff3280a652bfa0d37b43d2aff39ddf3c4f288b8c5a8
+
+      - name: libplacebo
+        buildsystem: meson
+        config-opts:
+          - -Dvulkan=enabled
+          - -Dshaderc=enabled
+          - -Ddemos=false
+        sources:
+          - type: git
+            url: https://github.com/haasn/libplacebo
+            tag: v7.360.1
+            commit: cee9b076f2c63104ccfd497fa79c39a867293ec4
 
   - name: diapason
     buildsystem: simple
     build-commands:
-      # The bundle is produced outside the sandbox by `flutter build linux`.
-      - install -d /app/lib/diapason
-      - cp -r bundle/. /app/lib/diapason/
-      - install -d /app/bin
-      - ln -sf /app/lib/diapason/diapason /app/bin/diapason
-      - install -Dm644 fr.nytuo.diapason.desktop /app/share/applications/fr.nytuo.diapason.desktop
-      - install -Dm644 fr.nytuo.diapason.metainfo.xml /app/share/metainfo/fr.nytuo.diapason.metainfo.xml
-      - install -Dm644 diapason.png /app/share/icons/hicolor/256x256/apps/fr.nytuo.diapason.png
-      # Mount point for the ffmpeg-full extension.
-      - install -d /app/lib/ffmpeg
+      - install -d ${FLATPAK_DEST}/lib/diapason ${FLATPAK_DEST}/bin
+      - cp -a diapason lib data ${FLATPAK_DEST}/lib/diapason/
+      - chmod +x ${FLATPAK_DEST}/lib/diapason/diapason
+      - ln -s ${FLATPAK_DEST}/lib/diapason/diapason ${FLATPAK_DEST}/bin/diapason
+      - install -Dm644 diapason.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/${FLATPAK_ID}.png
+      - install -Dm644 LICENSE ${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/LICENSE
+      - install -Dm644 ${FLATPAK_ID}.desktop ${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop
+      - install -Dm644 ${FLATPAK_ID}.metainfo.xml ${FLATPAK_DEST}/share/metainfo/${FLATPAK_ID}.metainfo.xml
     sources:
-      - type: dir
-        path: staging
+      # BUNDLE-BEGIN
+      - type: archive
+        only-arches:
+          - x86_64
+        url: https://github.com/Nytuo/Diapason/releases/download/v0.11.1/diapason-0.11.1_linux_x64.tar.gz
+        sha256: 63beb0acbc11c57c4ad20dc22a01a6f3c8ef9716b8eb0d7bd70f357f81996b0e
+        strip-components: 0
+      - type: archive
+        only-arches:
+          - aarch64
+        url: https://github.com/Nytuo/Diapason/releases/download/v0.11.1/diapason-0.11.1_linux_aarch64.tar.gz
+        sha256: 4513a707dec3af4305e24f1c9af71ebaf98bedf0ed9400aa5aaf92e65f0fc46f
+        strip-components: 0
+      # BUNDLE-END
+      - type: file
+        url: https://raw.githubusercontent.com/Nytuo/Diapason/6b3358ce1471ba14dde91109c964ad1e933d6b43/LICENSE
+        sha256: 1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5
+      - type: file
+        url: https://raw.githubusercontent.com/Nytuo/Diapason/6b3358ce1471ba14dde91109c964ad1e933d6b43/assets/icon/linux/512x512/apps/diapason.png
+        sha256: 8ff96c8c8b658e9665ca32fd0e2ee36edb9a00f3067a3f231da5d2b11ed44749
+      - type: file
+        path: fr.nytuo.diapason.desktop
+      - type: file
+        path: fr.nytuo.diapason.metainfo.xml

@@ -2,6 +2,8 @@ import 'package:diapason/services/shortcuts/shortcut_service.dart';
 import 'dart:async';
 import 'package:diapason/components/MusicScreen/discover_tab_view.dart';
 import 'package:diapason/components/MusicScreen/downloads_tab_view.dart';
+import 'package:diapason/components/MusicScreen/youtube_results.dart';
+import 'package:diapason/services/youtube/youtube_availability.dart';
 import 'package:diapason/components/MusicScreen/youtube_tab_view.dart';
 import 'dart:io';
 
@@ -58,6 +60,8 @@ class MusicScreen extends ConsumerStatefulWidget {
 class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderStateMixin {
   bool isSearching = false;
 
+  bool searchYouTube = false;
+
   Timer? _searchHistoryDebounce;
   TextEditingController textEditingController = TextEditingController();
   String? searchQuery;
@@ -86,6 +90,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
       textEditingController.clear();
       searchQuery = null;
       isSearching = false;
+      searchYouTube = false;
     });
   }
 
@@ -105,7 +110,8 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
       final tabs = ref
           .watch(finampSettingsProvider.tabOrder)
           .where((x) => x.isTab)
-          .where((e) => ref.watch(finampSettingsProvider.select((value) => value.value?.showTabs[e])) ?? false);
+          .where((e) => ref.watch(finampSettingsProvider.select((value) => value.value?.showTabs[e])) ?? false)
+          .where((e) => e != ContentType.youtube || ref.watch(youTubeAvailableProvider));
 
       _tabController = TabController(
         length: tabs.length,
@@ -250,8 +256,12 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
             final saved = ref.watch(finampSettingsProvider.tabOrder);
             final order = [...saved, ...DefaultSettings.tabOrder.where((tab) => !saved.contains(tab))];
 
+            // YouTube only appears when yt-dlp is usable (locally on desktop, or via the uploader).
+            final youTubeAvailable = ref.watch(youTubeAvailableProvider);
             return order.where(
-              (tab) => ref.watch(finampSettingsProvider.showTabs(tab)) ?? DefaultSettings.showTabs[tab] ?? false,
+              (tab) =>
+                  (tab != ContentType.youtube || youTubeAvailable) &&
+                  (ref.watch(finampSettingsProvider.showTabs(tab)) ?? DefaultSettings.showTabs[tab] ?? false),
             );
           }();
 
@@ -285,6 +295,9 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
           tabController: _tabController,
           onSearch: () => setState(() {
             isSearching = true;
+            searchYouTube =
+                FinampSettingsHelper.finampSettings.youtubeSearchByDefault &&
+                ref.read(youTubeAvailableProvider);
             if (_tabController != null &&
                 !_tabController!.indexIsChanging &&
                 sortedTabs.elementAt(_tabController!.index) == ContentType.home) {
@@ -319,7 +332,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
         ),
         body: Builder(
           builder: (context) {
-            final child = TabBarView(
+            final tabs = TabBarView(
               controller: _tabController,
               physics: ref.watch(finampSettingsProvider.disableGesture) || MediaQuery.disableAnimationsOf(context)
                   ? const NeverScrollableScrollPhysics()
@@ -403,6 +416,8 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
               }).toList(),
             );
 
+            final child = _searchBody(tabs);
+
             // This tracks whether the latest scroll was the tabbar or a child widget.
             // The drawer open gesture ignores the gesture arena because it always looses to the tab view, and instead
             // uses this variable and a check of the tab index to determine when to fire.
@@ -438,6 +453,20 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
           },
         ),
       ),
+    );
+  }
+
+  /// While searching, shows a Library | YouTube switch under the search field and
+  /// swaps the tab content for YouTube results when YouTube is picked.
+  Widget _searchBody(Widget libraryContent) {
+    if (!isSearching || widget.singleTabConfig != null || !ref.watch(youTubeAvailableProvider)) return libraryContent;
+    return Column(
+      children: [
+        SearchSourceSwitcher(youtube: searchYouTube, onChanged: (value) => setState(() => searchYouTube = value)),
+        Expanded(
+          child: searchYouTube ? Material(child: YouTubeSearchResults(query: searchQuery ?? "")) : libraryContent,
+        ),
+      ],
     );
   }
 }

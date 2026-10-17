@@ -44,9 +44,10 @@ class UpdateException implements Exception {
 }
 
 class UpdateService {
-  UpdateService({this.repo = "Nytuo/diapason"});
+  UpdateService({this.repo = "Nytuo/diapason", http.Client? client}) : _client = client;
 
   final String repo;
+  final http.Client? _client;
   final _log = Logger("UpdateService");
 
   /// Marker in the release notes that makes an update mandatory, e.g. `[force]`
@@ -64,9 +65,7 @@ class UpdateService {
       final info = await PackageInfo.fromPlatform();
       final current = info.version;
 
-      final response = await http
-          .get(_latestReleaseUri, headers: const {"Accept": "application/vnd.github+json"})
-          .timeout(const Duration(seconds: 10));
+      final response = await (_client?.get ?? http.get)(_latestReleaseUri, headers: const {"Accept": "application/vnd.github+json"}).timeout(const Duration(seconds: 10));
       if (response.statusCode != 200) {
         _log.warning("Update check failed: HTTP ${response.statusCode}");
         return null;

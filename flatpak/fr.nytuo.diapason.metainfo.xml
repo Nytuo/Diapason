@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>fr.nytuo.diapason</id>
+
+  <name>Diapason</name>
+  <summary>Play music from all your servers</summary>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MPL-2.0</project_license>
+
+  <content_rating type="oars-1.1" />
+
+  <developer id="fr.nytuo">
+    <name>Nytuo (Arnaud BEUX)</name>
+  </developer>
+
+  <url type="homepage">https://nytuo.fr/software/diapason</url>
+  <url type="donation">https://ko-fi.com/nytuo</url>
+  <url type="bugtracker">https://github.com/Nytuo/Diapason/issues</url>
+  <url type="contact">https://nytuo.fr/contact</url>
+  <url type="vcs-browser">https://github.com/Nytuo/Diapason</url>
+  <url type="contribute">https://github.com/Nytuo/Diapason/blob/main/CONTRIBUTING.md</url>
+
+  <recommends>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </recommends>
+  <supports>
+    <control>touch</control>
+  </supports>
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+
+  <description>
+    <p>
+      Diapason is a music player that brings together the libraries on your Jellyfin, Plex, Subsonic/Navidrome and MPD servers, as well as the music stored on your computer. It started as a fork of Finamp and grew into a multi-backend player.
+    </p>
+    <p>What Diapason can do:</p>
+    <ul>
+      <li>Stream from Jellyfin, Plex, Subsonic/Navidrome, MPD and local folders</li>
+      <li>Download tracks for offline listening, with optional transcoding</li>
+      <li>Control desktop playback from other devices with Diapason Connect and local network discovery</li>
+      <li>Build smart playlists from rules on genre, BPM, rating, format and more</li>
+      <li>Follow time-synced lyrics, with LRCLIB as a fallback</li>
+      <li>Enjoy a spectrum visualizer and a full-screen player</li>
+      <li>Scrobble to Last.fm and ListenBrainz</li>
+      <li>Use your media keys and desktop media controls through MPRIS</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">fr.nytuo.diapason.desktop</launchable>
+
+  <screenshots>
+    <screenshot type="default">
+      <image>https://pocket.nytuo.fr/api/files/gpmjfgb6ve1gr0u/gkfxajwqu3mr615/snapzy_2026_08_24_10_13_09_600_2qit9gpfgk.webp</image>
+    </screenshot>
+    <screenshot>
+      <image>https://pocket.nytuo.fr/api/files/gpmjfgb6ve1gr0u/gkfxajwqu3mr615/snapzy_2026_08_24_10_14_49_400_3k8kud9um1.webp</image>
+    </screenshot>
+    <screenshot>
+      <image>https://pocket.nytuo.fr/api/files/gpmjfgb6ve1gr0u/gkfxajwqu3mr615/snapzy_2026_08_24_10_15_08_059_9ard8ul6ev.webp</image>
+    </screenshot>
+    <screenshot>
+      <image>https://pocket.nytuo.fr/api/files/gpmjfgb6ve1gr0u/gkfxajwqu3mr615/snapzy_2026_08_24_10_16_22_662_xd6su7p5fl.webp</image>
+    </screenshot>
+    <screenshot>
+      <image>https://pocket.nytuo.fr/api/files/gpmjfgb6ve1gr0u/gkfxajwqu3mr615/snapzy_2026_08_24_10_17_02_338_9wr6rgpnmz.webp</image>
+    </screenshot>
+    <screenshot>
+      <image>https://pocket.nytuo.fr/api/files/gpmjfgb6ve1gr0u/gkfxajwqu3mr615/snapzy_2026_08_24_10_18_09_959_bq0tjvpcb9.webp</image>
+    </screenshot>
+    <screenshot>
+      <image>https://pocket.nytuo.fr/api/files/gpmjfgb6ve1gr0u/gkfxajwqu3mr615/snapzy_2026_08_24_10_19_07_562_xnowjixn10.webp</image>
+    </screenshot>
+    <screenshot>
+      <image>https://pocket.nytuo.fr/api/files/gpmjfgb6ve1gr0u/gkfxajwqu3mr615/snapzy_2026_08_24_10_20_43_542_pw7tbg3700.webp</image>
+    </screenshot>
+  </screenshots>
+
+  <categories>
+    <category>AudioVideo</category>
+    <category>Audio</category>
+    <category>Player</category>
+  </categories>
+
+  <keywords>
+    <keyword>jellyfin</keyword>
+    <keyword>plex</keyword>
+    <keyword>subsonic</keyword>
+    <keyword>navidrome</keyword>
+    <keyword>mpd</keyword>
+  </keywords>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#7DD3FC</color>
+    <color type="primary" scheme_preference="dark">#0369A1</color>
+  </branding>
+
+  <releases>
+    <release version="0.11.1" date="2026-09-13">
+      <url type="details">https://github.com/Nytuo/Diapason/releases/tag/v0.11.1</url>
+    </release>
+    <release version="0.11.0" date="2026-09-07">
+      <url type="details">https://github.com/Nytuo/Diapason/releases/tag/0.11.0</url>
+    </release>
+    <release version="0.10.0" date="2026-07-20">
+      <url type="details">https://github.com/Nytuo/Diapason/releases/tag/0.10.0</url>
+    </release>
+  </releases>
+</component>

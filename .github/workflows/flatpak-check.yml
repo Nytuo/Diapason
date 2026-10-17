@@ -1,0 +1,29 @@
+name: flatpak-check
+
+# Builds the Flathub manifest as-is (the release tarballs it pins plus
+# libmpv), so manifest or permission changes are tested before they reach
+# Flathub. The bundle from the current code is tested by release.yml's
+# build-flatpak job instead.
+
+on:
+  pull_request:
+    paths:
+      - 'flatpak/**'
+      - '.github/workflows/flatpak-check.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Flatpak
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-25.08
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: flatpak/fr.nytuo.diapason.yml
+          bundle: diapason.flatpak
+          cache-key: flatpak-builder-${{ github.sha }}

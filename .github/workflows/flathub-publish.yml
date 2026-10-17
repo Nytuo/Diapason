@@ -1,0 +1,115 @@
+name: flathub-publish
+
+# Required repo secret:
+#   FLATHUB_TOKEN - classic PAT with `public_repo` scope from a maintainer of
+#                   flathub/fr.nytuo.diapason
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to publish (defaults to the latest release)'
+        required: false
+        type: string
+
+concurrency: flathub-publish
+
+env:
+  APP_ID: fr.nytuo.diapason
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_TAG: ${{ inputs.tag }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          TAG="${INPUT_TAG:-$RELEASE_TAG}"
+          if [ -z "$TAG" ]; then
+            TAG=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName -q .tagName)
+          fi
+          VERSION="${TAG#v}"
+          DATE=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json publishedAt -q '.publishedAt[0:10]')
+          COMMIT=$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" -q .sha)
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "date=${DATE:-$(date -u +%F)}" >> "$GITHUB_OUTPUT"
+          echo "commit=$COMMIT" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate Flathub files
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+          VERSION: ${{ steps.tag.outputs.version }}
+          DATE: ${{ steps.tag.outputs.date }}
+          COMMIT: ${{ steps.tag.outputs.commit }}
+        run: |
+          python3 flatpak/flathub_sync.py --tag "$TAG" --version "$VERSION" \
+            --commit "$COMMIT" --date "$DATE" --out flathub-out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flathub-files
+          path: flathub-out
+
+      - name: Check Flathub repo access
+        id: access
+        env:
+          GH_TOKEN: ${{ secrets.FLATHUB_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::notice::FLATHUB_TOKEN not set — files uploaded as an artifact only."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          elif ! gh api "repos/flathub/$APP_ID" --silent 2>/dev/null; then
+            echo "::notice::flathub/$APP_ID does not exist yet (app not accepted) — files uploaded as an artifact only."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.access.outputs.ok == 'true'
+        with:
+          repository: flathub/${{ env.APP_ID }}
+          token: ${{ secrets.FLATHUB_TOKEN }}
+          path: flathub
+
+      - name: Open pull request on Flathub
+        if: steps.access.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.FLATHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          set -euo pipefail
+          cp -a flathub-out/. flathub/
+          cd flathub
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "::notice::Flathub repo already up to date for $TAG."
+            exit 0
+          fi
+          BASE=$(git rev-parse --abbrev-ref HEAD)
+          BRANCH="update-$VERSION"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add -A
+          git commit -m "Update to $VERSION"
+          git push --force origin "$BRANCH"
+          if [ -z "$(gh pr list --repo "flathub/$APP_ID" --head "$BRANCH" --json number -q '.[].number')" ]; then
+            gh pr create --repo "flathub/$APP_ID" --base "$BASE" --head "$BRANCH" \
+              --title "Update to $VERSION" \
+              --body "Automated update to [$TAG](https://github.com/${GITHUB_REPOSITORY}/releases/tag/$TAG)."
+          fi

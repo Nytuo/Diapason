@@ -1079,7 +1079,7 @@ packages:
     description:
       path: just_audio
       ref: main
-      resolved-ref: "6f4c876d4766619fbeea4095417c86017b5374e4"
+      resolved-ref: "326060bc22c847395d23dc0f3981d58cf5abb0c9"
       url: "https://github.com/Nytuo/just_audio_fork.git"
     source: git
     version: "0.10.6"
@@ -1097,7 +1097,7 @@ packages:
     description:
       path: just_audio_platform_interface
       ref: main
-      resolved-ref: "6f4c876d4766619fbeea4095417c86017b5374e4"
+      resolved-ref: "326060bc22c847395d23dc0f3981d58cf5abb0c9"
       url: "https://github.com/Nytuo/just_audio_fork.git"
     source: git
     version: "4.6.0"
@@ -1783,14 +1783,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.1"
-  simple_sparse_list:
-    dependency: transitive
-    description:
-      name: simple_sparse_list
-      sha256: aa648fd240fa39b49dcd11c19c266990006006de6699a412de485695910fbc1f
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.4"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -1998,14 +1990,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
-  unicode:
-    dependency: transitive
-    description:
-      name: unicode
-      sha256: a6f7bcfc8ea1d5ce1f6c0b1c39117a9919f4953edd9fd7a64090a9796c499b57
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.9"
   universal_io:
     dependency: transitive
     description:
@@ -2286,14 +2270,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
-  youtube_explode_dart:
-    dependency: "direct main"
-    description:
-      name: youtube_explode_dart
-      sha256: "10134a53989b2f3dc576121735aec8fc6d88784956f4a2ad1a2525b006373a76"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.1.0"
 sdks:
   dart: ">=3.11.0 <4.0.0"
   flutter: ">=3.41.0"

@@ -2,6 +2,7 @@ import 'package:diapason/components/HomeScreen/home_screen_content.dart';
 import 'package:diapason/components/MusicScreen/discover_tab_view.dart';
 import 'package:diapason/components/MusicScreen/music_screen_tab_view.dart';
 import 'package:diapason/components/MusicScreen/youtube_tab_view.dart';
+import 'package:diapason/services/youtube/youtube_availability.dart';
 import 'package:diapason/components/MusicScreen/sort_and_filter_row.dart';
 import 'package:diapason/components/PlayerScreen/queue_list.dart';
 import 'package:diapason/models/finamp_models.dart';
@@ -137,7 +138,7 @@ class _DesktopNavRootState extends ConsumerState<_DesktopNavRoot> {
       case DesktopNav.discover:
         return const DiscoverTabView();
       case DesktopNav.youtube:
-        return const YouTubeTabView();
+        return ref.watch(youTubeAvailableProvider) ? const YouTubeTabView() : const HomeScreenContent();
       case DesktopNav.folders:
         return const DesktopFolders();
       case DesktopNav.smart:

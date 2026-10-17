@@ -5,6 +5,7 @@ import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/youtube_service.dart';
+import 'package:diapason/services/youtube/youtube_availability.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
@@ -207,7 +208,9 @@ class DiscoveryService {
           (p) => DiscoverPlaylist(
             id: p.mbid,
             title: p.title,
-            subtitle: "Matched against your library, YouTube for the rest",
+            subtitle: isYouTubeAvailable
+                ? "Matched against your library, YouTube for the rest"
+                : "Matched against your library",
             kind: DiscoverPlaylistKind.listenBrainzPlaylist,
           ),
         )
@@ -319,8 +322,11 @@ class DiscoveryService {
     return results;
   }
 
-  Future<List<BaseItemDto>> youtubeCandidates(DiscoveredTrack track) async {
-    final results = await GetIt.instance<YouTubeService>().search("${track.artist} ${track.title}");
+  Future<List<BaseItemDto>> youtubeCandidates(DiscoveredTrack track, {bool throwOnError = false}) async {
+    final results = await GetIt.instance<YouTubeService>().search(
+      "${track.artist} ${track.title}",
+      throwOnError: throwOnError,
+    );
     if (results.isEmpty) _log.fine("No YouTube results for '$track'");
     return results;
   }
@@ -341,7 +347,7 @@ class DiscoveryService {
         resolved.add(match);
         continue;
       }
-      if (!youtubeFallback) continue;
+      if (!youtubeFallback || !isYouTubeAvailable) continue;
 
       if (youtube.isRateLimited) continue;
 

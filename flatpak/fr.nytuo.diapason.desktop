@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Diapason
+GenericName=Music Player
+Comment=Play music from Jellyfin, Plex, Subsonic, MPD and local files
+Icon=fr.nytuo.diapason
+Exec=diapason
+Terminal=false
+Categories=AudioVideo;Audio;Player;Music;
+Keywords=music;player;jellyfin;plex;subsonic;navidrome;mpd;
+MimeType=x-scheme-handler/diapason;
+StartupWMClass=fr.nytuo.diapason

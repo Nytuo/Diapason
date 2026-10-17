@@ -41,32 +41,69 @@ class PlayerScreenTheme extends StatelessWidget {
         // to work around this.
         return ProviderScope(overrides: [localImageProvider.overrideWithValue(image)], child: child!);
       },
-      child: Consumer(
-        builder: (context, ref, child) {
-          // precache adjacent themes
-          final List<FinampQueueItem> precacheItems = GetIt.instance<QueueService>().peekQueue(
-            next: 2,
-            previous: 1,
-            current: true,
-          );
-          for (final itemToPrecache in precacheItems) {
-            BaseItemDto? base = itemToPrecache.baseItem;
-            if (base != null) {
-              ref.listen(finampThemeProvider(ThemeInfo(base, useLargeImage: true)), (_, __) {});
-            }
-          }
-          var theme = Theme.of(context).withColorScheme(ref.watch(localThemeProvider));
-          if (themeOverride != null) {
-            theme = themeOverride!(theme);
-          }
-          return AnimatedTheme(
-            duration: getThemeTransitionDuration(context, themeTransitionDuration),
-            data: theme,
-            child: child!,
-          );
-        },
+      child: _PrecachingTheme(
+        themeTransitionDuration: themeTransitionDuration,
+        themeOverride: themeOverride,
         child: child,
       ),
+    );
+  }
+}
+
+class _PrecachingTheme extends ConsumerStatefulWidget {
+  const _PrecachingTheme({required this.child, this.themeTransitionDuration, this.themeOverride});
+
+  final Widget child;
+  final Duration? themeTransitionDuration;
+  final ThemeData Function(ThemeData)? themeOverride;
+
+  @override
+  ConsumerState<_PrecachingTheme> createState() => _PrecachingThemeState();
+}
+
+class _PrecachingThemeState extends ConsumerState<_PrecachingTheme> {
+  final Map<ThemeInfo, ProviderSubscription<Object?>> _warm = {};
+  bool _scheduled = false;
+
+  void _schedulePrecache() {
+    if (_scheduled) return;
+    _scheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scheduled = false;
+      if (!mounted) return;
+      final wanted = <ThemeInfo>{
+        for (final queueItem in GetIt.instance<QueueService>().peekQueue(next: 2, previous: 1, current: true))
+          ThemeInfo(queueItem.baseItem, useLargeImage: true),
+      };
+      for (final stale in _warm.keys.where((info) => !wanted.contains(info)).toList()) {
+        _warm.remove(stale)!.close();
+      }
+      for (final info in wanted) {
+        _warm.putIfAbsent(info, () => ref.listenManual(finampThemeProvider(info), (_, __) {}));
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    for (final subscription in _warm.values) {
+      subscription.close();
+    }
+    _warm.clear();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _schedulePrecache();
+    var theme = Theme.of(context).withColorScheme(ref.watch(localThemeProvider));
+    if (widget.themeOverride != null) {
+      theme = widget.themeOverride!(theme);
+    }
+    return AnimatedTheme(
+      duration: getThemeTransitionDuration(context, widget.themeTransitionDuration),
+      data: theme,
+      child: widget.child,
     );
   }
 }

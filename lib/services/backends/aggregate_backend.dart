@@ -178,6 +178,9 @@ class AggregateBackend {
       .forItem(item)
       ?.imageUrl(item, maxWidth: maxWidth, maxHeight: maxHeight, quality: quality, format: format);
 
+  /// Headers [imageUrl] needs for [item]; non-empty only for backends whose images are authenticated.
+  Map<String, String> imageHeaders(BaseItemDto item) => _registry.forItem(item)?.imageHeaders ?? const {};
+
   Future<LyricDto?> getLyrics(BaseItemDto item) async => _registry.forItem(item)?.getLyrics(item);
 
   Future<bool> setFavorite(BaseItemDto item, {required bool isFavorite}) async {

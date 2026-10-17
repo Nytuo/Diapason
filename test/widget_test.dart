@@ -1,11 +1,15 @@
+import 'package:diapason/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:diapason/main.dart';
-
 void main() {
-  testWidgets('app builds', (WidgetTester tester) async {
-    await tester.pumpWidget(const DiapasonApp());
-    expect(find.text('Running on Apple TV'), findsOneWidget);
+
+
+  testWidgets('the startup error screen renders without services', (tester) async {
+    await tester.pumpWidget(FinampErrorApp(error: StateError('boom'), trace: StackTrace.current));
+    await tester.pump();
+
+    expect(find.byType(MaterialApp), findsOneWidget);
+    expect(find.textContaining('boom'), findsWidgets);
   });
 }

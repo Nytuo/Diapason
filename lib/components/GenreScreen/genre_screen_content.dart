@@ -210,13 +210,15 @@ class _GenreScreenContentState extends ConsumerState<GenreScreenContent> {
             FavoriteButton(item: widget.parent),
             if (!isLoading)
               DownloadButton(
-                item: DownloadStub.fromFinampCollection(
-                  FinampCollection(
-                    type: FinampCollectionType.collectionWithLibraryFilter,
-                    library: library,
-                    item: widget.parent,
-                  ),
-                ),
+                item: library == null
+                    ? DownloadStub.fromItem(type: DownloadItemType.collection, item: widget.parent)
+                    : DownloadStub.fromFinampCollection(
+                        FinampCollection(
+                          type: FinampCollectionType.collectionWithLibraryFilter,
+                          library: library,
+                          item: widget.parent,
+                        ),
+                      ),
                 childrenCount: albumCount,
               ),
             IconButton(

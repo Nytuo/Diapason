@@ -35,7 +35,10 @@ import 'package:diapason/services/connect/connect_player_bridge.dart';
 import 'package:diapason/services/connect/connect_remote_controller.dart';
 import 'package:diapason/services/connect/connect_service.dart';
 import 'package:diapason/services/uploader/uploader_client.dart';
+import 'package:diapason/services/log_level.dart';
 import 'package:diapason/services/youtube_service.dart';
+import 'package:diapason/services/youtube/local_ytdlp_service.dart';
+import 'package:diapason/services/youtube/youtube_availability.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/models/locale_adapter.dart';
@@ -145,6 +148,8 @@ import 'screens/tv/tv_now_playing_screen.dart';
 import 'screens/watch/watch_screen.dart';
 import 'screens/wrapped_screen.dart';
 import 'screens/uploader_settings_screen.dart';
+import 'screens/ytdlp_settings_screen.dart';
+import 'screens/storage_settings_screen.dart';
 import 'screens/sources_settings_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/tabs_settings_screen.dart';
@@ -177,6 +182,7 @@ Future<void> main({bool integrationTesting = false, bool loginTesting = false}) 
     _mainLog.info("Setup edge-to-edge overlay");
     await setupHive();
     _mainLog.info("Setup hive and isar");
+    applyConfiguredLogLevel();
     await DeviceFormFactorDetector.detect();
     _migrateDownloadLocations();
     _migrateSortOptions();
@@ -280,11 +286,13 @@ Future<void> _setupMediaSources() async {
   GetIt.instance.registerSingleton(AggregateBackend());
   GetIt.instance.registerSingleton(LrclibClient());
   GetIt.instance.registerSingleton(StreamCacheService());
+  GetIt.instance.registerSingleton(UploaderClient());
+  GetIt.instance.registerSingleton(LocalYtDlpService());
+  GetIt.instance.registerSingleton(YouTubeAvailability());
   GetIt.instance.registerSingleton(YouTubeService());
   GetIt.instance.registerSingleton(DiscoveryService());
   GetIt.instance.registerSingleton(YouTubeDiscoverService());
   GetIt.instance.registerSingleton(ScrobbleService());
-  GetIt.instance.registerSingleton(UploaderClient());
   GetIt.instance.registerSingleton(StatsService());
   GetIt.instance.registerSingleton(AutoRadioService());
   GetIt.instance.registerSingleton(CastService());
@@ -294,6 +302,12 @@ Future<void> _setupMediaSources() async {
   GetIt.instance.registerSingleton(WidgetSyncService());
   GetIt.instance.registerSingleton(MediaSourceService());
   await GetIt.instance<MediaSourceService>().loadSources();
+
+  // YouTube runs on yt-dlp (local on desktop, or via the uploader). Detect what's
+  // available without delaying startup: the UI hides YouTube until this settles.
+  unawaited(
+    GetIt.instance<LocalYtDlpService>().init().whenComplete(() => GetIt.instance<YouTubeAvailability>().start()),
+  );
 }
 
 void _setupOfflineListenLogHelper() {
@@ -364,7 +378,7 @@ Future<void> _setupPlayOnService() async {
 }
 
 Future<void> _setupDiscordRpc() async {
-  DiscordRpc.initialize();
+  await DiscordRpc.initialize();
 }
 
 Future<void> _setupKeepScreenOnHelper() async {
@@ -1031,8 +1045,10 @@ class FinampApp extends ConsumerWidget {
         LoginScreen.routeName: (context) => const LoginScreen(),
         SourcesSettingsScreen.routeName: (context) => const SourcesSettingsScreen(),
         CacheSettingsScreen.routeName: (context) => const CacheSettingsScreen(),
+        StorageSettingsScreen.routeName: (context) => const StorageSettingsScreen(),
         ScrobblingSettingsScreen.routeName: (context) => const ScrobblingSettingsScreen(),
         UploaderSettingsScreen.routeName: (context) => const UploaderSettingsScreen(),
+        YtDlpSettingsScreen.routeName: (context) => const YtDlpSettingsScreen(),
         ConnectScreen.routeName: (context) => const ConnectScreen(),
         WrappedScreen.routeName: (context) => const WrappedScreen(),
         RadioScreen.routeName: (context) => const RadioScreen(),

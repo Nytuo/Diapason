@@ -13,17 +13,17 @@ import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 
 class SubsonicBackend implements MediaBackend {
-  SubsonicBackend(this.config) : _map = ItemMapper(config.sourceId);
+  SubsonicBackend(this.config, {http.Client? client}) : _map = ItemMapper(config.sourceId), _http = client ?? http.Client();
 
   static final _log = Logger("SubsonicBackend");
   static const _apiVersion = "1.16.1";
-  static const _client = "diapason";
+  static const _client = "Diapason";
 
   @override
   final MediaSourceConfig config;
 
   final ItemMapper _map;
-  final http.Client _http = http.Client();
+  final http.Client _http;
 
   late final String _salt = _randomSalt();
   bool _connected = false;
@@ -227,25 +227,10 @@ class SubsonicBackend implements MediaBackend {
     };
   }
 
-  
-  
   static const _trackListCap = 10000;
 
-  
-  
   List<BaseItemDto>? _trackList;
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   Future<List<BaseItemDto>> _allTracks({String? sortBy, String? sortOrder, int? limit, int? offset}) async {
     final start = offset ?? 0;
     final size = limit ?? 100;
@@ -260,8 +245,8 @@ class SubsonicBackend implements MediaBackend {
     }
     final tracks = _trackList!;
 
-    
-    
+
+
     if (tracks.length >= _trackListCap) {
       final response = await _get("search3", {
         "query": "",
@@ -586,10 +571,26 @@ class SubsonicBackend implements MediaBackend {
     });
   }
 
-  @override
-  Future<void> reportPlaybackStart(BaseItemDto item, {String? playSessionId}) async {
-    await _get("scrobble", {"id": item.id.nativeId, "submission": "false"});
+  DateTime? _lastNowPlaying;
+
+  static const _nowPlayingRefresh = Duration(seconds: 45);
+
+  Future<void> _reportNowPlaying(BaseItemDto item) async {
+    _lastNowPlaying = DateTime.now();
+    final reply = await _get("scrobble", {
+      "id": item.id.nativeId,
+      "submission": "false",
+      "time": DateTime.now().millisecondsSinceEpoch.toString(),
+    });
+    if (reply != null) {
+      _log.info("Reported '${item.name}' as now playing on ${config.name} (as '$_client')");
+    } else {
+      _log.warning("${config.name} didn't accept the now-playing report for '${item.name}'; see the warning above");
+    }
   }
+
+  @override
+  Future<void> reportPlaybackStart(BaseItemDto item, {String? playSessionId}) => _reportNowPlaying(item);
 
   @override
   Future<void> reportPlaybackProgress(
@@ -597,11 +598,30 @@ class SubsonicBackend implements MediaBackend {
     required Duration position,
     required bool isPaused,
     String? playSessionId,
-  }) async {}
+  }) async {
+    final last = _lastNowPlaying;
+    if (isPaused || (last != null && DateTime.now().difference(last) < _nowPlayingRefresh)) return;
+    await _reportNowPlaying(item);
+  }
+
+  static bool countsAsPlayed(Duration played, Duration? length) {
+    if (length == null || length.inSeconds < 30) return played.inSeconds >= 30;
+    final threshold = Duration(seconds: (length.inSeconds / 2).ceil().clamp(1, 240));
+    return played >= threshold;
+  }
 
   @override
   Future<void> reportPlaybackStopped(BaseItemDto item, {required Duration position, String? playSessionId}) async {
-    await _get("scrobble", {"id": item.id.nativeId, "submission": "true"});
+    _lastNowPlaying = null;
+    if (!countsAsPlayed(position, item.runTimeTicksDuration())) {
+      _log.fine("Not submitting '${item.name}' as a play: only ${position.inSeconds}s of it was heard");
+      return;
+    }
+    await _get("scrobble", {
+      "id": item.id.nativeId,
+      "submission": "true",
+      "time": DateTime.now().subtract(position).millisecondsSinceEpoch.toString(),
+    });
   }
 
   @override

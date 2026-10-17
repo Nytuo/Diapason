@@ -144,6 +144,15 @@ class DefaultSettings {
   static const uploaderUrl = "";
   static const uploaderToken = "";
   static const uploaderNetworkPolicy = "local";
+  static const uploaderYtProxy = true;
+  static const uploaderAllowInsecure = false;
+  static const ytdlpConfigJson = "";
+  static const uploaderWifiOnly = false;
+  static const youtubeResultCount = 20;
+  static const youtubeShowHits = true;
+  static const youtubeShowNew = true;
+  static const youtubeSearchByDefault = false;
+  static const logLevel = "all";
 
   static const listenBrainzToken = "";
   static const lastFmApiKey = "";
@@ -1101,6 +1110,44 @@ class FinampSettings {
   /// Resume playback automatically when bluetooth headphones/speakers connect.
   @HiveField(184, defaultValue: DefaultSettings.resumeOnBluetoothConnect)
   bool resumeOnBluetoothConnect = DefaultSettings.resumeOnBluetoothConnect;
+
+  /// Route YouTube search, streaming and downloads through the diapason-uploader's
+  /// yt-dlp proxy instead of scraping YouTube from this device.
+  @HiveField(188, defaultValue: DefaultSettings.uploaderYtProxy)
+  bool uploaderYtProxy = DefaultSettings.uploaderYtProxy;
+
+  /// The user vouches that traffic to the uploader is already encrypted (VPN,
+  /// tunnel), so plain http:// to a non-private address is allowed.
+  @HiveField(189, defaultValue: DefaultSettings.uploaderAllowInsecure)
+  bool uploaderAllowInsecure = DefaultSettings.uploaderAllowInsecure;
+
+  /// JSON of [YtDlpConfig]: how the local yt-dlp sidecar is run (desktop only).
+  @HiveField(190, defaultValue: DefaultSettings.ytdlpConfigJson)
+  String ytdlpConfigJson = DefaultSettings.ytdlpConfigJson;
+
+  /// Only auto-upload downloaded tracks (and ask the server to fetch YouTube tracks) on Wi-Fi/Ethernet.
+  @HiveField(191, defaultValue: DefaultSettings.uploaderWifiOnly)
+  bool uploaderWifiOnly = DefaultSettings.uploaderWifiOnly;
+
+  /// How many results a YouTube search asks for (10–50).
+  @HiveField(192, defaultValue: DefaultSettings.youtubeResultCount)
+  int youtubeResultCount = DefaultSettings.youtubeResultCount;
+
+  /// Show the "Hits on YouTube" shelf on the YouTube home page.
+  @HiveField(193, defaultValue: DefaultSettings.youtubeShowHits)
+  bool youtubeShowHits = DefaultSettings.youtubeShowHits;
+
+  /// Show the "New this week" shelf on the YouTube home page.
+  @HiveField(194, defaultValue: DefaultSettings.youtubeShowNew)
+  bool youtubeShowNew = DefaultSettings.youtubeShowNew;
+
+  /// Start searches on the YouTube results instead of the library.
+  @HiveField(195, defaultValue: DefaultSettings.youtubeSearchByDefault)
+  bool youtubeSearchByDefault = DefaultSettings.youtubeSearchByDefault;
+
+  /// Detail of the app's log: `all`, `info` or `warning`.
+  @HiveField(196, defaultValue: DefaultSettings.logLevel)
+  String logLevel = DefaultSettings.logLevel;
 
   static Future<FinampSettings> create() async {
     final downloadLocation = await DownloadLocation.create(

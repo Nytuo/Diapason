@@ -45,7 +45,7 @@ class _DesktopFullscreenPlayerState extends ConsumerState<DesktopFullscreenPlaye
           final playing = state.playbackState.playing;
           return Stack(
             children: [
-              const Positioned.fill(child: BlurredPlayerScreenBackground()),
+              const BlurredPlayerScreenBackground(),
               const Positioned(
                 left: 0,
                 right: 0,

@@ -12,6 +12,7 @@ import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/stream_cache_service.dart';
 import 'package:diapason/services/youtube_service.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:diapason/models/jellyfin_models.dart' as jellyfin_models;
 import 'package:diapason/services/current_track_metadata_provider.dart';
@@ -766,8 +767,9 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   void _setupFlacSeekWarning() {
     if (!Platform.isIOS) return;
 
+    // Persisted so the notice is shown once ever, not once per session.
     var warned = false;
-    mediaItem.listen((item) {
+    mediaItem.listen((item) async {
       if (warned || item == null) return;
       final json = item.extras?["itemJson"] as Map<String, dynamic>?;
       if (json == null) return;
@@ -777,6 +779,9 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       if (container?.toLowerCase() != "flac") return;
 
       warned = true;
+      final noticeBox = await Hive.openBox<bool>("OneTimeNotices");
+      if (noticeBox.get("flacSeekWarningIos") ?? false) return;
+      await noticeBox.put("flacSeekWarningIos", true);
       _audioServiceBackgroundTaskLogger.warning(
         "Playing a FLAC on iOS ('${item.title}'): AVFoundation mis-seeks this container, "
         "so seeking will be inaccurate and playback can run past the end of the track.",

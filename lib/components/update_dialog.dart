@@ -1,4 +1,5 @@
 import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/services/friendly_error.dart';
 import 'package:diapason/services/update_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -85,9 +86,10 @@ class _UpdateDialogState extends State<UpdateDialog> {
     } on UpdateException catch (e) {
       if (mounted) setState(() => _installing = false);
       GlobalSnackbar.message((c) => e.message);
-    } catch (e) {
+    } catch (e, stack) {
       if (mounted) setState(() => _installing = false);
-      GlobalSnackbar.message((c) => "Update failed: $e");
+      final why = FriendlyError.reportGlobal("App update", e, stack);
+      GlobalSnackbar.message((c) => "The update couldn't be installed. $why");
     }
   }
 

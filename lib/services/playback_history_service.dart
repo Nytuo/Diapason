@@ -127,7 +127,9 @@ class PlaybackHistoryService {
             // add to playback history if playback was stopped before
             forceNewTrack: currentState.playing != prevState?.playing,
           );
-          if (currentState.queueIndex != prevState?.queueIndex || currentState.position != prevState?.position) {
+          if (currentState.queueIndex != prevState?.queueIndex ||
+              currentState.position != prevState?.position ||
+              currentState.playing != prevState?.playing) {
             _playbackHistoryServiceLogger.fine(
               "Handling track change event from ${prevItem?.item.title} to ${currentItem.item.title}",
             );

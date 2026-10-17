@@ -1,4 +1,6 @@
 import 'package:diapason/services/uploader/uploader_client.dart';
+import 'package:diapason/services/youtube_service.dart';
+import 'package:diapason/services/youtube/youtube_availability.dart';
 import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
@@ -902,10 +904,23 @@ class DownloadsService {
       final uploader = GetIt.instance<UploaderClient>();
       if (!uploader.isReady) return;
       if (item.type != DownloadItemType.track) return;
+      if (!await uploader.automaticTransferAllowed()) return;
 
       final baseItem = item.baseItem;
       final file = item.file;
       if (baseItem == null || file == null) return;
+
+      // With the yt-dlp proxy on, the server can fetch the track itself — don't
+      // push the bytes back up from the phone.
+      if (baseItem.id.sourceId == YouTubeService.sourceId &&
+          GetIt.instance<YouTubeService>().source == YouTubeSource.uploader) {
+        await uploader.ytDownloadToLibrary(
+          baseItem.id.nativeId,
+          artist: baseItem.albumArtist ?? baseItem.artists?.firstOrNull,
+          title: baseItem.name,
+        );
+        return;
+      }
 
       await uploader.upload(baseItem, file);
     } catch (e) {

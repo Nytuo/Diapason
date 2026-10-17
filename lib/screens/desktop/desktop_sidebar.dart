@@ -9,6 +9,7 @@ import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/queue_service.dart';
 import 'dart:io';
 
+import 'package:diapason/services/youtube/youtube_availability.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -103,7 +104,8 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
               children: [
                 for (final nav in _top) _navButton(context, p, nav),
                 _playlistsSection(context, p),
-                for (final nav in _bottom) _navButton(context, p, nav),
+                for (final nav in _bottom)
+                  if (nav != DesktopNav.youtube || ref.watch(youTubeAvailableProvider)) _navButton(context, p, nav),
               ],
             ),
           ),

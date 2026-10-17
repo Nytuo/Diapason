@@ -7,6 +7,7 @@ import 'package:diapason/services/discovery/discovery_service.dart';
 import 'package:diapason/services/discovery/youtube_discover_service.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/queue_service.dart';
+import 'package:diapason/services/youtube/youtube_availability.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -133,7 +134,7 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
         children: [
           if (_discovering == playlist.id)
             const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-          else
+          else if (ref.watch(youTubeAvailableProvider))
             IconButton(
               icon: const Icon(TablerIcons.radio),
               tooltip: "Continue on YouTube from the end",

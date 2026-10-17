@@ -248,7 +248,7 @@ class AudioServiceHelper {
 
   Future<void> playRandomItem({bool favoritesOnly = false, List<BaseItemDtoType>? limitItemTypes}) async {
     // get random favorite (any item type)
-    final randomFavorite = (await _jellyfinApiHelper.getItems(
+    final randomFavorite = (await GetIt.instance<AggregateBackend>().getItems(
       parentItem: _finampUserHelper.currentUser?.currentView,
       filters: favoritesOnly ? "IsFavorite" : null,
       // Jellyfin 10.10 and 10.11 use the [isFavorite] boolean filter instead of the list-based [filters] parameter for genres, so add that here
@@ -267,7 +267,7 @@ class AudioServiceHelper {
               .join(","),
       sortBy: SortBy.random.jellyfinName(null),
       limit: 1,
-    ))?.firstOrNull;
+    )).firstOrNull;
 
     if (randomFavorite == null) {
       GlobalSnackbar.message((context) => context.l10n.nothingFoundToPlay);
@@ -277,14 +277,12 @@ class AudioServiceHelper {
     // if item is a collection, get its tracks, otherwise just play the item
     List<jellyfin_models.BaseItemDto> itemsToPlay;
     if (BaseItemDtoType.fromItem(randomFavorite) != BaseItemDtoType.track) {
-      itemsToPlay =
-          await _jellyfinApiHelper.getItems(
-            parentItem: randomFavorite,
-            includeItemTypes: [BaseItemDtoType.track].map((e) => e.jellyfinName).join(","),
-            sortBy: SortBy.defaultOrder.jellyfinName(ContentType.tracks),
-            sortOrder: SortOrder.ascending.name,
-          ) ??
-          [];
+      itemsToPlay = await GetIt.instance<AggregateBackend>().getItems(
+        parentItem: randomFavorite,
+        includeItemTypes: [BaseItemDtoType.track].map((e) => e.jellyfinName).join(","),
+        sortBy: SortBy.defaultOrder.jellyfinName(ContentType.tracks),
+        sortOrder: SortOrder.ascending.name,
+      );
     } else {
       itemsToPlay = [randomFavorite];
     }

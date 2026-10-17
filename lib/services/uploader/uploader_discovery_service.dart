@@ -6,19 +6,16 @@ import 'package:nsd/nsd.dart' as nsd;
 
 /// A diapason-uploader sidecar found on the local network via mDNS.
 ///
-/// [pairingToken] is present whenever the sidecar has an auth token
-/// configured — mDNS is LAN-local by construction, so anything that can
-/// receive the advertisement is already on the same network as the
-/// uploader. Absent only when the sidecar has no auth token at all.
+/// The advertisement never contains a credential. When [canPair] is set the
+/// sidecar accepts the pairing handshake (see [UploaderClient.pair]), which
+/// gives this device a token of its own.
 class DiscoveredUploader {
-  const DiscoveredUploader({required this.name, required this.baseUrl, this.pairingToken, required this.tls});
+  const DiscoveredUploader({required this.name, required this.baseUrl, required this.canPair, required this.tls});
 
   final String name;
   final String baseUrl;
-  final String? pairingToken;
+  final bool canPair;
   final bool tls;
-
-  bool get isPairable => pairingToken != null && pairingToken!.isNotEmpty;
 
   @override
   bool operator ==(Object other) => other is DiscoveredUploader && other.baseUrl == baseUrl;
@@ -70,7 +67,6 @@ class UploaderDiscoveryService {
     final txt = service.txt ?? const {};
     final tls = _decode(txt["tls"]) == "1";
     final pairing = _decode(txt["pair"]) == "1";
-    final token = pairing ? _decode(txt["token"]) : null;
 
     final normalized = host.endsWith(".") ? host.substring(0, host.length - 1) : host;
     final scheme = tls ? "https" : "http";
@@ -78,7 +74,7 @@ class UploaderDiscoveryService {
     return DiscoveredUploader(
       name: service.name ?? "diapason-uploader",
       baseUrl: "$scheme://$normalized:$port",
-      pairingToken: (token != null && token.isNotEmpty) ? token : null,
+      canPair: pairing,
       tls: tls,
     );
   }

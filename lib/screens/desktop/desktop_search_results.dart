@@ -1,4 +1,7 @@
 import 'package:diapason/components/MusicScreen/music_screen_tab_view.dart';
+import 'package:diapason/components/MusicScreen/youtube_results.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/youtube/youtube_availability.dart';
 import 'package:diapason/components/MusicScreen/sort_and_filter_row.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
@@ -27,6 +30,7 @@ class _DesktopSearchResultsState extends ConsumerState<DesktopSearchResults> {
 
   final Map<ContentType, SortAndFilterController> _controllers = {};
   ContentType _active = ContentType.albums;
+  bool _youtube = FinampSettingsHelper.finampSettings.youtubeSearchByDefault;
 
   QueueItemSource get _source => QueueItemSource.rawId(
     type: QueueItemSourceType.allTracks,
@@ -52,16 +56,28 @@ class _DesktopSearchResultsState extends ConsumerState<DesktopSearchResults> {
           child: Row(
             children: [
               for (final tab in _tabs) _segment(p, tab.$1, tab.$2, tab.$3),
+              if (ref.watch(youTubeAvailableProvider)) ...[
+                const SizedBox(width: 8),
+                _segment(p, ContentType.youtube, "YouTube", TablerIcons.brand_youtube),
+              ],
             ],
           ),
         ),
-        Expanded(child: _results(_active)),
+        Expanded(
+          child: _youtube && ref.watch(youTubeAvailableProvider)
+              ? Material(
+                  type: MaterialType.transparency,
+                  child: YouTubeSearchResults(query: widget.query),
+                )
+              : _results(_active),
+        ),
       ],
     );
   }
 
   Widget _segment(DesktopPalette p, ContentType type, String label, IconData icon) {
-    final active = _active == type;
+    final isYouTube = type == ContentType.youtube;
+    final active = isYouTube ? _youtube : (!_youtube && _active == type);
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: Material(
@@ -70,7 +86,10 @@ class _DesktopSearchResultsState extends ConsumerState<DesktopSearchResults> {
         child: InkWell(
           borderRadius: BorderRadius.circular(8),
           hoverColor: p.surface,
-          onTap: () => setState(() => _active = type),
+          onTap: () => setState(() {
+            _youtube = isYouTube;
+            if (!isYouTube) _active = type;
+          }),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             child: Row(

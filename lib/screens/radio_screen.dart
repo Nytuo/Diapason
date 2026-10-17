@@ -1,4 +1,5 @@
 import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/friendly_error.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/queue_service.dart';
@@ -31,9 +32,10 @@ class _RadioScreenState extends State<RadioScreen> {
           id: station.id,
         ),
       );
-    } catch (e) {
+    } catch (e, stack) {
+      final why = FriendlyError.reportGlobal("Tune in to '${station.name}'", e, stack);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Couldn't tune in: $e")));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Couldn't tune in. $why")));
       }
     }
   }

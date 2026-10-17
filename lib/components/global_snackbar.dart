@@ -9,6 +9,7 @@ import 'package:diapason/menus/components/menuEntries/menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/view_logs_menu_entry.dart';
 import 'package:diapason/menus/components/menu_item_info_header.dart';
 import 'package:diapason/services/feedback_helper.dart';
+import 'package:diapason/services/friendly_error.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
@@ -176,7 +177,8 @@ class GlobalSnackbar {
       return;
     }
 
-    _logger.warning("Displaying error: $event", event);
+    final friendly = FriendlyError.describe(event);
+    _logger.warning("Displaying error [${friendly.source.name}]: ${friendly.technical}", event);
     String errorText;
     if (event is Response) {
       if (event.statusCode == 401) {
@@ -225,7 +227,11 @@ class GlobalSnackbar {
               showSnackbarOptionsMenu(context);
             }
           },
-          child: Text(AppLocalizations.of(context)!.anErrorHasOccured),
+          child: Text(
+            friendly.source == ErrorSource.unknown
+                ? AppLocalizations.of(context)!.anErrorHasOccured
+                : friendly.message,
+          ),
         ),
         action: SnackBarAction(
           label: MaterialLocalizations.of(context).moreButtonTooltip,
@@ -233,7 +239,24 @@ class GlobalSnackbar {
             context: context,
             builder: (context) => AlertDialog(
               title: Text(AppLocalizations.of(context)!.error),
-              content: Text(errorText),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(friendly.message),
+                    const SizedBox(height: 8),
+                    Text("Where it went wrong: ${friendly.source.label}", style: Theme.of(context).textTheme.bodySmall),
+                    const SizedBox(height: 16),
+                    Text("Technical details (for bug reports)", style: Theme.of(context).textTheme.labelMedium),
+                    const SizedBox(height: 4),
+                    SelectableText(
+                      errorText == event.toString() ? friendly.technical : "$errorText\n${friendly.technical}",
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),

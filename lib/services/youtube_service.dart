@@ -1,15 +1,33 @@
-import 'dart:io';
 import 'package:diapason/models/jellyfin_models.dart';
-import 'package:http/http.dart' as http;
 import 'package:diapason/services/backends/item_mapper.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/friendly_error.dart';
+import 'package:diapason/services/uploader/uploader_client.dart';
+import 'package:diapason/services/youtube/local_ytdlp_service.dart';
+import 'package:diapason/services/youtube/yt_entry.dart';
+import 'package:diapason/services/youtube/ytdlp_errors.dart';
+import 'package:diapason/services/youtube/youtube_availability.dart';
+import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class YouTubeStream {
-  const YouTubeStream(this.url, this.container);
+  const YouTubeStream(this.url, this.container, {this.headers = const {}});
 
   final Uri url;
-  final String container;
+  final String? container;
+
+  final Map<String, String> headers;
+}
+
+class YouTubeShelf {
+  const YouTubeShelf(this.title, this.tracks);
+
+  final String title;
+  final List<BaseItemDto> tracks;
+}
+
+class YouTubeUnavailable extends AppException {
+  const YouTubeUnavailable(super.message) : super(source: ErrorSource.ytdlp, code: "youtube_unavailable");
 }
 
 class YouTubeService {
@@ -17,154 +35,221 @@ class YouTubeService {
 
   static const sourceId = "yt";
 
-  final YoutubeExplode _yt = YoutubeExplode();
   final ItemMapper _map = ItemMapper(sourceId);
 
-  static const _blockCooldown = Duration(minutes: 10);
+  UploaderClient get _uploader => GetIt.instance<UploaderClient>();
+  LocalYtDlpService get _local => GetIt.instance<LocalYtDlpService>();
+  YouTubeAvailability get _availability => GetIt.instance<YouTubeAvailability>();
 
+  YouTubeSource get source => _availability.source;
+
+  bool get usesProxy => source == YouTubeSource.uploader;
+
+  Map<String, String> get imageHeaders => usesProxy ? _uploader.authHeaders : const {};
+
+  static const _blockCooldown = Duration(minutes: 10);
   DateTime? _blockedUntil;
 
   bool get isRateLimited => _blockedUntil != null && DateTime.now().isBefore(_blockedUntil!);
 
-  static bool _looksLikeBlock(Object error) {
-    final text = error.toString();
-    return text.contains("google_abuse") ||
-        text.contains("Redirect limit exceeded") ||
-        text.contains("429") ||
-        text.contains("consent");
+  void _noteFailure(Object error) {
+    final code = error is AppException ? error.code : null;
+    if (code == YtFailureKind.rateLimited.code ||
+        code == YtFailureKind.blocked.code ||
+        code == "youtube_rate_limited" ||
+        code == "youtube_blocked") {
+      _blockedUntil = DateTime.now().add(_blockCooldown);
+      _log.warning("YouTube is pushing back ($code); pausing background lookups until $_blockedUntil");
+    }
   }
 
-  Future<List<BaseItemDto>> search(String query) async {
+  Future<T> _viaSource<T>(
+    String what, {
+    required Future<T> Function(LocalYtDlpService local) local,
+    required Future<T> Function(UploaderClient uploader) uploader,
+  }) async {
+    try {
+      switch (source) {
+        case YouTubeSource.local:
+          return await local(_local);
+        case YouTubeSource.uploader:
+          return await uploader(_uploader);
+        case YouTubeSource.none:
+          final problems = GetIt.instance<YouTubeAvailability>().status.value.problems;
+          throw YouTubeUnavailable(
+            problems.isEmpty ? "YouTube isn't set up yet." : "YouTube isn't available: ${problems.join(" ")}",
+          );
+      }
+    } catch (e, stack) {
+      _noteFailure(e);
+      _log.warning("YouTube $what failed via ${source.name}: ${e is AppException ? e.technical : e}", e, stack);
+      rethrow;
+    }
+  }
+
+  BaseItemDto _toItem(YtEntry e) => _map.track(
+    nativeId: e.id,
+    name: e.title,
+    artist: e.artist,
+    duration: e.durationSecs > 0 ? Duration(seconds: e.durationSecs) : null,
+    hasImage: true,
+  );
+
+  Future<List<BaseItemDto>> search(String query, {bool throwOnError = false}) async {
     final trimmed = query.trim();
     if (trimmed.isEmpty) return const [];
 
-    final videoId = parseVideoId(trimmed);
-    if (videoId != null) {
-      final item = await videoById(videoId);
-      return item == null ? const [] : [item];
-    }
-
-    if (isRateLimited) {
-      _log.fine("Skipping YouTube search for '$query': blocked until $_blockedUntil");
-      return const [];
-    }
-
     try {
-      final results = await _yt.search.search(trimmed);
-      _blockedUntil = null;
-      return results.map(_toItem).toList();
-    } catch (e) {
-      if (_looksLikeBlock(e)) {
-        _blockedUntil = DateTime.now().add(_blockCooldown);
-        _log.warning("YouTube is blocking searches; pausing them until $_blockedUntil");
-      } else {
-        _log.warning("YouTube search for '$query' failed: $e");
+      final id = parseVideoId(trimmed);
+      if (id != null) {
+        final item = await videoById(id, throwOnError: true);
+        return item == null ? const [] : [item];
       }
+      final limit = FinampSettingsHelper.finampSettings.youtubeResultCount.clamp(5, 50);
+      final entries = await _viaSource(
+        "search",
+        local: (l) => l.search(trimmed, limit: limit),
+        uploader: (u) => u.ytSearch(trimmed, limit: limit),
+      );
+      return entries.map(_toItem).toList();
+    } catch (_) {
+      if (throwOnError) rethrow;
       return const [];
     }
   }
 
-  String? parseVideoId(String input) => VideoId.parseVideoId(input.trim());
+  String? parseVideoId(String input) => LocalYtDlpService.parseVideoId(input);
 
-  Future<BaseItemDto?> videoById(String idOrUrl) async {
+  Future<BaseItemDto?> videoById(String idOrUrl, {bool throwOnError = false}) async {
     final id = parseVideoId(idOrUrl);
     if (id == null) return null;
     try {
-      return _toItem(await _yt.videos.get(id));
-    } catch (e) {
-      _log.warning("Couldn't resolve YouTube video '$idOrUrl': $e");
+      final entry = await _viaSource(
+        "lookup",
+        local: (l) => l.lookup(id),
+        uploader: (u) async => (await u.ytSearch(id, limit: 1)).firstOrNull,
+      );
+      return entry == null ? null : _toItem(entry);
+    } catch (_) {
+      if (throwOnError) rethrow;
       return null;
     }
   }
 
   Future<List<BaseItemDto>> relatedTracks(BaseItemDto item) async {
     try {
-      final video = await _yt.videos.get(item.id.nativeId);
-      final related = await _yt.videos.getRelatedVideos(video);
-      if (related == null) return const [];
-      return related.map(_toItem).toList();
-    } catch (e) {
-      _log.warning("Couldn't fetch related videos for '${item.name}': $e");
+      final id = item.id.nativeId;
+      final entries = await _viaSource("related", local: (l) => l.related(id), uploader: (u) => u.ytRelated(id));
+      return entries.map(_toItem).toList();
+    } catch (_) {
       return const [];
     }
   }
 
-  BaseItemDto _toItem(Video video) => _map.track(
-    nativeId: video.id.value,
-    name: video.title,
-    artist: video.author,
-    duration: video.duration,
-    hasImage: true,
-  );
-
-  Uri? thumbnail(BaseItemDto item) =>
-      Uri.parse("https://i.ytimg.com/vi/${item.id.nativeId}/mqdefault.jpg");
-
-  static final _streamClients = <(String, YoutubeApiClient)>[
-    ("ANDROID_VR", YoutubeApiClient.androidVr),
-    ("IOS", YoutubeApiClient.ios),
-    ("MEDIA_CONNECT", YoutubeApiClient.mediaConnect),
-    ("ANDROID", YoutubeApiClient.androidSdkless),
-  ];
+  Uri? thumbnail(BaseItemDto item) => usesProxy
+      ? _uploader.ytThumbnail(item.id.nativeId)
+      : Uri.parse("https://i.ytimg.com/vi/${item.id.nativeId}/mqdefault.jpg");
 
   Future<YouTubeStream?> streamUrl(BaseItemDto item) async {
-    for (final audioOnly in [true, false]) {
-      for (final (name, client) in _streamClients) {
-        try {
-          final manifest = await _yt.videos.streamsClient.getManifest(item.id.nativeId, ytClients: [client]);
-
-          final audio = _playableFirst(manifest.audioOnly.sortByBitrate());
-          final muxed = _playableFirst(manifest.muxed.sortByVideoQuality().reversed.toList());
-
-          final stream = audio.isNotEmpty
-              ? audio.first
-              : (audioOnly || muxed.isEmpty ? null : muxed.first);
-
-          if (stream == null) {
-            _log.fine("$name has no ${audioOnly ? "audio-only" : ""} stream for '${item.name}'.");
-            continue;
-          }
-          if (!await _isPlayable(stream.url)) {
-            _log.fine("$name gave a URL for '${item.name}' that YouTube then refused; trying the next client.");
-            continue;
-          }
-
-          final container = stream.container.name;
-          _log.fine("Resolved '${item.name}' through $name as $container.");
-          return YouTubeStream(stream.url, container);
-        } catch (e) {
-          _log.fine("$name could not resolve '${item.name}': $e");
-        }
-      }
-    }
-
-    _log.warning("No YouTube client could produce a playable stream for '${item.name}'.");
-    return null;
-  }
-
-  List<T> _playableFirst<T extends StreamInfo>(List<T> streams) {
-    if (!Platform.isIOS && !Platform.isMacOS) return streams;
-
-    const decodable = {"mp4", "m4a"};
-    final supported = streams.where((s) => decodable.contains(s.container.name.toLowerCase()));
-    final rest = streams.where((s) => !decodable.contains(s.container.name.toLowerCase()));
-    return [...supported, ...rest];
-  }
-
-  Future<bool> _isPlayable(Uri url) async {
+    final id = item.id.nativeId;
     try {
-      final response = await http.head(url).timeout(const Duration(seconds: 5));
-      if (response.statusCode == 200 || response.statusCode == 206) return true;
+      return await _viaSource<YouTubeStream>(
+        "stream '${item.name}'",
+        local: (l) async {
+          final s = await l.streamUrl(id);
+          return YouTubeStream(s.url, s.ext);
+        },
 
-      final ranged = await http
-          .get(url, headers: {"Range": "bytes=0-0"})
-          .timeout(const Duration(seconds: 5));
-      return ranged.statusCode == 200 || ranged.statusCode == 206;
-    } catch (e) {
-      _log.fine("Could not check a YouTube URL: $e");
-      return false;
+        uploader: (u) async => YouTubeStream(u.ytStream(id), null, headers: u.authHeaders),
+      );
+    } catch (_) {
+      return null;
     }
   }
 
-  void dispose() => _yt.close();
+  Future<String?> explainStreamFailure(BaseItemDto item) async {
+    try {
+      await _viaSource<void>(
+        "probe '${item.name}'",
+        local: (l) => l.streamUrl(item.id.nativeId),
+        uploader: (u) async {
+          final caps = await u.capabilities();
+          if (!caps.reachable) throw UploaderException(caps.problem ?? "The uploader can't be reached.");
+          if (!caps.ytdlp) throw const YouTubeUnavailable("The uploader's YouTube feature is off.");
+        },
+      );
+      return null;
+    } catch (e) {
+      return FriendlyError.message(e);
+    }
+  }
+
+  static const _chartUrl = "https://www.youtube.com/playlist?list=PL4fGSI1pDJn6puJdseH2Rt9sMvt9E2M4i";
+  static const _newMusicQuery = "new music this week official audio";
+  static const _shelfTtl = Duration(minutes: 20);
+
+  List<YouTubeShelf>? _shelves;
+  DateTime? _shelvesAt;
+  YouTubeSource? _shelvesSource;
+  String? _shelvesKey;
+
+  String get _shelfSettingsKey {
+    final s = FinampSettingsHelper.finampSettings;
+    return "${s.youtubeShowHits}/${s.youtubeShowNew}";
+  }
+
+  Future<List<YouTubeShelf>> homeShelves({bool refresh = false}) async {
+    final fresh =
+        _shelves != null &&
+        _shelvesAt != null &&
+        _shelvesSource == source &&
+        _shelvesKey == _shelfSettingsKey &&
+        DateTime.now().difference(_shelvesAt!) < _shelfTtl;
+    if (!refresh && fresh) return _shelves!;
+
+    final settings = FinampSettingsHelper.finampSettings;
+    final results = await Future.wait([
+      settings.youtubeShowHits ? _hits() : Future.value(const <BaseItemDto>[]),
+      settings.youtubeShowNew ? _newReleases() : Future.value(const <BaseItemDto>[]),
+    ]);
+    final shelves = [
+      if (results[0].isNotEmpty) YouTubeShelf("Hits on YouTube", results[0]),
+      if (results[1].isNotEmpty) YouTubeShelf("New this week", results[1]),
+    ];
+    if (shelves.isNotEmpty) {
+      _shelves = shelves;
+      _shelvesAt = DateTime.now();
+      _shelvesSource = source;
+      _shelvesKey = _shelfSettingsKey;
+    }
+    return shelves;
+  }
+
+  Future<List<BaseItemDto>> _hits() async {
+    try {
+      final entries = await _viaSource(
+        "hits",
+        local: (l) => l.playlist(_chartUrl, limit: 30),
+        uploader: (u) => u.ytTrending(limit: 30),
+      );
+      return entries.map(_toItem).toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  Future<List<BaseItemDto>> _newReleases() async {
+    try {
+      final entries = await _viaSource(
+        "new releases",
+        local: (l) => l.search(_newMusicQuery),
+        uploader: (u) => u.ytSearch(_newMusicQuery, limit: 20),
+      );
+      return entries.map(_toItem).toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  void dispose() {}
 }

@@ -316,3 +316,14 @@ Please follow the guidelines of your distribution if you would like to package D
 The repo contains a [desktop file template](assets/Diapason.desktop.m4) and
 pre-generated icons following the XDG Icon Theme Specification
 in the [assets folder](assets/icon/linux).
+
+## Tests
+
+Tests are run locally, not in CI. Before pushing:
+
+```bash
+tools/test.sh              # unit, widget and uploader contract tests
+tools/test.sh integration  # the whole app against a local fake server
+```
+
+How the suites are organised, and how to write a new test, is in [`test/README.md`](test/README.md).

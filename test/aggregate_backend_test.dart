@@ -8,6 +8,8 @@ import 'package:diapason/services/backends/media_backend.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 
+import 'support/test_env.dart';
+
 /// A backend holding a fixed list of albums, recording how it was asked for them.
 class _FakeBackend implements MediaBackend {
   _FakeBackend(String sourceId, MediaSourceKind kind, List<String> albumNames, {this.fails = false})
@@ -65,6 +67,14 @@ AggregateBackend _aggregateOver(List<_FakeBackend> backends) {
 }
 
 void main() {
+  late TestEnv env;
+
+  // Merging asks the hidden-items blocklist, which lives in Hive.
+  setUpAll(() async {
+    env = await TestEnv.create();
+    await env.openHive(settings: false);
+  });
+  tearDownAll(() => env.dispose());
   tearDown(() => GetIt.instance.reset());
 
   test("a single source is handed the request untouched", () async {

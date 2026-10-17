@@ -1572,6 +1572,78 @@ extension FinampSetters on FinampSettingsHelper {
     ).put("FinampSettings", finampSettingsTemp);
   }
 
+  static void setUploaderYtProxy(bool newUploaderYtProxy) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.uploaderYtProxy = newUploaderYtProxy;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setUploaderAllowInsecure(bool newUploaderAllowInsecure) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.uploaderAllowInsecure = newUploaderAllowInsecure;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setYtdlpConfigJson(String newYtdlpConfigJson) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.ytdlpConfigJson = newYtdlpConfigJson;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setUploaderWifiOnly(bool newUploaderWifiOnly) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.uploaderWifiOnly = newUploaderWifiOnly;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setYoutubeResultCount(int newYoutubeResultCount) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.youtubeResultCount = newYoutubeResultCount;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setYoutubeShowHits(bool newYoutubeShowHits) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.youtubeShowHits = newYoutubeShowHits;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setYoutubeShowNew(bool newYoutubeShowNew) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.youtubeShowNew = newYoutubeShowNew;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setYoutubeSearchByDefault(bool newYoutubeSearchByDefault) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.youtubeSearchByDefault = newYoutubeSearchByDefault;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setLogLevel(String newLogLevel) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.logLevel = newLogLevel;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
   static void setBufferDuration(Duration newBufferDuration) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
     finampSettingsTemp.bufferDuration = newBufferDuration;
@@ -2098,6 +2170,27 @@ extension FinampSettingsProviderSelectors on StreamProvider<FinampSettings> {
       finampSettingsProvider.select(
         (value) => value.requireValue.resumeOnBluetoothConnect,
       );
+  ProviderListenable<bool> get uploaderYtProxy => finampSettingsProvider.select(
+    (value) => value.requireValue.uploaderYtProxy,
+  );
+  ProviderListenable<bool> get uploaderAllowInsecure => finampSettingsProvider
+      .select((value) => value.requireValue.uploaderAllowInsecure);
+  ProviderListenable<String> get ytdlpConfigJson => finampSettingsProvider
+      .select((value) => value.requireValue.ytdlpConfigJson);
+  ProviderListenable<bool> get uploaderWifiOnly => finampSettingsProvider
+      .select((value) => value.requireValue.uploaderWifiOnly);
+  ProviderListenable<int> get youtubeResultCount => finampSettingsProvider
+      .select((value) => value.requireValue.youtubeResultCount);
+  ProviderListenable<bool> get youtubeShowHits => finampSettingsProvider.select(
+    (value) => value.requireValue.youtubeShowHits,
+  );
+  ProviderListenable<bool> get youtubeShowNew => finampSettingsProvider.select(
+    (value) => value.requireValue.youtubeShowNew,
+  );
+  ProviderListenable<bool> get youtubeSearchByDefault => finampSettingsProvider
+      .select((value) => value.requireValue.youtubeSearchByDefault);
+  ProviderListenable<String> get logLevel =>
+      finampSettingsProvider.select((value) => value.requireValue.logLevel);
   ProviderListenable<DownloadProfile> get downloadTranscodingProfile =>
       finampSettingsProvider.select(
         (value) => value.requireValue.downloadTranscodingProfile,

@@ -93,7 +93,7 @@ class YouTubeBackend implements MediaBackend {
     if (stream == null) {
       throw StateError("Could not resolve a YouTube stream for '${item.name}'.");
     }
-    return PlayableSource(stream.url, container: stream.container);
+    return PlayableSource(stream.url, headers: stream.headers, container: stream.container);
   }
 
   @override
@@ -105,7 +105,7 @@ class YouTubeBackend implements MediaBackend {
       _youtube.thumbnail(item);
 
   @override
-  Map<String, String> get imageHeaders => const {};
+  Map<String, String> get imageHeaders => _youtube.imageHeaders;
 
   @override
   Future<LyricDto?> getLyrics(BaseItemDto item) async => null;
