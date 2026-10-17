@@ -68,9 +68,6 @@ import '../../test/support/fake_ytdlp.dart';
 import '../../test/support/mock_uploader.dart';
 import '../../test/support/mock_subsonic.dart';
 
-
-
-
 late MockSubsonicServer navidrome;
 late Uri serverUrl;
 late Directory scratch;
@@ -82,7 +79,6 @@ late void Function() installThemeWarningFilter;
 ProviderContainer? container;
 List<FlutterErrorDetails>? mainErrors = [];
 var mainCompleted = false;
-
 
 void installHarness() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -118,7 +114,6 @@ void installHarness() {
       await req.response.close();
     });
 
-
     fakeYtDlp = await FakeYtDlp.create(scratch);
     YtDlpPaths.searchDirsOverride = [];
 
@@ -153,11 +148,8 @@ void installHarness() {
     if (scratch.existsSync()) await scratch.delete(recursive: true);
   });
 
-
-
   setUp(() => installThemeWarningFilter());
 }
-
 
 void takeStartup() {
   if (container != null) return;
@@ -167,8 +159,6 @@ void takeStartup() {
   container = GetIt.instance<ProviderContainer>();
   mainErrors = null;
 }
-
-
 
 Future<void> launch(WidgetTester tester, {bool signedOut = false, bool ytDlpOffer = false}) async {
   installThemeWarningFilter();
@@ -212,7 +202,6 @@ Future<void> closeWhatOpened(WidgetTester tester) async {
   await tester.settle();
 }
 
-
 Future<bool> tapFirst(WidgetTester tester, Finder finder) async {
   final matches = finder.evaluate();
   if (matches.isEmpty) return false;
@@ -222,7 +211,6 @@ Future<bool> tapFirst(WidgetTester tester, Finder finder) async {
 }
 
 QueueService queueService() => GetIt.instance<QueueService>();
-
 
 Future<void> openSubsonicForm(WidgetTester tester) async {
   await tester.settle();
@@ -241,8 +229,6 @@ Future<void> fillSubsonicForm(WidgetTester tester, Uri server, {String password 
   await tester.enterText(find.widgetWithText(TextFormField, 'Password'), password);
   await tester.pump();
 }
-
-
 
 Future<List<int>?> _longSilence(Directory scratch) async {
   final out = File('${scratch.path}/silence.mp3');
@@ -267,11 +253,9 @@ Future<List<int>?> _longSilence(Directory scratch) async {
   return [for (var i = 0; i < 50; i++) ...bytes];
 }
 
-
 final Finder library = isDesktop ? find.byType(DesktopShell) : find.byType(MusicScreen);
 
 const slow = Timeout(Duration(minutes: 3));
-
 
 Future<void> expectAnnouncedAndPlaying(
   WidgetTester tester,
@@ -303,11 +287,9 @@ Future<void> expectAnnouncedAndPlaying(
   );
 }
 
-
 Future<void> openAlbums(WidgetTester tester) async {
   await tester.waitFor(library, seconds: 30);
   if (isDesktop) {
-
     await tester.tap(find.text('Albums').first, warnIfMissed: false);
     await tester.settle();
   }
@@ -315,8 +297,6 @@ Future<void> openAlbums(WidgetTester tester) async {
 }
 
 extension WaitFor on WidgetTester {
-
-
   Future<void> settle({int frames = 4}) async {
     for (var i = 0; i < frames; i++) {
       await pump(const Duration(milliseconds: 40));
@@ -326,7 +306,6 @@ extension WaitFor on WidgetTester {
   Future<void> waitFor(Finder finder, {int seconds = 20}) async {
     await waitUntil(() => any(finder), seconds: seconds, what: finder.description);
   }
-
 
   Future<void> waitUntil(bool Function() condition, {int seconds = 20, String what = 'condition'}) async {
     final clock = Stopwatch()..start();
@@ -342,13 +321,6 @@ extension WaitFor on WidgetTester {
     throw TestFailure('"$what" did not become true within $seconds seconds. Text on screen: $onScreen');
   }
 }
-
-
-
-
-
-
-
 
 void Function() _knownThemeWarningFilter() {
   void Function(FlutterErrorDetails)? inner;
@@ -375,12 +347,6 @@ void Function() _knownThemeWarningFilter() {
   return install;
 }
 
-
-
-
-
-
-
 bool _isKnownNoise(String text) =>
     text.contains('setState() or markNeedsBuild() called during build') ||
     text.contains('Invalid state transition from AppLifecycleState') ||
@@ -394,13 +360,10 @@ bool _isKnownNoise(String text) =>
     text.contains('child.hasSize') ||
     text.contains('was not laid out') ||
     text.contains('childSemantics.renderObject._needsLayout') ||
-    text.contains(
-      'RenderFlex overflowed',
-    ) ||
+    text.contains('RenderFlex overflowed') ||
     (text.contains('No active stream to cancel') && text.contains('just_audio.spectrum'));
 
 String _describe(FlutterErrorDetails details) => "${details.toDiagnosticsNode().toStringDeep()}\n${details.stack}";
-
 
 final screenRoutes = <String, String>{
   'SourcesSettingsScreen': SourcesSettingsScreen.routeName,
@@ -443,8 +406,6 @@ final screenRoutes = <String, String>{
   'AccessibilitySettingsScreen': AccessibilitySettingsScreen.routeName,
 };
 
-
-
 @isTest
 void testApp(String description, Future<void> Function(WidgetTester tester) body, {Object? skip, Timeout? timeout}) {
   testWidgets(
@@ -461,8 +422,6 @@ void testApp(String description, Future<void> Function(WidgetTester tester) body
     timeout: timeout,
   );
 }
-
-
 
 Future<void> exploreTop(
   WidgetTester tester, {

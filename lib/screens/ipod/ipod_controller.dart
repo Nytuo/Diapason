@@ -199,10 +199,22 @@ class IpodController extends ChangeNotifier {
   IpodScreen _mainMenu() => IpodScreen(
     title: "iPod",
     rows: [
-      IpodRow(title: "Playlists", action: IpodPush(title: "Playlists", loader: _playlistRows)),
-      IpodRow(title: "Artists", action: IpodPush(title: "Artists", loader: _artistRows)),
-      IpodRow(title: "Albums", action: IpodPush(title: "Albums", loader: _albumRows)),
-      IpodRow(title: "Songs", action: IpodPush(title: "Songs", loader: _songMenuRows)),
+      IpodRow(
+        title: "Playlists",
+        action: IpodPush(title: "Playlists", loader: _playlistRows),
+      ),
+      IpodRow(
+        title: "Artists",
+        action: IpodPush(title: "Artists", loader: _artistRows),
+      ),
+      IpodRow(
+        title: "Albums",
+        action: IpodPush(title: "Albums", loader: _albumRows),
+      ),
+      IpodRow(
+        title: "Songs",
+        action: IpodPush(title: "Songs", loader: _songMenuRows),
+      ),
       IpodRow(title: "Shuffle Songs", action: IpodRun(_shuffleAll)),
       const IpodRow(title: "Now Playing", action: IpodNowPlayingAction()),
       IpodRow(

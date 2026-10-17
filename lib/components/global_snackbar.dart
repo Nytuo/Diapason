@@ -228,9 +228,7 @@ class GlobalSnackbar {
             }
           },
           child: Text(
-            friendly.source == ErrorSource.unknown
-                ? AppLocalizations.of(context)!.anErrorHasOccured
-                : friendly.message,
+            friendly.source == ErrorSource.unknown ? AppLocalizations.of(context)!.anErrorHasOccured : friendly.message,
           ),
         ),
         action: SnackBarAction(

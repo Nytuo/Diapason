@@ -18,8 +18,9 @@ class SimilarArtistsSection extends StatefulWidget {
 }
 
 class _SimilarArtistsSectionState extends State<SimilarArtistsSection> {
-  late Future<List<({String name, double match})>> _similar =
-      GetIt.instance<DiscoveryService>().similarArtists(widget.seedArtist);
+  late Future<List<({String name, double match})>> _similar = GetIt.instance<DiscoveryService>().similarArtists(
+    widget.seedArtist,
+  );
 
   @override
   void didUpdateWidget(SimilarArtistsSection oldWidget) {
@@ -38,9 +39,7 @@ class _SimilarArtistsSectionState extends State<SimilarArtistsSection> {
       return;
     }
 
-    final tracks = await discovery.resolve([
-      DiscoveredTrack(title: name, artist: name),
-    ], youtubeFallback: true);
+    final tracks = await discovery.resolve([DiscoveredTrack(title: name, artist: name)], youtubeFallback: true);
 
     if (!mounted) return;
     if (tracks.isEmpty) {
@@ -71,10 +70,7 @@ class _SimilarArtistsSectionState extends State<SimilarArtistsSection> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-              child: Text(
-                "Artists like ${widget.seedArtist}",
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              child: Text("Artists like ${widget.seedArtist}", style: Theme.of(context).textTheme.titleMedium),
             ),
             SizedBox(
               height: 44,

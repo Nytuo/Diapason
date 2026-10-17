@@ -33,13 +33,7 @@ class DesktopSearchScope extends InheritedWidget {
 }
 
 class DesktopContent extends StatelessWidget {
-  const DesktopContent({
-    super.key,
-    required this.nav,
-    this.openItem,
-    this.detailItem,
-    this.detailIsArtist = false,
-  });
+  const DesktopContent({super.key, required this.nav, this.openItem, this.detailItem, this.detailIsArtist = false});
 
   final DesktopNav nav;
 
@@ -55,9 +49,7 @@ class DesktopContent extends StatelessWidget {
     return Navigator(
       key: ValueKey((nav, openItem?.id, detailItem?.id, detailIsArtist)),
       onGenerateInitialRoutes: (navigator, initialRoute) {
-        final routes = <Route<dynamic>>[
-          MaterialPageRoute(builder: (_) => _DesktopNavRoot(nav: nav)),
-        ];
+        final routes = <Route<dynamic>>[MaterialPageRoute(builder: (_) => _DesktopNavRoot(nav: nav))];
         if (openItem != null) {
           routes.add(
             MaterialPageRoute(
@@ -73,9 +65,8 @@ class DesktopContent extends StatelessWidget {
                 name: detailIsArtist ? ArtistScreen.routeName : AlbumScreen.routeName,
                 arguments: detailItem,
               ),
-              builder: (_) => detailIsArtist
-                  ? DesktopArtistDetail(artist: detailItem!)
-                  : DesktopAlbumDetail(parent: detailItem!),
+              builder: (_) =>
+                  detailIsArtist ? DesktopArtistDetail(artist: detailItem!) : DesktopAlbumDetail(parent: detailItem!),
             ),
           );
         }

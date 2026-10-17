@@ -27,8 +27,7 @@ FocusNode tvNavFocusNode({TextEditingController? controller}) {
         case LogicalKeyboardKey.arrowDown:
           direction = TraversalDirection.down;
         case LogicalKeyboardKey.arrowLeft:
-          final atStart =
-              controller != null && controller.selection.start == 0 && controller.selection.end == 0;
+          final atStart = controller != null && controller.selection.start == 0 && controller.selection.end == 0;
           if (!atStart) return KeyEventResult.ignored;
           direction = TraversalDirection.left;
         case LogicalKeyboardKey.arrowRight:

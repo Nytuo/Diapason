@@ -61,9 +61,7 @@ class _WrappedScreenState extends State<WrappedScreen> {
 
     for (final entry in data.topTracks) {
       final matches = await aggregate.getItems(includeItemTypes: "Audio", searchTerm: entry.name, limit: 5);
-      final match = matches
-          .where((t) => (t.name ?? "").toLowerCase() == entry.name.toLowerCase())
-          .firstOrNull;
+      final match = matches.where((t) => (t.name ?? "").toLowerCase() == entry.name.toLowerCase()).firstOrNull;
       if (match != null) tracks.add(match);
     }
 
@@ -158,7 +156,10 @@ class _WrappedScreenState extends State<WrappedScreen> {
                     ),
                   );
                 }
-                return RepaintBoundary(key: _shareKey, child: _WrappedBody(data: data));
+                return RepaintBoundary(
+                  key: _shareKey,
+                  child: _WrappedBody(data: data),
+                );
               },
             ),
           ),
@@ -222,11 +223,7 @@ class _Stat extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4.0),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.bodySmall,
-                textAlign: TextAlign.center,
-              ),
+              Text(label, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
             ],
           ),
         ),
@@ -257,13 +254,7 @@ class _Chart extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 4.0),
             child: Row(
               children: [
-                SizedBox(
-                  width: 24.0,
-                  child: Text(
-                    "${index + 1}",
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ),
+                SizedBox(width: 24.0, child: Text("${index + 1}", style: Theme.of(context).textTheme.bodySmall)),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -279,10 +270,7 @@ class _Chart extends StatelessWidget {
                       const SizedBox(height: 4.0),
                       ClipRRect(
                         borderRadius: BorderRadius.circular(3.0),
-                        child: LinearProgressIndicator(
-                          value: entry.plays / max,
-                          minHeight: 6.0,
-                        ),
+                        child: LinearProgressIndicator(value: entry.plays / max, minHeight: 6.0),
                       ),
                     ],
                   ),

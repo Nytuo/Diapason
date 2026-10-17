@@ -49,19 +49,8 @@ class DesktopSidebar extends ConsumerStatefulWidget {
 }
 
 class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
-  static const _top = [
-    DesktopNav.home,
-    DesktopNav.albums,
-    DesktopNav.artists,
-    DesktopNav.songs,
-    DesktopNav.genres,
-  ];
-  static const _bottom = [
-    DesktopNav.smart,
-    DesktopNav.discover,
-    DesktopNav.youtube,
-    DesktopNav.folders,
-  ];
+  static const _top = [DesktopNav.home, DesktopNav.albums, DesktopNav.artists, DesktopNav.songs, DesktopNav.genres];
+  static const _bottom = [DesktopNav.smart, DesktopNav.discover, DesktopNav.youtube, DesktopNav.folders];
 
   bool _playlistsExpanded = true;
   bool _creating = false;
@@ -109,10 +98,7 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: _queueButton(context, p),
-          ),
+          Padding(padding: const EdgeInsets.all(12), child: _queueButton(context, p)),
         ],
       ),
     );
@@ -271,7 +257,10 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
   Widget _subtleRow(DesktopPalette p, String label) {
     return Padding(
       padding: const EdgeInsets.only(left: 42, top: 4, bottom: 6),
-      child: Text(label, style: TextStyle(color: p.textTertiary, fontSize: 12, fontStyle: FontStyle.italic)),
+      child: Text(
+        label,
+        style: TextStyle(color: p.textTertiary, fontSize: 12, fontStyle: FontStyle.italic),
+      ),
     );
   }
 

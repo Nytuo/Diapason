@@ -16,8 +16,6 @@ import 'package:get_it/get_it.dart';
 
 import 'support/harness.dart';
 
-
-
 void main() {
   installHarness();
 
@@ -46,7 +44,6 @@ void main() {
     GlobalSnackbar.navigatorState!.pushNamed(PlayerScreen.routeName);
     await tester.settle(frames: 8);
   }
-
 
   Future<void> openPlayerMenu(WidgetTester tester) async {
     final buttons = find.byType(IconButton).hitTestable().evaluate().toList();

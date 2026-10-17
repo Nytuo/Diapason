@@ -168,10 +168,9 @@ class _ViewSelectorState extends State<ViewSelector> {
         // allow calling _submitChoice() while selector is being built by delaying
         // navigation changes
         Future.microtask(
-          () => Navigator.of(context).pushNamedAndRemoveUntil(
-            isDesktop ? DesktopShell.routeName : MusicScreen.routeName,
-            (route) => false,
-          ),
+          () => Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil(isDesktop ? DesktopShell.routeName : MusicScreen.routeName, (route) => false),
         );
       } catch (e) {
         GlobalSnackbar.error(e);

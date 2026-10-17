@@ -44,9 +44,7 @@ class _CacheSettingsScreenState extends ConsumerState<CacheSettingsScreen> {
         children: [
           SwitchListTile(
             title: const Text("Cache streamed tracks"),
-            subtitle: const Text(
-              "Keep a copy of tracks as they play, so replaying one doesn't download it again",
-            ),
+            subtitle: const Text("Keep a copy of tracks as they play, so replaying one doesn't download it again"),
             value: enabled,
             onChanged: (value) => FinampSetters.setCacheStreamedTracks(value),
           ),

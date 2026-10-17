@@ -60,7 +60,9 @@ class _DesktopSmartPlaylistsState extends State<DesktopSmartPlaylists> {
         children: [
           Container(
             width: 260,
-            decoration: BoxDecoration(border: Border(right: BorderSide(color: p.borderSubtle))),
+            decoration: BoxDecoration(
+              border: Border(right: BorderSide(color: p.borderSubtle)),
+            ),
             child: Column(
               children: [
                 Padding(
@@ -106,11 +108,7 @@ class _DesktopSmartPlaylistsState extends State<DesktopSmartPlaylists> {
                       style: TextStyle(color: p.textTertiary),
                     ),
                   )
-                : SmartPlaylistTracks(
-                    key: ValueKey(_selected!.id),
-                    playlist: _selected!,
-                    onChanged: _load,
-                  ),
+                : SmartPlaylistTracks(key: ValueKey(_selected!.id), playlist: _selected!, onChanged: _load),
           ),
         ],
       ),

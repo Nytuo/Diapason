@@ -17,11 +17,7 @@ class LoginSourceTypePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            "Where's your music?",
-            style: Theme.of(context).textTheme.headlineMedium,
-            textAlign: TextAlign.center,
-          ),
+          Text("Where's your music?", style: Theme.of(context).textTheme.headlineMedium, textAlign: TextAlign.center),
           const SizedBox(height: 8.0),
           Text(
             "You can add more sources later — Diapason merges them all into one library.",

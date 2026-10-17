@@ -328,7 +328,9 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             title: const Text("Upload automatically only on Wi-Fi"),
-            subtitle: const Text("Downloaded tracks wait instead of using mobile data. Manual uploads always go through."),
+            subtitle: const Text(
+              "Downloaded tracks wait instead of using mobile data. Manual uploads always go through.",
+            ),
             value: ref.watch(finampSettingsProvider.uploaderWifiOnly),
             onChanged: (value) => FinampSetters.setUploaderWifiOnly(value),
           ),

@@ -133,8 +133,7 @@ class _IpodDisplay extends StatelessWidget {
           Expanded(
             child: AnimatedBuilder(
               animation: screen,
-              builder: (context, _) =>
-                  screen.isNowPlaying ? const _IpodNowPlaying() : _IpodList(screen: screen),
+              builder: (context, _) => screen.isNowPlaying ? const _IpodNowPlaying() : _IpodList(screen: screen),
             ),
           ),
         ],
@@ -191,7 +190,9 @@ class _IpodListState extends State<_IpodList> {
 
     if (screen.isLoading) return const Center(child: CircularProgressIndicator(strokeWidth: 2));
     if (screen.rows.isEmpty) {
-      return const Center(child: Text("Empty", style: TextStyle(fontSize: 13, color: Colors.black54)));
+      return const Center(
+        child: Text("Empty", style: TextStyle(fontSize: 13, color: Colors.black54)),
+      );
     }
 
     _keepSelectionVisible();
@@ -229,20 +230,13 @@ class _IpodListState extends State<_IpodList> {
                         subtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: selected ? Colors.white70 : Colors.black54,
-                        ),
+                        style: TextStyle(fontSize: 10, color: selected ? Colors.white70 : Colors.black54),
                       ),
                   ],
                 ),
               ),
               if (row.action is IpodPush)
-                Icon(
-                  Icons.chevron_right,
-                  size: 14,
-                  color: selected ? Colors.white : Colors.black38,
-                ),
+                Icon(Icons.chevron_right, size: 14, color: selected ? Colors.white : Colors.black38),
             ],
           ),
         );

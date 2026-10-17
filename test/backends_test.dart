@@ -1,4 +1,3 @@
-
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/backends/backend_registry.dart';

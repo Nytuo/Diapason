@@ -34,10 +34,7 @@ class _ImportScreenState extends State<ImportScreen> {
   }
 
   Future<void> _pickFiles() async {
-    final result = await FilePicker.pickFiles(
-      allowMultiple: true,
-      type: FileType.audio,
-    );
+    final result = await FilePicker.pickFiles(allowMultiple: true, type: FileType.audio);
     if (result == null || result.files.isEmpty) return;
 
     setState(() => _importingFiles = true);
@@ -46,9 +43,9 @@ class _ImportScreenState extends State<ImportScreen> {
 
     if (!mounted) return;
     setState(() => _importingFiles = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(imported == 0 ? "Nothing imported" : "Imported $imported file(s)")),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(imported == 0 ? "Nothing imported" : "Imported $imported file(s)")));
   }
 
   @override

@@ -14,9 +14,7 @@ import 'support/test_env.dart';
 class _FakeBackend implements MediaBackend {
   _FakeBackend(String sourceId, MediaSourceKind kind, List<String> albumNames, {this.fails = false})
     : config = MediaSourceConfig(sourceId: sourceId, kind: kind, name: sourceId),
-      _items = albumNames
-          .map((n) => ItemMapper(sourceId).album(nativeId: n.toLowerCase(), name: n))
-          .toList();
+      _items = albumNames.map((n) => ItemMapper(sourceId).album(nativeId: n.toLowerCase(), name: n)).toList();
 
   @override
   final MediaSourceConfig config;
@@ -130,7 +128,10 @@ void main() {
   test("a disabled source contributes nothing", () async {
     final off = _FakeBackend("sub-1", MediaSourceKind.subsonic, ["Hidden"]);
     off.config.enabled = false;
-    final aggregate = _aggregateOver([_FakeBackend("jf-1", MediaSourceKind.jellyfin, ["Shown"]), off]);
+    final aggregate = _aggregateOver([
+      _FakeBackend("jf-1", MediaSourceKind.jellyfin, ["Shown"]),
+      off,
+    ]);
 
     final items = await aggregate.getItems();
 

@@ -18,9 +18,7 @@ class HideFromBrowseMenuEntry extends ConsumerWidget implements HideableMenuEntr
 
     return MenuEntry(
       icon: isHidden ? TablerIcons.eye : TablerIcons.eye_closed,
-      title: isHidden
-          ? AppLocalizations.of(context)!.unhideFromBrowse
-          : AppLocalizations.of(context)!.hideFromBrowse,
+      title: isHidden ? AppLocalizations.of(context)!.unhideFromBrowse : AppLocalizations.of(context)!.hideFromBrowse,
       onTap: () async {
         if (isHidden) {
           await HiddenItemsService.unhide(baseItem.id);

@@ -52,7 +52,12 @@ class DesktopArtistDetail extends ConsumerWidget {
                       children: [
                         Text(
                           "ARTIST",
-                          style: TextStyle(color: p.accent, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                          style: TextStyle(
+                            color: p.accent,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -60,10 +65,7 @@ class DesktopArtistDetail extends ConsumerWidget {
                           style: TextStyle(color: p.textPrimary, fontSize: 32, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          "${albums.length} albums",
-                          style: TextStyle(color: p.textSecondary, fontSize: 14),
-                        ),
+                        Text("${albums.length} albums", style: TextStyle(color: p.textSecondary, fontSize: 14)),
                         const SizedBox(height: 20),
                         Row(
                           children: [
@@ -100,7 +102,10 @@ class DesktopArtistDetail extends ConsumerWidget {
           ),
           if (albumsAsync.isLoading)
             const SliverToBoxAdapter(
-              child: Padding(padding: EdgeInsets.all(48), child: Center(child: CircularProgressIndicator())),
+              child: Padding(
+                padding: EdgeInsets.all(48),
+                child: Center(child: CircularProgressIndicator()),
+              ),
             )
           else
             SliverPadding(

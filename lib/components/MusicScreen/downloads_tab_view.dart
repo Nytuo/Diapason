@@ -20,19 +20,20 @@ class DownloadsTabView extends StatelessWidget {
     final localizations = AppLocalizations.of(context)!;
     final downloadsService = GetIt.instance<DownloadsService>();
 
-    final active = Rx.combineLatest4<
-      List<DownloadStub>,
-      List<DownloadStub>,
-      List<DownloadStub>,
-      List<DownloadStub>,
-      List<List<DownloadStub>>
-    >(
-      downloadsService.getDownloadList(DownloadItemState.syncFailed),
-      downloadsService.getDownloadList(DownloadItemState.failed),
-      downloadsService.getDownloadList(DownloadItemState.downloading),
-      downloadsService.getDownloadList(DownloadItemState.enqueued),
-      (syncFailed, failed, downloading, enqueued) => [syncFailed, failed, downloading, enqueued],
-    );
+    final active =
+        Rx.combineLatest4<
+          List<DownloadStub>,
+          List<DownloadStub>,
+          List<DownloadStub>,
+          List<DownloadStub>,
+          List<List<DownloadStub>>
+        >(
+          downloadsService.getDownloadList(DownloadItemState.syncFailed),
+          downloadsService.getDownloadList(DownloadItemState.failed),
+          downloadsService.getDownloadList(DownloadItemState.downloading),
+          downloadsService.getDownloadList(DownloadItemState.enqueued),
+          (syncFailed, failed, downloading, enqueued) => [syncFailed, failed, downloading, enqueued],
+        );
 
     return StreamBuilder<List<List<DownloadStub>>>(
       stream: active,

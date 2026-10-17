@@ -7,7 +7,7 @@ void main() {
     final record = LogRecord(
       Level.INFO,
       "Found 0 chapters for 'https://music.example.com/rest/download.view?u=arnaud&t=8051492efa67ce2914a7&s=4357ba417e2f&v=1.16.1&c=Diapason&id=sub-1'"
-      " and https://plex.example.com/library?X-Plex-Token=abc123&x=1 and https://x.example/p?api_key=K&p=hunter2",
+          " and https://plex.example.com/library?X-Plex-Token=abc123&x=1 and https://x.example/p?api_key=K&p=hunter2",
       "test",
     );
     final text = record.censoredMessage;

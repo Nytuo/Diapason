@@ -38,8 +38,15 @@ class DesktopMiniPlayer extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(12, 12, 8, 0),
                 child: Row(
                   children: [
-                    Text("MINI PLAYER",
-                        style: TextStyle(color: p.textTertiary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                    Text(
+                      "MINI PLAYER",
+                      style: TextStyle(
+                        color: p.textTertiary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
                     const Spacer(),
                     IconButton(
                       iconSize: 18,
@@ -60,7 +67,10 @@ class DesktopMiniPlayer extends ConsumerWidget {
                       child: AspectRatio(
                         aspectRatio: 1,
                         child: item == null
-                            ? Container(color: p.surface, child: Icon(TablerIcons.disc, size: 64, color: p.textTertiary))
+                            ? Container(
+                                color: p.surface,
+                                child: Icon(TablerIcons.disc, size: 64, color: p.textTertiary),
+                              )
                             : AlbumImage(imageListenable: currentAlbumImageProvider),
                       ),
                     ),

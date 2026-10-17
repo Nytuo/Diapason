@@ -29,12 +29,7 @@ class DesktopHeaderBar extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(
-              color: p.textPrimary,
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              letterSpacing: -0.2,
-            ),
+            style: TextStyle(color: p.textPrimary, fontSize: 15, fontWeight: FontWeight.bold, letterSpacing: -0.2),
           ),
           const Spacer(),
           SizedBox(

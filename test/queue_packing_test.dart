@@ -20,9 +20,7 @@ void main() {
     List<String> queue = const [],
   }) => FinampStorableQueueInfo(
     packedPreviousTracks: FinampStorableQueueInfo.packIds(previous.map(BaseItemId.new).toList()),
-    packedCurrentTrack: current == null
-        ? Uint8List(0)
-        : FinampStorableQueueInfo.packIds([BaseItemId(current)]),
+    packedCurrentTrack: current == null ? Uint8List(0) : FinampStorableQueueInfo.packIds([BaseItemId(current)]),
     packedNextUp: FinampStorableQueueInfo.packIds(nextUp.map(BaseItemId.new).toList()),
     packedQueue: FinampStorableQueueInfo.packIds(queue.map(BaseItemId.new).toList()),
     currentTrackSeek: null,
@@ -42,10 +40,7 @@ void main() {
       queue: ["3f9e8a2b4c1d5e6f7a8b9c0d1e2f3a4b"],
     );
 
-    expect(info.previousTracks.map((id) => id.raw), [
-      "sub-d8240~aelw4dXEy3SuL2Szt3PAgX",
-      "yt~6pL9A-KjUn0",
-    ]);
+    expect(info.previousTracks.map((id) => id.raw), ["sub-d8240~aelw4dXEy3SuL2Szt3PAgX", "yt~6pL9A-KjUn0"]);
     expect(info.currentTrack!.raw, "local~3f2b1c8e9d");
     expect(info.nextUp.single.raw, "plex-1~/library/metadata/4821");
     expect(info.queue.single.raw, "3f9e8a2b4c1d5e6f7a8b9c0d1e2f3a4b");
@@ -80,9 +75,7 @@ void main() {
   test("reads a queue saved by an older build, which packed raw 16-byte GUIDs", () {
     // Written the way upstream wrote it: the hex GUID, decoded to bytes.
     const guid = "3f9e8a2b4c1d5e6f7a8b9c0d1e2f3a4b";
-    final legacy = Uint8List.fromList([
-      for (int i = 0; i < 32; i += 2) int.parse(guid.substring(i, i + 2), radix: 16),
-    ]);
+    final legacy = Uint8List.fromList([for (int i = 0; i < 32; i += 2) int.parse(guid.substring(i, i + 2), radix: 16)]);
 
     final info = FinampStorableQueueInfo(
       packedPreviousTracks: Uint8List(0),
@@ -103,9 +96,6 @@ void main() {
 
   test("refuses an id too long to store, rather than silently truncating it", () {
     // Truncation would corrupt the queue in a way that only surfaces on restore.
-    expect(
-      () => FinampStorableQueueInfo.packIds([BaseItemId("x" * 70000)]),
-      throwsArgumentError,
-    );
+    expect(() => FinampStorableQueueInfo.packIds([BaseItemId("x" * 70000)]), throwsArgumentError);
   });
 }

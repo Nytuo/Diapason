@@ -13,8 +13,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 
-
-
 class YouTubeActions {
   static QueueItemSource _source(BaseItemDto anchor, String name) => QueueItemSource(
     type: QueueItemSourceType.unknown,
@@ -26,7 +24,6 @@ class YouTubeActions {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
-
 
   static Future<void> play(
     BuildContext context,
@@ -45,7 +42,6 @@ class YouTubeActions {
     }
   }
 
-
   static Future<void> discover(BuildContext context, BaseItemDto track) async {
     _toast(context, "Building a discover queue from '${track.name ?? "this track"}'…");
     try {
@@ -63,7 +59,6 @@ class YouTubeActions {
       _toast(context, "Couldn't start discover. ${FriendlyError.reportGlobal("YouTube discover", e, stack)}");
     }
   }
-
 
   static Future<void> saveToServer(BuildContext context, BaseItemDto track) async {
     _toast(context, "Asking your server to fetch '${track.name ?? "this track"}'…");
@@ -86,7 +81,6 @@ class YouTubeActions {
     return "${duration.inMinutes}:$seconds";
   }
 }
-
 
 class YouTubeThumbnail extends StatelessWidget {
   const YouTubeThumbnail(this.track, {super.key, this.width, this.height, this.fit = BoxFit.cover});
@@ -151,7 +145,6 @@ class YouTubeTrackTile extends StatelessWidget {
     );
   }
 }
-
 
 class YouTubeSearchResults extends StatefulWidget {
   const YouTubeSearchResults({super.key, required this.query, this.debounce = const Duration(milliseconds: 600)});
@@ -278,7 +271,6 @@ class _YouTubeSearchResultsState extends State<YouTubeSearchResults> {
   }
 }
 
-
 class YouTubeHome extends StatefulWidget {
   const YouTubeHome({super.key});
 
@@ -404,7 +396,6 @@ class _Shelf extends StatelessWidget {
     );
   }
 }
-
 
 class SearchSourceSwitcher extends StatelessWidget {
   const SearchSourceSwitcher({super.key, required this.youtube, required this.onChanged});

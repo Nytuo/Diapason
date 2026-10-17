@@ -57,8 +57,7 @@ class _ScrobblingSettingsScreenState extends ConsumerState<ScrobblingSettingsScr
     }
   }
 
-  LastFmClient get _lastFm =>
-      LastFmClient(apiKey: _apiKey.text.trim(), apiSecret: _apiSecret.text.trim());
+  LastFmClient get _lastFm => LastFmClient(apiKey: _apiKey.text.trim(), apiSecret: _apiSecret.text.trim());
 
   Future<void> _startLastFmAuth() async {
     final client = _lastFm;
@@ -184,9 +183,7 @@ class _ScrobblingSettingsScreenState extends ConsumerState<ScrobblingSettingsScr
                 contentPadding: EdgeInsets.zero,
                 title: const Text("Waiting to be sent"),
                 subtitle: Text(
-                  pending == 0
-                      ? "Nothing queued"
-                      : "$pending listen(s) couldn't be sent, and will be retried",
+                  pending == 0 ? "Nothing queued" : "$pending listen(s) couldn't be sent, and will be retried",
                 ),
                 trailing: pending == 0
                     ? null

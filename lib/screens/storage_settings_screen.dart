@@ -20,10 +20,7 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-
-
 class StorageSettingsScreen extends ConsumerStatefulWidget {
-
   const StorageSettingsScreen({
     super.key,
     this.coverArtBytes = albumImageCacheBytes,
@@ -41,7 +38,6 @@ class StorageSettingsScreen extends ConsumerStatefulWidget {
 
 class _StorageSettingsScreenState extends ConsumerState<StorageSettingsScreen> {
   static final _log = Logger("StorageSettingsScreen");
-
 
   int _generation = 0;
 

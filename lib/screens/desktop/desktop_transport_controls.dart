@@ -149,10 +149,7 @@ class _DesktopSeekBarState extends State<DesktopSeekBar> with SingleTickerProvid
   @override
   void initState() {
     super.initState();
-    _loadingController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..repeat();
+    _loadingController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat();
   }
 
   @override
@@ -164,14 +161,15 @@ class _DesktopSeekBarState extends State<DesktopSeekBar> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     final audioHandler = GetIt.instance<MusicPlayerBackgroundTask>();
-    
+
     return StreamBuilder<PlaybackState>(
       stream: audioHandler.playbackState,
       initialData: audioHandler.playbackState.value,
       builder: (context, stateSnap) {
         final state = stateSnap.data;
         final buffered = widget.positionListenable != null ? Duration.zero : (state?.bufferedPosition ?? Duration.zero);
-        final loading = widget.positionListenable == null &&
+        final loading =
+            widget.positionListenable == null &&
             (state?.processingState == AudioProcessingState.loading ||
                 state?.processingState == AudioProcessingState.buffering);
 
@@ -221,11 +219,7 @@ class _DesktopSeekBarState extends State<DesktopSeekBar> with SingleTickerProvid
               animation: _loadingController,
               builder: (context, _) => CustomPaint(
                 size: const Size(double.infinity, 4),
-                painter: _IndeterminatePainter(
-                  progress: _loadingController.value,
-                  track: p.surface,
-                  accent: p.accent,
-                ),
+                painter: _IndeterminatePainter(progress: _loadingController.value, track: p.surface, accent: p.accent),
               ),
             ),
           ),

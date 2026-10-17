@@ -7,19 +7,15 @@ import 'package:flutter_test/flutter_test.dart';
 /// this existed, choosing a sort did nothing at all on Subsonic, Plex or local
 /// files.
 void main() {
-  BaseItemDto track({
-    String name = "",
-    String? album,
-    int? year,
-    int? playCount,
-    String? created,
-  }) => BaseItemDto(
+  BaseItemDto track({String name = "", String? album, int? year, int? playCount, String? created}) => BaseItemDto(
     id: BaseItemId("sub-1~$name"),
     name: name,
     album: album,
     productionYear: year,
     dateCreated: created,
-    userData: playCount == null ? null : UserItemDataDto(playCount: playCount, isFavorite: false, playbackPositionTicks: 0, played: false, key: name),
+    userData: playCount == null
+        ? null
+        : UserItemDataDto(playCount: playCount, isFavorite: false, playbackPositionTicks: 0, played: false, key: name),
   );
 
   List<String?> names(List<BaseItemDto> items) => items.map((i) => i.name).toList();

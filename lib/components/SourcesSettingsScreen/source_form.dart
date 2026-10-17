@@ -200,29 +200,29 @@ class _SourceFormState extends State<SourceForm> {
 
             if (!_isMpd)
               ExpansionTile(
-              tilePadding: EdgeInsets.zero,
-              title: const Text("Local network address (optional)"),
-              subtitle: const Text("Switch to a faster address automatically when on this network"),
-              childrenPadding: const EdgeInsets.only(bottom: 8.0),
-              children: [
-                TextFormField(
-                  controller: _localNetworkAddress,
-                  focusNode: _localNetworkAddressFocus,
-                  autocorrect: false,
-                  keyboardType: TextInputType.url,
-                  decoration: const InputDecoration(
-                    labelText: "Local network address",
-                    hintText: "http://192.168.1.10:4533",
+                tilePadding: EdgeInsets.zero,
+                title: const Text("Local network address (optional)"),
+                subtitle: const Text("Switch to a faster address automatically when on this network"),
+                childrenPadding: const EdgeInsets.only(bottom: 8.0),
+                children: [
+                  TextFormField(
+                    controller: _localNetworkAddress,
+                    focusNode: _localNetworkAddressFocus,
+                    autocorrect: false,
+                    keyboardType: TextInputType.url,
+                    decoration: const InputDecoration(
+                      labelText: "Local network address",
+                      hintText: "http://192.168.1.10:4533",
+                    ),
                   ),
-                ),
-                CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  value: _preferLocalNetwork,
-                  title: const Text("Prefer local network when available"),
-                  onChanged: (value) => setState(() => _preferLocalNetwork = value ?? false),
-                ),
-              ],
-            ),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: _preferLocalNetwork,
+                    title: const Text("Prefer local network when available"),
+                    onChanged: (value) => setState(() => _preferLocalNetwork = value ?? false),
+                  ),
+                ],
+              ),
             const SizedBox(height: 8.0),
 
             if (widget.kind == MediaSourceKind.subsonic) ...[
@@ -265,16 +265,12 @@ class _SourceFormState extends State<SourceForm> {
                 children: [
                   Icon(
                     _reachable! ? TablerIcons.circle_check : TablerIcons.alert_circle,
-                    color: _reachable!
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.error,
+                    color: _reachable! ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.error,
                   ),
                   const SizedBox(width: 8.0),
                   Expanded(
                     child: Text(
-                      _reachable!
-                          ? "Connected"
-                          : "Couldn't reach this source. Check the address and credentials.",
+                      _reachable! ? "Connected" : "Couldn't reach this source. Check the address and credentials.",
                     ),
                   ),
                 ],

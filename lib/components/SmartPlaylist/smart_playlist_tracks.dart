@@ -121,9 +121,7 @@ class _SmartPlaylistTracksState extends State<SmartPlaylistTracks> {
               const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
             else if (tracks.isEmpty)
               SliverFillRemaining(
-                child: Center(
-                  child: Text("No tracks match these rules", style: theme.textTheme.bodyLarge),
-                ),
+                child: Center(child: Text("No tracks match these rules", style: theme.textTheme.bodyLarge)),
               )
             else
               SliverList(

@@ -46,7 +46,9 @@ void main() {
     test("falls back to search when the exact match 404s", () async {
       final seen = <String>[];
       // The exact endpoint 404s whenever metadata doesn't line up with theirs.
-      final client = LrclibClient(httpClient: _lrclib(exact: null, search: [_synced], seen: seen));
+      final client = LrclibClient(
+        httpClient: _lrclib(exact: null, search: [_synced], seen: seen),
+      );
 
       final lyrics = await client.fetch(title: "Song", artist: "Artist");
 
@@ -54,39 +56,24 @@ void main() {
       expect(LrcParser.isSynced(lyrics), isTrue);
     });
 
-
     test("a search result of a different length is a different song", () async {
       // Search matches loosely, so "Rivalry" by someone else, three minutes
       // longer, can come back. Wrong lyrics scrolling over the wrong song are
       // worse than no lyrics at all.
-      final wrongSong = {...
-        _synced,
-        "duration": 400.0,
-      };
+      final wrongSong = {..._synced, "duration": 400.0};
       final client = LrclibClient(httpClient: _lrclib(exact: null, search: [wrongSong]));
 
-      final lyrics = await client.fetch(
-        title: "Song",
-        artist: "Artist",
-        duration: const Duration(seconds: 200),
-      );
+      final lyrics = await client.fetch(title: "Song", artist: "Artist", duration: const Duration(seconds: 200));
 
       expect(lyrics, isNull);
     });
 
     test("a couple of seconds of disagreement is still the same song", () async {
       // Encoders and taggers rarely agree to the second.
-      final sameSong = {...
-        _synced,
-        "duration": 201.0,
-      };
+      final sameSong = {..._synced, "duration": 201.0};
       final client = LrclibClient(httpClient: _lrclib(exact: null, search: [sameSong]));
 
-      final lyrics = await client.fetch(
-        title: "Song",
-        artist: "Artist",
-        duration: const Duration(seconds: 200),
-      );
+      final lyrics = await client.fetch(title: "Song", artist: "Artist", duration: const Duration(seconds: 200));
 
       expect(LrcParser.isSynced(lyrics), isTrue);
     });
@@ -118,7 +105,9 @@ void main() {
 
     test("a track with no artist is not looked up at all", () async {
       final seen = <String>[];
-      final client = LrclibClient(httpClient: _lrclib(exact: _synced, seen: seen));
+      final client = LrclibClient(
+        httpClient: _lrclib(exact: _synced, seen: seen),
+      );
 
       expect(await client.fetch(title: "Song", artist: ""), isNull);
       expect(seen, isEmpty, reason: "no point asking LRCLIB without an artist");

@@ -204,7 +204,10 @@ class _ProgressSliderDuration extends StatelessWidget {
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        SizedBox(width: timeColumnWidth, child: Text(printDuration(currentPosition), style: labelStyle)),
+        SizedBox(
+          width: timeColumnWidth,
+          child: Text(printDuration(currentPosition), style: labelStyle),
+        ),
         if (chapter?.name?.isNotEmpty ?? false)
           Expanded(
             child: Padding(
@@ -275,9 +278,7 @@ class ChapterMarkers extends StatelessWidget {
             for (final chapter in chapters)
               if (chapter.startPositionTicks > 0)
                 Positioned(
-                  left:
-                      (chapter.startPosition.inMicroseconds / totalMicros).clamp(0.0, 1.0) * constraints.maxWidth -
-                      7,
+                  left: (chapter.startPosition.inMicroseconds / totalMicros).clamp(0.0, 1.0) * constraints.maxWidth - 7,
                   top: 0,
                   bottom: 0,
                   width: 14,

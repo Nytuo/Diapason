@@ -47,9 +47,7 @@ class _CastScreenState extends State<CastScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          sent
-              ? "Casting to ${device.friendlyName}"
-              : "That track is a local file, so the Cast device can't reach it.",
+          sent ? "Casting to ${device.friendlyName}" : "That track is a local file, so the Cast device can't reach it.",
         ),
       ),
     );

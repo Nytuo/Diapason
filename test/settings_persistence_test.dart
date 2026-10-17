@@ -135,7 +135,10 @@ void main() {
         checked++;
         final end = i + 1 < decls.length ? decls[i + 1].start : source.length;
         final seen = <String>{};
-        for (final m in RegExp(r'^\s*@HiveField\((\d+)', multiLine: true).allMatches(source.substring(decls[i].end, end))) {
+        for (final m in RegExp(
+          r'^\s*@HiveField\((\d+)',
+          multiLine: true,
+        ).allMatches(source.substring(decls[i].end, end))) {
           expect(seen.add(m.group(1)!), isTrue, reason: '${decls[i].group(2)} uses HiveField(${m.group(1)}) twice');
         }
       }

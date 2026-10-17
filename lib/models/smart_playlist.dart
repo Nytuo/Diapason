@@ -93,9 +93,7 @@ class SmartPlaylist {
     id: j["id"] as String,
     name: j["name"] as String? ?? "Smart Playlist",
     matchAll: j["matchAll"] as bool? ?? true,
-    rules: (j["rules"] as List? ?? [])
-        .map((e) => SmartRule.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList(),
+    rules: (j["rules"] as List? ?? []).map((e) => SmartRule.fromJson(Map<String, dynamic>.from(e as Map))).toList(),
     sort: SmartSort.values.byName(j["sort"] as String? ?? "title"),
     descending: j["descending"] as bool? ?? false,
     limit: j["limit"] as int?,

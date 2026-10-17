@@ -41,11 +41,16 @@ class AdaptiveDownloadLockDeleteMenuEntry extends ConsumerWidget implements Hide
     final library = GetIt.instance<FinampUserHelper>().currentUser?.currentView;
     return switch (BaseItemDtoType.fromItem(baseItem)) {
       BaseItemDtoType.track => DownloadStub.fromItem(type: DownloadItemType.track, item: baseItem),
-      BaseItemDtoType.artist || BaseItemDtoType.genre => library == null
-          ? null
-          : DownloadStub.fromFinampCollection(
-              FinampCollection(type: FinampCollectionType.collectionWithLibraryFilter, library: library, item: baseItem),
-            ),
+      BaseItemDtoType.artist || BaseItemDtoType.genre =>
+        library == null
+            ? null
+            : DownloadStub.fromFinampCollection(
+                FinampCollection(
+                  type: FinampCollectionType.collectionWithLibraryFilter,
+                  library: library,
+                  item: baseItem,
+                ),
+              ),
       _ => DownloadStub.fromItem(type: DownloadItemType.collection, item: baseItem),
     };
   }

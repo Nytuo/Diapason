@@ -21,8 +21,15 @@ class MpdStatus {
 
   bool get isPlaying => state == "play";
 
-  static MpdStatus empty() =>
-      MpdStatus(state: "stop", volume: -1, elapsed: Duration.zero, duration: Duration.zero, songId: null, repeat: false, random: false);
+  static MpdStatus empty() => MpdStatus(
+    state: "stop",
+    volume: -1,
+    elapsed: Duration.zero,
+    duration: Duration.zero,
+    songId: null,
+    repeat: false,
+    random: false,
+  );
 }
 
 class MpdSong {

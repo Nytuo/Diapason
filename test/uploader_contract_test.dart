@@ -11,13 +11,6 @@ import 'support/fake_ytdlp.dart';
 import 'support/test_env.dart';
 import 'support/uploader_process.dart';
 
-
-
-
-
-
-
-
 void main() {
   late final String? unavailable;
   late TestEnv env;
@@ -184,7 +177,6 @@ void main() {
       final stored = libraryFiles().single;
       final before = stored.statSync();
       final tree = server!.musicDir.listSync(recursive: true).map((e) => e.path).toSet();
-
 
       final again = await client.uploadFile(file, artist: 'Other', album: 'Elsewhere', title: 'Copy');
 

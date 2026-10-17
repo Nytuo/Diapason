@@ -85,12 +85,22 @@ class DesktopAlbumDetail extends ConsumerWidget {
                       children: [
                         Text(
                           isPlaylist ? "PLAYLIST" : "ALBUM",
-                          style: TextStyle(color: p.accent, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                          style: TextStyle(
+                            color: p.accent,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           parent.name ?? "Unknown",
-                          style: TextStyle(color: p.textPrimary, fontSize: 32, fontWeight: FontWeight.bold, height: 1.1),
+                          style: TextStyle(
+                            color: p.textPrimary,
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            height: 1.1,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -150,16 +160,15 @@ class DesktopAlbumDetail extends ConsumerWidget {
           ),
           if (tracksAsync.isLoading)
             const SliverToBoxAdapter(
-              child: Padding(padding: EdgeInsets.all(48), child: Center(child: CircularProgressIndicator())),
+              child: Padding(
+                padding: EdgeInsets.all(48),
+                child: Center(child: CircularProgressIndicator()),
+              ),
             )
           else
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              sliver: TracksSliverList(
-                childrenForList: display,
-                childrenForQueue: queue,
-                parent: parent,
-              ),
+              sliver: TracksSliverList(childrenForList: display, childrenForQueue: queue, parent: parent),
             ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],

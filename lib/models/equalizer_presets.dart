@@ -6,18 +6,7 @@ import 'dart:math';
 /// layout. Android devices report their own band layout (usually 5 bands),
 /// so presets are mapped onto whatever bands the device actually has via
 /// [equalizerPresetGainForFrequency].
-const List<double> equalizerIsoCenterFrequencies = [
-  31,
-  62,
-  125,
-  250,
-  500,
-  1000,
-  2000,
-  4000,
-  8000,
-  16000,
-];
+const List<double> equalizerIsoCenterFrequencies = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
 
 /// Preset name -> gain in decibels per band, indexed the same as
 /// [equalizerIsoCenterFrequencies].

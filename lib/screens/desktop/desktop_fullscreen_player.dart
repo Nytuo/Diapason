@@ -71,7 +71,10 @@ class _DesktopFullscreenPlayerState extends ConsumerState<DesktopFullscreenPlaye
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(16),
                                   child: item == null
-                                      ? Container(color: p.surface, child: Icon(TablerIcons.disc, size: 96, color: p.textTertiary))
+                                      ? Container(
+                                          color: p.surface,
+                                          child: Icon(TablerIcons.disc, size: 96, color: p.textTertiary),
+                                        )
                                       : AlbumImage(imageListenable: currentAlbumImageProvider),
                                 ),
                               ),
@@ -101,7 +104,10 @@ class _DesktopFullscreenPlayerState extends ConsumerState<DesktopFullscreenPlaye
                                   const SizedBox(height: 12),
                                   const DesktopTrackInfoLine(fontSize: 13),
                                   const SizedBox(height: 28),
-                                  DesktopSeekBar(duration: item?.duration ?? Duration.zero, chapters: chaptersFromMediaItem(item)),
+                                  DesktopSeekBar(
+                                    duration: item?.duration ?? Duration.zero,
+                                    chapters: chaptersFromMediaItem(item),
+                                  ),
                                   const SizedBox(height: 20),
                                   DesktopTransportControls(playing: playing, playSize: 34, iconSize: 28),
                                 ],

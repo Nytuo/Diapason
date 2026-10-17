@@ -11,8 +11,6 @@ import 'package:get_it/get_it.dart';
 
 import 'support/harness.dart';
 
-
-
 void main() {
   installHarness();
 
@@ -65,8 +63,6 @@ void main() {
   });
 
   group('the audio engine', () {
-
-
     Future<void> within(Future<void> call) => call.timeout(const Duration(seconds: 8), onTimeout: () {});
 
     testApp('transport controls, seeking, volume and fades', (tester) async {

@@ -244,8 +244,8 @@ class StreamingTranscodeCodecDropdownListTile extends ConsumerWidget {
               AppLocalizations.of(context)!.losslessTranscodeStreamingWarning,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.error),
             ),
-          if (_sourcesMissingDefaultSupport(codec, kind: MediaSourceKind.subsonic).toList()
-              case final missing when missing.isNotEmpty)
+          if (_sourcesMissingDefaultSupport(codec, kind: MediaSourceKind.subsonic).toList() case final missing
+              when missing.isNotEmpty)
             Text(
               AppLocalizations.of(context)!.downloadTranscodeCodecMaybeUnsupported(missing.join(", ")),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.error),

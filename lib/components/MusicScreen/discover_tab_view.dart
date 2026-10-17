@@ -45,8 +45,7 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
   }
 
   Future<List<DiscoverPlaylist>> _withUsername(Future<List<DiscoverPlaylist>> Function(String) load) async {
-    final username =
-        await _discovery.listenBrainzUsername() ?? FinampSettingsHelper.finampSettings.lastFmUsername;
+    final username = await _discovery.listenBrainzUsername() ?? FinampSettingsHelper.finampSettings.lastFmUsername;
     if (username.isEmpty) return const [];
     return load(username);
   }
@@ -59,9 +58,7 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
 
       if (!mounted) return;
       if (tracks.isEmpty) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Couldn't find any of those tracks.")));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Couldn't find any of those tracks.")));
         return;
       }
 
@@ -69,19 +66,16 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
         items: tracks,
         source: QueueItemSource(
           type: QueueItemSourceType.unknown,
-          name: QueueItemSourceName(
-            type: QueueItemSourceNameType.preTranslated,
-            pretranslatedName: playlist.title,
-          ),
+          name: QueueItemSourceName(type: QueueItemSourceNameType.preTranslated, pretranslatedName: playlist.title),
           id: BaseItemId(playlist.id),
         ),
       );
 
       if (mounted) {
         final matched = tracks.length;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Playing $matched of ${recommended.length} tracks")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Playing $matched of ${recommended.length} tracks")));
       }
     } finally {
       if (mounted) setState(() => _importing = null);
@@ -151,9 +145,9 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
           const Icon(TablerIcons.chevron_right),
         ],
       ),
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => DiscoverPlaylistScreen(playlist: playlist)),
-      ),
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => DiscoverPlaylistScreen(playlist: playlist))),
     );
   }
 
@@ -174,10 +168,7 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
         if (playlists.isEmpty) return const SizedBox.shrink();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _SectionHeader(title),
-            for (final playlist in playlists) _playlistTile(playlist),
-          ],
+          children: [_SectionHeader(title), for (final playlist in playlists) _playlistTile(playlist)],
         );
       },
     );
@@ -308,7 +299,8 @@ class _FreshReleaseCard extends StatelessWidget {
                     : Image.network(
                         cover.toString(),
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => const ColoredBox(color: Colors.black12, child: Icon(TablerIcons.disc)),
+                        errorBuilder: (_, _, _) =>
+                            const ColoredBox(color: Colors.black12, child: Icon(TablerIcons.disc)),
                       ),
               ),
             ),

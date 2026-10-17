@@ -9,7 +9,6 @@ void main() {
   installHarness();
 
   group('browsing the library', () {
-
     for (final view in [
       'Home',
       'Albums',

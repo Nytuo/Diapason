@@ -13,8 +13,6 @@ void main() {
   installHarness();
 
   group('every screen opens', () {
-
-
     final screens = screenRoutes;
 
     for (final entry in screens.entries) {

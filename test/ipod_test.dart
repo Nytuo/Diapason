@@ -6,9 +6,7 @@ void main() {
     test("selection moves with the wheel and stops at the ends", () {
       final screen = IpodScreen(
         title: "Albums",
-        rows: [
-          for (var i = 0; i < 3; i++) IpodRow(title: "Row $i", action: const IpodNowPlayingAction()),
-        ],
+        rows: [for (var i = 0; i < 3; i++) IpodRow(title: "Row $i", action: const IpodNowPlayingAction())],
       );
 
       screen.select(2);
@@ -63,9 +61,7 @@ void main() {
       var notifications = 0;
       final screen = IpodScreen(
         title: "Songs",
-        rows: [
-          for (var i = 0; i < 3; i++) IpodRow(title: "Row $i", action: const IpodNowPlayingAction()),
-        ],
+        rows: [for (var i = 0; i < 3; i++) IpodRow(title: "Row $i", action: const IpodNowPlayingAction())],
       )..addListener(() => notifications++);
 
       screen.select(1);

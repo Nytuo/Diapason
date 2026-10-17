@@ -2,11 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-
-
-
-
-
 class UploaderProcess {
   UploaderProcess._(this._process, this.baseUrl, this.token, this.musicDir, this.stateDir, this.log);
 
@@ -20,7 +15,6 @@ class UploaderProcess {
   static const defaultToken = 'contract-test-token-0123456789abcdef';
 
   static String? _builtBinary;
-
 
   static Future<String?> unavailableReason() async {
     if (Platform.environment['DIAPASON_UPLOADER_BIN'] != null) return null;
@@ -39,7 +33,6 @@ class UploaderProcess {
     }
     return null;
   }
-
 
   static Future<String> build(Directory scratch) async {
     final prebuilt = Platform.environment['DIAPASON_UPLOADER_BIN'];
@@ -108,7 +101,6 @@ class UploaderProcess {
     await socket.close();
     return port;
   }
-
 
   Future<({int status, Map<String, String> headers, String body})> raw(
     String method,

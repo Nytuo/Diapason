@@ -15,7 +15,6 @@ void main() {
   installHarness();
 
   group('the play queue', () {
-
     final source = QueueItemSource.rawId(
       type: QueueItemSourceType.unknown,
       name: const QueueItemSourceName(type: QueueItemSourceNameType.preTranslated, pretranslatedName: 'Test'),
@@ -23,7 +22,6 @@ void main() {
     );
     late QueueService queue;
     var tracks = <BaseItemDto>[];
-
 
     Future<void> prep(WidgetTester tester) async {
       await launch(tester);

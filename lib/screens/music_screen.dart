@@ -296,8 +296,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
           onSearch: () => setState(() {
             isSearching = true;
             searchYouTube =
-                FinampSettingsHelper.finampSettings.youtubeSearchByDefault &&
-                ref.read(youTubeAvailableProvider);
+                FinampSettingsHelper.finampSettings.youtubeSearchByDefault && ref.read(youTubeAvailableProvider);
             if (_tabController != null &&
                 !_tabController!.indexIsChanging &&
                 sortedTabs.elementAt(_tabController!.index) == ContentType.home) {

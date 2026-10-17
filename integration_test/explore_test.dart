@@ -13,13 +13,9 @@ import 'support/harness.dart';
 void main() {
   installHarness();
 
-
-
-
   group(
     'poking at every screen',
     () {
-
       final avoid = RegExp(
         r'log ?out|sign ?out|delete|remove|clear|reset|erase|wipe|install|update|existing|choose|pick|browse|folder|'
         r'export|import|share|launch|quit|exit|scan|cast|connect|language|source|uploader|certificate|authorize|'
@@ -69,8 +65,6 @@ void main() {
         return top;
       }
 
-
-
       Future<void> watched(Future<void> Function() body) async {
         final done = Completer<void>();
         runZonedGuarded(() async {
@@ -90,7 +84,6 @@ void main() {
         var done = 0;
         var depth = 0;
         for (var i = 0; i < taps * 3 && done < taps; i++) {
-
           final size = tester.view.physicalSize / tester.view.devicePixelRatio;
           final screen = Offset.zero & size;
           final candidates = find.byWidgetPredicate(tappable).evaluate().where((e) {

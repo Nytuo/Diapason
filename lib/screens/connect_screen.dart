@@ -37,9 +37,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
     }
     await _connect.castQueue(songs);
     if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Sent ${songs.length} track(s)")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Sent ${songs.length} track(s)")));
     }
   }
 
@@ -130,9 +128,7 @@ class _RemoteControl extends StatelessWidget {
               ),
               const SizedBox(height: 8.0),
               Text(
-                status == null
-                    ? "Connecting…"
-                    : "Use the player controls as usual — they're driving this device.",
+                status == null ? "Connecting…" : "Use the player controls as usual — they're driving this device.",
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),

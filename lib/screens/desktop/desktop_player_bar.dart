@@ -88,7 +88,10 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
                     decoration: BoxDecoration(color: p.surface, borderRadius: BorderRadius.circular(6)),
                     child: Icon(TablerIcons.device_speaker, color: p.textTertiary),
                   )
-                : ClipRRect(borderRadius: BorderRadius.circular(6), child: AlbumImage(item: remote.item)),
+                : ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: AlbumImage(item: remote.item),
+                  ),
             onArtTap: null,
             title: remote.title,
             artist: remote.artist,
@@ -124,11 +127,7 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
                 onPrevious: connect.previous,
               ),
               const SizedBox(height: 4),
-              DesktopSeekBar(
-                duration: remote.duration,
-                positionListenable: connect.position,
-                onSeek: connect.seek,
-              ),
+              DesktopSeekBar(duration: remote.duration, positionListenable: connect.position, onSeek: connect.seek),
             ],
           ),
         ),
@@ -162,10 +161,7 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
                 overlayShape: SliderComponentShape.noOverlay,
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
               ),
-              child: Slider(
-                value: remote.volume.clamp(0.0, 1.0),
-                onChanged: connect.setVolume,
-              ),
+              child: Slider(value: remote.volume.clamp(0.0, 1.0), onChanged: connect.setVolume),
             ),
           ),
         ],
@@ -175,34 +171,34 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
 
   Widget _content(DesktopPalette p) {
     return StreamBuilder<MediaState>(
-        stream: mediaStateStream,
-        initialData: MediaState(
-          _audioHandler.mediaItem.valueOrNull,
-          _audioHandler.playbackState.value,
-          _audioHandler.fadeState.value,
-        ),
-        builder: (context, snapshot) {
-          final state = snapshot.data!;
-          final item = state.mediaItem;
-          final playing = state.playbackState.playing;
-          return Row(
-            children: [
-              Expanded(child: _trackInfo(context, p, item)),
-              Expanded(
-                flex: 2,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    DesktopTransportControls(playing: playing, playSize: 32, iconSize: 26),
-                    const SizedBox(height: 4),
-                    DesktopSeekBar(duration: item?.duration ?? Duration.zero, chapters: chaptersFromMediaItem(item)),
-                  ],
-                ),
+      stream: mediaStateStream,
+      initialData: MediaState(
+        _audioHandler.mediaItem.valueOrNull,
+        _audioHandler.playbackState.value,
+        _audioHandler.fadeState.value,
+      ),
+      builder: (context, snapshot) {
+        final state = snapshot.data!;
+        final item = state.mediaItem;
+        final playing = state.playbackState.playing;
+        return Row(
+          children: [
+            Expanded(child: _trackInfo(context, p, item)),
+            Expanded(
+              flex: 2,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  DesktopTransportControls(playing: playing, playSize: 32, iconSize: 26),
+                  const SizedBox(height: 4),
+                  DesktopSeekBar(duration: item?.duration ?? Duration.zero, chapters: chaptersFromMediaItem(item)),
+                ],
               ),
-              Expanded(child: _rightControls(context, p)),
-            ],
-          );
-        },
+            ),
+            Expanded(child: _rightControls(context, p)),
+          ],
+        );
+      },
     );
   }
 
@@ -299,17 +295,9 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                line(
-                  title,
-                  TextStyle(color: p.textPrimary, fontSize: 14, fontWeight: FontWeight.bold),
-                  onTitleTap,
-                ),
+                line(title, TextStyle(color: p.textPrimary, fontSize: 14, fontWeight: FontWeight.bold), onTitleTap),
                 const SizedBox(height: 2),
-                line(
-                  artist,
-                  TextStyle(color: p.textSecondary, fontSize: 12),
-                  onArtistTap,
-                ),
+                line(artist, TextStyle(color: p.textSecondary, fontSize: 12), onArtistTap),
                 const SizedBox(height: 2),
                 extra,
               ],

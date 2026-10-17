@@ -77,8 +77,7 @@ Future<void> showFinampMainMenu({required BuildContext context}) async {
                           text: context.l10n.connectedTo,
                           children: [
                             TextSpan(
-                              text:
-                                  " ${_connectedSourceNames(ref, context)}",
+                              text: " ${_connectedSourceNames(ref, context)}",
                               style: const TextStyle(fontWeight: FontWeight.w600),
                             ),
                           ],
@@ -238,8 +237,7 @@ class MusicScreenDrawer extends ConsumerWidget {
                                   text: context.l10n.connectedTo,
                                   children: [
                                     TextSpan(
-                                      text:
-                                          " ${_connectedSourceNames(ref, context)}",
+                                      text: " ${_connectedSourceNames(ref, context)}",
                                       style: const TextStyle(fontWeight: FontWeight.w600),
                                     ),
                                   ],

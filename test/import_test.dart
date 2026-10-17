@@ -70,10 +70,7 @@ void main() {
   });
 
   test("a missing file is skipped, not fatal", () async {
-    final imported = await importer.importFiles([
-      given("good.mp3"),
-      File(p.join(elsewhere.path, "gone.mp3")),
-    ]);
+    final imported = await importer.importFiles([given("good.mp3"), File(p.join(elsewhere.path, "gone.mp3"))]);
 
     // Losing one of forty is better than losing all forty.
     expect(imported, 1);

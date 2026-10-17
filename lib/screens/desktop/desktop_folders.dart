@@ -52,7 +52,10 @@ class _DesktopFoldersState extends State<DesktopFolders> {
       items: tracks,
       source: QueueItemSource.rawId(
         type: QueueItemSourceType.allTracks,
-        name: QueueItemSourceName(type: QueueItemSourceNameType.preTranslated, pretranslatedName: _stack.isEmpty ? "Folder" : _stack.last.name),
+        name: QueueItemSourceName(
+          type: QueueItemSourceNameType.preTranslated,
+          pretranslatedName: _stack.isEmpty ? "Folder" : _stack.last.name,
+        ),
         id: _stack.isEmpty ? "folders" : _stack.last.id.raw,
       ),
       startingIndex: start < 0 ? 0 : start,
@@ -76,11 +79,15 @@ class _DesktopFoldersState extends State<DesktopFolders> {
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (snapshot.hasError) {
-                  return Center(child: Text("Failed to load folder", style: TextStyle(color: p.textSecondary)));
+                  return Center(
+                    child: Text("Failed to load folder", style: TextStyle(color: p.textSecondary)),
+                  );
                 }
                 final items = snapshot.data ?? [];
                 if (items.isEmpty) {
-                  return Center(child: Text("Empty folder", style: TextStyle(color: p.textTertiary)));
+                  return Center(
+                    child: Text("Empty folder", style: TextStyle(color: p.textTertiary)),
+                  );
                 }
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -115,7 +122,9 @@ class _DesktopFoldersState extends State<DesktopFolders> {
   Widget _breadcrumb(DesktopPalette p) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: p.borderSubtle))),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: p.borderSubtle)),
+      ),
       child: Row(
         children: [
           _crumb(p, TablerIcons.home, "Library", () => _popTo(0), _stack.isEmpty),

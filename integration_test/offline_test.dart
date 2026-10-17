@@ -13,8 +13,6 @@ import 'package:get_it/get_it.dart';
 
 import 'support/harness.dart';
 
-
-
 void main() {
   installHarness();
 
@@ -32,7 +30,6 @@ void main() {
       stub: stub,
       transcodeProfile: DownloadProfile(transcodeCodec: FinampTranscodingCodec.original),
     );
-
 
     final clock = Stopwatch()..start();
     while (clock.elapsed < const Duration(seconds: 8) &&

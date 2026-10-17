@@ -68,16 +68,16 @@ class _SourcesSettingsScreenState extends State<SourcesSettingsScreen> {
     if (kind == null || !mounted) return;
 
     if (kind == MediaSourceKind.jellyfin) {
-      await Navigator.of(context).push<void>(MaterialPageRoute(builder: (context) => const LoginScreen(jellyfinOnly: true)));
+      await Navigator.of(
+        context,
+      ).push<void>(MaterialPageRoute(builder: (context) => const LoginScreen(jellyfinOnly: true)));
       await _service.syncJellyfinSource();
       if (!mounted) return;
       _refresh();
       return;
     }
 
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute(builder: (context) => EditSourceScreen(kind: kind)),
-    );
+    await Navigator.of(context).push<void>(MaterialPageRoute(builder: (context) => EditSourceScreen(kind: kind)));
     _refresh();
   }
 
@@ -87,7 +87,9 @@ class _SourcesSettingsScreenState extends State<SourcesSettingsScreen> {
       return;
     }
     await Navigator.of(context).push<void>(
-      MaterialPageRoute(builder: (context) => EditSourceScreen(kind: source.kind, existing: source)),
+      MaterialPageRoute(
+        builder: (context) => EditSourceScreen(kind: source.kind, existing: source),
+      ),
     );
     _refresh();
   }
@@ -129,9 +131,9 @@ class _SourcesSettingsScreenState extends State<SourcesSettingsScreen> {
 
     switch (action) {
       case _JellyfinSourceAction.reconnect:
-        await Navigator.of(context).push<void>(
-          MaterialPageRoute(builder: (context) => const LoginScreen(jellyfinOnly: true)),
-        );
+        await Navigator.of(
+          context,
+        ).push<void>(MaterialPageRoute(builder: (context) => const LoginScreen(jellyfinOnly: true)));
         await _service.syncJellyfinSource();
         if (!mounted) return;
         _refresh();

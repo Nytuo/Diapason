@@ -30,9 +30,7 @@ void main() {
 
   group("SourceForm", () {
     testWidgets("asks Subsonic for a username and password", (tester) async {
-      await tester.pumpWidget(
-        _wrap(SourceForm(kind: MediaSourceKind.subsonic, onSaved: (_) {})),
-      );
+      await tester.pumpWidget(_wrap(SourceForm(kind: MediaSourceKind.subsonic, onSaved: (_) {})));
 
       expect(find.text("Server address"), findsOneWidget);
       expect(find.text("Username"), findsOneWidget);
@@ -42,18 +40,14 @@ void main() {
     });
 
     testWidgets("asks Plex for a token instead of a password", (tester) async {
-      await tester.pumpWidget(
-        _wrap(SourceForm(kind: MediaSourceKind.plex, onSaved: (_) {})),
-      );
+      await tester.pumpWidget(_wrap(SourceForm(kind: MediaSourceKind.plex, onSaved: (_) {})));
 
       expect(find.text("Plex token"), findsOneWidget);
       expect(find.text("Password"), findsNothing);
     });
 
     testWidgets("a local source asks for a folder, not a server", (tester) async {
-      await tester.pumpWidget(
-        _wrap(SourceForm(kind: MediaSourceKind.local, onSaved: (_) {})),
-      );
+      await tester.pumpWidget(_wrap(SourceForm(kind: MediaSourceKind.local, onSaved: (_) {})));
 
       expect(find.text("Server address"), findsNothing);
       expect(find.text("Choose a music folder"), findsOneWidget);
@@ -61,9 +55,7 @@ void main() {
 
     testWidgets("refuses to save until the required fields are filled", (tester) async {
       var saved = false;
-      await tester.pumpWidget(
-        _wrap(SourceForm(kind: MediaSourceKind.subsonic, onSaved: (_) => saved = true)),
-      );
+      await tester.pumpWidget(_wrap(SourceForm(kind: MediaSourceKind.subsonic, onSaved: (_) => saved = true)));
 
       await tester.tap(find.text("Save"));
       await tester.pumpAndSettle();

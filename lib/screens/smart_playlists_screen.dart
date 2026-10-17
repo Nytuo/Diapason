@@ -67,10 +67,7 @@ class _SmartPlaylistsScreenState extends State<SmartPlaylistsScreen> {
                   const SizedBox(height: 12),
                   const Text("No smart playlists yet"),
                   const SizedBox(height: 4),
-                  Text(
-                    "Create one to auto-collect tracks by rules",
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                  Text("Create one to auto-collect tracks by rules", style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),
             )
@@ -81,11 +78,10 @@ class _SmartPlaylistsScreenState extends State<SmartPlaylistsScreen> {
                 return ListTile(
                   leading: const Icon(TablerIcons.bolt),
                   title: Text(p.name),
-                  subtitle: Text("${p.rules.length} rule${p.rules.length == 1 ? '' : 's'} · match ${p.matchAll ? 'all' : 'any'}"),
-                  trailing: IconButton(
-                    icon: const Icon(TablerIcons.trash),
-                    onPressed: () => _delete(p),
+                  subtitle: Text(
+                    "${p.rules.length} rule${p.rules.length == 1 ? '' : 's'} · match ${p.matchAll ? 'all' : 'any'}",
                   ),
+                  trailing: IconButton(icon: const Icon(TablerIcons.trash), onPressed: () => _delete(p)),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => Scaffold(
