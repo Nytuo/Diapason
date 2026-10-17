@@ -1,3 +1,4 @@
+import 'package:diapason/utils/device_form_factor.dart';
 import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
@@ -191,14 +192,17 @@ class _ProgressSliderDuration extends StatelessWidget {
     final showRemaining = Platform.isIOS || Platform.isMacOS;
     final currentPosition = Duration(seconds: (position.inMilliseconds / 1000).round());
     final roundedDuration = Duration(seconds: ((itemDuration?.inMilliseconds ?? 0) / 1000).round());
-    final labelStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
-      height: 0.5, // reduce line height
+    final tv = DeviceFormFactorDetector.current.isTv;
+    final labelStyle = (tv ? Theme.of(context).textTheme.bodyLarge : Theme.of(context).textTheme.bodySmall)?.copyWith(
+      height: tv ? 1.2 : 0.5, // reduce line height
       fontFeatures: const [FontFeature.tabularFigures()],
     );
     // Fixed-width time labels so a digit changing width in a proportional
     // font doesn't nudge the chapter name (or the gap either side of it)
     // every second. A little extra room once the track is an hour or longer.
-    final timeColumnWidth = roundedDuration.inHours >= 1 ? 56.0 : 34.0;
+    final timeColumnWidth = tv
+        ? (roundedDuration.inHours >= 1 ? 96.0 : 72.0)
+        : (roundedDuration.inHours >= 1 ? 56.0 : 34.0);
 
     return Row(
       mainAxisSize: MainAxisSize.max,

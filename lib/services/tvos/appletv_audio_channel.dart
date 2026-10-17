@@ -150,6 +150,10 @@ class AppleTvSystemChannel {
     final result = await _channel.invokeMapMethod<String, String>('getPackageInfo');
     return result ?? const {};
   }
+
+  /// Keeps the TV from dimming or starting its screensaver while true. wakelock_plus has no tvOS implementation,
+  /// so this flips the native idle timer instead.
+  static Future<void> setKeepScreenOn(bool keepOn) => _channel.invokeMethod<void>('setKeepScreenOn', keepOn);
 }
 
 enum AppleTvRemoteCommand { play, pause, next, previous, seek }

@@ -37,7 +37,7 @@ const FINAMP_BASE_DOWNLOAD_DIRECTORY = "songs";
 const FINAMP_BASE_IMAGES_DIRECTORY = "images";
 
 class IsarPersistentStorage implements PersistentStorage {
-  final _isar = GetIt.instance<Isar>();
+  late final _isar = GetIt.instance<Isar>();
 
   @override
   Future<void> storeTaskRecord(TaskRecord record) => _store(IsarTaskDataType.taskRecord, record.taskId, record);
@@ -247,7 +247,7 @@ class IsarTaskQueue implements TaskQueue {
 
   Completer<void>? _callbacksComplete;
 
-  final _isar = GetIt.instance<Isar>();
+  late final _isar = GetIt.instance<Isar>();
 
   /// Initialize the queue and start stored downloads.
   /// Should only be called after background_downloader and downloadsService are
@@ -439,7 +439,7 @@ class IsarTaskQueue implements TaskQueue {
 /// but not yet deleted nodes so that they always get cleaned up, even if the
 /// app suddenly shuts down.
 class DownloadsDeleteService {
-  final _isar = GetIt.instance<Isar>();
+  late final _isar = GetIt.instance<Isar>();
   final DownloadsService _downloadsService;
   final _deleteLogger = Logger("DeleteBuffer");
 
@@ -681,7 +681,7 @@ class DownloadsDeleteService {
 /// so some nodes may get re-synced unnecessarily after an unexpected reboot
 /// but this should have minimal impact.
 class DownloadsSyncService {
-  final _isar = GetIt.instance<Isar>();
+  late final _isar = GetIt.instance<Isar>();
   final DownloadsService _downloadsService;
   final _syncLogger = Logger("SyncBuffer");
   final _jellyfinApiData = GetIt.instance<JellyfinApiHelper>();

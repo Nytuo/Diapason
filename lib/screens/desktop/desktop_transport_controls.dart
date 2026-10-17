@@ -1,3 +1,4 @@
+import 'package:diapason/services/audio_position.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:diapason/components/PlayerScreen/progress_slider.dart';
 import 'package:diapason/models/finamp_models.dart';
@@ -182,7 +183,7 @@ class _DesktopSeekBarState extends State<DesktopSeekBar> with SingleTickerProvid
         }
 
         return StreamBuilder<Duration>(
-          stream: AudioService.position,
+          stream: audioPosition,
           initialData: audioHandler.playbackState.value.position,
           builder: (context, snapshot) => _bar(context, snapshot.data ?? Duration.zero, buffered, loading),
         );

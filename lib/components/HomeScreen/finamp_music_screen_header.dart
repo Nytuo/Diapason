@@ -18,6 +18,7 @@ import 'package:diapason/services/finamp_user_helper.dart';
 import 'package:diapason/services/item_by_id_provider.dart';
 import 'package:diapason/services/jellyfin_api_helper.dart';
 import 'package:diapason/services/music_providers.dart';
+import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -389,6 +390,7 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
 }
 
 final isDownloadingOrSyncingPollingProvider = Provider((Ref ref) {
+  if (AppleTvAudioChannel.isSupported) return false;
   final downloadsService = GetIt.instance<DownloadsService>();
   // Schedule this provider to be re-polled in 4 seconds
   Timer(Duration(seconds: 4), ref.invalidateSelf);

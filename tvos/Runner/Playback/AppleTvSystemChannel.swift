@@ -1,5 +1,6 @@
 import Flutter
 import Foundation
+import UIKit
 
 /// Reads app bundle metadata (name, identifier, version, build) for tvOS.
 ///
@@ -25,6 +26,10 @@ final class AppleTvSystemChannel: NSObject {
         switch call.method {
         case "getPackageInfo":
             result(packageInfo())
+        case "setKeepScreenOn":
+            // wakelock_plus has no tvOS implementation: the idle timer is what dims the screen and starts the screensaver.
+            UIApplication.shared.isIdleTimerDisabled = (call.arguments as? Bool) ?? false
+            result(nil)
         default:
             result(FlutterMethodNotImplemented)
         }

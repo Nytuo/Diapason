@@ -1,6 +1,7 @@
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/models/tv_profile.dart';
-import 'package:diapason/screens/tv/tv_connect_screen.dart';
+import 'package:diapason/screens/music_screen.dart';
+import 'package:diapason/screens/tv/tv_setup_screen.dart';
 import 'package:diapason/screens/tv/tv_profile_edit_screen.dart';
 import 'package:diapason/screens/tv/tv_profile_picker_screen.dart';
 import 'package:diapason/screens/tv/tv_widgets.dart';
@@ -134,7 +135,7 @@ void main() {
       await tester.tap(find.text('Alex'));
 
       expect(profiles.active?.id, alex.id);
-      expect(visited, contains('/tv'));
+      expect(visited, contains(MusicScreen.routeName));
     });
 
     testWidgets('"Add profile" asks for a name, creates the profile and takes them to add an account', (tester) async {
@@ -259,42 +260,30 @@ void main() {
       expect((mdns.registered.single['txt'] as Map)['token'], isNotEmpty);
     });
 
-    testWidgets('it lists the devices found, picks one, and shows what it is playing', (tester) async {
-      await tester.pumpWidget(app(const TvConnectScreen()));
-      expect(find.textContaining('Looking for devices'), findsOneWidget);
-      expect(mdns.browsing, isTrue);
+    testWidgets('first-time setup waits for accounts from a phone, and refusing them changes nothing', (tester) async {
+      await tester.pumpWidget(app(const TvSetupScreen()));
+      expect(find.text('Set up from your phone'), findsOneWidget);
+      expect(find.text('Enter the details here instead'), findsOneWidget);
+      expect(connect.acceptSources, isTrue);
 
-      mdns.onChanged!([
-        const MdnsService(name: "Maya's phone", host: '192.168.1.20', port: 4711, txt: {'token': 'abc'}),
-        const MdnsService(name: 'No token', host: '192.168.1.21', port: 1, txt: {}),
-      ]);
-      await tester.pump();
-      expect(find.text("Maya's phone"), findsOneWidget);
-      expect(find.text('No token'), findsNothing, reason: 'a device with no token cannot be controlled');
-      expect(find.text('192.168.1.20'), findsOneWidget);
-
-      connect.connectedDevice.value = connect.devices.value.single;
-      connect.remoteStatus.value = const ConnectStatus(
-        song: ConnectSong(id: '1', title: 'Opening', artist: 'Alpha', album: 'First', duration: 100),
-        state: 'playing',
-        position: 25,
-        volume: 0.5,
+      connect.sourceOffer.value = const SourceOffer(
+        profileName: 'Alex',
+        from: 'Phone',
+        sources: [
+          {'name': 'My Navidrome'},
+        ],
       );
-      await tester.pump();
-      expect(find.text("Playing on Maya's phone"), findsOneWidget);
-      expect(find.text('Opening'), findsOneWidget);
-      expect(find.text('Pause'), findsOneWidget);
-      expect(find.text('Disconnect'), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(find.text('Add accounts from your phone?'), findsOneWidget);
+      expect(find.textContaining('My Navidrome'), findsOneWidget);
 
-      await tester.tap(find.text('Disconnect'));
-      await tester.pump();
-      expect(connect.connectedDevice.value, isNull);
-    });
+      await tester.tap(find.text('Refuse'));
+      await tester.pumpAndSettle();
+      expect(find.text('Add accounts from your phone?'), findsNothing);
+      expect(connect.sourceOffer.value, isNull);
 
-    testWidgets('leaving the screen stops looking', (tester) async {
-      await tester.pumpWidget(app(const TvConnectScreen()));
       await tester.pumpWidget(const SizedBox());
-      expect(mdns.browsing, isFalse);
+      expect(connect.acceptSources, isFalse, reason: 'leaving the start screen stops accepting accounts');
     });
   });
 }

@@ -1,3 +1,4 @@
+import 'package:diapason/utils/device_form_factor.dart';
 import 'package:diapason/components/AlbumScreen/item_info.dart';
 import 'package:diapason/components/MusicScreen/sort_and_filter_row.dart';
 import 'package:diapason/components/album_image.dart';
@@ -49,7 +50,10 @@ class AlbumScreenContentFlexibleSpaceBar extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    SizedBox(height: 125, child: AlbumImage(item: parentItem, tapToZoom: true)),
+                    SizedBox(
+                      height: albumHeaderImageHeight,
+                      child: AlbumImage(item: parentItem, tapToZoom: true),
+                    ),
                     const SizedBox(width: 4),
                     Expanded(
                       flex: 2,
@@ -77,3 +81,6 @@ class AlbumScreenContentFlexibleSpaceBar extends ConsumerWidget {
     );
   }
 }
+
+/// The cover at the top of an album page; bigger on a TV, where it is looked at from the sofa.
+double get albumHeaderImageHeight => DeviceFormFactorDetector.current.isTv ? 210.0 : 125.0;

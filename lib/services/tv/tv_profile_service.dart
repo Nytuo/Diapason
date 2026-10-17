@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/models/tv_profile.dart';
+import 'package:diapason/services/connect/connect_models.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:logging/logging.dart';
@@ -142,6 +143,62 @@ class TvProfileService extends ChangeNotifier {
     }
     _log.info("Switched to profile '${profile.name}' (${profile.sourceIds.length} source(s))");
     notifyListeners();
+  }
+
+  /// Takes accounts another device sent: they go into the profile named in the [offer] (made if it is new), which
+  /// becomes the listening one. An account the TV already has for the same server and user is not duplicated, only
+  /// shared with the profile. Returns how many accounts were added.
+  Future<int> importOffer(
+    SourceOffer offer, {
+    required Future<void> Function(MediaSourceConfig config) add,
+    required String Function(MediaSourceKind kind) newId,
+  }) async {
+    final wanted = offer.profileName.trim().toLowerCase();
+    var profile = profiles.where((p) => p.name.toLowerCase() == wanted).firstOrNull;
+    profile ??= await create(offer.profileName);
+    await select(profile.id);
+
+    var added = 0;
+    for (final json in offer.sources) {
+      final MediaSourceConfig incoming;
+      try {
+        incoming = MediaSourceConfig.fromTvOSStorageJson(json);
+      } catch (e) {
+        _log.warning("Ignored a malformed account from ${offer.from}: $e");
+        continue;
+      }
+      if (!incoming.kind.isConfigurable || incoming.kind == MediaSourceKind.local) continue;
+
+      final same = _sources.sources
+          .where(
+            (s) =>
+                s.kind == incoming.kind && s.publicAddress == incoming.publicAddress && s.username == incoming.username,
+          )
+          .firstOrNull;
+      if (same != null) {
+        await attachSource(same.sourceId);
+        if (!same.enabled) await _sources.setEnabled(same, true);
+        continue;
+      }
+
+      final config = MediaSourceConfig(
+        sourceId: newId(incoming.kind),
+        kind: incoming.kind,
+        name: incoming.name,
+        publicAddress: incoming.publicAddress,
+        localAddress: incoming.localAddress,
+        preferLocalNetwork: incoming.preferLocalNetwork,
+        isLocal: incoming.isLocal,
+        accessToken: incoming.accessToken,
+        username: incoming.username,
+        password: incoming.password,
+        userId: incoming.userId,
+      );
+      await add(config);
+      added++;
+    }
+    notifyListeners();
+    return added;
   }
 
   /// A new account belongs to whoever is listening.

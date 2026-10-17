@@ -1,4 +1,5 @@
 import 'package:diapason/screens/tv/tv_landing.dart';
+import 'package:diapason/screens/tv/tv_setup_screen.dart';
 import 'package:diapason/services/tv/tv_profile_service.dart';
 import 'package:diapason/screens/watch/watch_screen.dart';
 import 'package:diapason/utils/device_form_factor.dart';
@@ -41,7 +42,7 @@ class SplashScreen extends ConsumerWidget {
 
     if (user == null) {
       final hasOtherSources = GetIt.instance<BackendRegistry>().configured.isNotEmpty;
-      if (!hasOtherSources) return const LoginScreen();
+      if (!hasOtherSources) return DeviceFormFactorDetector.current.isTv ? const TvSetupScreen() : const LoginScreen();
       return DeviceFormFactorDetector.current.isTv ? const TvLanding() : home();
     } else if (user.currentView == null) {
       return const ViewSelector();

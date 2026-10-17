@@ -1,3 +1,5 @@
+import 'package:diapason/services/tvos/tvos_path_provider.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -86,6 +88,9 @@ class JellyfinApiHelper {
     }
 
     input.$1.send(requestPort.sendPort);
+    if (AppleTvAudioChannel.isSupported) {
+      PathProviderPlatform.instance = TvOSPathProvider(PathProviderPlatform.instance);
+    }
     final dir = (Platform.isAndroid || Platform.isIOS)
         ? await getApplicationDocumentsDirectory()
         : await getApplicationSupportDirectory();

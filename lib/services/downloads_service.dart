@@ -93,7 +93,11 @@ class DownloadsService {
   // Providers
   //
 
-  late final _anchorProvider = StreamProvider((ref) => _isar.downloadItems.watchObjectLazy(_anchor.isarId));
+  late final _anchorProvider = StreamProvider<void>(
+    (ref) => AppleTvAudioChannel.isSupported
+        ? const Stream<void>.empty()
+        : _isar.downloadItems.watchObjectLazy(_anchor.isarId),
+  );
 
   /// Provider for the download state of an item.  This is whether the items associated
   /// files, or its children's file in the case of a collection, are missing, downloading
@@ -101,6 +105,8 @@ class DownloadsService {
   /// on tracks and albums.
   final stateProvider = StreamProvider.family.autoDispose<DownloadItemState?, DownloadStub>((ref, stub) {
     assert(stub.type != DownloadItemType.image && stub.type != DownloadItemType.anchor);
+    // tvOS has no Isar and no downloads: nothing is ever downloaded there.
+    if (AppleTvAudioChannel.isSupported) return Stream<DownloadItemState?>.value(null);
     final isar = GetIt.instance<Isar>();
     return isar.downloadItems.watchObject(stub.isarId, fireImmediately: true).map((event) => event?.state).distinct();
   });
@@ -112,6 +118,7 @@ class DownloadsService {
     var (stub, childCount) = record;
     assert(stub.type != DownloadItemType.image && stub.type != DownloadItemType.anchor);
     // Refresh on addDownload/removeDownload as well as state change
+    if (AppleTvAudioChannel.isSupported) return DownloadItemStatus.notNeeded;
     ref.watch(_anchorProvider);
     var sub = _isar.downloadItems.watchObjectLazy(stub.isarId).listen((_) {
       ref.state = getStatus(stub, childCount);
@@ -124,6 +131,7 @@ class DownloadsService {
   /// inside the downloads screen.
   final itemProvider = StreamProvider.family.autoDispose<DownloadItem?, DownloadStub>((ref, stub) {
     assert(stub.type != DownloadItemType.image && stub.type != DownloadItemType.anchor);
+    if (AppleTvAudioChannel.isSupported) return Stream<DownloadItem?>.value(null);
     final isar = GetIt.instance<Isar>();
     return isar.downloadItems.watchObject(stub.isarId, fireImmediately: true);
   });
@@ -134,6 +142,7 @@ class DownloadsService {
     ref,
     category,
   ) {
+    if (AppleTvAudioChannel.isSupported) return const <DownloadStub>[];
     // Refresh lists when addDownload or removeDownload is called.
     ref.watch(_anchorProvider);
     final allItems = _isar.downloadItems
@@ -1602,6 +1611,7 @@ class DownloadsService {
   /// Exactly one of the two arguments should be provided.
   Future<DownloadStub?> getTrackInfo({BaseItemDto? item, BaseItemId? id}) {
     assert((item == null) != (id == null));
+    if (AppleTvAudioChannel.isSupported) return Future.value(null);
     return _isar.downloadItems.get(DownloadStub.getHash(id?.raw ?? item!.id.raw, DownloadItemType.track));
   }
 
@@ -1609,6 +1619,7 @@ class DownloadsService {
   /// Exactly one of the two arguments should be provided.
   Future<DownloadStub?> getCollectionInfo({BaseItemDto? item, BaseItemId? id}) {
     assert((item == null) != (id == null));
+    if (AppleTvAudioChannel.isSupported) return Future.value(null);
     return _isar.downloadItems.get(DownloadStub.getHash(id?.raw ?? item!.id.raw, DownloadItemType.collection));
   }
 
@@ -1639,11 +1650,13 @@ class DownloadsService {
 
   /// Get DownloadedLyrics by the corresponding track's BaseItemDto.
   Future<DownloadedLyrics?> getLyricsDownload({required BaseItemDto baseItem}) async {
+    if (AppleTvAudioChannel.isSupported) return null;
     var item = _isar.downloadedLyrics.getSync(DownloadStub.getHash(baseItem.id.raw, DownloadItemType.track));
     return item;
   }
 
   bool? isFavorite(BaseItemDto item) {
+    if (AppleTvAudioChannel.isSupported) return null;
     var stubId = DownloadStub.getHash(item.id.raw, item.downloadType);
     return _getFavoriteIds()?.contains(stubId);
   }
@@ -1656,6 +1669,7 @@ class DownloadsService {
   /// Get a downloadItem with verified files by id.
   DownloadItem? _getDownloadByID(String id, DownloadItemType type) {
     assert(type.hasFiles);
+    if (AppleTvAudioChannel.isSupported) return null;
     var item = _isar.downloadItems.getSync(DownloadStub.getHash(id, type));
     if (item != null && _verifyDownload(item)) {
       return item;
@@ -1666,6 +1680,7 @@ class DownloadsService {
   /// Returns a stream of the list of downloads of a given state. Used to display
   /// active/failed/enqueued downloads on the active downloads screen.
   Stream<List<DownloadStub>> getDownloadList(DownloadItemState state) {
+    if (AppleTvAudioChannel.isSupported) return Stream.value(const <DownloadStub>[]);
     return _isar.downloadItems
         .where()
         .stateEqualTo(state)
@@ -1771,6 +1786,7 @@ class DownloadsService {
   /// considered to be outdated.
   DownloadItemStatus getStatus(DownloadStub stub, int? children) {
     assert(stub.type != DownloadItemType.image && stub.type != DownloadItemType.anchor);
+    if (AppleTvAudioChannel.isSupported) return DownloadItemStatus.notNeeded;
     var item = _isar.downloadItems.getSync(stub.isarId);
     if (item == null) return DownloadItemStatus.notNeeded;
     if (item.state == DownloadItemState.notDownloaded && item.requiredBy.filter().countSync() == 0) {

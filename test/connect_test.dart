@@ -187,4 +187,44 @@ void main() {
       expect(decoded.song!.duration, 1.5);
     });
   });
+
+  group("sending accounts", () {
+    Map<String, dynamic> account(String name) => {
+      "sourceId": "sub-1",
+      "kind": "subsonic",
+      "name": name,
+      "publicAddress": "http://navidrome.lan:4533",
+      "username": "alex",
+      "password": "pw",
+    };
+
+    late ConnectDevice self;
+
+    setUp(() => self = ConnectDevice(name: "TV", baseUrl: service.serverUrl!));
+
+    test("a device that does not take accounts refuses them", () async {
+      expect(await service.sendSources(self, [account("Home")]), isFalse);
+      expect(service.sourceOffer.value, isNull);
+    });
+
+    test("a TV on its start screen gets the offer to ask its user about", () async {
+      service.acceptSources = true;
+      expect(await service.sendSources(self, [account("Home")], profileName: "Alex", from: "Phone"), isTrue);
+
+      final offer = service.sourceOffer.value!;
+      expect(offer.profileName, "Alex");
+      expect(offer.from, "Phone");
+      expect(offer.sources.single["publicAddress"], "http://navidrome.lan:4533");
+    });
+
+    test("an empty or oversized offer is rejected", () async {
+      service.acceptSources = true;
+      expect(await service.sendSources(self, const []), isFalse);
+      expect(
+        await service.sendSources(self, List.generate(SourceOffer.maxSources + 1, (i) => account("n$i"))),
+        isFalse,
+      );
+      expect(service.sourceOffer.value, isNull);
+    });
+  });
 }

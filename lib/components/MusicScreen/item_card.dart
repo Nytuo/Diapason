@@ -1,3 +1,4 @@
+import 'package:diapason/utils/device_form_factor.dart';
 import 'package:diapason/components/album_image.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/menus/queue_restore_menu.dart';
@@ -220,7 +221,9 @@ class HomeScreenQueueTile extends ConsumerWidget {
       .watch(forHomeScreen ? finampSettingsProvider.homeScreenImageSize : finampSettingsProvider.gridImageSize)
       .toDouble();
   final padding = ((target - 30) / 17.0).clamp(1.0, 10.0);
-  return (target - padding, padding);
+  // Seen from the sofa: covers get bigger on a TV (on top of the app-wide zoom).
+  final tvBoost = DeviceFormFactorDetector.current.isTv ? 1.5 : 1.0;
+  return ((target - padding) * tvBoost, padding * tvBoost);
 }
 
 int calculateItemCollectionTextLines(BaseItemDtoType itemType) {
@@ -258,7 +261,10 @@ double calculateItemCollectionCardHeight({
       // Fallback to albums children as the tallest type
       resolvedItemType = base.contentType.itemType ?? BaseItemDtoType.album;
   }
+  // On a TV the card text renders a little taller than the phone estimate below; leave room so it does not overflow.
+  final tvTextRoom = DeviceFormFactorDetector.current.isTv ? 20.0 : 0.0;
   return calculateItemCollectionCardWidth(ref, forHomeScreen: forHomeScreen).$1 +
+      tvTextRoom +
       (ref.watch(finampSettingsProvider.showTextOnGridView) || sectionInfo != null
           ? _itemCollectionCardTextSpacing +
                 calculateTextHeight(

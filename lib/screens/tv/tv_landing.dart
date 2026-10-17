@@ -1,5 +1,6 @@
-import 'package:diapason/screens/tv/tv_home_screen.dart';
+import 'package:diapason/screens/music_screen.dart';
 import 'package:diapason/screens/tv/tv_profile_picker_screen.dart';
+import 'package:diapason/screens/tv/tv_source_offer.dart';
 import 'package:diapason/services/tv/tv_profile_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -35,7 +36,12 @@ class _TvLandingState extends State<TvLanding> {
             body: Center(child: CircularProgressIndicator()),
           );
         }
-        return _service.profiles.length > 1 ? const TvProfilePickerScreen() : const TvHomeScreen();
+        return TvSourceOfferListener(
+          onImported: () {
+            if (mounted) setState(() {});
+          },
+          child: _service.profiles.length > 1 ? const TvProfilePickerScreen() : const MusicScreen(),
+        );
       },
     );
   }

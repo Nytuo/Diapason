@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:gaimon/gaimon.dart';
 import 'package:logging/logging.dart';
 
@@ -9,7 +10,9 @@ enum FeedbackType { success, error, warning, selection, heavy, medium, light }
 class FeedbackHelper {
   static void feedback(FeedbackType feedbackType) {
     try {
-      if (FinampSettingsHelper.finampSettings.enableVibration && (Platform.isIOS || Platform.isAndroid)) {
+      if (FinampSettingsHelper.finampSettings.enableVibration &&
+          (Platform.isIOS || Platform.isAndroid) &&
+          !AppleTvAudioChannel.isSupported) {
         switch (feedbackType) {
           case FeedbackType.selection:
             Gaimon.selection();

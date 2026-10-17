@@ -1,3 +1,5 @@
+import 'package:diapason/utils/device_form_factor.dart';
+import 'package:diapason/components/tv_now_playing_pill.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
@@ -65,21 +67,23 @@ class PlayerScreen extends StatelessWidget {
       }
     });
 
-    return PlayerScreenTheme(
-      child: StreamBuilder<FinampQueueInfo?>(
-        stream: queueService.getQueueStream(),
-        initialData: queueService.getQueue(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data!.saveState == SavedQueueState.loading) {
-            return buildLoadingScreen(context, null);
-          } else if (snapshot.hasData && snapshot.data!.saveState == SavedQueueState.failed) {
-            return buildLoadingScreen(context, queueService.retryQueueLoad);
-          } else if (snapshot.hasData && snapshot.data!.currentTrack != null) {
-            return _PlayerScreenContent(playerScreen: this);
-          } else {
-            return const SizedBox.shrink();
-          }
-        },
+    return TvPlayerPresence(
+      child: PlayerScreenTheme(
+        child: StreamBuilder<FinampQueueInfo?>(
+          stream: queueService.getQueueStream(),
+          initialData: queueService.getQueue(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData && snapshot.data!.saveState == SavedQueueState.loading) {
+              return buildLoadingScreen(context, null);
+            } else if (snapshot.hasData && snapshot.data!.saveState == SavedQueueState.failed) {
+              return buildLoadingScreen(context, queueService.retryQueueLoad);
+            } else if (snapshot.hasData && snapshot.data!.currentTrack != null) {
+              return _PlayerScreenContent(playerScreen: this);
+            } else {
+              return const SizedBox.shrink();
+            }
+          },
+        ),
       ),
     );
   }
@@ -159,6 +163,9 @@ class _PlayerScreenContent extends ConsumerWidget {
         SafeArea(
           bottom: true,
           top: false,
+          // Full-bleed on a TV: its side insets would leave a blank band beside the cover background.
+          left: !DeviceFormFactorDetector.current.isTv,
+          right: !DeviceFormFactorDetector.current.isTv,
           child: SimpleGestureDetector(
             onVerticalSwipe: (direction) {
               if (direction == SwipeDirection.down) {
@@ -203,8 +210,11 @@ class _PlayerScreenContent extends ConsumerWidget {
                 centerTitle: true,
                 toolbarHeight: toolbarHeight,
                 title: PlayerScreenAppBarTitle(maxLines: maxToolbarLines),
-                leadingWidth: usingPlayerSplitScreen ? 48 : 96,
+                leadingWidth: (usingPlayerSplitScreen ? 48 : 96) + (DeviceFormFactorDetector.current.isTv ? 40.0 : 0.0),
                 leading: Row(
+                  mainAxisAlignment: DeviceFormFactorDetector.current.isTv
+                      ? MainAxisAlignment.end
+                      : MainAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (!usingPlayerSplitScreen) const FinampAppBarBackButton(dismissDirection: AxisDirection.down),
@@ -220,7 +230,12 @@ class _PlayerScreenContent extends ConsumerWidget {
                 children: [
                   if (ref.watch(finampSettingsProvider.useCoverAsBackground)) const BlurredPlayerScreenBackground(),
                   SafeArea(
-                    minimum: EdgeInsets.only(top: toolbarHeight),
+                    // A TV crops the screen edges, so leave room on the left (and right).
+                    minimum: EdgeInsets.only(
+                      top: toolbarHeight,
+                      left: DeviceFormFactorDetector.current.isTv ? 64.0 : 0.0,
+                      right: DeviceFormFactorDetector.current.isTv ? 64.0 : 0.0,
+                    ),
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         controller.setSize(Size(constraints.maxWidth, constraints.maxHeight), screenOrientation, ref);

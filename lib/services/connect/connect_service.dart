@@ -42,6 +42,13 @@ class ConnectService {
 
   Future<List<Map<String, dynamic>>> Function()? libraryProvider;
 
+  /// Whether this device takes accounts sent from another one. Only the TV does, and only while its landing screen
+  /// is up, so a phone never gets credentials pushed at it.
+  bool acceptSources = false;
+
+  /// The latest accounts another device sent, waiting for the user to accept or refuse them.
+  final ValueNotifier<SourceOffer?> sourceOffer = ValueNotifier(null);
+
   bool get isServing => _server != null;
   bool get isControlling => connectedDevice.value != null;
 
@@ -149,6 +156,16 @@ class ConnectService {
           onPlayQueue?.call(songs, (body?["startIndex"] as num?)?.toInt() ?? 0);
         }
         response.write("ok");
+
+      case ("POST", "import-sources"):
+        final body = await _readJson(request);
+        final offer = acceptSources ? SourceOffer.tryParse(body, from: (body?["from"] as String?) ?? "") : null;
+        if (offer == null) {
+          response.statusCode = acceptSources ? HttpStatus.badRequest : HttpStatus.forbidden;
+        } else {
+          sourceOffer.value = offer;
+          response.write("ok");
+        }
 
       case ("POST", "register"):
         final body = await _readJson(request);
@@ -270,6 +287,29 @@ class ConnectService {
       "songs": songs.map((s) => s.toJson()).toList(),
       "startIndex": startIndex,
     });
+  }
+
+  /// Offers [sources] to [device], to land in its profile [profileName]. True when the device took the offer to ask
+  /// its user; false when it does not accept accounts or could not be reached.
+  Future<bool> sendSources(
+    ConnectDevice device,
+    List<Map<String, dynamic>> sources, {
+    String profileName = "Home",
+    String from = "Diapason",
+  }) async {
+    try {
+      final response = await _http
+          .post(
+            device.endpoint("import-sources"),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode(SourceOffer(profileName: profileName, sources: sources, from: from).toJson()),
+          )
+          .timeout(const Duration(seconds: 6));
+      return response.statusCode == 200;
+    } catch (e) {
+      _log.fine("Could not send accounts to ${device.name}: $e");
+      return false;
+    }
   }
 
   Future<void> _post(Uri url, Map<String, dynamic> body) async {

@@ -1,3 +1,4 @@
+import 'package:diapason/utils/device_form_factor.dart';
 import 'dart:async';
 
 import 'package:diapason/components/global_snackbar.dart';
@@ -42,7 +43,11 @@ Widget buildPlayerSplitScreenScaffold(BuildContext context, Widget? widget) {
 
       return Consumer(
         builder: (context, ref, child) {
-          bool allowSplitScreen = ref.watch(finampSettingsProvider.allowSplitScreen) && !isDesktop;
+          // On a TV the player is a full screen of its own, not a panel squeezed beside the library.
+          bool allowSplitScreen =
+              ref.watch(finampSettingsProvider.allowSplitScreen) &&
+              !isDesktop &&
+              !DeviceFormFactorDetector.current.isTv;
 
           return StreamBuilder<FinampQueueInfo?>(
             stream: queueService.getQueueStream(),

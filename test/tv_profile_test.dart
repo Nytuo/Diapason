@@ -1,5 +1,6 @@
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/models/tv_profile.dart';
+import 'package:diapason/services/connect/connect_models.dart';
 import 'package:diapason/services/tv/tv_profile_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -200,6 +201,103 @@ void main() {
       expect(service.profiles.map((p) => p.name), ['Alex', 'Maya', 'Sam']);
       await service.seedDemoProfiles();
       expect(service.profiles, hasLength(3));
+    });
+  });
+
+  group('accounts sent from a phone', () {
+    Map<String, dynamic> offered(String address, {String user = 'alex', String kind = 'subsonic'}) => {
+      'sourceId': 'phone-id',
+      'kind': kind,
+      'name': 'Phone $address',
+      'publicAddress': address,
+      'username': user,
+      'password': 'pw',
+    };
+
+    final added = <MediaSourceConfig>[];
+    Future<void> add(MediaSourceConfig c) async {
+      added.add(c);
+      sources.sources.add(c);
+      await service.attachSource(c.sourceId);
+    }
+
+    setUp(added.clear);
+
+    test('go into a new profile of the requested name, with fresh ids', () async {
+      final n = await service.importOffer(
+        SourceOffer(profileName: 'Alex', sources: [offered('http://nd.lan')]),
+        add: add,
+        newId: (k) => '${k.idPrefix}-new',
+      );
+
+      expect(n, 1);
+      expect(service.active!.name, 'Alex');
+      expect(added.single.sourceId, 'sub-new');
+      expect(service.active!.sourceIds, ['sub-new']);
+    });
+
+    test('an existing profile of that name (any case) is reused', () async {
+      final sam = await service.create('Sam');
+      await service.importOffer(
+        SourceOffer(profileName: 'sam', sources: [offered('http://nd.lan')]),
+        add: add,
+        newId: (k) => 'x',
+      );
+
+      expect(service.profiles, hasLength(1));
+      expect(service.active!.id, sam.id);
+    });
+
+    test('the same server and user is shared, not added twice', () async {
+      await service.importOffer(
+        SourceOffer(profileName: 'Alex', sources: [offered('http://nd.lan')]),
+        add: add,
+        newId: (k) => 'first',
+      );
+      final n = await service.importOffer(
+        SourceOffer(profileName: 'Sam', sources: [offered('http://nd.lan')]),
+        add: add,
+        newId: (k) => 'second',
+      );
+
+      expect(n, 0);
+      expect(added, hasLength(1));
+      expect(service.active!.name, 'Sam');
+      expect(service.active!.sourceIds, ['first']);
+    });
+
+    test('local folders and unusable entries are skipped', () async {
+      final n = await service.importOffer(
+        SourceOffer(
+          profileName: 'Alex',
+          sources: [
+            offered('/music', kind: 'local'),
+            {'kind': 'bogus'},
+          ],
+        ),
+        add: add,
+        newId: (k) => 'x',
+      );
+
+      expect(n, 0);
+      expect(added, isEmpty);
+    });
+
+    test('an offer is read from JSON, and refused when malformed', () {
+      expect(SourceOffer.tryParse({'sources': []}), isNull);
+      expect(
+        SourceOffer.tryParse({
+          'sources': ['nope'],
+        }),
+        isNull,
+      );
+      expect(SourceOffer.tryParse(null), isNull);
+      expect(
+        SourceOffer.tryParse({
+          'sources': [offered('http://x')],
+        })!.profileName,
+        'Home',
+      );
     });
   });
 }

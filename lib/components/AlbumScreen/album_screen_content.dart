@@ -138,7 +138,12 @@ class _AlbumScreenContentState extends ConsumerState<AlbumScreenContent> {
 
             return SliverAppBar(
               title: (!parentIsPlaylist) ? Text(widget.parent.name ?? AppLocalizations.of(context)!.unknownName) : null,
-              expandedHeight: kToolbarHeight + 125 + 18 + 100 + (parentIsPlaylist ? SortAndFilterRow.height + 10 : 0),
+              expandedHeight:
+                  kToolbarHeight +
+                  albumHeaderImageHeight +
+                  18 +
+                  100 +
+                  (parentIsPlaylist ? SortAndFilterRow.height + 10 : 0),
               // collapsedHeight: kToolbarHeight + 125 + 80,
               leading: FinampAppBarBackButton(),
               pinned: true,

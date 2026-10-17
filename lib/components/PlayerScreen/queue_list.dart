@@ -1,7 +1,7 @@
+import 'package:diapason/services/audio_position.dart';
 import 'dart:async';
 import 'dart:math';
 
-import 'package:audio_service/audio_service.dart';
 import 'package:diapason/components/AddToPlaylistScreen/add_to_playlist_button.dart';
 import 'package:diapason/components/AlbumScreen/track_list_tile.dart';
 import 'package:diapason/components/Buttons/finamp_extended_floating_action_button.dart';
@@ -784,7 +784,7 @@ class _CurrentTrackState extends ConsumerState<CurrentTrack> {
                         children: [
                           Positioned.fill(
                             child: StreamBuilder<Duration>(
-                              stream: AudioService.position,
+                              stream: audioPosition,
                               initialData: _audioHandler.playbackState.value.position,
                               builder: (context, snapshot) {
                                 if (snapshot.hasData) {
@@ -859,7 +859,7 @@ class _CurrentTrackState extends ConsumerState<CurrentTrack> {
                                           Row(
                                             children: [
                                               StreamBuilder<Duration>(
-                                                stream: AudioService.position,
+                                                stream: audioPosition,
                                                 initialData: _audioHandler.playbackState.value.position,
                                                 builder: (context, snapshot) {
                                                   final TextStyle style = TextStyle(

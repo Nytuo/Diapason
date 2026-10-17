@@ -16,6 +16,8 @@ import 'package:diapason/screens/playback_history_screen.dart';
 import 'package:diapason/screens/queue_restore_screen.dart';
 import 'package:diapason/screens/smart_playlists_screen.dart';
 import 'package:diapason/screens/settings_screen.dart';
+import 'package:diapason/screens/tv/tv_profile_picker_screen.dart';
+import 'package:diapason/utils/device_form_factor.dart';
 import 'package:diapason/services/downloads_service.dart';
 import 'package:diapason/services/feedback_helper.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
@@ -145,6 +147,17 @@ Future<void> showFinampMainMenu({required BuildContext context}) async {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Divider(),
+                  if (DeviceFormFactorDetector.current.isTv)
+                    Material(
+                      color: Colors.transparent,
+                      child: ListTile(
+                        leading: const Padding(padding: EdgeInsets.only(right: 16), child: Icon(TablerIcons.users)),
+                        title: const Text("Switch profile"),
+                        onTap: () => Navigator.of(
+                          context,
+                        ).pushNamedAndRemoveUntil(TvProfilePickerScreen.routeName, (_) => false),
+                      ),
+                    ),
                   Material(
                     color: Colors.transparent,
                     child: ListTile(

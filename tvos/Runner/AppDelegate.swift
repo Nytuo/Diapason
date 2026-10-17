@@ -7,6 +7,7 @@ import UIKit
   private var appleTvAudioChannel: AppleTvAudioChannel?
   private var appleTvSystemChannel: AppleTvSystemChannel?
   private var appleTvBonjourChannel: AppleTvBonjourChannel?
+  private var appleTvPlusChannels: AppleTvPlusChannels?
 
   override func application(
     _ application: UIApplication,
@@ -24,5 +25,7 @@ import UIKit
     appleTvSystemChannel = AppleTvSystemChannel(messenger: messenger)
     // Diapason Connect: announcing this TV and finding the other devices.
     appleTvBonjourChannel = AppleTvBonjourChannel(messenger: messenger)
+    // device_info_plus, battery_plus and connectivity_plus have no tvOS implementation: answer their channels here.
+    appleTvPlusChannels = AppleTvPlusChannels(messenger: messenger)
   }
 }

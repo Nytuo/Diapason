@@ -64,20 +64,24 @@ class TvPillButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = Theme.of(context).colorScheme.primary;
+    final scheme = Theme.of(context).colorScheme;
     return TvFocusable(
       autofocus: autofocus,
       onPressed: onPressed,
       builder: (context, focused) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 14.0),
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.0), color: focused ? accent : Colors.white10),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 14.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28.0),
+          color: scheme.primary.withValues(alpha: focused ? 0.22 : 0.10),
+          border: Border.all(color: focused ? scheme.onSurface : Colors.transparent, width: 3.0),
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.white),
-            const SizedBox(width: 8.0),
-            Text(label, style: const TextStyle(color: Colors.white, fontSize: 16.0)),
+            Icon(icon, color: scheme.primary),
+            const SizedBox(width: 10.0),
+            Text(label, style: Theme.of(context).textTheme.titleMedium),
           ],
         ),
       ),
@@ -104,16 +108,10 @@ class TvAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 120),
+    return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-        border: Border.all(color: focused ? Colors.white : Colors.transparent, width: 4.0),
-        boxShadow: focused ? [BoxShadow(color: color.withValues(alpha: 0.6), blurRadius: 24.0)] : null,
-      ),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
       alignment: Alignment.center,
       child: icon != null
           ? Icon(icon, color: Colors.white, size: size * 0.45)

@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:battery_plus/battery_plus.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/screens/lyrics_screen.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/music_player_background_task.dart';
+import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -101,17 +104,25 @@ class KeepScreenOnHelper {
     setKeepScreenOn();
   }
 
+  /// wakelock_plus has no tvOS implementation; the TV has its own switch. Either way a failure is not worth a crash.
+  void _setWakelock(bool on) {
+    final Future<void> change = AppleTvAudioChannel.isSupported
+        ? AppleTvSystemChannel.setKeepScreenOn(on)
+        : (on ? WakelockPlus.enable() : WakelockPlus.disable());
+    unawaited(change.catchError((Object e) => _keepScreenOnLogger.fine("Could not change keep-screen-on: $e")));
+  }
+
   void _turnOn() {
     if (!_keepingScreenOn) {
       _keepingScreenOn = true;
-      WakelockPlus.enable();
+      _setWakelock(true);
     }
   }
 
   void _turnOff() {
     if (_keepingScreenOn) {
       _keepingScreenOn = false;
-      WakelockPlus.disable();
+      _setWakelock(false);
     }
   }
 }

@@ -100,3 +100,29 @@ class ConnectCommand {
     if (volume != null) "volume": volume,
   };
 }
+
+/// Accounts one device offers to another ("send my accounts to the TV"). The receiver decides whether to take them.
+class SourceOffer {
+  const SourceOffer({required this.profileName, required this.sources, this.from = ""});
+
+  /// The profile on the receiving TV these accounts should land in.
+  final String profileName;
+
+  /// `MediaSourceConfig` storage maps (see `toTvOSStorageJson`).
+  final List<Map<String, dynamic>> sources;
+
+  final String from;
+
+  static const maxSources = 20;
+
+  static SourceOffer? tryParse(Map<String, dynamic>? json, {String from = ""}) {
+    final raw = json?["sources"];
+    if (raw is! List || raw.isEmpty || raw.length > maxSources) return null;
+    final sources = raw.whereType<Map<String, dynamic>>().toList();
+    if (sources.length != raw.length) return null;
+    final name = (json?["profile"] as String?)?.trim() ?? "";
+    return SourceOffer(profileName: name.isEmpty ? "Home" : name, sources: sources, from: from);
+  }
+
+  Map<String, dynamic> toJson() => {"profile": profileName, "sources": sources, "from": from};
+}

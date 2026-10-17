@@ -235,10 +235,20 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   // ---------------------------------------------------------------------
   bool _tvPlaying = false;
   Duration _tvPosition = Duration.zero;
+  DateTime _tvPositionAt = DateTime.now();
   Duration? _tvDuration;
   bool _tvBuffering = false;
   String? _tvLoadedItemId;
   int _tvLoadGeneration = 0;
+
+  /// The tvOS position between the native player's updates (it reports twice a second): the last reported position
+  /// plus the time since, while playing. Lets progress bars move smoothly instead of in half-second steps.
+  Duration get tvLivePosition {
+    if (!_tvPlaying || _tvBuffering) return _tvPosition;
+    final live = _tvPosition + DateTime.now().difference(_tvPositionAt);
+    final total = _tvDuration;
+    return total != null && live > total ? total : live;
+  }
 
   bool get _effectivePlaying => AppleTvAudioChannel.isSupported
       ? _tvPlaying
@@ -644,6 +654,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
     channel.onPositionChanged.listen((position) {
       _tvPosition = position;
+      _tvPositionAt = DateTime.now();
       _pushTvPlaybackState();
     });
 
@@ -707,6 +718,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
     _tvDuration = null;
     _tvPosition = Duration.zero;
+    _tvPositionAt = DateTime.now();
     _tvBuffering = true;
     _tvLoadedItemId = null;
     _pushTvPlaybackState();
@@ -1504,6 +1516,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       await _player.seek(position);
       if (AppleTvAudioChannel.isSupported) {
         _tvPosition = position;
+        _tvPositionAt = DateTime.now();
         await AppleTvAudioChannel.instance.seek(position);
         _pushTvPlaybackState();
       }

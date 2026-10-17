@@ -100,11 +100,14 @@ import 'package:hive_ce_flutter/adapters.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl_standalone.dart';
 import 'package:isar/isar.dart';
-import 'package:diapason/screens/tv/tv_connect_screen.dart';
 import 'package:diapason/screens/tv/tv_profile_edit_screen.dart';
 import 'package:diapason/screens/tv/tv_profile_picker_screen.dart';
 import 'package:diapason/services/tv/tv_profile_service.dart';
 import 'package:diapason/services/tvos/appletv_audio_channel.dart';
+import 'package:diapason/components/tv_focus_ring.dart';
+import 'package:diapason/components/tv_now_playing_pill.dart';
+import 'package:diapason/utils/tv_zoom.dart';
+import 'package:diapason/services/tvos/tvos_path_provider.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 import 'package:path/path.dart' as path_helper;
@@ -147,8 +150,6 @@ import 'screens/cast_screen.dart';
 import 'screens/import_screen.dart';
 import 'screens/shortcuts_screen.dart';
 import 'screens/radio_screen.dart';
-import 'screens/tv/tv_home_screen.dart';
-import 'screens/tv/tv_now_playing_screen.dart';
 import 'screens/watch/watch_screen.dart';
 import 'screens/wrapped_screen.dart';
 import 'screens/uploader_settings_screen.dart';
@@ -177,6 +178,10 @@ Future<void> main({bool integrationTesting = false, bool loginTesting = false}) 
     if (data.existsSync()) {
       data.deleteSync(recursive: true);
     }
+  }
+
+  if (AppleTvAudioChannel.isSupported) {
+    PathProviderPlatform.instance = TvOSPathProvider(PathProviderPlatform.instance);
   }
 
   try {
@@ -905,6 +910,8 @@ class _FinampState extends State<Finamp> with WindowListener {
     super.initState();
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
+      // app_links has no tvOS implementation; a TV has no links to open the app with anyway.
+      if (AppleTvAudioChannel.isSupported) return;
       _uriLinkSubscription = AppLinks().uriLinkStream.listen((uri) async {
         linkHandlingLogger.info("Received link: $uri");
 
@@ -1070,12 +1077,9 @@ class FinampApp extends ConsumerWidget {
         CastScreen.routeName: (context) => const CastScreen(),
         ImportScreen.routeName: (context) => const ImportScreen(),
         ShortcutsScreen.routeName: (context) => const ShortcutsScreen(),
-        TvHomeScreen.routeName: (context) => const TvHomeScreen(),
         TvProfilePickerScreen.routeName: (context) => const TvProfilePickerScreen(),
         TvProfileEditScreen.routeName: (context) =>
             TvProfileEditScreen(profileId: ModalRoute.settingsOf(context)!.arguments as String),
-        TvConnectScreen.routeName: (context) => const TvConnectScreen(),
-        TvNowPlayingScreen.routeName: (context) => const TvNowPlayingScreen(),
         WatchScreen.routeName: (context) => const WatchScreen(),
         IpodShell.routeName: (context) => const IpodShell(),
         ViewSelector.routeName: (context) => const ViewSelector(),
@@ -1128,7 +1132,22 @@ class FinampApp extends ConsumerWidget {
             child: child,
           );
         }
-        return child;
+        if (DeviceFormFactorDetector.current.isTv) {
+          child = TvFocusRing(
+            child: Focus(
+              canRequestFocus: false,
+              skipTraversal: true,
+              onKeyEvent: tvBarKeyHandler,
+              child: Column(
+                children: [
+                  const TvNowPlayingStrip(),
+                  Expanded(child: child),
+                ],
+              ),
+            ),
+          );
+        }
+        return ZoomBox(zoom: TvZoom.current, child: child);
       },
       theme: ThemeData(
         brightness: Brightness.light,
