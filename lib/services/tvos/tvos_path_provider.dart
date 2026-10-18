@@ -9,6 +9,13 @@ import 'package:path_provider_platform_interface/path_provider_platform_interfac
 class TvOSPathProvider extends PathProviderPlatform {
   TvOSPathProvider(this._inner);
 
+  static void install() {
+    final current = PathProviderPlatform.instance;
+    if (current is! TvOSPathProvider) {
+      PathProviderPlatform.instance = TvOSPathProvider(current);
+    }
+  }
+
   final PathProviderPlatform _inner;
 
   Future<String?> _data(String name) async {

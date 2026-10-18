@@ -4,6 +4,7 @@ import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/connect/connect_models.dart';
 import 'package:diapason/services/connect/connect_service.dart';
+import 'package:diapason/services/connect/connect_source_mapping.dart';
 import 'package:diapason/services/connect/remote_playback.dart';
 import 'package:diapason/services/music_player_background_task.dart';
 import 'package:diapason/services/queue_service.dart';
@@ -25,9 +26,9 @@ ConnectQueue? localConnectQueue() {
       .toList();
   if (tags.isEmpty) return null;
 
-  final items = <Map<String, dynamic>>[
+  final items = withConnectSourceHints([
     for (final tag in tags) (tag.item.extras!["itemJson"] as Map).cast<String, dynamic>(),
-  ];
+  ]);
   final shuffled = queue.playbackOrder == FinampPlaybackOrder.shuffled && player.shuffleIndices.length == items.length;
   return ConnectQueue(
     items: items,
@@ -143,7 +144,7 @@ class ConnectPlayerBridge {
   static Future<List<BaseItemDto>> resolveConnectItems(List<Map<String, dynamic>> raw) async {
     final aggregate = GetIt.instance<AggregateBackend>();
     final out = <BaseItemDto>[];
-    for (final json in raw) {
+    for (final json in remapConnectItems(raw)) {
       try {
         if (json["Name"] != null) {
           out.add(BaseItemDto.fromJson(json));

@@ -44,3 +44,29 @@ FocusNode tvNavFocusNode({TextEditingController? controller}) {
     },
   );
 }
+
+KeyEventResult tvTextFieldKeyHandler(FocusNode node, KeyEvent event) {
+  if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
+  final focused = FocusManager.instance.primaryFocus;
+  final editable = focused?.context?.findAncestorStateOfType<EditableTextState>();
+  if (focused == null || editable == null) return KeyEventResult.ignored;
+  final value = editable.textEditingValue;
+  final collapsed = value.selection.isCollapsed;
+
+  switch (event.logicalKey) {
+    case LogicalKeyboardKey.arrowUp:
+      if (!focused.focusInDirection(TraversalDirection.up)) focused.previousFocus();
+      return KeyEventResult.handled;
+    case LogicalKeyboardKey.arrowDown:
+      if (!focused.focusInDirection(TraversalDirection.down)) focused.nextFocus();
+      return KeyEventResult.handled;
+    case LogicalKeyboardKey.arrowLeft:
+      if (!collapsed || value.selection.baseOffset > 0) return KeyEventResult.ignored;
+      return focused.focusInDirection(TraversalDirection.left) ? KeyEventResult.handled : KeyEventResult.ignored;
+    case LogicalKeyboardKey.arrowRight:
+      if (!collapsed || value.selection.baseOffset < value.text.length) return KeyEventResult.ignored;
+      return focused.focusInDirection(TraversalDirection.right) ? KeyEventResult.handled : KeyEventResult.ignored;
+    default:
+      return KeyEventResult.ignored;
+  }
+}

@@ -41,10 +41,16 @@
 	<integer>4</integer>
 	<key>FlutterDeepLinkingEnabled</key>
 	<false/>
+	<!-- Only HTTPS through the system's own APIs: exempt, so App Store Connect stops asking about encryption. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<!-- Never requested: libraries in the app (the file picker's camera, permission_handler) reference location APIs,
+	     and App Store Connect wants a purpose string for them regardless. -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Diapason does not use your location.</string>
 	<key>INIntentsSupported</key>
 	<array>
 		<string>INPlayMediaIntent</string>
-		<string>INSearchForMediaIntent</string>
 	</array>
 	<key>INSupportedMediaCategories</key>
 	<array>

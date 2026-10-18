@@ -96,7 +96,14 @@ void main() {
 
   group("refining with the audio", () {
     /// A steady grid at [bpm] from [from] to [to] (seconds), bars starting on the first beat.
-    BeatAnalysis grid(double bpm, double from, double to, {double? musicStart, double? musicEnd, double confidence = 0.6}) {
+    BeatAnalysis grid(
+      double bpm,
+      double from,
+      double to, {
+      double? musicStart,
+      double? musicEnd,
+      double confidence = 0.6,
+    }) {
       final beats = <double>[for (var t = from; t <= to; t += 60 / bpm) t];
       return BeatAnalysis(
         bpm: bpm,
@@ -110,12 +117,21 @@ void main() {
       );
     }
 
-    final basic = TransitionPlan.ending(const Duration(seconds: 240), const Duration(seconds: 6), style: TransitionStyle.smart);
+    final basic = TransitionPlan.ending(
+      const Duration(seconds: 240),
+      const Duration(seconds: 6),
+      style: TransitionStyle.smart,
+    );
 
     test("close tempos are beat matched over whole bars, ending on the last bar before the music stops", () {
       final out = grid(124, 195.0, 239.5, musicEnd: 236);
       final inn = grid(120, 0.5, 40, musicStart: 0.5);
-      final plan = AutomixPlanner.refine(basic, currentDuration: const Duration(seconds: 240), outTail: out, inHead: inn);
+      final plan = AutomixPlanner.refine(
+        basic,
+        currentDuration: const Duration(seconds: 240),
+        outTail: out,
+        inHead: inn,
+      );
 
       expect(plan.style, TransitionStyle.beatMatched);
       expect(plan.speed, closeTo(124 / 120, 1e-9));
@@ -131,7 +147,12 @@ void main() {
     test("half or double tempo counts as the same tempo", () {
       final out = grid(172, 195.0, 239.5);
       final inn = grid(87, 0.0, 40);
-      final plan = AutomixPlanner.refine(basic, currentDuration: const Duration(seconds: 240), outTail: out, inHead: inn);
+      final plan = AutomixPlanner.refine(
+        basic,
+        currentDuration: const Duration(seconds: 240),
+        outTail: out,
+        inHead: inn,
+      );
       expect(plan.style, TransitionStyle.beatMatched);
       expect(plan.speed, closeTo(172 / 174, 1e-9));
     });
@@ -139,7 +160,12 @@ void main() {
     test("tempos too far apart are not stretched; the mix still skips silence at both ends", () {
       final out = grid(90, 195.0, 239.5, musicEnd: 232);
       final inn = grid(140, 0.0, 40, musicStart: 2.0);
-      final plan = AutomixPlanner.refine(basic, currentDuration: const Duration(seconds: 240), outTail: out, inHead: inn);
+      final plan = AutomixPlanner.refine(
+        basic,
+        currentDuration: const Duration(seconds: 240),
+        outTail: out,
+        inHead: inn,
+      );
       expect(plan.style, TransitionStyle.smart);
       expect(plan.speed, 1.0);
       expect(plan.outEnd.inMilliseconds / 1000, closeTo(232.3, 0.01));
@@ -150,7 +176,12 @@ void main() {
     test("no clear beat: no beat matching", () {
       final out = grid(120, 195.0, 239.5, confidence: 0.05);
       final inn = grid(120, 0.0, 40);
-      final plan = AutomixPlanner.refine(basic, currentDuration: const Duration(seconds: 240), outTail: out, inHead: inn);
+      final plan = AutomixPlanner.refine(
+        basic,
+        currentDuration: const Duration(seconds: 240),
+        outTail: out,
+        inHead: inn,
+      );
       expect(plan.style, TransitionStyle.smart);
     });
 

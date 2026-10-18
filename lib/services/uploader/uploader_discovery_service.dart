@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:diapason/services/connect/connect_mdns.dart';
+import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 import 'package:nsd/nsd.dart' as nsd;
@@ -32,13 +34,28 @@ class UploaderDiscoveryService {
 
   nsd.Discovery? _discovery;
 
+  TvOsMdns? _tvOs;
+
   final ValueNotifier<List<DiscoveredUploader>> devices = ValueNotifier(const []);
 
-  bool get isDiscovering => _discovery != null;
+  bool get isDiscovering => _discovery != null || _tvOs != null;
 
   Future<void> start() async {
-    if (_discovery != null) return;
+    if (isDiscovering) return;
     devices.value = const [];
+    if (AppleTvAudioChannel.isSupported) {
+      final mdns = TvOsMdns();
+      _tvOs = mdns;
+      try {
+        await mdns.startBrowse(serviceType, (services) {
+          devices.value = services.map(_fromMdns).nonNulls.toList();
+        });
+      } catch (e) {
+        _tvOs = null;
+        _log.warning("Could not browse for uploaders: $e");
+      }
+      return;
+    }
     try {
       nsd.disableServiceTypeValidation(true);
       final discovery = await nsd.startDiscovery(serviceType, ipLookupType: nsd.IpLookupType.v4);
@@ -52,6 +69,14 @@ class UploaderDiscoveryService {
   }
 
   Future<void> stop() async {
+    final tvOs = _tvOs;
+    if (tvOs != null) {
+      _tvOs = null;
+      try {
+        await tvOs.stopBrowse();
+      } catch (_) {}
+      return;
+    }
     if (_discovery == null) return;
     try {
       await nsd.stopDiscovery(_discovery!);
@@ -60,19 +85,38 @@ class UploaderDiscoveryService {
   }
 
   DiscoveredUploader? _toDevice(nsd.Service service) {
-    final host = service.host;
-    final port = service.port;
-    if (host == null || port == null) return null;
-
     final txt = service.txt ?? const {};
-    final tls = _decode(txt["tls"]) == "1";
-    final pairing = _decode(txt["pair"]) == "1";
+    return _build(
+      name: service.name,
+      host: service.host,
+      port: service.port,
+      tls: _decode(txt["tls"]) == "1",
+      pairing: _decode(txt["pair"]) == "1",
+    );
+  }
+
+  DiscoveredUploader? _fromMdns(MdnsService service) => _build(
+    name: service.name.isEmpty ? null : service.name,
+    host: service.host == null || service.host!.isEmpty ? null : service.host,
+    port: service.port,
+    tls: service.txt["tls"] == "1",
+    pairing: service.txt["pair"] == "1",
+  );
+
+  DiscoveredUploader? _build({
+    required String? name,
+    required String? host,
+    required int? port,
+    required bool tls,
+    required bool pairing,
+  }) {
+    if (host == null || port == null) return null;
 
     final normalized = host.endsWith(".") ? host.substring(0, host.length - 1) : host;
     final scheme = tls ? "https" : "http";
 
     return DiscoveredUploader(
-      name: service.name ?? "diapason-uploader",
+      name: name ?? "diapason-uploader",
       baseUrl: "$scheme://$normalized:$port",
       canPair: pairing,
       tls: tls,

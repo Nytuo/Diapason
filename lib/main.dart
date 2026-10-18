@@ -18,6 +18,7 @@ import 'package:diapason/models/playback_event.dart';
 import 'package:diapason/services/shortcuts/shortcut_service.dart';
 import 'package:diapason/services/shortcuts/widget_sync_service.dart';
 import 'package:diapason/utils/device_form_factor.dart';
+import 'package:diapason/utils/tv_focus.dart';
 import 'package:diapason/services/stats/stats_service.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/backends/backend_registry.dart';
@@ -176,6 +177,8 @@ late DateTime startTime;
 final providerScopeKey = GlobalKey();
 
 Future<void> main({bool integrationTesting = false, bool loginTesting = false}) async {
+  DartPluginRegistrant.ensureInitialized();
+
   if (loginTesting) {
     final data = await TestingPathProvider.baseDirectory();
     PathProviderPlatform.instance = TestingPathProvider(data);
@@ -185,7 +188,7 @@ Future<void> main({bool integrationTesting = false, bool loginTesting = false}) 
   }
 
   if (AppleTvAudioChannel.isSupported) {
-    PathProviderPlatform.instance = TvOSPathProvider(PathProviderPlatform.instance);
+    TvOSPathProvider.install();
   }
 
   try {
@@ -263,8 +266,6 @@ Future<void> main({bool integrationTesting = false, bool loginTesting = false}) 
       return false;
     };
   }
-
-  DartPluginRegistrant.ensureInitialized();
 
   await findSystemLocale();
   await initializeDateFormatting();
@@ -1146,11 +1147,14 @@ class FinampApp extends ConsumerWidget {
             child: Focus(
               canRequestFocus: false,
               skipTraversal: true,
-              onKeyEvent: tvBarKeyHandler,
+              onKeyEvent: (node, event) {
+                final result = tvTextFieldKeyHandler(node, event);
+                return result == KeyEventResult.ignored ? tvBarKeyHandler(node, event) : result;
+              },
               child: Column(
                 children: [
-                  const TvNowPlayingStrip(),
                   Expanded(child: child),
+                  const TvNowPlayingStrip(),
                 ],
               ),
             ),

@@ -111,16 +111,30 @@ class TvOsMdns implements ConnectMdns {
   static final _log = Logger("TvOsMdns");
   static const _channel = MethodChannel("fr.nytuo.diapason/appletv_bonjour");
 
-  void Function(List<MdnsService> services)? _onChanged;
+  static final Map<String, void Function(List<MdnsService> services)> _browsers = {};
+  static bool _handlerSet = false;
 
-  TvOsMdns() {
+  static String _key(String type) => type.endsWith(".") ? type.substring(0, type.length - 1) : type;
+
+  static void _ensureHandler() {
+    if (_handlerSet) return;
+    _handlerSet = true;
     _channel.setMethodCallHandler((call) async {
       if (call.method == "services") {
-        final list = (call.arguments as List).cast<Map<Object?, Object?>>();
-        _onChanged?.call(list.map(MdnsService.fromMap).toList());
+        final args = call.arguments as Map<Object?, Object?>;
+        final list = (args["services"] as List).cast<Map<Object?, Object?>>();
+        _browsers[_key(args["type"] as String)]?.call(list.map(MdnsService.fromMap).toList());
+      } else if (call.method == "log") {
+        _log.info(call.arguments);
       }
     });
   }
+
+  TvOsMdns() {
+    _ensureHandler();
+  }
+
+  String? _browsing;
 
   @override
   Future<void> register({
@@ -138,13 +152,17 @@ class TvOsMdns implements ConnectMdns {
 
   @override
   Future<void> startBrowse(String type, void Function(List<MdnsService> services) onChanged) async {
-    _onChanged = onChanged;
+    _browsing = _key(type);
+    _browsers[_key(type)] = onChanged;
     await _channel.invokeMethod("startBrowse", {"type": type});
   }
 
   @override
   Future<void> stopBrowse() async {
-    _onChanged = null;
-    await _channel.invokeMethod("stopBrowse");
+    final type = _browsing;
+    _browsing = null;
+    if (type == null) return;
+    _browsers.remove(type);
+    await _channel.invokeMethod("stopBrowse", {"type": type});
   }
 }

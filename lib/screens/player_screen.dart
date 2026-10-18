@@ -393,7 +393,7 @@ class _PlayerScreenContent extends ConsumerWidget {
                   builder: (context, device) => SimpleButton(
                     // Like Spotify's devices button: also where playback moves to another device.
                     text:
-                        device?.name.replaceFirst(RegExp(r"^Diapason \((.*)\)$"), r"$1") ??
+                        (device == null ? null : connectDisplayName(device.name)) ??
                         AppLocalizations.of(context)!.outputMenuButtonTitle,
                     icon: device == null ? TablerIcons.devices : TablerIcons.device_speaker,
                     onPressed: () async {

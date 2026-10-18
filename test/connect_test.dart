@@ -143,9 +143,7 @@ void main() {
 
     await http.post(
       endpoint("command"),
-      body: jsonEncode(
-        const ConnectCommand("reorder", args: {"from": 2, "to": 5}).toJson(),
-      ),
+      body: jsonEncode(const ConnectCommand("reorder", args: {"from": 2, "to": 5}).toJson()),
     );
 
     expect(received.single.action, "reorder");
@@ -158,7 +156,8 @@ void main() {
     addTearDown(other.stop);
     final received = <ConnectCommand>[];
     other.onCommand = received.add;
-    other.localStatusProvider = () => const ConnectStatus(state: "playing", position: 3, volume: 0.4, queueVersion: "v1");
+    other.localStatusProvider = () =>
+        const ConnectStatus(state: "playing", position: 3, volume: 0.4, queueVersion: "v1");
 
     final device = ConnectDevice(name: "Other", baseUrl: other.serverUrl!);
     expect(await service.connect(device), isTrue);

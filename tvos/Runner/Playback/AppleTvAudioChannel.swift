@@ -1,6 +1,7 @@
 import AVFoundation
 import Flutter
 import MediaPlayer
+import just_audio
 
 /// Native audio playback + Now Playing / Siri Remote integration for tvOS.
 ///
@@ -15,14 +16,28 @@ final class AppleTvAudioChannel: NSObject {
     static let channelName = "fr.nytuo.diapason/appletv_audio"
 
     private let channel: FlutterMethodChannel
-    private var player: AVPlayer?
+    private let player = AVPlayer()
+    private let nowPlayingSession: MPNowPlayingSession
+    private var nowPlayingInfoCenter: MPNowPlayingInfoCenter { nowPlayingSession.nowPlayingInfoCenter }
     private var timeObserverToken: Any?
     private var itemStatusObservation: NSKeyValueObservation?
     private var itemEndObserver: NSObjectProtocol?
+    private let spectrumChannel: BetterEventChannel
+    private let spectrumTap: SpectrumTap
 
     init(messenger: FlutterBinaryMessenger) {
         channel = FlutterMethodChannel(name: Self.channelName, binaryMessenger: messenger)
+        spectrumChannel = BetterEventChannel(name: "com.ryanheise.just_audio.spectrum", messenger: messenger)
+        spectrumTap = SpectrumTap(eventChannel: spectrumChannel)
+        nowPlayingSession = MPNowPlayingSession(players: [player])
+        nowPlayingSession.automaticallyPublishesNowPlayingInfo = false
+        player.audiovisualBackgroundPlaybackPolicy = .continuesIfPossible
         super.init()
+        let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        timeObserverToken = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
+            guard let self, self.player.currentItem != nil else { return }
+            self.channel.invokeMethod("onPositionChanged", arguments: ["positionMs": Int(time.seconds * 1000)])
+        }
         channel.setMethodCallHandler(handle)
         configureAudioSession()
         configureRemoteCommandCenter()
@@ -52,13 +67,17 @@ final class AppleTvAudioChannel: NSObject {
             load(url: url, headers: headers)
             result(nil)
         case "play":
-            player?.play()
+            player.play()
+            nowPlayingSession.becomeActiveIfPossible { _ in }
+            refreshNowPlayingRate()
             result(nil)
         case "pause":
-            player?.pause()
+            player.pause()
+            refreshNowPlayingRate()
             result(nil)
         case "stop":
             teardownPlayer()
+            nowPlayingInfoCenter.nowPlayingInfo = nil
             result(nil)
         case "seek":
             guard let positionMs = args?["positionMs"] as? Int else {
@@ -66,14 +85,16 @@ final class AppleTvAudioChannel: NSObject {
                 return
             }
             let time = CMTime(value: CMTimeValue(positionMs), timescale: 1000)
-            player?.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero)
+            player.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] _ in
+                self?.refreshNowPlayingRate()
+            }
             result(nil)
         case "setVolume":
             guard let volume = args?["volume"] as? Double else {
                 result(FlutterError(code: "bad_args", message: "setVolume requires volume", details: nil))
                 return
             }
-            player?.volume = Float(volume)
+            player.volume = Float(volume)
             result(nil)
         case "setNowPlayingInfo":
             setNowPlayingInfo(args ?? [:])
@@ -93,8 +114,8 @@ final class AppleTvAudioChannel: NSObject {
             asset = AVURLAsset(url: url)
         }
         let item = AVPlayerItem(asset: asset)
-        let newPlayer = AVPlayer(playerItem: item)
-        player = newPlayer
+        spectrumTap.attach(to: item)
+        player.replaceCurrentItem(with: item)
 
         itemStatusObservation = item.observe(\.status, options: [.new]) { [weak self] item, _ in
             guard let self else { return }
@@ -119,32 +140,23 @@ final class AppleTvAudioChannel: NSObject {
         ) { [weak self] _ in
             self?.channel.invokeMethod("onComplete", arguments: nil)
         }
-
-        let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
-        timeObserverToken = newPlayer.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
-            self?.channel.invokeMethod("onPositionChanged", arguments: ["positionMs": Int(time.seconds * 1000)])
-        }
     }
 
     private func teardownPlayer() {
-        if let token = timeObserverToken {
-            player?.removeTimeObserver(token)
-            timeObserverToken = nil
-        }
         itemStatusObservation?.invalidate()
         itemStatusObservation = nil
         if let observer = itemEndObserver {
             NotificationCenter.default.removeObserver(observer)
             itemEndObserver = nil
         }
-        player?.pause()
-        player = nil
+        player.pause()
+        player.replaceCurrentItem(with: nil)
     }
 
     // MARK: - Now Playing / Siri Remote
 
     private func configureRemoteCommandCenter() {
-        let center = MPRemoteCommandCenter.shared()
+        let center = nowPlayingSession.remoteCommandCenter
 
         center.playCommand.addTarget { [weak self] _ in
             self?.channel.invokeMethod("onRemoteCommand", arguments: ["command": "play"])
@@ -152,6 +164,12 @@ final class AppleTvAudioChannel: NSObject {
         }
         center.pauseCommand.addTarget { [weak self] _ in
             self?.channel.invokeMethod("onRemoteCommand", arguments: ["command": "pause"])
+            return .success
+        }
+        center.togglePlayPauseCommand.addTarget { [weak self] _ in
+            guard let self else { return .commandFailed }
+            let playing = self.player.currentItem != nil && self.player.timeControlStatus != .paused
+            self.channel.invokeMethod("onRemoteCommand", arguments: ["command": playing ? "pause" : "play"])
             return .success
         }
         center.nextTrackCommand.addTarget { [weak self] _ in
@@ -172,6 +190,16 @@ final class AppleTvAudioChannel: NSObject {
         }
     }
 
+    private func refreshNowPlayingRate() {
+        guard var info = nowPlayingInfoCenter.nowPlayingInfo else { return }
+        info[MPNowPlayingInfoPropertyPlaybackRate] = player.rate
+        let time = player.currentTime()
+        if time.isNumeric {
+            info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = time.seconds
+        }
+        nowPlayingInfoCenter.nowPlayingInfo = info
+    }
+
     private func setNowPlayingInfo(_ args: [String: Any]) {
         var info = [String: Any]()
         info[MPMediaItemPropertyTitle] = args["title"] as? String
@@ -183,9 +211,10 @@ final class AppleTvAudioChannel: NSObject {
         if let positionMs = args["positionMs"] as? Int {
             info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = Double(positionMs) / 1000
         }
-        info[MPNowPlayingInfoPropertyPlaybackRate] = player?.rate ?? 0
+        info[MPNowPlayingInfoPropertyPlaybackRate] = player.rate
+        info[MPNowPlayingInfoPropertyMediaType] = MPNowPlayingInfoMediaType.audio.rawValue
 
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+        nowPlayingInfoCenter.nowPlayingInfo = info
 
         if let artworkUrlString = args["artworkUrl"] as? String, let artworkUrl = URL(string: artworkUrlString) {
             loadArtwork(from: artworkUrl)
@@ -197,9 +226,9 @@ final class AppleTvAudioChannel: NSObject {
             guard let self, let data, let image = UIImage(data: data) else { return }
             let artwork = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
             DispatchQueue.main.async {
-                var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [:]
+                var info = self.nowPlayingInfoCenter.nowPlayingInfo ?? [:]
                 info[MPMediaItemPropertyArtwork] = artwork
-                MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+                self.nowPlayingInfoCenter.nowPlayingInfo = info
             }
         }.resume()
     }

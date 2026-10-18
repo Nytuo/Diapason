@@ -10,6 +10,7 @@ import 'package:diapason/menus/components/menuEntries/view_logs_menu_entry.dart'
 import 'package:diapason/menus/components/menu_item_info_header.dart';
 import 'package:diapason/services/feedback_helper.dart';
 import 'package:diapason/services/friendly_error.dart';
+import 'package:diapason/utils/device_form_factor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
@@ -22,6 +23,8 @@ typedef _QueueFunction = void Function(BuildContext);
 
 @Deprecated("Use GlobalSnackbar.error(dynamic error) instead")
 void errorSnackbar(dynamic error, BuildContext context) => GlobalSnackbar.error(error);
+
+final FocusNode tvSnackbarActionFocus = FocusNode(debugLabel: "TV snackbar details");
 
 class GlobalSnackbar {
   /// Prefer using state and localization getters.  Avoid directly accessing context.
@@ -212,6 +215,39 @@ class GlobalSnackbar {
       _activeErrorKeys.add(dedupKey); // add to active keys
     }
 
+    final tv = DeviceFormFactorDetector.current.isTv;
+    void showDetails() => showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.error),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(friendly.message),
+              const SizedBox(height: 8),
+              Text("Where it went wrong: ${friendly.source.label}", style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: 16),
+              Text("Technical details (for bug reports)", style: Theme.of(context).textTheme.labelMedium),
+              const SizedBox(height: 4),
+              SelectableText(
+                errorText == event.toString() ? friendly.technical : "$errorText\n${friendly.technical}",
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            autofocus: tv,
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(MaterialLocalizations.of(context).closeButtonLabel),
+          ),
+        ],
+      ),
+    );
+
     // give immediate feedback that something went wrong
     FeedbackHelper.feedback(FeedbackType.warning);
     final controller = scaffoldState!.showSnackBar(
@@ -227,44 +263,28 @@ class GlobalSnackbar {
               showSnackbarOptionsMenu(context);
             }
           },
-          child: Text(
-            friendly.source == ErrorSource.unknown ? AppLocalizations.of(context)!.anErrorHasOccured : friendly.message,
-          ),
-        ),
-        action: SnackBarAction(
-          label: MaterialLocalizations.of(context).moreButtonTooltip,
-          onPressed: () => showDialog<void>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text(AppLocalizations.of(context)!.error),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(friendly.message),
-                    const SizedBox(height: 8),
-                    Text("Where it went wrong: ${friendly.source.label}", style: Theme.of(context).textTheme.bodySmall),
-                    const SizedBox(height: 16),
-                    Text("Technical details (for bug reports)", style: Theme.of(context).textTheme.labelMedium),
-                    const SizedBox(height: 4),
-                    SelectableText(
-                      errorText == event.toString() ? friendly.technical : "$errorText\n${friendly.technical}",
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  friendly.source == ErrorSource.unknown
+                      ? AppLocalizations.of(context)!.anErrorHasOccured
+                      : friendly.message,
                 ),
               ),
-              actions: [
+              if (tv)
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(MaterialLocalizations.of(context).closeButtonLabel),
+                  focusNode: tvSnackbarActionFocus,
+                  onPressed: showDetails,
+                  child: Text(MaterialLocalizations.of(context).moreButtonTooltip),
                 ),
-              ],
-            ),
+            ],
           ),
         ),
-        duration: const Duration(seconds: 4),
+        action: tv
+            ? null
+            : SnackBarAction(label: MaterialLocalizations.of(context).moreButtonTooltip, onPressed: showDetails),
+        duration: Duration(seconds: tv ? 10 : 4),
         persist: false,
       ),
     );
@@ -300,6 +320,7 @@ class GlobalSnackbar {
         content: Text(text.$2),
         actions: [
           TextButton(
+            autofocus: DeviceFormFactorDetector.current.isTv,
             onPressed: () => Navigator.of(context).pop(),
             child: Text(MaterialLocalizations.of(context).closeButtonLabel),
           ),

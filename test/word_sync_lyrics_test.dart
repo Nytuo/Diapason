@@ -11,8 +11,7 @@ import 'package:http/testing.dart';
 
 int ms(int millis) => millis * 10000; // ticks
 
-String wordsOf(LyricLine line) =>
-    line.cues!.map((c) => line.text!.substring(c.position, c.endPosition)).join("|");
+String wordsOf(LyricLine line) => line.cues!.map((c) => line.text!.substring(c.position, c.endPosition)).join("|");
 
 void main() {
   group("TTML (AMLL / Apple Music style)", () {
@@ -63,7 +62,9 @@ void main() {
 
   group("Enhanced LRC", () {
     test("inline word stamps become cues; plain LRC is untouched", () {
-      final lyrics = LrcParser.parse("[00:12.00]<00:12.00>Word <00:12.50>by <00:12.80>word<00:13.40>\n[00:14.00]Plain")!;
+      final lyrics = LrcParser.parse(
+        "[00:12.00]<00:12.00>Word <00:12.50>by <00:12.80>word<00:13.40>\n[00:14.00]Plain",
+      )!;
       final first = lyrics.lyrics!.first;
       expect(first.text, "Word by word");
       expect(wordsOf(first), "Word|by|word");
@@ -105,8 +106,22 @@ void main() {
               jsonEncode({
                 "result": {
                   "songs": [
-                    {"id": 1, "name": "Yellow", "dt": 400000, "ar": [{"name": "Coldplay"}]},
-                    {"id": 2, "name": "Yellow", "dt": 266773, "ar": [{"name": "Coldplay"}]},
+                    {
+                      "id": 1,
+                      "name": "Yellow",
+                      "dt": 400000,
+                      "ar": [
+                        {"name": "Coldplay"},
+                      ],
+                    },
+                    {
+                      "id": 2,
+                      "name": "Yellow",
+                      "dt": 266773,
+                      "ar": [
+                        {"name": "Coldplay"},
+                      ],
+                    },
                   ],
                 },
               }),
@@ -170,12 +185,15 @@ plain: |
 
     test("plain-only, instrumental and other versions", () {
       expect(
-        WordSyncParser.parseLyricsfile('version: "1.0"\nmetadata: {title: a, artist: b}\nplain: |\n  One\n  Two\n')!
-            .lyrics!
-            .map((l) => l.text),
+        WordSyncParser.parseLyricsfile(
+          'version: "1.0"\nmetadata: {title: a, artist: b}\nplain: |\n  One\n  Two\n',
+        )!.lyrics!.map((l) => l.text),
         ["One", "Two"],
       );
-      expect(WordSyncParser.parseLyricsfile('version: "1.0"\nmetadata: {title: a, artist: b, instrumental: true}'), isNull);
+      expect(
+        WordSyncParser.parseLyricsfile('version: "1.0"\nmetadata: {title: a, artist: b, instrumental: true}'),
+        isNull,
+      );
       expect(WordSyncParser.parseLyricsfile('version: "2.0"\nmetadata: {title: a, artist: b}\nplain: x'), isNull);
       expect(WordSyncParser.parseLyricsfile("not: [valid"), isNull);
     });
@@ -184,7 +202,10 @@ plain: |
       final client = LrclibClient(
         httpClient: MockClient((request) async {
           if (request.url.path == "/api/get") {
-            return http.Response(jsonEncode({"duration": 176, "syncedLyrics": "[00:01.00]Line synced", "hasWordSync": false}), 200);
+            return http.Response(
+              jsonEncode({"duration": 176, "syncedLyrics": "[00:01.00]Line synced", "hasWordSync": false}),
+              200,
+            );
           }
           return http.Response(
             jsonEncode([
@@ -195,7 +216,11 @@ plain: |
           );
         }),
       );
-      final lyrics = await client.fetch(title: "Still Alive", artist: "Aperture", duration: const Duration(seconds: 176));
+      final lyrics = await client.fetch(
+        title: "Still Alive",
+        artist: "Aperture",
+        duration: const Duration(seconds: 176),
+      );
       expect(WordSyncParser.hasWordCues(lyrics), isTrue);
     });
 
@@ -213,7 +238,11 @@ plain: |
           );
         }),
       );
-      final lyrics = await client.fetch(title: "Still Alive", artist: "Aperture", duration: const Duration(milliseconds: 179400));
+      final lyrics = await client.fetch(
+        title: "Still Alive",
+        artist: "Aperture",
+        duration: const Duration(milliseconds: 179400),
+      );
       expect(WordSyncParser.hasWordCues(lyrics), isTrue);
     });
   });

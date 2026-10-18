@@ -15,6 +15,9 @@ import 'package:flutter_chrome_cast/entities.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 
+String connectDisplayName(String name) =>
+    name.replaceFirstMapped(RegExp(r"^Diapason \((.*)\)$"), (match) => match.group(1)!);
+
 ConnectService? get _connectOrNull =>
     GetIt.instance.isRegistered<ConnectService>() ? GetIt.instance<ConnectService>() : null;
 
@@ -173,7 +176,7 @@ class _ConnectDeviceListState extends State<ConnectDeviceList> {
                   _DeviceTile(
                     icon: Platform.isAndroid || Platform.isIOS ? TablerIcons.device_mobile : TablerIcons.device_laptop,
                     title: "This device",
-                    subtitle: connect.deviceName.replaceFirst(RegExp(r"^Diapason \((.*)\)$"), r"$1"),
+                    subtitle: connectDisplayName(connect.deviceName),
                     selected: current == null,
                     enabled: !transferring,
                     onTap: () => _pick(null),
@@ -181,7 +184,7 @@ class _ConnectDeviceListState extends State<ConnectDeviceList> {
                   for (final device in others)
                     _DeviceTile(
                       icon: TablerIcons.device_speaker,
-                      title: device.name.replaceFirst(RegExp(r"^Diapason \((.*)\)$"), r"$1"),
+                      title: connectDisplayName(device.name),
                       subtitle: current == device ? "Playing here" : "Diapason Connect",
                       selected: current == device,
                       enabled: !transferring,

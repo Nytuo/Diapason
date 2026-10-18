@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/connect/connect_source_mapping.dart';
 import 'package:diapason/services/connect/connect_models.dart';
 import 'package:diapason/services/connect/connect_player_bridge.dart';
 import 'package:diapason/services/connect/connect_service.dart';
@@ -298,8 +299,12 @@ class ConnectRemoteController implements RemotePlayback {
   Future<void> skipByOffset(int offset) => _connect.sendCommand("skipBy", args: {"offset": offset});
 
   @override
-  Future<void> queueCommand(String action, [Map<String, dynamic> args = const {}]) =>
-      _connect.sendCommand(action, args: args);
+  Future<void> queueCommand(String action, [Map<String, dynamic> args = const {}]) => _connect.sendCommand(
+    action,
+    args: args["items"] is List
+        ? {...args, "items": withConnectSourceHints((args["items"] as List).cast<Map<String, dynamic>>())}
+        : args,
+  );
 
   @override
   Future<void> playItems(
@@ -310,7 +315,7 @@ class ConnectRemoteController implements RemotePlayback {
   }) async {
     await _connect.playQueue(
       ConnectQueue(
-        items: items,
+        items: withConnectSourceHints(items),
         index: startIndex,
         position: 0,
         shuffleOrder: shuffleOrder,

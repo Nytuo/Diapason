@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:diapason/color_schemes.g.dart';
 import 'package:diapason/components/Buttons/finamp_extended_floating_action_button.dart';
 import 'package:diapason/components/PlayerScreen/player_screen_appbar_title.dart';
@@ -90,7 +91,7 @@ class _LyricsScreenContentState extends ConsumerState<_LyricsScreenContent> {
           title: PlayerScreenAppBarTitle(maxLines: maxLines),
           leading: FinampAppBarBackButton(dismissDirection: AxisDirection.right),
           actions: [
-            if (Platform.isIOS)
+            if (Platform.isIOS && !AppleTvAudioChannel.isSupported) // no AirPlay picker view on tvOS
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: AirPlayRoutePickerView(

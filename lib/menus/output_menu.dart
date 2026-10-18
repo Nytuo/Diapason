@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:diapason/color_schemes.g.dart';
 import 'package:diapason/components/Buttons/cta_medium.dart';
 import 'package:diapason/components/Shortcuts/global_shortcut_manager.dart';
@@ -151,7 +152,7 @@ class OutputMenuHeader extends ConsumerWidget {
               ),
             ),
           ),
-          if (Platform.isIOS)
+          if (Platform.isIOS && !AppleTvAudioChannel.isSupported) // no AirPlay picker view on tvOS
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: AnimatedSwitcher(

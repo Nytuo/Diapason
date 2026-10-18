@@ -7,37 +7,73 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/scheduler.dart';
 
-/// Focus node of the now-playing bar at the top of the screen.
 final FocusNode tvBarFocusNode = FocusNode(debugLabel: "TV now playing bar");
 
-/// Arrow keys only move focus within the current page, so the bar above it could never be reached. This adds the
-/// missing link: Up from the top edge of a page jumps to the bar, Down from the bar returns to where focus was.
 KeyEventResult tvBarKeyHandler(FocusNode node, KeyEvent event) {
   if (event is! KeyDownEvent) return KeyEventResult.ignored;
   final key = event.logicalKey;
   final barShown = tvBarFocusNode.context != null && tvBarFocusNode.context!.mounted;
+  final snackbarShown = tvSnackbarActionFocus.context != null && tvSnackbarActionFocus.context!.mounted;
+  if (!barShown && !snackbarShown) return KeyEventResult.ignored;
 
-  if (key == LogicalKeyboardKey.arrowUp && barShown && !tvBarFocusNode.hasFocus) {
-    final moved = FocusManager.instance.primaryFocus?.focusInDirection(TraversalDirection.up) ?? false;
-    if (!moved) {
-      tvBarFocusNode.requestFocus();
+  if (tvSnackbarActionFocus.hasFocus) {
+    if (key == LogicalKeyboardKey.arrowUp) {
+      _returnToPage();
       return KeyEventResult.handled;
     }
-    return KeyEventResult.handled;
+    if (key == LogicalKeyboardKey.arrowDown) {
+      if (barShown) tvBarFocusNode.requestFocus();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
-  if (key == LogicalKeyboardKey.arrowDown && barShown && tvBarFocusNode.hasFocus) {
-    final navigatorContext = GlobalSnackbar.navigatorState?.context;
-    if (navigatorContext != null) {
-      final scope = FocusScope.of(navigatorContext);
-      final target =
-          scope.focusedChild ??
-          scope.traversalDescendants.where((n) => n.canRequestFocus && !n.skipTraversal).firstOrNull;
-      target?.requestFocus();
+  if (tvBarFocusNode.hasFocus) {
+    if (key == LogicalKeyboardKey.arrowUp && snackbarShown) {
+      tvSnackbarActionFocus.requestFocus();
+      return KeyEventResult.handled;
     }
-    return KeyEventResult.handled;
+    if (key == LogicalKeyboardKey.arrowUp) {
+      _returnToPage();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowDown) return KeyEventResult.handled;
+    return KeyEventResult.ignored;
   }
-  return KeyEventResult.ignored;
+
+  final direction = switch (key) {
+    LogicalKeyboardKey.arrowUp => TraversalDirection.up,
+    LogicalKeyboardKey.arrowDown => TraversalDirection.down,
+    _ => null,
+  };
+  if (direction == null) return KeyEventResult.ignored;
+  final moved = FocusManager.instance.primaryFocus?.focusInDirection(direction) ?? false;
+  if (!moved) {
+    _lastPageFocus = FocusManager.instance.primaryFocus;
+    (snackbarShown ? tvSnackbarActionFocus : tvBarFocusNode).requestFocus();
+  }
+  return KeyEventResult.handled;
+}
+
+FocusNode? _lastPageFocus;
+
+void _returnToPage() {
+  final last = _lastPageFocus;
+  _lastPageFocus = null;
+  if (last != null && last.context != null && last.context!.mounted && last.canRequestFocus) {
+    last.requestFocus();
+    return;
+  }
+  final navigatorContext = GlobalSnackbar.navigatorState?.context;
+  if (navigatorContext == null) return;
+  final scope = FocusScope.of(navigatorContext);
+  final focused = scope.focusedChild;
+  final target = focused != null && focused != tvSnackbarActionFocus
+      ? focused
+      : scope.traversalDescendants
+            .where((n) => n.canRequestFocus && !n.skipTraversal && n != tvSnackbarActionFocus)
+            .firstOrNull;
+  target?.requestFocus();
 }
 
 /// How many player screens are open; the pill below hides itself while one is.
@@ -79,13 +115,10 @@ class _TvPlayerPresenceState extends State<TvPlayerPresence> {
   Widget build(BuildContext context) => widget.child;
 }
 
-/// On a TV the bar at the bottom of each page is hard to reach with a remote, so the same now-playing bar sits at the
-/// top of every screen instead, in the layout rather than floating over it: always there, and one press opens Now
-/// Playing.
 const double _barHeight = 94.0;
 
-/// Space above the bar: TVs crop the edges of the picture, and the bar should not sit hard against the top.
-const double _barTopMargin = 28.0;
+const double _barTopMargin = 8.0;
+const double _barBottomMargin = 28.0;
 
 /// The bar's tooltips and menus need an Overlay, which a widget placed above the app's Navigator does not have, so it
 /// gets one of its own.
@@ -130,7 +163,7 @@ class TvNowPlayingStrip extends StatelessWidget {
               builder: (context, snapshot) => snapshot.data == null
                   ? const SizedBox.shrink()
                   : const Padding(
-                      padding: EdgeInsets.only(top: _barTopMargin),
+                      padding: EdgeInsets.only(top: _barTopMargin, bottom: _barBottomMargin),
                       child: SizedBox(
                         height: _barHeight,
                         child: _OverlayHost(child: NowPlayingBar(tvTop: true)),

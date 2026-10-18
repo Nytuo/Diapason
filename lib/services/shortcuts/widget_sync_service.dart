@@ -7,6 +7,7 @@ import 'package:diapason/services/music_player_background_task.dart';
 import 'package:diapason/services/queue_service.dart';
 import 'package:diapason/services/shortcuts/shortcut_service.dart';
 import 'package:diapason/services/theme_provider.dart';
+import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -27,6 +28,7 @@ class WidgetSyncService {
   Future<void> start() async {
     if (_started) return;
     if (!Platform.isAndroid && !Platform.isIOS) return;
+    if (AppleTvAudioChannel.isSupported) return;
     _started = true;
 
     try {

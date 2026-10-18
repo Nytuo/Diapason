@@ -1,9 +1,9 @@
 import 'package:diapason/services/tvos/tvos_path_provider.dart';
-import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:ui' show DartPluginRegistrant;
 
 import 'package:chopper/chopper.dart';
 import 'package:collection/collection.dart';
@@ -76,6 +76,7 @@ class JellyfinApiHelper {
   /// Sets up singletons and listens for work.
   static Future<void> _processRequestsBackground((SendPort, RootIsolateToken, ClientCertificate?) input) async {
     BackgroundIsolateBinaryMessenger.ensureInitialized(input.$2);
+    DartPluginRegistrant.ensureInitialized();
     ReceivePort requestPort = ReceivePort();
 
     // Extend the default security context to trust Android user certificates.
@@ -89,7 +90,7 @@ class JellyfinApiHelper {
 
     input.$1.send(requestPort.sendPort);
     if (AppleTvAudioChannel.isSupported) {
-      PathProviderPlatform.instance = TvOSPathProvider(PathProviderPlatform.instance);
+      TvOSPathProvider.install();
     }
     final dir = (Platform.isAndroid || Platform.isIOS)
         ? await getApplicationDocumentsDirectory()

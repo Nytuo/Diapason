@@ -1,4 +1,5 @@
 import 'package:diapason/utils/device_form_factor.dart';
+import 'dart:async';
 import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
@@ -7,6 +8,7 @@ import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/jellyfin_models.dart' as jellyfin_models;
 import 'package:diapason/services/progress_state_stream.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 
@@ -197,12 +199,18 @@ class _ProgressSliderDuration extends StatelessWidget {
       height: tv ? 1.2 : 0.5, // reduce line height
       fontFeatures: const [FontFeature.tabularFigures()],
     );
-    // Fixed-width time labels so a digit changing width in a proportional
-    // font doesn't nudge the chapter name (or the gap either side of it)
-    // every second. A little extra room once the track is an hour or longer.
-    final timeColumnWidth = tv
-        ? (roundedDuration.inHours >= 1 ? 96.0 : 72.0)
-        : (roundedDuration.inHours >= 1 ? 56.0 : 34.0);
+    final widestLabel = printDuration(
+      roundedDuration.inHours >= 1 ? const Duration(hours: 10) : const Duration(minutes: 10),
+      isRemaining: showRemaining,
+    ).replaceAll(RegExp(r'\d'), '0');
+    final labelPainter = TextPainter(
+      text: TextSpan(text: widestLabel, style: labelStyle),
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final timeColumnWidth = labelPainter.width.ceilToDouble() + 2;
+    labelPainter.dispose();
 
     return Row(
       mainAxisSize: MainAxisSize.max,
@@ -210,7 +218,7 @@ class _ProgressSliderDuration extends StatelessWidget {
       children: [
         SizedBox(
           width: timeColumnWidth,
-          child: Text(printDuration(currentPosition), style: labelStyle),
+          child: Text(printDuration(currentPosition), style: labelStyle, maxLines: 1, softWrap: false),
         ),
         if (chapter?.name?.isNotEmpty ?? false)
           Expanded(
@@ -228,12 +236,13 @@ class _ProgressSliderDuration extends StatelessWidget {
           width: timeColumnWidth,
           child: Text(
             printDuration(
-              // display remaining time if on iOS or macOS
               showRemaining ? (roundedDuration - currentPosition) : roundedDuration,
               isRemaining: showRemaining,
             ),
             textAlign: TextAlign.right,
             style: labelStyle,
+            maxLines: 1,
+            softWrap: false,
           ),
         ),
       ],
@@ -379,9 +388,59 @@ class __PlaybackProgressSliderState extends ConsumerState<_PlaybackProgressSlide
   double? _dragValue;
 
   final _audioHandler = GetIt.instance<MusicPlayerBackgroundTask>();
+  final _sliderFocusNode = FocusNode(skipTraversal: true, canRequestFocus: false);
+  final _tvFocusNode = FocusNode(debugLabel: "TV seek bar");
+  Timer? _tvSeekTimer;
+  int _tvSteps = 0;
+
+  @override
+  void dispose() {
+    _tvSeekTimer?.cancel();
+    _sliderFocusNode.dispose();
+    _tvFocusNode.dispose();
+    super.dispose();
+  }
+
+  KeyEventResult _tvKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
+    final int direction;
+    if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+      direction = -1;
+    } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+      direction = 1;
+    } else {
+      return KeyEventResult.ignored;
+    }
+    final duration = widget.mediaItem?.duration;
+    if (duration == null) return KeyEventResult.handled;
+
+    _tvSteps++;
+    final step = Duration(seconds: _tvSteps > 6 ? 30 : 10).inMicroseconds;
+    final from = _dragValue ?? widget.position.inMicroseconds.toDouble();
+    final value = (from + direction * step).clamp(0, duration.inMicroseconds).toDouble();
+    setState(() => _dragValue = value);
+    widget.onDrag(value);
+
+    _tvSeekTimer?.cancel();
+    _tvSeekTimer = Timer(const Duration(milliseconds: 600), () async {
+      _tvSteps = 0;
+      final target = _dragValue;
+      if (target == null) return;
+      await _audioHandler.seek(Duration(microseconds: target.toInt()));
+      if (mounted) setState(() => _dragValue = null);
+      widget.onDrag(null);
+    });
+    return KeyEventResult.handled;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final slider = _buildSlider(context);
+    if (!widget.allowSeeking || !DeviceFormFactorDetector.current.isTv) return slider;
+    return Focus(focusNode: _tvFocusNode, onKeyEvent: _tvKey, child: slider);
+  }
+
+  Widget _buildSlider(BuildContext context) {
     return SliderTheme(
       data: widget.allowSeeking
           // ? _sliderThemeData.copyWith(
@@ -468,7 +527,7 @@ class __PlaybackProgressSliderState extends ConsumerState<_PlaybackProgressSlide
               }
             : (_) {},
         autofocus: false,
-        focusNode: FocusNode(skipTraversal: true, canRequestFocus: false),
+        focusNode: _sliderFocusNode,
       ),
     );
   }
