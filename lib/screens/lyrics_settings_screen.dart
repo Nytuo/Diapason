@@ -34,6 +34,8 @@ class _LyricsSettingsScreenState extends State<LyricsSettingsScreen> {
           ShowLyricsScreenAlbumPreludeToggle(),
           LyricsAlignmentSelector(),
           LyricsFontSizeSelector(),
+          WordSyncedLyricsToggle(),
+          NeteaseLyricsToggle(),
         ],
       ),
     );
@@ -50,6 +52,38 @@ class ShowLyricsTimestampsToggle extends ConsumerWidget {
       subtitle: Text(AppLocalizations.of(context)!.showLyricsTimestampsSubtitle),
       value: ref.watch(finampSettingsProvider.showLyricsTimestamps),
       onChanged: FinampSetters.setShowLyricsTimestamps,
+    );
+  }
+}
+
+class WordSyncedLyricsToggle extends ConsumerWidget {
+  const WordSyncedLyricsToggle({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SwitchListTile.adaptive(
+      title: const Text("Word-by-word lyrics"),
+      subtitle: const Text(
+        "When your server only has line lyrics, look for word-timed ones in the community AMLL lyrics database.",
+      ),
+      value: ref.watch(finampSettingsProvider.wordSyncedLyricsEnabled),
+      onChanged: FinampSetters.setWordSyncedLyricsEnabled,
+    );
+  }
+}
+
+class NeteaseLyricsToggle extends ConsumerWidget {
+  const NeteaseLyricsToggle({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SwitchListTile.adaptive(
+      title: const Text("Word-by-word lyrics from NetEase"),
+      subtitle: const Text(
+        "Covers far more songs. Sends the title and artist of what you play to NetEase Cloud Music (unofficial).",
+      ),
+      value: ref.watch(finampSettingsProvider.neteaseLyricsEnabled),
+      onChanged: FinampSetters.setNeteaseLyricsEnabled,
     );
   }
 }

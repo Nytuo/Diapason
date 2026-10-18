@@ -26,6 +26,7 @@ import 'package:diapason/services/jellyfin_api_helper.dart';
 import 'package:diapason/services/music_player_background_task.dart';
 import 'package:diapason/services/playback_history_service.dart';
 import 'package:diapason/services/radio_service_helper.dart';
+import 'package:diapason/services/connect/remote_playback.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
@@ -722,6 +723,42 @@ class QueueService {
 
   Future<void> startSlicePlayback(PlayableSlice slice) async => _startSlicePlayback(slice: slice);
 
+  /// Loads a queue exactly as another device has it (Diapason Connect): the same tracks, current track, position,
+  /// shuffle order and Next Up. With [beginPlaying] off it only mirrors it, for showing a device we control.
+  Future<void> startMirroredPlayback({
+    required List<jellyfin_models.BaseItemDto> items,
+    required int index,
+    required QueueItemSource source,
+    List<int>? shuffleOrder,
+    int nextUpLength = 0,
+    Duration position = Duration.zero,
+    FinampLoopMode? loop,
+    bool beginPlaying = true,
+  }) async {
+    if (items.isEmpty) return;
+    final start = index.clamp(0, items.length - 1);
+    await _replaceWholeQueue(
+      itemList: items,
+      source: source,
+      initialIndex: start,
+      nextUpLength: nextUpLength.clamp(0, items.length - start - 1),
+      shuffleOrder: shuffleOrder,
+      initialSeekPosition: position,
+      order: shuffleOrder == null ? FinampPlaybackOrder.linear : FinampPlaybackOrder.shuffled,
+      beginPlaying: beginPlaying,
+      skipRadioCacheInvalidation: !beginPlaying,
+    );
+    if (loop != null && loop != _loopMode) {
+      if (beginPlaying) {
+        loopMode = loop;
+      } else {
+        // Only shown, not applied: the local player is not the one playing, and this is not the user's choice here.
+        _loopMode = loop;
+        _loopModeStream.add(loop);
+      }
+    }
+  }
+
   Future<void> _startSlicePlayback({required PlayableSlice slice, bool beginPlaying = true}) async {
     switch (slice) {
       case BasePlayableSlice():
@@ -793,6 +830,15 @@ class QueueService {
     bool isRestoredQueue = false,
     bool skipRadioCacheInvalidation = false,
   }) async {
+    // Controlling another device: whatever the user starts plays there.
+    if (beginPlaying && !isRestoredQueue && RemotePlayback.isForwarding && itemList.isNotEmpty) {
+      return RemotePlayback.current!.playItems(
+        itemList.map((item) => item.toJson()).toList(),
+        startIndex: initialIndex ?? (order == FinampPlaybackOrder.shuffled ? Random().nextInt(itemList.length) : 0),
+        shuffleOrder: shuffleOrder,
+        shuffle: order == FinampPlaybackOrder.shuffled,
+      );
+    }
     if (trackSources != null) {
       if (trackSources.length != itemList.length) {
         _queueServiceLogger.severe(
@@ -1007,6 +1053,10 @@ class QueueService {
   }
 
   Future<void> addToQueue(PlayableSlice slice) async {
+    if (RemotePlayback.isForwarding) {
+      final items = (await slice.resolve(preShuffle: true)).items;
+      return RemotePlayback.current!.queueCommand("addToQueue", {"items": items.map((item) => item.toJson()).toList()});
+    }
     if (_audioHandler.audioSources.isEmpty) {
       return _startSlicePlayback(slice: slice, beginPlaying: false);
     }
@@ -1042,6 +1092,10 @@ class QueueService {
   }
 
   Future<void> addNext(PlayableSlice slice) async {
+    if (RemotePlayback.isForwarding) {
+      final items = (await slice.resolve(preShuffle: true)).items;
+      return RemotePlayback.current!.queueCommand("addNext", {"items": items.map((item) => item.toJson()).toList()});
+    }
     if (_audioHandler.audioSources.isEmpty) {
       return _startSlicePlayback(slice: slice, beginPlaying: false);
     }
@@ -1078,6 +1132,12 @@ class QueueService {
   }
 
   Future<void> addToNextUp(PlayableSlice slice) async {
+    if (RemotePlayback.isForwarding) {
+      final items = (await slice.resolve(preShuffle: true)).items;
+      return RemotePlayback.current!.queueCommand("addToNextUp", {
+        "items": items.map((item) => item.toJson()).toList(),
+      });
+    }
     if (_audioHandler.audioSources.isEmpty) {
       return _startSlicePlayback(slice: slice, beginPlaying: false);
     }
@@ -1170,10 +1230,12 @@ class QueueService {
   }
 
   Future<void> skipByOffset(int offset) async {
+    if (RemotePlayback.isForwarding) return RemotePlayback.current!.skipByOffset(offset);
     await _audioHandler.skipByOffset(offset);
   }
 
   Future<void> removeAtOffset(int offset) async {
+    if (RemotePlayback.isForwarding) return RemotePlayback.current!.queueCommand("removeAt", {"offset": offset});
     int adjustedQueueIndex = getActualIndexByLinearIndex(_currentQueueIndex + offset);
 
     await _audioHandler.removeFinampQueueItemAt(adjustedQueueIndex);
@@ -1229,6 +1291,9 @@ class QueueService {
   }
 
   Future<void> reorderByOffset(int oldOffset, int newOffset) async {
+    if (RemotePlayback.isForwarding) {
+      return RemotePlayback.current!.queueCommand("reorder", {"from": oldOffset, "to": newOffset});
+    }
     _queueServiceLogger.fine("Reordering queue item at offset $oldOffset to offset $newOffset");
 
     if (playbackOrder == FinampPlaybackOrder.shuffled) {
@@ -1255,6 +1320,7 @@ class QueueService {
   }
 
   Future<void> clearNextUp() async {
+    if (RemotePlayback.isForwarding) return RemotePlayback.current!.queueCommand("clearNextUp");
     int adjustedQueueIndex = getActualIndexByLinearIndex(_currentQueueIndex);
 
     // remove all items from Next Up
@@ -1375,6 +1441,12 @@ class QueueService {
   double get playbackPitch => _playbackPitch;
 
   set loopMode(FinampLoopMode mode) {
+    if (RemotePlayback.isForwarding) {
+      _loopMode = mode;
+      _loopModeStream.add(mode);
+      unawaited(RemotePlayback.current!.queueCommand("repeat", {"mode": mode.name}));
+      return;
+    }
     _loopMode = mode;
 
     _loopModeStream.add(mode);
@@ -1399,6 +1471,11 @@ class QueueService {
   FinampLoopMode get loopMode => _loopMode;
 
   Future<void> setPlaybackOrder(FinampPlaybackOrder order, {List<int>? shuffleOrder}) async {
+    if (RemotePlayback.isForwarding) {
+      _playbackOrder = order;
+      _playbackOrderStream.add(order);
+      return RemotePlayback.current!.queueCommand("shuffle", {"on": order == FinampPlaybackOrder.shuffled});
+    }
     _playbackOrder = order;
     _queueServiceLogger.fine("Playback order set to $order");
 

@@ -110,6 +110,8 @@ class FinampSettingsHelper {
     finampSettingsTemp.showLyricsScreenAlbumPrelude = DefaultSettings.showLyricsScreenAlbumPrelude;
     finampSettingsTemp.lyricsAlignment = DefaultSettings.lyricsAlignment;
     finampSettingsTemp.lyricsFontSize = DefaultSettings.lyricsFontSize;
+    finampSettingsTemp.wordSyncedLyricsEnabled = DefaultSettings.wordSyncedLyricsEnabled;
+    finampSettingsTemp.neteaseLyricsEnabled = DefaultSettings.neteaseLyricsEnabled;
 
     Hive.box<FinampSettings>("FinampSettings").put("FinampSettings", finampSettingsTemp);
   }

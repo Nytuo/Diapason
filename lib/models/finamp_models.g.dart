@@ -552,13 +552,20 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..youtubeSearchByDefault = fields[195] == null
           ? false
           : fields[195] as bool
-      ..logLevel = fields[196] == null ? 'all' : fields[196] as String;
+      ..logLevel = fields[196] == null ? 'all' : fields[196] as String
+      ..automixEnabled = fields[197] == null ? false : fields[197] as bool
+      ..wordSyncedLyricsEnabled = fields[198] == null
+          ? true
+          : fields[198] as bool
+      ..neteaseLyricsEnabled = fields[199] == null
+          ? false
+          : fields[199] as bool;
   }
 
   @override
   void write(BinaryWriter writer, FinampSettings obj) {
     writer
-      ..writeByte(189)
+      ..writeByte(192)
       ..writeByte(0)
       ..write(obj.isOffline)
       ..writeByte(1)
@@ -936,7 +943,13 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..writeByte(195)
       ..write(obj.youtubeSearchByDefault)
       ..writeByte(196)
-      ..write(obj.logLevel);
+      ..write(obj.logLevel)
+      ..writeByte(197)
+      ..write(obj.automixEnabled)
+      ..writeByte(198)
+      ..write(obj.wordSyncedLyricsEnabled)
+      ..writeByte(199)
+      ..write(obj.neteaseLyricsEnabled);
   }
 
   @override

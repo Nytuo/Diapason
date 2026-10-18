@@ -1,6 +1,5 @@
+import 'package:diapason/services/uploader/youtube_library_import.dart';
 import 'package:diapason/services/uploader/uploader_client.dart';
-import 'package:diapason/services/youtube_service.dart';
-import 'package:diapason/services/youtube/youtube_availability.dart';
 import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
@@ -919,15 +918,11 @@ class DownloadsService {
       final file = item.file;
       if (baseItem == null || file == null) return;
 
-      // With the yt-dlp proxy on, the server can fetch the track itself — don't
-      // push the bytes back up from the phone.
-      if (baseItem.id.sourceId == YouTubeService.sourceId &&
-          GetIt.instance<YouTubeService>().source == YouTubeSource.uploader) {
-        await uploader.ytDownloadToLibrary(
-          baseItem.id.nativeId,
-          artist: baseItem.albumArtist ?? baseItem.artists?.firstOrNull,
-          title: baseItem.name,
-        );
+      // A downloaded YouTube track is one the user keeps: put it in the library. If the uploader runs yt-dlp it
+      // fetches the track itself rather than this device sending the bytes back up.
+      if (YouTubeLibraryImport.isYouTube(baseItem)) {
+        final result = await GetIt.instance<YouTubeLibraryImport>().addToLibrary(baseItem, file: file, automatic: true);
+        if (!result.ok) _downloadsLogger.info("Not added to the library: ${baseItem.name}: ${result.message}");
         return;
       }
 

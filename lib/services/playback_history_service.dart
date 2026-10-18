@@ -1,3 +1,4 @@
+import 'package:diapason/services/connect/remote_playback.dart';
 import 'package:diapason/models/music_slices.dart';
 import 'package:diapason/services/discovery/auto_radio_service.dart';
 import 'package:diapason/services/stats/stats_service.dart';
@@ -83,6 +84,11 @@ class PlaybackHistoryService {
     });
 
     _audioService.playbackState.listen((event) {
+      // Mirroring a device we control over Diapason Connect: that device reports its own playback.
+      if (RemotePlayback.current?.active ?? false) {
+        _previousPlaybackState = null;
+        return;
+      }
       final prevState = _previousPlaybackState;
       final prevItem = _currentTrack?.item;
       final currentState = event;

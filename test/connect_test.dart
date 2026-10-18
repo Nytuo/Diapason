@@ -62,13 +62,9 @@ void main() {
     expect(received[2].volume, 0.5);
   });
 
-  test("accepts a pushed queue", () async {
-    List<Map<String, dynamic>>? songs;
-    int? startIndex;
-    service.onPlayQueue = (s, i) {
-      songs = s;
-      startIndex = i;
-    };
+  test("accepts a queue pushed by an older device (bare ids)", () async {
+    ConnectQueue? queue;
+    service.onPlayQueue = (q) => queue = q;
 
     await http.post(
       endpoint("play-queue"),
@@ -81,9 +77,104 @@ void main() {
       }),
     );
 
-    expect(songs, hasLength(2));
-    expect(songs!.first["id"], "jf-1~a");
-    expect(startIndex, 1);
+    expect(queue!.items, hasLength(2));
+    expect(queue!.items.first["Id"], "jf-1~a");
+    expect(queue!.index, 1);
+    expect(queue!.playing, isTrue);
+  });
+
+  test("accepts a whole queue: tracks, position, shuffle order and Next Up", () async {
+    ConnectQueue? queue;
+    service.onPlayQueue = (q) => queue = q;
+
+    const sent = ConnectQueue(
+      items: [
+        {"Id": "jf-1~a", "Name": "A"},
+        {"Id": "jf-1~b", "Name": "B"},
+        {"Id": "jf-1~c", "Name": "C"},
+      ],
+      index: 2,
+      position: 61.5,
+      shuffleOrder: [2, 0, 1],
+      nextUpLength: 0,
+      playing: false,
+      repeat: "all",
+    );
+    await http.post(endpoint("play-queue"), body: jsonEncode(sent.toJson()));
+
+    expect(queue!.items.map((i) => i["Name"]), ["A", "B", "C"]);
+    expect(queue!.index, 2);
+    expect(queue!.position, 61.5);
+    expect(queue!.shuffleOrder, [2, 0, 1]);
+    expect(queue!.playing, isFalse);
+    expect(queue!.repeat, "all");
+    expect(queue!.version, sent.version);
+  });
+
+  test("serves its queue for a controller to mirror", () async {
+    service.queueProvider = () => const ConnectQueue(
+      items: [
+        {"Id": "jf-1~a"},
+        {"Id": "jf-1~b"},
+      ],
+      index: 1,
+      position: 12,
+    );
+
+    final response = await http.get(endpoint("queue"));
+    final queue = ConnectQueue.tryParse(jsonDecode(response.body) as Map<String, dynamic>)!;
+
+    expect(queue.items, hasLength(2));
+    expect(queue.index, 1);
+    expect(queue.position, 12);
+  });
+
+  test("queue versions change with the tracks and the shuffle, not with time", () {
+    final a = ConnectQueue.versionOf(["x", "y"], null);
+    expect(ConnectQueue.versionOf(["x", "y"], null), a);
+    expect(ConnectQueue.versionOf(["y", "x"], null), isNot(a));
+    expect(ConnectQueue.versionOf(["x", "y"], [1, 0]), isNot(a));
+    expect(ConnectQueue.versionOf(["x", "y", "z"], null), isNot(a));
+  });
+
+  test("queue commands carry their arguments", () async {
+    final received = <ConnectCommand>[];
+    service.onCommand = received.add;
+
+    await http.post(
+      endpoint("command"),
+      body: jsonEncode(
+        const ConnectCommand("reorder", args: {"from": 2, "to": 5}).toJson(),
+      ),
+    );
+
+    expect(received.single.action, "reorder");
+    expect(received.single.args, {"from": 2, "to": 5});
+  });
+
+  test("controlling another device: status is polled and commands reach it", () async {
+    final other = ConnectService();
+    await other.start(deviceName: "Other");
+    addTearDown(other.stop);
+    final received = <ConnectCommand>[];
+    other.onCommand = received.add;
+    other.localStatusProvider = () => const ConnectStatus(state: "playing", position: 3, volume: 0.4, queueVersion: "v1");
+
+    final device = ConnectDevice(name: "Other", baseUrl: other.serverUrl!);
+    expect(await service.connect(device), isTrue);
+    expect(service.connectedDevice.value, device);
+    expect(service.remoteStatus.value!.queueVersion, "v1");
+    expect(service.remoteStatus.value!.volume, 0.4);
+
+    await service.sendCommand("skipBy", args: {"offset": 2});
+    expect(received.single.action, "skipBy");
+    expect(received.single.args["offset"], 2);
+  });
+
+  test("a device that does not answer cannot be connected to", () async {
+    final ok = await service.connect(const ConnectDevice(name: "Gone", baseUrl: "http://127.0.0.1:1/x/connect"));
+    expect(ok, isFalse);
+    expect(service.connectedDevice.value, isNull);
   });
 
   test("serves a library to companions that have none of their own", () async {

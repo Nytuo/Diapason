@@ -38,7 +38,17 @@ class ConnectService {
 
   void Function(ConnectCommand command)? onCommand;
 
-  void Function(List<Map<String, dynamic>> songs, int startIndex)? onPlayQueue;
+  /// Another device sent us a queue to play.
+  void Function(ConnectQueue queue)? onPlayQueue;
+
+  /// Our queue, for a controller to mirror.
+  ConnectQueue Function()? queueProvider;
+
+  /// Called when the device we control stopped answering and we let go of it.
+  void Function(ConnectDevice device)? onConnectionLost;
+
+  int _failedPolls = 0;
+  static const _maxFailedPolls = 4;
 
   Future<List<Map<String, dynamic>>> Function()? libraryProvider;
 
@@ -62,8 +72,12 @@ class ConnectService {
     return List.generate(24, (_) => chars[rng.nextInt(chars.length)]).join();
   }
 
+  /// The name we advertise ourselves as.
+  String deviceName = "Diapason";
+
   Future<void> start({String deviceName = "Diapason"}) async {
     if (_server != null) return;
+    this.deviceName = deviceName;
 
     _token = _randomToken();
     _localAddress = await _bestLocalAddress();
@@ -138,6 +152,12 @@ class ConnectService {
           ..headers.contentType = ContentType.json
           ..write(jsonEncode(status.toJson()));
 
+      case ("GET", "queue"):
+        final queue = queueProvider?.call() ?? const ConnectQueue(items: [], index: 0, position: 0);
+        response
+          ..headers.contentType = ContentType.json
+          ..write(jsonEncode(queue.toJson()));
+
       case ("GET", "library"):
         final tracks = await libraryProvider?.call() ?? const <Map<String, dynamic>>[];
         response
@@ -151,10 +171,16 @@ class ConnectService {
 
       case ("POST", "play-queue"):
         final body = await _readJson(request);
-        final songs = (body?["songs"] as List<dynamic>?)?.cast<Map<String, dynamic>>();
-        if (songs != null) {
-          onPlayQueue?.call(songs, (body?["startIndex"] as num?)?.toInt() ?? 0);
-        }
+        final queue =
+            ConnectQueue.tryParse(body) ??
+            // Devices from before queue mirroring send {songs: [{id, ...}], startIndex}.
+            ConnectQueue.tryParse({
+              "items": [
+                for (final song in (body?["songs"] as List<dynamic>? ?? const []).whereType<Map>()) {"Id": song["id"]},
+              ],
+              "index": body?["startIndex"] ?? 0,
+            });
+        if (queue != null && !queue.isEmpty) onPlayQueue?.call(queue);
         response.write("ok");
 
       case ("POST", "import-sources"):
@@ -236,14 +262,48 @@ class ConnectService {
 
   bool _isNotUs(ConnectDevice device) => !device.baseUrl.contains("/$_token/");
 
-  Future<void> connect(ConnectDevice device) async {
+  /// Starts controlling [device]. False when it does not answer.
+  Future<bool> connect(ConnectDevice device) async {
+    final status = await fetchStatus(device);
+    if (status == null) return false;
+
+    _failedPolls = 0;
+    remoteStatus.value = status;
     connectedDevice.value = device;
     await _register(device);
 
     _pollTimer?.cancel();
     _pollTimer = Timer.periodic(_pollInterval, (_) => _pollStatus());
-    await _pollStatus();
+    return true;
   }
+
+  Future<ConnectStatus?> fetchStatus(ConnectDevice device) async {
+    try {
+      final response = await _http.get(device.endpoint("status")).timeout(const Duration(seconds: 4));
+      if (response.statusCode != 200) return null;
+      return ConnectStatus.fromJson(jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>);
+    } catch (e) {
+      _log.fine("Could not reach ${device.name}: $e");
+      return null;
+    }
+  }
+
+  /// The controlled device's whole queue; null when unreachable or too old to share it.
+  Future<ConnectQueue?> fetchQueue() async {
+    final device = connectedDevice.value;
+    if (device == null) return null;
+    try {
+      final response = await _http.get(device.endpoint("queue")).timeout(const Duration(seconds: 8));
+      if (response.statusCode != 200) return null;
+      return ConnectQueue.tryParse(jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>);
+    } catch (e) {
+      _log.fine("Could not fetch the queue of ${device.name}: $e");
+      return null;
+    }
+  }
+
+  /// Polls right away instead of waiting for the next tick, e.g. after a command.
+  Future<void> refresh() => _pollStatus();
 
   void disconnect() {
     _pollTimer?.cancel();
@@ -255,38 +315,50 @@ class ConnectService {
   Future<void> _register(ConnectDevice device) async {
     final url = serverUrl;
     if (url == null) return;
-    await _post(device.endpoint("register"), {"name": "Diapason", "url": url});
+    await _post(device.endpoint("register"), {"name": deviceName, "url": url});
   }
 
   Future<void> _pollStatus() async {
     final device = connectedDevice.value;
     if (device == null) return;
 
-    try {
-      final response = await _http.get(device.endpoint("status")).timeout(const Duration(seconds: 4));
-      if (response.statusCode != 200) return;
-      remoteStatus.value = ConnectStatus.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
-    } catch (e) {
-      _log.fine("Could not reach ${device.name}: $e");
+    final status = await fetchStatus(device);
+    if (connectedDevice.value != device) return;
+    if (status != null) {
+      _failedPolls = 0;
+      remoteStatus.value = status;
+      return;
+    }
+    if (++_failedPolls >= _maxFailedPolls) {
+      _log.warning("${device.name} stopped answering; disconnecting");
+      disconnect();
+      onConnectionLost?.call(device);
     }
   }
 
-  Future<void> sendCommand(String action, {double? position, double? volume}) async {
+  Future<void> sendCommand(
+    String action, {
+    double? position,
+    double? volume,
+    Map<String, dynamic> args = const {},
+  }) async {
     final device = connectedDevice.value;
     if (device == null) return;
 
-    await _post(device.endpoint("command"), ConnectCommand(action, position: position, volume: volume).toJson());
+    await _post(
+      device.endpoint("command"),
+      ConnectCommand(action, position: position, volume: volume, args: args).toJson(),
+    );
     await _pollStatus();
   }
 
-  Future<void> castQueue(List<ConnectSong> songs, {int startIndex = 0}) async {
+  /// Replaces the controlled device's queue and starts it.
+  Future<void> playQueue(ConnectQueue queue) async {
     final device = connectedDevice.value;
     if (device == null) return;
 
-    await _post(device.endpoint("play-queue"), {
-      "songs": songs.map((s) => s.toJson()).toList(),
-      "startIndex": startIndex,
-    });
+    await _post(device.endpoint("play-queue"), queue.toJson(), timeout: const Duration(seconds: 10));
+    await _pollStatus();
   }
 
   /// Offers [sources] to [device], to land in its profile [profileName]. True when the device took the offer to ask
@@ -312,11 +384,9 @@ class ConnectService {
     }
   }
 
-  Future<void> _post(Uri url, Map<String, dynamic> body) async {
+  Future<void> _post(Uri url, Map<String, dynamic> body, {Duration timeout = const Duration(seconds: 4)}) async {
     try {
-      await _http
-          .post(url, headers: {"Content-Type": "application/json"}, body: jsonEncode(body))
-          .timeout(const Duration(seconds: 4));
+      await _http.post(url, headers: {"Content-Type": "application/json"}, body: jsonEncode(body)).timeout(timeout);
     } catch (e) {
       _log.fine("Connect POST to $url failed: $e");
     }

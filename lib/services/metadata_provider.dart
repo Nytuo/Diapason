@@ -1,8 +1,7 @@
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
-import 'package:diapason/services/lyrics/lrc_parser.dart';
-import 'package:diapason/services/lyrics/lrclib_client.dart';
+import 'package:diapason/services/lyrics/lyrics_sources.dart';
 import 'package:collection/collection.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +26,9 @@ class MetadataProvider {
   final PlaybackInfoResponse playbackInfo;
   final BaseItemDto item;
   LyricDto? lyrics;
+
+  /// Where [lyrics] came from and how synced they are.
+  LyricsOption? lyricsOption;
   bool isDownloaded;
   bool qualifiesForPlaybackSpeedControl;
   double? parentNormalizationGain;
@@ -251,6 +253,9 @@ final AutoDisposeFutureProviderFamily<MetadataProvider?, BaseItemDto> metadataPr
           final downloadedLyrics = await downloadsService.getLyricsDownload(baseItem: item);
           if (downloadedLyrics != null) {
             metadata.lyrics = downloadedLyrics.lyricDto;
+            if (metadata.lyrics != null) {
+              metadata.lyricsOption = LyricsOption(origin: LyricsOrigin.downloaded, lyrics: metadata.lyrics!);
+            }
             metadataProviderLogger.fine("Got offline lyrics for '${item.name}'");
           } else {
             metadataProviderLogger.fine("No offline lyrics for '${item.name}'");
@@ -258,37 +263,11 @@ final AutoDisposeFutureProviderFamily<MetadataProvider?, BaseItemDto> metadataPr
         }
       } else {
         try {
-          metadata.lyrics = await GetIt.instance<AggregateBackend>().getLyrics(item);
+          final option = await GetIt.instance<LyricsSources>().automatic(item);
+          metadata.lyricsOption = option;
+          metadata.lyrics = option?.lyrics;
         } catch (e) {
           metadataProviderLogger.warning("Failed to fetch lyrics for '${item.name}' (${item.id})", e);
-        }
-
-        if (!LrcParser.isSynced(metadata.lyrics)) {
-          final hadUnsynced = metadata.lyrics != null;
-
-          final artists = <String>{
-            ...?item.artists,
-            if (item.albumArtist != null) item.albumArtist!,
-          }.where((artist) => artist.trim().isNotEmpty);
-
-          for (final artist in artists) {
-            final fromLrclib = await GetIt.instance<LrclibClient>().fetch(
-              title: item.name ?? "",
-              artist: artist,
-              album: item.album,
-              duration: item.runTimeTicksDuration(),
-              syncedOnly: hadUnsynced,
-            );
-            if (fromLrclib != null) {
-              metadata.lyrics = fromLrclib;
-              metadataProviderLogger.fine(
-                hadUnsynced
-                    ? "Upgraded '${item.name}' to synced lyrics from LRCLIB"
-                    : "Got lyrics for '${item.name}' from LRCLIB (as '$artist')",
-              );
-              break;
-            }
-          }
         }
       }
 

@@ -1,3 +1,4 @@
+import 'package:diapason/services/uploader/youtube_library_import.dart';
 import 'dart:async';
 
 import 'package:diapason/components/confirmation_prompt_dialog.dart';
@@ -200,6 +201,24 @@ Future<bool> addItemsToPlaylist(BuildContext context, List<BaseItemDto> items, B
       getAlbumOrPlaylistTracksProvider(items.first).future,
     );
     items = children.$1;
+  }
+
+  // YouTube tracks can't go in a library playlist as they are: they go into the library first (through the
+  // uploader), then into the playlist once the server has them.
+  final youtube = items.where(YouTubeLibraryImport.isYouTube).toList();
+  if (youtube.isNotEmpty) {
+    final importer = GetIt.instance<YouTubeLibraryImport>();
+    if (!importer.available) {
+      throw Exception("YouTube tracks need the uploader to go into a playlist. Set it up in Settings first.");
+    }
+    unawaited(importer.addToPlaylist(parent, youtube));
+    items = items.where((item) => !YouTubeLibraryImport.isYouTube(item)).toList();
+    GlobalSnackbar.message(
+      (_) => youtube.length == 1
+          ? "Adding '${youtube.first.name}' to your library first. It goes into ${parent.name} once the server has it."
+          : "Adding ${youtube.length} YouTube tracks to your library first. They go into ${parent.name} once the server has them.",
+    );
+    if (items.isEmpty) return true;
   }
 
   //TODO request server to return the new playlist item id

@@ -136,3 +136,5 @@ app.*.map.json
 
 # Integration testing artifacts
 integration_test/testing
+
+automix_preview/

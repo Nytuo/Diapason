@@ -1,3 +1,5 @@
+import 'package:diapason/services/youtube_service.dart';
+import 'package:diapason/services/uploader/youtube_library_import.dart';
 import 'dart:async';
 
 import 'package:diapason/models/finamp_models.dart';
@@ -92,6 +94,24 @@ class _NewPlaylistDialogState extends State<NewPlaylistDialog> {
           );
           if (playlist == null) {
             throw Exception("No source is available that supports playlists.");
+          }
+
+          // YouTube tracks go into the library first, then into the new playlist.
+          final youtubeIds = widget.itemsToAdd.where((id) => id.sourceId == YouTubeService.sourceId).toList();
+          if (youtubeIds.isNotEmpty) {
+            final importer = GetIt.instance<YouTubeLibraryImport>();
+            if (importer.available) {
+              unawaited(() async {
+                final tracks = [
+                  for (final id in youtubeIds) await GetIt.instance<YouTubeService>().videoById(id.nativeId),
+                ].nonNulls.toList();
+                await importer.addToPlaylist(playlist, tracks);
+              }());
+            } else {
+              GlobalSnackbar.message(
+                (_) => "YouTube tracks need the uploader to go into a playlist. Set it up in Settings first.",
+              );
+            }
           }
 
           GlobalSnackbar.message((scaffold) => AppLocalizations.of(scaffold)!.playlistCreated, isConfirmation: true);

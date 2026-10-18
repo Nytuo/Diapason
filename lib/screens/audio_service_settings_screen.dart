@@ -41,6 +41,7 @@ class _AudioServiceSettingsScreenState extends State<AudioServiceSettingsScreen>
         padding: const EdgeInsets.only(bottom: 200.0),
         children: [
           const _CrossfadeSelector(),
+          const _AutomixToggle(),
           if (Platform.isAndroid) const StopForegroundSelector(),
           if (Platform.isAndroid) const EnableDuckingOnInterruptionsToggle(),
           if (Platform.isAndroid) const ForceAudioOffloadingOnAndroidToggle(),
@@ -296,6 +297,25 @@ class ForceAudioOffloadingOnAndroidToggle extends ConsumerWidget {
       onChanged: (newValue) async {
         FinampSetters.setForceAudioOffloadingOnAndroid(newValue);
       },
+    );
+  }
+}
+
+class _AutomixToggle extends ConsumerWidget {
+  const _AutomixToggle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SwitchListTile.adaptive(
+      secondary: const Icon(TablerIcons.wand),
+      title: const Text("Automix"),
+      subtitle: const Text(
+        "Mixes tracks like a DJ: listens to the end of each track and the start of the next, finds their tempo "
+        "and bars, then lines the beats up and time-stretches the next track to match. Tracks without a clear "
+        "beat get a smart crossfade that skips silence. An album's consecutive tracks stay gapless.",
+      ),
+      value: ref.watch(finampSettingsProvider.automixEnabled),
+      onChanged: FinampSetters.setAutomixEnabled,
     );
   }
 }

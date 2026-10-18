@@ -1,3 +1,4 @@
+import 'package:diapason/services/uploader/youtube_library_import.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
@@ -22,6 +23,9 @@ import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:diapason/services/backends/media_source_service.dart';
 import 'package:diapason/services/lyrics/lrclib_client.dart';
+import 'package:diapason/services/lyrics/word_synced_lyrics_client.dart';
+import 'package:diapason/services/automix/track_analysis_service.dart';
+import 'package:diapason/services/lyrics/lyrics_sources.dart';
 import 'package:diapason/services/cast/cast_service.dart';
 import 'package:diapason/services/transfer/desktop_transfer_service.dart';
 import 'package:diapason/services/transfer/import_service.dart';
@@ -294,8 +298,13 @@ Future<void> _setupMediaSources() async {
   GetIt.instance.registerSingleton(BackendRegistry());
   GetIt.instance.registerSingleton(AggregateBackend());
   GetIt.instance.registerSingleton(LrclibClient());
+  GetIt.instance.registerSingleton(WordSyncedLyricsClient());
+  GetIt.instance.registerSingleton(TrackAnalysisService());
+  GetIt.instance.registerSingleton(LyricsSources());
   GetIt.instance.registerSingleton(StreamCacheService());
   GetIt.instance.registerSingleton(UploaderClient());
+  GetIt.instance.registerSingleton(YouTubeLibraryImport());
+  unawaited(GetIt.instance<YouTubeLibraryImport>().start());
   GetIt.instance.registerSingleton(LocalYtDlpService());
   GetIt.instance.registerSingleton(YouTubeAvailability());
   GetIt.instance.registerSingleton(YouTubeService());

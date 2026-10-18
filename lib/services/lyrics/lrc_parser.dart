@@ -1,9 +1,13 @@
 import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/services/lyrics/word_sync_parser.dart';
 
 class LrcParser {
   static final _line = RegExp(r"\[(\d+):(\d+)(?:[.:](\d+))?\](.*)");
 
   static LyricDto? parse(String content) {
+    final enhanced = WordSyncParser.parseEnhancedLrc(content);
+    if (enhanced != null) return enhanced;
+
     final lines = <LyricLine>[];
 
     for (final raw in content.split("\n")) {

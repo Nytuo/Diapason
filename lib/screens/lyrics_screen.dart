@@ -10,7 +10,10 @@ import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/main.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/components/lyrics_source_chip.dart';
 import 'package:diapason/services/current_track_metadata_provider.dart';
+import 'package:diapason/services/lyrics/lyrics_sources.dart';
+import 'package:diapason/services/metadata_provider.dart';
 import 'package:diapason/services/feedback_helper.dart';
 import 'package:diapason/services/music_player_background_task.dart';
 import 'package:diapason/services/progress_state_stream.dart';
@@ -259,7 +262,7 @@ class _LyricsViewState extends ConsumerState<LyricsView> with WidgetsBindingObse
   }
 
   // Only call while within build()
-  Widget _getEmptyState({required String message, required IconData icon}) {
+  Widget _getEmptyState({required String message, required IconData icon, MetadataProvider? metadata}) {
     return Center(
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -276,6 +279,10 @@ class _LyricsViewState extends ConsumerState<LyricsView> with WidgetsBindingObse
               Icon(icon, size: 32, color: Theme.of(context).textTheme.headlineMedium!.color),
               const SizedBox(height: 12),
               Text(message, style: TextStyle(color: Theme.of(context).textTheme.headlineMedium!.color, fontSize: 16)),
+              if (metadata != null) ...[
+                const SizedBox(height: 16),
+                LyricsSourceChip(item: metadata.item, automatic: metadata.lyricsOption, shown: null),
+              ],
             ],
           );
         },
@@ -287,7 +294,11 @@ class _LyricsViewState extends ConsumerState<LyricsView> with WidgetsBindingObse
   Widget build(BuildContext context) {
     //!!! use unwrapPrevious() to prevent getting previous values. If we don't have the lyrics for the current track yet, we want to show the loading state, and not the lyrics for the previous track
     final metadata = ref.watch(currentTrackMetadataProvider).unwrapPrevious();
-    lyrics = metadata.valueOrNull?.lyrics?.lyrics;
+    final item = metadata.valueOrNull?.item;
+    // The source the user picked in the lyrics source menu, else the automatic one.
+    final chosen = item == null ? null : ref.watch(chosenLyricsProvider(item.id));
+    final shown = chosen ?? metadata.valueOrNull?.lyricsOption;
+    lyrics = chosen?.lyrics.lyrics ?? metadata.valueOrNull?.lyrics?.lyrics;
     if (!_isSynchronizedLyrics) {
       currentLineNotifier.value = null;
     }
@@ -297,17 +308,22 @@ class _LyricsViewState extends ConsumerState<LyricsView> with WidgetsBindingObse
         message: AppLocalizations.of(context)!.lyricsEmptyStateLoading,
         icon: TablerIcons.microphone_2,
       );
-    } else if (!metadata.hasValue ||
-        metadata.value == null ||
-        metadata.value!.hasLyrics && metadata.value!.lyrics == null && !metadata.isLoading) {
+    } else if (!metadata.hasValue || metadata.value == null) {
       return _getEmptyState(
         message: AppLocalizations.of(context)!.lyricsEmptyStateFailed,
         icon: TablerIcons.microphone_2_off,
       );
-    } else if (!metadata.value!.hasLyrics) {
+    } else if (chosen == null && metadata.value!.hasLyrics && metadata.value!.lyrics == null && !metadata.isLoading) {
+      return _getEmptyState(
+        message: AppLocalizations.of(context)!.lyricsEmptyStateFailed,
+        icon: TablerIcons.microphone_2_off,
+        metadata: metadata.value,
+      );
+    } else if (chosen == null && !metadata.value!.hasLyrics) {
       return _getEmptyState(
         message: AppLocalizations.of(context)!.lyricsEmptyStateNoLyrics,
         icon: TablerIcons.microphone_2_off,
+        metadata: metadata.value,
       );
     } else {
       // We have lyrics that we can display
@@ -402,6 +418,18 @@ class _LyricsViewState extends ConsumerState<LyricsView> with WidgetsBindingObse
                     ),
                   ),
                 ),
+                Positioned(
+                  top: 4,
+                  left: 0,
+                  right: 8,
+                  child: Center(
+                    child: LyricsSourceChip(
+                      item: metadata.value!.item,
+                      automatic: metadata.value!.lyricsOption,
+                      shown: shown,
+                    ),
+                  ),
+                ),
                 if (_isSynchronizedLyrics)
                   Positioned(
                     bottom: 24,
@@ -467,9 +495,11 @@ class _LyricLine extends ConsumerWidget {
         : Theme.of(context).colorScheme.primary;
     // final cueHighlightStyle = currentLineStyle.copyWith(color: Theme.of(context).colorScheme.primary);
     final cueHighlightStyle = currentLineStyle.copyWith(color: highlightColor);
-    final cueGreyStyle = currentLineStyle.copyWith(color: Colors.white);
+    // Words not sung yet: the line's own colour, dimmed (plain white vanished on light backgrounds).
+    final unsungColor = currentLineStyle.color!.withValues(alpha: 0.55);
+    final cueGreyStyle = currentLineStyle.copyWith(color: unsungColor);
     final cueFadeStyle = currentLineStyle.copyWith(
-      color: Color.alphaBlend(highlightColor.withOpacity(0.6), Colors.white),
+      color: Color.alphaBlend(highlightColor.withValues(alpha: 0.6), unsungColor),
     );
 
     return GestureDetector(
@@ -598,32 +628,29 @@ class _LyricLineTextState extends ConsumerState<_LyricLineText> {
     for (int i = 0; i < cueList.length; i++) {
       final cue = cueList[i];
       final nextCue = i + 1 < cueList.length ? cueList[i + 1] : null;
-      final endPosition = cue.endPosition ?? nextCue?.position ?? text.length;
+      final endPosition = (cue.endPosition ?? nextCue?.position ?? text.length).clamp(0, text.length);
+      final startPosition = cue.position.clamp(0, endPosition);
       final endTime = cue.endMicros ?? nextCue?.startMicros;
-      if (endPosition - cue.position <= 0) continue;
+      if (endPosition - startPosition <= 0) continue;
 
-      // Check if this word is currently being sung
       final hasReachedThisCue = currentMicros >= cue.startMicros;
       final hasPassedCue = endTime != null && currentMicros >= endTime;
 
-      // Calculate fade-in timing (0.5 seconds = 500,000 microseconds before the cue)
-      const fadeInDurationMicros = 500000; // 0.5 seconds
-      final fadeInStartTime = cue.startMicros - fadeInDurationMicros;
-      final isInFadeInPeriod = currentMicros >= fadeInStartTime && !hasReachedThisCue;
-
-      if (hasReachedThisCue && !hasPassedCue) {
-        // This word/segment is currently active - highlight it
-        for (int i = cue.position; i < endPosition; i++) {
+      if (hasPassedCue) {
+        // Already sung: stays lit, like Apple Music.
+        for (int i = startPosition; i < endPosition; i++) {
           letterStyles[i] = widget.cueHighlightStyle;
         }
-      } else if (isInFadeInPeriod) {
-        // This word is about to become active - fade it in letter by letter with color change
-        final fadeProgress = (currentMicros - fadeInStartTime) / fadeInDurationMicros;
-        final totalLetters = endPosition - cue.position;
-        final highlightedLetters = (totalLetters * fadeProgress).round();
-        final int fadeEndPosition = (cue.position + highlightedLetters).clamp(cue.position, endPosition);
-
-        for (int i = cue.position; i < fadeEndPosition; i++) {
+      } else if (hasReachedThisCue) {
+        // Being sung: light it up from left to right over the word's duration.
+        final totalLetters = endPosition - startPosition;
+        final wordMicros = endTime == null ? 0 : endTime - cue.startMicros;
+        final progress = wordMicros <= 0 ? 1.0 : ((currentMicros - cue.startMicros) / wordMicros).clamp(0.0, 1.0);
+        final lit = (totalLetters * progress).ceil().clamp(1, totalLetters);
+        for (int i = startPosition; i < startPosition + lit; i++) {
+          letterStyles[i] = widget.cueHighlightStyle;
+        }
+        for (int i = startPosition + lit; i < endPosition; i++) {
           letterStyles[i] = widget.cueFadeStyle;
         }
       }

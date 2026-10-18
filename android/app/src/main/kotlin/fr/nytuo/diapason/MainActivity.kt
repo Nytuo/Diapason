@@ -70,6 +70,7 @@ class MainActivity : AudioServiceActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         VisualizerChannel(flutterEngine.dartExecutor.binaryMessenger)
+        AudioDecodeChannel(flutterEngine.dartExecutor.binaryMessenger)
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             CLIENT_CERT_CHANNEL,

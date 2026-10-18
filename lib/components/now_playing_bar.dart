@@ -1,3 +1,4 @@
+import 'package:diapason/components/connect_devices.dart';
 import 'package:diapason/utils/device_form_factor.dart';
 import 'package:diapason/components/tv_tap.dart';
 import 'package:diapason/components/tv_now_playing_pill.dart' show tvBarFocusNode;
@@ -472,6 +473,11 @@ class NowPlayingBar extends ConsumerWidget {
                                             Row(
                                               mainAxisAlignment: MainAxisAlignment.end,
                                               children: [
+                                                if (!DeviceFormFactorDetector.current.isTv)
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(top: 4.0),
+                                                    child: ConnectDeviceButton(color: primaryTextColor, size: 24),
+                                                  ),
                                                 Padding(
                                                   padding: const EdgeInsets.only(top: 4.0, right: 4.0),
                                                   child: AddToPlaylistButton(
@@ -530,7 +536,13 @@ class NowPlayingBar extends ConsumerWidget {
                     !usingPlayerSplitScreen) {
                   return buildLoadingQueueBar(ref, queueService.retryQueueLoad);
                 } else if (snapshot.hasData && snapshot.data!.currentTrack != null && !usingPlayerSplitScreen) {
-                  return buildNowPlayingBar(ref, snapshot.data!.currentTrack!);
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const ConnectPlayingOnBanner(padding: EdgeInsets.only(left: 12.0, right: 12.0, bottom: 4.0)),
+                      buildNowPlayingBar(ref, snapshot.data!.currentTrack!),
+                    ],
+                  );
                 } else {
                   return const SizedBox.shrink();
                 }

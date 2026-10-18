@@ -6,7 +6,8 @@ import 'package:diapason/components/album_image.dart';
 import 'package:diapason/screens/desktop/desktop_theme.dart';
 import 'package:diapason/screens/desktop/desktop_track_info.dart';
 import 'package:diapason/screens/desktop/desktop_transport_controls.dart';
-import 'package:diapason/services/connect/connect_remote_controller.dart';
+import 'package:diapason/components/connect_devices.dart';
+import 'package:diapason/services/connect/remote_playback.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/current_album_image_provider.dart';
@@ -65,105 +66,9 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
               child: Opacity(opacity: 0.6, child: RepaintBoundary(child: const SpectrumVisualizer())),
             ),
           ),
-          // When Diapason Connect is driving another device, this same bar shows
-          // that device's track and its controls send commands there instead.
-          ValueListenableBuilder<RemoteNowPlaying?>(
-            valueListenable: GetIt.instance<ConnectRemoteController>().nowPlaying,
-            builder: (context, remote, _) => remote == null ? _content(p) : _remoteContent(p, remote),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _remoteContent(DesktopPalette p, RemoteNowPlaying remote) {
-    final connect = GetIt.instance<ConnectRemoteController>();
-    return Row(
-      children: [
-        Expanded(
-          child: _trackInfoLayout(
-            p,
-            art: remote.item == null
-                ? Container(
-                    decoration: BoxDecoration(color: p.surface, borderRadius: BorderRadius.circular(6)),
-                    child: Icon(TablerIcons.device_speaker, color: p.textTertiary),
-                  )
-                : ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: AlbumImage(item: remote.item),
-                  ),
-            onArtTap: null,
-            title: remote.title,
-            artist: remote.artist,
-            extra: Row(
-              children: [
-                Icon(TablerIcons.device_speaker, size: 11, color: p.accent),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    "Playing on ${remote.device.name}",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: p.accent, fontSize: 11, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Expanded(
-          flex: 2,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              DesktopTransportControls(
-                playing: remote.playing,
-                playSize: 32,
-                iconSize: 26,
-                // Shuffle/repeat aren't part of the Connect protocol.
-                showShuffleRepeat: false,
-                onToggle: connect.togglePlayback,
-                onNext: connect.next,
-                onPrevious: connect.previous,
-              ),
-              const SizedBox(height: 4),
-              DesktopSeekBar(duration: remote.duration, positionListenable: connect.position, onSeek: connect.seek),
-            ],
-          ),
-        ),
-        Expanded(child: _remoteRightControls(p, remote, connect)),
-      ],
-    );
-  }
-
-  Widget _remoteRightControls(DesktopPalette p, RemoteNowPlaying remote, ConnectRemoteController connect) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          TextButton.icon(
-            style: TextButton.styleFrom(foregroundColor: p.textSecondary),
-            onPressed: connect.disconnect,
-            icon: const Icon(TablerIcons.plug_connected_x, size: 16),
-            label: const Text("Disconnect"),
-          ),
-          const SizedBox(width: 4),
-          Icon(TablerIcons.volume, size: 18, color: p.textSecondary),
-          SizedBox(
-            width: 100,
-            child: SliderTheme(
-              data: SliderThemeData(
-                trackHeight: 4,
-                activeTrackColor: p.accent,
-                inactiveTrackColor: p.surface,
-                thumbColor: p.accent,
-                overlayShape: SliderComponentShape.noOverlay,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-              ),
-              child: Slider(value: remote.volume.clamp(0.0, 1.0), onChanged: connect.setVolume),
-            ),
-          ),
+          // While Diapason Connect plays on another device, this same bar shows that device: the queue and
+          // player state mirror it and every control is sent there (see RemotePlayback).
+          _content(p),
         ],
       ),
     );
@@ -222,7 +127,11 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
       artist: item?.artist ?? "—",
       onTitleTap: albumId == null ? null : () => _openResolved(albumId, isArtist: false),
       onArtistTap: artistId == null ? null : () => _openResolved(artistId, isArtist: true),
-      extra: const DesktopTrackInfoLine(),
+      extra: ConnectTargetBuilder(
+        builder: (context, device) => device == null
+            ? const DesktopTrackInfoLine()
+            : const ConnectPlayingOnBanner(padding: EdgeInsets.only(top: 2)),
+      ),
     );
   }
 
@@ -335,6 +244,7 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
             icon: const Icon(TablerIcons.arrows_maximize),
             onPressed: widget.onFullscreen,
           ),
+          ConnectDeviceButton(size: 18, color: p.textSecondary, activeColor: p.accent),
           const SizedBox(width: 4),
           Icon(TablerIcons.volume, size: 18, color: p.textSecondary),
           SizedBox(
@@ -349,7 +259,10 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
               ),
               child: Slider(
-                value: _volume,
+                // The controlled device's volume while playing on another device.
+                value: (RemotePlayback.current?.active ?? false)
+                    ? RemotePlayback.current!.volume.clamp(0.0, 1.0)
+                    : _volume,
                 onChanged: (v) {
                   setState(() => _volume = v);
                   _audioHandler.setVolume(v);

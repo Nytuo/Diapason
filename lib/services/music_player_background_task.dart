@@ -9,6 +9,10 @@ import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/equalizer_presets.dart';
 import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/automix_planner.dart';
+import 'package:diapason/services/automix/beat_analyzer.dart';
+import 'package:diapason/services/automix/track_analysis_service.dart';
+import 'package:diapason/services/connect/remote_playback.dart';
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/stream_cache_service.dart';
 import 'package:diapason/services/youtube_service.dart';
@@ -432,6 +436,8 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     AudioSession.instance.then((session) {
       bool wasPlayingBeforeInterruption = false;
       session.interruptionEventStream.listen((event) {
+        // Interruptions of this device's audio say nothing about a device we control.
+        if (RemotePlayback.isForwarding) return;
         bool customInterruptionHandlingNeeded = !FinampSettingsHelper.finampSettings.duckOnAudioInterruption;
         if (!customInterruptionHandlingNeeded) {
           return;
@@ -468,6 +474,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
         }
       });
       session.becomingNoisyEventStream.listen((_) {
+        if (RemotePlayback.isForwarding) return;
         // The user unplugged/disconnected the headphones/speaker/car, so we should pause ~~or lower~~ the volume.
         if (FinampSettingsHelper.finampSettings.duckOnAudioInterruption) {
           // if this is enabled, we let the [AudioPlayer] handle this automatically, via [handleInterruptions]
@@ -477,6 +484,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
         }
       });
       session.devicesChangedEventStream.listen((event) {
+        if (RemotePlayback.isForwarding) return;
         _outputLogger.info('Devices added:   ${event.devicesAdded}');
         _outputLogger.info('Devices removed: ${event.devicesRemoved}');
 
@@ -621,6 +629,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     _setupStreamCacheProgressTracking();
     _setupDurationReconciliation();
     _setupFlacSeekWarning();
+    _setupStuckAtEndWatchdog();
 
     if (AppleTvAudioChannel.isSupported) {
       _setupTvOSPlayback();
@@ -834,6 +843,64 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     );
   }
 
+  /// How long playback may sit at the end of a track without the player saying it finished.
+  static const _stuckAtEndGrace = Duration(milliseconds: 2500);
+
+  /// When only the metadata knows the length (the player doesn't), it may be off by a second or two.
+  static const _stuckAtEndGraceMetadataOnly = Duration(seconds: 4);
+
+  /// Moves on when a track has played to its end but the player never reported it finished.
+  ///
+  /// Streams that go through just_audio's caching proxy (YouTube in particular) can stall right at the end on Apple
+  /// platforms: the audio stops, the player stays "playing", "completed" never comes, and the queue never advances
+  /// while the clock keeps running.
+  void _setupStuckAtEndWatchdog() {
+    if (AppleTvAudioChannel.isSupported) return;
+    DateTime? atEndSince;
+    int? atEndIndex;
+    Timer.periodic(const Duration(milliseconds: 500), (_) async {
+      if (!_player.playing || _transition?.running == true || RemotePlayback.isForwarding) {
+        atEndSince = null;
+        return;
+      }
+      if (_player.processingState == ProcessingState.completed || _player.processingState == ProcessingState.idle) {
+        atEndSince = null;
+        return;
+      }
+      final playerDuration = _player.duration;
+      final duration = playerDuration ?? mediaItem.valueOrNull?.duration;
+      if (duration == null || duration <= Duration.zero) return;
+
+      final index = _player.currentIndex;
+      final atEnd = _player.position >= duration - const Duration(milliseconds: 300);
+      if (!atEnd || index != atEndIndex) {
+        atEndIndex = index;
+        atEndSince = atEnd ? DateTime.now() : null;
+        return;
+      }
+      atEndSince ??= DateTime.now();
+      final grace = playerDuration == null ? _stuckAtEndGraceMetadataOnly : _stuckAtEndGrace;
+      if (DateTime.now().difference(atEndSince!) < grace) return;
+
+      atEndSince = null;
+      _audioServiceBackgroundTaskLogger.warning(
+        "Track ${_player.currentIndex} reached its end (${_player.position} of $duration) but the player never "
+        "finished it; moving on",
+      );
+      try {
+        if (_player.loopMode == LoopMode.one) {
+          await _player.seek(Duration.zero);
+        } else if (_player.hasNext) {
+          await _player.seekToNext();
+        } else {
+          await handleEndOfQueue();
+        }
+      } catch (e) {
+        _audioServiceBackgroundTaskLogger.warning("Could not move past a stuck track: $e");
+      }
+    });
+  }
+
   void _setupStreamCacheProgressTracking() {
     final cache = GetIt.instance<StreamCacheService>();
     _activeCurrentIndexStream.listen((index) {
@@ -865,14 +932,53 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     });
   }
 
-  bool _crossfadeInProgress = false;
+  // ---------------------------------------------------------------------
+  // Crossfade / Automix
+  //
+  // _player always owns the queue: it is the only player QueueService,
+  // shuffle, repeat and playback history ever see. For a transition, the
+  // standby player is loaded with just the outgoing track, a few seconds
+  // early, positioned where the transition starts. When the time comes it
+  // takes over the tail of that track while _player moves on to the next
+  // one and fades it in; it is stopped once the fade is done. The queue is
+  // never mirrored to the standby player, so shuffle orders, queue edits and
+  // the active player can no longer drift apart.
+  // ---------------------------------------------------------------------
+
+  /// How long before its start a transition is planned: enough to decode and analyse both tracks' ends.
+  static const _planHorizon = Duration(seconds: 75);
+
+  /// How long before a transition the tail is loaded, so it is buffered by then.
+  static const _tailPrepareLead = Duration(seconds: 8);
+
+  /// How early the handover starts: the tail has to be audibly playing before the incoming track is moved in.
+  static const _handoverLead = Duration(milliseconds: 150);
+
+  /// How long the incoming track takes to glide from its matched tempo back to normal after a beat-matched mix.
+  static const _tempoGlide = Duration(seconds: 4);
+
+  _Transition? _transition;
+
+  /// Normalization gain of the current track on Android, so the tail can keep the outgoing track's gain while
+  /// _player has already moved on.
+  double _enhancerGain = 0.0;
+
+  TrackAnalysisService? get _analysis =>
+      GetIt.instance.isRegistered<TrackAnalysisService>() ? GetIt.instance<TrackAnalysisService>() : null;
 
   void _setupCrossfade() {
-    _activePositionStream.listen((position) async {
-      final seconds = FinampSettingsHelper.finampSettings.crossfadeSeconds;
-      if (seconds <= 0) return;
-      if (_crossfadeInProgress) return;
-      if (!_player.playing) return;
+    if (AppleTvAudioChannel.isSupported) return;
+
+    _activePositionStream.listen((position) {
+      final pending = _transition;
+      if (pending != null && pending.running) return;
+
+      final settings = FinampSettingsHelper.finampSettings;
+      if (settings.crossfadeSeconds <= 0 && !settings.automixEnabled) {
+        if (pending != null) unawaited(_abortCrossfadeIfInProgress());
+        return;
+      }
+      if (!_player.playing || fadeState.value.fadeDirection != FadeDirection.none) return;
 
       final lastManualSeekAt = _lastManualSeekAt;
       if (lastManualSeekAt != null && DateTime.now().difference(lastManualSeekAt) < _crossfadeSeekGuardWindow) {
@@ -880,61 +986,302 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       }
 
       final duration = _player.duration;
-      if (duration == null || duration == Duration.zero) return;
+      final index = _player.currentIndex;
+      if (duration == null || duration == Duration.zero || index == null) return;
+      final remaining = duration - position;
 
-      if (duration.inSeconds < seconds * 2) return;
-
-      if (!_player.hasNext) return;
-      final toIndex = _player.nextIndex;
-      if (toIndex == null) return;
-
-      if (toIndex == _player.currentIndex) return;
-
-      if (_standbyOutOfSync) {
-        unawaited(_resyncStandby());
+      if (pending != null && (pending.fromIndex != index || remaining > _planHorizon + _tailPrepareLead)) {
+        // The track changed or the user went back: whatever was planned no longer applies.
+        unawaited(_abortCrossfadeIfInProgress());
         return;
       }
 
-      final remaining = duration - position;
-      if (remaining <= Duration(seconds: seconds)) {
-        await _performCrossfadeSwap(seconds: seconds, toIndex: toIndex);
+      if (pending == null) {
+        if (remaining > _planHorizon) return;
+        final plan = _planTransition(duration);
+        final analysis = _analysis;
+        final transition = _Transition(
+          fromIndex: index,
+          plan: plan,
+          userSpeed: _player.speed,
+          planning: plan != null && plan.isAutomix && analysis != null && analysis.supported,
+        );
+        _transition = transition;
+        _audioServiceBackgroundTaskLogger.fine("Planned transition out of index $index: $plan");
+        if (transition.planning) unawaited(_refinePlan(transition, duration));
+        return;
+      }
+
+      final plan = pending.plan;
+      if (plan == null) return;
+      if (pending.planning) {
+        // Analysis is taking too long: go with the plan we have.
+        if (position >= plan.outStart - _tailPrepareLead) pending.planning = false;
+        return;
+      }
+
+      if (!pending.preparing && position >= plan.outStart - _tailPrepareLead) {
+        pending.preparing = true;
+        unawaited(_prepareTail(pending, position));
+        return;
+      }
+      if (position < plan.outStart - _handoverLead) return;
+      if (pending.ready) {
+        unawaited(_runCrossfade(pending));
+      } else if (position > plan.outStart + plan.duration * 0.3) {
+        // The tail never finished loading; let the tracks follow each other normally.
+        _audioServiceBackgroundTaskLogger.info("Crossfade tail was not ready in time; playing gaplessly instead");
+        pending.plan = null;
       }
     });
   }
 
-  Future<void> _abortCrossfadeIfInProgress() async {
-    if (!_crossfadeInProgress) return;
-    _crossfadeInProgress = false;
-    await Future<void>.delayed(_audioFadeStepDuration);
-    await _standbyVolume.setFadeVolume(1.0);
-    await _standbyPlayer.pause();
+  TransitionPlan? _planTransition(Duration currentDuration) {
+    if (_player.loopMode == LoopMode.one || !_player.hasNext) return null;
+    final nextIndex = _player.nextIndex;
+    if (nextIndex == null || nextIndex == _player.currentIndex) return null;
+
+    final sources = _player.audioSources;
+    if (nextIndex >= sources.length) return null;
+    final settings = FinampSettingsHelper.finampSettings;
+    return AutomixPlanner.plan(
+      current: _player.sequenceState.currentSource?.tag as FinampQueueItem?,
+      next: (sources[nextIndex] as IndexedAudioSource).tag as FinampQueueItem?,
+      currentDuration: currentDuration,
+      crossfadeSeconds: settings.crossfadeSeconds,
+      automix: settings.automixEnabled,
+    );
   }
 
-  Future<void> _performCrossfadeSwap({required int seconds, required int toIndex}) async {
-    _crossfadeInProgress = true;
-    final outgoingVolume = _volume;
-    final incoming = _standbyPlayer;
-    final incomingVolume = _standbyVolume;
+  /// Listens to the end of this track and the start of the next one, and plans the mix from what is heard there.
+  Future<void> _refinePlan(_Transition transition, Duration duration) async {
+    final analysis = _analysis!;
     try {
-      await incomingVolume.setFadeVolume(0.0);
-      await incoming.seek(Duration.zero, index: toIndex);
-      unawaited(incoming.play());
+      final nextIndex = _player.nextIndex;
+      final current = _player.sequenceState.currentSource;
+      final sources = _player.audioSources;
+      if (nextIndex == null || nextIndex >= sources.length || current is! IndexedAudioSource) return;
+      final next = sources[nextIndex] as IndexedAudioSource;
+      final currentItem = current.tag as FinampQueueItem?;
+      final nextItem = next.tag as FinampQueueItem?;
+      final outSource = await TrackAnalysisService.sourceFor(current);
+      final inSource = await TrackAnalysisService.sourceFor(next);
+      if (currentItem == null || nextItem == null || outSource == null || inSource == null) return;
 
-      final steps = getFadeSteps(Duration(seconds: seconds));
-      for (var step = 1; step <= steps; step++) {
-        if (!_crossfadeInProgress) return; // aborted — e.g. a manual skip
-        final t = (step / steps).clamp(0.0, 1.0);
-        await Future.wait([outgoingVolume.setFadeVolume(1.0 - t), incomingVolume.setFadeVolume(t)]);
+      final nextDuration = nextItem.item.duration ?? nextItem.baseItem.runTimeTicksDuration() ?? Duration.zero;
+      final results = await Future.wait([
+        analysis.analyze(
+          id: currentItem.baseItemId.raw,
+          source: outSource,
+          duration: duration,
+          window: AnalysisWindow.tail,
+        ),
+        analysis.analyze(
+          id: nextItem.baseItemId.raw,
+          source: inSource,
+          duration: nextDuration,
+          window: AnalysisWindow.head,
+        ),
+      ]).timeout(const Duration(seconds: 40));
+      if (transition.cancelled || !transition.planning) return;
+
+      final refined = AutomixPlanner.refine(
+        transition.plan!,
+        currentDuration: duration,
+        outTail: results[0],
+        inHead: results[1],
+      );
+      // Too late to use a plan that starts before where we already are.
+      if (_player.position > refined.outStart - const Duration(seconds: 1)) return;
+      transition.plan = refined;
+      _audioServiceBackgroundTaskLogger.info("Automix: $refined");
+    } catch (e) {
+      _audioServiceBackgroundTaskLogger.fine("Automix analysis failed; using the basic transition: $e");
+    } finally {
+      transition.planning = false;
+    }
+  }
+
+  /// A plain copy of the current track's source. Never a second [LockCachingAudioSource] on the same cache file:
+  /// two of those writing one file at once corrupt it.
+  Future<AudioSource?> _tailSourceForCurrent() async {
+    final current = _player.sequenceState.currentSource;
+    if (current is LockCachingAudioSource) {
+      final file = await current.cacheFile;
+      if (file.existsSync() && !File("${file.path}.part").existsSync()) {
+        return AudioSource.file(file.path, tag: current.tag);
+      }
+      return AudioSource.uri(current.uri, headers: current.headers, tag: current.tag);
+    }
+    if (current is UriAudioSource) return AudioSource.uri(current.uri, headers: current.headers, tag: current.tag);
+    return null;
+  }
+
+  Future<void> _prepareTail(_Transition transition, Duration position) async {
+    final plan = transition.plan!;
+    try {
+      final source = await _tailSourceForCurrent();
+      if (source == null || transition.cancelled) {
+        transition.plan = null;
+        return;
+      }
+      final tail = _standbyPlayer;
+      var at = plan.outStart - const Duration(seconds: 1);
+      if (at < position) at = position;
+      await tail.setAudioSource(source, initialPosition: at, preload: true);
+      await tail.setLoopMode(LoopMode.off);
+      if (tail.speed != transition.userSpeed) await tail.setSpeed(transition.userSpeed);
+
+      // The tail must sound exactly like the outgoing track does now.
+      await _standbyVolume.setInternalVolume(_volume._internalVolume);
+      await _standbyVolume.setReplayGainVolume(_volume._replayGainVolume);
+      await _standbyVolume.setFadeVolume(1.0);
+      await _loudnessEnhancerEffectB?.setTargetGain(_enhancerGain);
+
+      if (transition.cancelled) {
+        await tail.stop();
+        return;
+      }
+      transition.ready = true;
+    } catch (e, stack) {
+      _audioServiceBackgroundTaskLogger.warning("Could not prepare the crossfade tail", e, stack);
+      transition.plan = null;
+    }
+  }
+
+  static double _seconds(Duration d) => d.inMicroseconds / 1e6;
+
+  /// The length of the beat around [time] in [beats], in seconds of that track.
+  static double _beatLengthAt(List<double> beats, double time) {
+    if (beats.length < 2) return 0.5;
+    final i = BeatAnalysis.phaseIn(beats, time).floor().clamp(0, beats.length - 2);
+    return beats[i + 1] - beats[i];
+  }
+
+  Future<void> _runCrossfade(_Transition transition) async {
+    transition.running = true;
+    final plan = transition.plan!;
+    final tail = _standbyPlayer;
+    final tailVolume = _standbyVolume;
+    final mainVolume = _volume;
+    final nextIndex = _player.nextIndex;
+    final baseSpeed = transition.userSpeed;
+
+    try {
+      if (nextIndex == null) return;
+      // Line the tail up with where the outgoing track actually is.
+      final drift = tail.position - _player.position;
+      if (drift.abs() > const Duration(milliseconds: 120)) await tail.seek(_player.position);
+      final from = tail.position;
+      unawaited(tail.play());
+
+      // Only hand over once the tail is really producing sound, or the handover would leave a gap.
+      final audible = await tail.positionStream
+          .firstWhere((p) => tail.playing && p > from + const Duration(milliseconds: 30))
+          .timeout(const Duration(milliseconds: 1500))
+          .then((_) => true, onError: (_) => false);
+      if (!audible || transition.cancelled) {
+        _audioServiceBackgroundTaskLogger.info("Crossfade tail did not start; playing gaplessly instead");
+        await tail.stop();
+        return;
+      }
+
+      // The tail now carries the outgoing track; move _player on to the next one, silently at first, placed so its
+      // cue point lands exactly on the outgoing track's [outStart].
+      await mainVolume.setFadeVolume(0.0);
+      final speed = plan.beatMatched ? baseSpeed * plan.speed : baseSpeed;
+      if (speed != _player.speed) await _player.setSpeed(speed);
+      final lead = _seconds(plan.outStart) - _seconds(tail.position);
+      var target = _seconds(plan.inCue) - lead * (plan.beatMatched ? plan.speed : 1.0);
+      if (target < 0) target = 0;
+      await _player.seek(Duration(microseconds: (target * 1e6).round()), index: nextIndex);
+
+      final outStart = _seconds(plan.outStart);
+      final outEnd = _seconds(plan.outEnd);
+      final length = max(0.05, outEnd - outStart);
+      final watch = Stopwatch()..start();
+      final timeout = Duration(milliseconds: (length * 1600).round() + 3000);
+      var currentSpeed = speed;
+      var lastSpeedChange = Duration.zero;
+      var lastJump = Duration.zero;
+      var jumps = 0;
+
+      while (!transition.cancelled) {
+        final outPos = _seconds(tail.position);
+        final t = ((outPos - outStart) / length).clamp(0.0, 1.0);
+        await Future.wait([tailVolume.setFadeVolume(plan.fadeOut(t)), mainVolume.setFadeVolume(plan.fadeIn(t))]);
+        if (t >= 1.0 || tail.processingState == ProcessingState.completed || watch.elapsed > timeout) break;
+
+        if (plan.beatMatched) {
+          // Keep the two in phase: how far (in beats) the incoming track is from where its beats should be.
+          final inPos = _seconds(_player.position);
+          final error =
+              (BeatAnalysis.phaseIn(plan.inBeats, inPos) - plan.inAnchor) -
+              (BeatAnalysis.phaseIn(plan.outBeats, outPos) - plan.outAnchor);
+          final now = watch.elapsed;
+          if (error.abs() > 0.15 && jumps < 2 && now - lastJump > const Duration(milliseconds: 500) && t < 0.4) {
+            // Far off (start-up latency): jump into place while the incoming track is still quiet.
+            final fix = Duration(microseconds: (-error * _beatLengthAt(plan.inBeats, inPos) * 1e6).round());
+            await _player.seek(_player.position + fix);
+            jumps++;
+            lastJump = now;
+          } else if (now - lastSpeedChange > const Duration(milliseconds: 150)) {
+            // Close: nudge the tempo, like a DJ riding the pitch fader.
+            final wanted = speed * (1 - (error * 0.6).clamp(-0.04, 0.04));
+            if ((wanted - currentSpeed).abs() > 0.002) {
+              await _player.setSpeed(wanted);
+              currentSpeed = wanted;
+              lastSpeedChange = now;
+            }
+          }
+        }
         await Future<void>.delayed(_audioFadeStepDuration);
       }
-      if (!_crossfadeInProgress) return;
+      if (transition.cancelled) return;
 
-      final outgoing = _player;
-      await outgoing.pause();
-      _activePlayerIndexSubject.add(1 - _activePlayerIndexSubject.value);
-      await outgoingVolume.setFadeVolume(1.0); // reset ahead of its next turn as active
+      await tail.stop();
+      await tailVolume.setFadeVolume(1.0);
+      await mainVolume.setFadeVolume(1.0);
+
+      // Let the next track drift back to its own tempo, slowly enough not to be heard.
+      if (_player.speed != baseSpeed) {
+        const steps = 40;
+        final start = _player.speed;
+        for (var step = 1; step <= steps && !transition.cancelled; step++) {
+          await Future<void>.delayed(_tempoGlide ~/ steps);
+          await _player.setSpeed(start + (baseSpeed - start) * step / steps);
+        }
+      }
+    } catch (e, stack) {
+      _audioServiceBackgroundTaskLogger.warning("Crossfade failed", e, stack);
     } finally {
-      _crossfadeInProgress = false;
+      if (identical(_transition, transition)) _transition = null;
+      if (!transition.cancelled) {
+        await tail.stop();
+        await tailVolume.setFadeVolume(1.0);
+        await mainVolume.setFadeVolume(1.0);
+        if (_player.speed != baseSpeed) await _player.setSpeed(baseSpeed);
+      }
+    }
+  }
+
+  /// Cancels a planned or running transition: the tail stops and _player plays at full volume and normal speed.
+  Future<void> _abortCrossfadeIfInProgress() async {
+    final transition = _transition;
+    if (transition == null) return;
+    transition.cancelled = true;
+    _transition = null;
+
+    final wasRunning = transition.running;
+    if (wasRunning) {
+      // Let an in-flight fade step land before restoring the volume over it.
+      await Future<void>.delayed(_audioFadeStepDuration);
+    }
+    if (transition.ready || wasRunning) await _standbyPlayer.stop();
+    await _standbyVolume.setFadeVolume(1.0);
+    if (wasRunning) {
+      await _volume.setFadeVolume(1.0);
+      if (_player.speed != transition.userSpeed) await _player.setSpeed(transition.userSpeed);
     }
   }
 
@@ -943,49 +1290,6 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   /// this could be useful for updating queue state from this player class, but isn't used right now due to limitations with just_audio
   void setQueueCallbacks({required Future<bool> Function() previousTrackCallback}) {
     _queueCallbackPreviousTrack = previousTrackCallback;
-  }
-
-  bool get _crossfadeEnabled => FinampSettingsHelper.finampSettings.crossfadeSeconds > 0;
-
-  bool _standbyOutOfSync = false;
-  bool _standbyResyncing = false;
-
-  Future<void> _mirrorToStandby(Future<void> Function(AudioPlayer) action) async {
-    if (!_crossfadeEnabled) {
-      _standbyOutOfSync = true;
-      return;
-    }
-    try {
-      await action(_standbyPlayer);
-    } catch (e, stack) {
-      _audioServiceBackgroundTaskLogger.warning("Failed to mirror a queue change to the standby player", e, stack);
-    }
-  }
-
-  /// Rebuilds the standby player's queue from the active one, for when
-  /// crossfade is switched on after queue changes were skipped.
-  ///
-  /// Only the order matters: a crossfade seeks the standby player by raw index,
-  /// so its shuffle order does not have to match.
-  Future<void> _resyncStandby() async {
-    if (_standbyResyncing) return;
-    _standbyResyncing = true;
-    try {
-      final queueItems = _player.audioSources
-          .map((source) => (source as IndexedAudioSource).tag)
-          .whereType<FinampQueueItem>()
-          .toList();
-      await _standbyPlayer.setAudioSources(
-        await Future.wait(queueItems.map(_queueItemToAudioSource)),
-        preload: false,
-        initialIndex: _player.currentIndex,
-      );
-      _standbyOutOfSync = false;
-    } catch (e, stack) {
-      _audioServiceBackgroundTaskLogger.warning("Could not resync the standby player", e, stack);
-    } finally {
-      _standbyResyncing = false;
-    }
   }
 
   Future<Duration?> setQueueItems(
@@ -1003,16 +1307,6 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
         initialPosition: initialPosition,
         shuffleOrder: shuffleOrder,
       );
-      unawaited(
-        _mirrorToStandby(
-          (player) async => player.setAudioSources(
-            await Future.wait(queueItems.map(_queueItemToAudioSource)),
-            preload: false,
-            initialIndex: initialIndex,
-            shuffleOrder: shuffleOrder,
-          ),
-        ),
-      );
       return result;
     } on PlayerException catch (e) {
       _audioServiceBackgroundTaskLogger.severe("Player error code ${e.code}: ${e.message}");
@@ -1028,52 +1322,34 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   }
 
   Future<void> appendFinampQueueItem(FinampQueueItem queueItem) async {
-    unawaited(_mirrorToStandby((player) async => player.addAudioSource(await _queueItemToAudioSource(queueItem))));
     return _player.addAudioSource(await _queueItemToAudioSource(queueItem));
   }
 
   Future<void> appendFinampQueueItems(List<FinampQueueItem> queueItems) async {
-    unawaited(
-      _mirrorToStandby(
-        (player) async => player.addAudioSources(await Future.wait(queueItems.map(_queueItemToAudioSource))),
-      ),
-    );
     return _player.addAudioSources(await Future.wait(queueItems.map(_queueItemToAudioSource)));
   }
 
   Future<void> insertFinampQueueItemAt(int index, FinampQueueItem queueItem) async {
-    unawaited(
-      _mirrorToStandby((player) async => player.insertAudioSource(index, await _queueItemToAudioSource(queueItem))),
-    );
     return _player.insertAudioSource(index, await _queueItemToAudioSource(queueItem));
   }
 
   Future<void> insertFinampQueueItems(int index, List<FinampQueueItem> queueItems) async {
-    unawaited(
-      _mirrorToStandby(
-        (player) async => player.insertAudioSources(index, await Future.wait(queueItems.map(_queueItemToAudioSource))),
-      ),
-    );
     return _player.insertAudioSources(index, await Future.wait(queueItems.map(_queueItemToAudioSource)));
   }
 
   Future<void> moveFinampQueueItem(int currentIndex, int newIndex) {
-    unawaited(_mirrorToStandby((player) => player.moveAudioSource(currentIndex, newIndex)));
     return _player.moveAudioSource(currentIndex, newIndex);
   }
 
   Future<void> removeFinampQueueItemAt(int index) {
-    unawaited(_mirrorToStandby((player) => player.removeAudioSourceAt(index)));
     return _player.removeAudioSourceAt(index);
   }
 
   Future<void> removeFinampQueueItemRange(int start, int end) {
-    unawaited(_mirrorToStandby((player) => player.removeAudioSourceRange(start, end)));
     return _player.removeAudioSourceRange(start, end);
   }
 
   Future<void> clearFinampQueueItems() {
-    unawaited(_mirrorToStandby((player) => player.clearAudioSources()));
     return _player.clearAudioSources();
   }
 
@@ -1087,6 +1363,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     if (_shouldIgnorePlayPauseAfterRecentSkip) {
       return;
     }
+    if (RemotePlayback.isForwarding) return RemotePlayback.current!.play();
     if (AppleTvAudioChannel.isSupported) {
       return _tvPlay();
     }
@@ -1110,6 +1387,8 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   }
 
   void setVolume(final double volume) async {
+    if (RemotePlayback.isForwarding) return RemotePlayback.current!.setVolume(volume);
+    await _standbyVolume.setInternalVolume(volume);
     return _volume.setInternalVolume(volume);
   }
 
@@ -1219,6 +1498,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     if (_shouldIgnorePlayPauseAfterRecentSkip) {
       return;
     }
+    if (RemotePlayback.isForwarding) return RemotePlayback.current!.pause();
     if (AppleTvAudioChannel.isSupported) {
       return _tvPause();
     }
@@ -1333,6 +1613,10 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   }
 
   Future<void> togglePlayback() {
+    if (RemotePlayback.isForwarding) {
+      final remote = RemotePlayback.current!;
+      return remote.playing ? remote.pause() : remote.play();
+    }
     if (_effectivePlaying) {
       return pause();
     } else {
@@ -1408,6 +1692,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     _audioServiceBackgroundTaskLogger.fine(
       "skipToPrevious() start: forceSkip=$forceSkip, playing=${_player.playing}, fadeDirection=${fadeState.value.fadeDirection}, hasPrevious=${_player.hasPrevious}, loopMode=${_player.loopMode}, currentIndex=${_player.currentIndex}, position=${_player.position}",
     );
+    if (RemotePlayback.isForwarding) return RemotePlayback.current!.previous();
     _lastSkipCommandAt = DateTime.now();
     bool doSkip = true;
 
@@ -1443,6 +1728,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
   @override
   Future<void> skipToNext() async {
+    if (RemotePlayback.isForwarding) return RemotePlayback.current!.next();
     _audioServiceBackgroundTaskLogger.fine(
       "skipToNext() start: playing=${_player.playing}, fadeDirection=${fadeState.value.fadeDirection}, hasNext=${_player.hasNext}, loopMode=${_player.loopMode}, currentIndex=${_player.currentIndex}, position=${_player.position}",
     );
@@ -1465,6 +1751,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
   Future<void> skipByOffset(int offset) async {
     _audioServiceBackgroundTaskLogger.fine("skipping by offset: $offset");
+    if (RemotePlayback.isForwarding) return RemotePlayback.current!.skipByOffset(offset);
 
     _markManualSeek();
     await _abortCrossfadeIfInProgress();
@@ -1497,6 +1784,10 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
   Future<void> skipToIndex(int index) async {
     _audioServiceBackgroundTaskLogger.fine("skipping to index: $index");
+    if (RemotePlayback.isForwarding) {
+      final current = queueIndex;
+      return RemotePlayback.current!.skipByOffset(current == null ? index : index - current);
+    }
 
     _markManualSeek();
     await _abortCrossfadeIfInProgress();
@@ -1510,6 +1801,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
   @override
   Future<void> seek(Duration position) async {
+    if (RemotePlayback.isForwarding) return RemotePlayback.current!.seek(position);
     _markManualSeek();
     await _abortCrossfadeIfInProgress();
     try {
@@ -1530,7 +1822,6 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     await _abortCrossfadeIfInProgress();
     try {
       await _player.shuffle();
-      unawaited(_mirrorToStandby((player) => player.shuffle()));
     } catch (e) {
       _audioServiceBackgroundTaskLogger.severe(e);
       return Future.error(e);
@@ -1781,8 +2072,10 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       );
       if (effectiveGainChange != null) {
         if (_loudnessEnhancerEffectA != null) {
+          _enhancerGain = effectiveGainChange;
           _loudnessEnhancerEffectA?.setTargetGain(effectiveGainChange);
-          _loudnessEnhancerEffectB?.setTargetGain(effectiveGainChange);
+          // The standby player may be playing the previous track's tail; it keeps that track's gain.
+          if (_transition == null) _loudnessEnhancerEffectB?.setTargetGain(effectiveGainChange);
         } else {
           final newVolume =
               iosBaseVolumeGainFactor *
@@ -1796,8 +2089,9 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       } else {
         if (_loudnessEnhancerEffectA != null) {
           // reset gain offset
+          _enhancerGain = 0;
           _loudnessEnhancerEffectA?.setTargetGain(0);
-          _loudnessEnhancerEffectB?.setTargetGain(0);
+          if (_transition == null) _loudnessEnhancerEffectB?.setTargetGain(0);
         }
         _volume.setReplayGainVolume(
           iosBaseVolumeGainFactor,
@@ -1862,15 +2156,19 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     // playing/position/duration/processingState come from AppleTvAudioChannel
     // instead - everything else (queue index, shuffle, repeat) still comes
     // from _player, which stays the source of truth for the queue itself.
-    final playing = isTvOS ? _tvPlaying : _player.playing;
+    final remote = RemotePlayback.current;
+    final mirroring = remote != null && remote.active;
+    final playing = mirroring ? remote.playing : (isTvOS ? _tvPlaying : _player.playing);
 
-    var reportedPosition = isTvOS ? _tvPosition : _player.position;
+    var reportedPosition = mirroring ? remote.position : (isTvOS ? _tvPosition : _player.position);
     final trackDuration = isTvOS ? _tvDuration : _player.duration;
     if (trackDuration != null && trackDuration > Duration.zero && reportedPosition > trackDuration) {
       reportedPosition = trackDuration;
     }
 
-    final processingState = isTvOS
+    final processingState = mirroring
+        ? (_player.audioSources.isEmpty ? AudioProcessingState.idle : AudioProcessingState.ready)
+        : isTvOS
         ? (_tvBuffering
               ? AudioProcessingState.buffering
               : (_tvCurrentQueueItem == null ? AudioProcessingState.idle : AudioProcessingState.ready))
@@ -1939,8 +2237,28 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       ? shuffleIndices.indexOf(_player.currentIndex!)
       : _player.currentIndex;
   SequenceState get sequenceState => _player.sequenceState;
-  double get volume => (_volume._internalVolume * 100).roundToDouble() / 100;
-  bool get paused => !_effectivePlaying;
+  double get volume => RemotePlayback.current?.active ?? false
+      ? RemotePlayback.current!.volume
+      : (_volume._internalVolume * 100).roundToDouble() / 100;
+  bool get paused => RemotePlayback.current?.active ?? false ? !RemotePlayback.current!.playing : !_effectivePlaying;
+
+  // ---------------------------------------------------------------------
+  // Diapason Connect mirroring
+  //
+  // While another device is controlled, the local queue mirrors its queue
+  // (see ConnectRemoteController), the local player stays paused, and the
+  // playback state everything reads is the remote device's.
+  // ---------------------------------------------------------------------
+
+  /// Re-publishes the playback state, e.g. when the controlled device reported a change.
+  void refreshRemoteState() => playbackState.add(_transformEvent(_player.playbackEvent));
+
+  /// Moves the (silent) mirror to the track the controlled device is on, without telling that device.
+  Future<void> mirrorToLinearIndex(int index, Duration position) async {
+    if (index < 0 || index >= _player.audioSources.length) return;
+    await _player.seek(position, index: index);
+  }
+
   Duration get playbackPosition => AppleTvAudioChannel.isSupported ? _tvPosition : _player.position;
 
   void onQueueServiceAvailable() {
@@ -1988,6 +2306,10 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
         if (isYouTube && !source.isLocalFile) {
           try {
             final file = await cache.fileForId(queueItem.baseItemId.raw, source.container ?? "m4a");
+            // Already fully cached: play the file directly, without the caching proxy in between.
+            if (file.existsSync() && !File("${file.path}.part").existsSync() && file.lengthSync() > 0) {
+              return AudioSource.file(file.path, tag: queueItem);
+            }
             return LockCachingAudioSource(source.uri, cacheFile: file, headers: headers, tag: queueItem);
           } catch (e, stack) {
             _audioServiceBackgroundTaskLogger.warning(
@@ -2005,6 +2327,9 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
               queueItem.item.extras!["itemJson"] as Map<String, dynamic>,
             );
             final cacheFile = await cache.fileFor(item);
+            if (cacheFile.existsSync() && !File("${cacheFile.path}.part").existsSync() && cacheFile.lengthSync() > 0) {
+              return AudioSource.file(cacheFile.path, tag: queueItem);
+            }
             return LockCachingAudioSource(source.uri, cacheFile: cacheFile, headers: headers, tag: queueItem);
           } catch (e, stack) {
             _audioServiceBackgroundTaskLogger.warning(
@@ -2207,4 +2532,26 @@ AudioServiceRepeatMode _audioServiceRepeatMode(LoopMode loopMode) {
     case LoopMode.all:
       return AudioServiceRepeatMode.all;
   }
+}
+
+/// A transition out of the track at [fromIndex]: planned once the track nears its end, then run.
+class _Transition {
+  _Transition({required this.fromIndex, required this.plan, required this.userSpeed, this.planning = false});
+
+  final int fromIndex;
+
+  /// Null when the tracks should just follow each other.
+  TransitionPlan? plan;
+
+  /// The playback speed the user chose, to come back to after a time-stretched mix.
+  final double userSpeed;
+
+  /// The audio of both tracks is being analysed to refine [plan].
+  bool planning;
+
+  /// The tail is being loaded, then is loaded and positioned.
+  bool preparing = false;
+  bool ready = false;
+  bool running = false;
+  bool cancelled = false;
 }

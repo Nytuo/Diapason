@@ -1,3 +1,4 @@
+import 'package:diapason/components/connect_devices.dart';
 import 'package:diapason/utils/device_form_factor.dart';
 import 'package:diapason/components/tv_now_playing_pill.dart';
 import 'dart:async';
@@ -388,16 +389,21 @@ class _PlayerScreenContent extends ConsumerWidget {
             children: [
               Flexible(
                 fit: FlexFit.tight,
-                child: SimpleButton(
-                  text: AppLocalizations.of(context)!.outputMenuButtonTitle,
-                  icon: TablerIcons.device_speaker,
-                  onPressed: () async {
-                    await showOutputMenu(context: context);
-                  },
-                  onPressedSecondary: () async {
-                    final audioHandler = GetIt.instance<MusicPlayerBackgroundTask>();
-                    await audioHandler.openBluetoothSettings();
-                  },
+                child: ConnectTargetBuilder(
+                  builder: (context, device) => SimpleButton(
+                    // Like Spotify's devices button: also where playback moves to another device.
+                    text:
+                        device?.name.replaceFirst(RegExp(r"^Diapason \((.*)\)$"), r"$1") ??
+                        AppLocalizations.of(context)!.outputMenuButtonTitle,
+                    icon: device == null ? TablerIcons.devices : TablerIcons.device_speaker,
+                    onPressed: () async {
+                      await showOutputMenu(context: context);
+                    },
+                    onPressedSecondary: () async {
+                      final audioHandler = GetIt.instance<MusicPlayerBackgroundTask>();
+                      await audioHandler.openBluetoothSettings();
+                    },
+                  ),
                 ),
               ),
               const Flexible(fit: FlexFit.tight, child: QueueButton()),

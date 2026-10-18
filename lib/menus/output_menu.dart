@@ -5,7 +5,9 @@ import 'package:diapason/color_schemes.g.dart';
 import 'package:diapason/components/Buttons/cta_medium.dart';
 import 'package:diapason/components/Shortcuts/global_shortcut_manager.dart';
 import 'package:diapason/components/Shortcuts/music_control_shortcuts.dart';
+import 'package:diapason/components/connect_devices.dart';
 import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/services/connect/remote_playback.dart';
 import 'package:diapason/components/themed_bottom_sheet.dart';
 import 'package:diapason/components/toggleable_list_tile.dart';
 import 'package:diapason/l10n/app_localizations.dart';
@@ -41,17 +43,23 @@ Future<void> showOutputMenu({required BuildContext context, bool usePlayerTheme 
         //   item: item,
         //   useThemeImage: usePlayerTheme,
         // ),
-        Consumer(
-          builder: (context, ref, child) {
-            return VolumeSlider(
-              initialValue: (ref.watch(finampSettingsProvider.currentVolume) * 100).floor() / 100.0,
-              onChange: (double currentValue) async {
-                final audioHandler = GetIt.instance<MusicPlayerBackgroundTask>();
-                audioHandler.setVolume(currentValue);
-              },
-              forceLoading: true,
-            );
-          },
+        ConnectTargetBuilder(
+          builder: (context, _) => Consumer(
+            builder: (context, ref, child) {
+              final remote = RemotePlayback.current;
+              return VolumeSlider(
+                // While another device plays, this is that device's volume.
+                initialValue: remote != null && remote.active
+                    ? (remote.volume * 100).floor() / 100.0
+                    : (ref.watch(finampSettingsProvider.currentVolume) * 100).floor() / 100.0,
+                onChange: (double currentValue) async {
+                  final audioHandler = GetIt.instance<MusicPlayerBackgroundTask>();
+                  audioHandler.setVolume(currentValue);
+                },
+                forceLoading: true,
+              );
+            },
+          ),
         ),
         if (isDesktop)
           Center(
@@ -71,6 +79,13 @@ Future<void> showOutputMenu({required BuildContext context, bool usePlayerTheme 
         SliverStickyHeader(
           header: const OutputMenuHeader(),
           sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
+        ),
+        SliverStickyHeader(
+          header: Padding(
+            padding: const EdgeInsets.only(top: 10.0, bottom: 4.0, left: 16.0, right: 16.0),
+            child: Text("Play on", style: Theme.of(context).textTheme.titleMedium),
+          ),
+          sliver: MenuMask(height: OutputMenuHeader.defaultHeight, child: const ConnectDeviceList()),
         ),
         SliverStickyHeader(
           header: Padding(
@@ -103,7 +118,7 @@ Future<void> showOutputMenu({required BuildContext context, bool usePlayerTheme 
           ),
       ];
       // TODO better estimate, how to deal with lag getting playlists?
-      var stackHeight = MediaQuery.heightOf(context) * (Platform.isAndroid ? 0.65 : 0.4);
+      var stackHeight = MediaQuery.heightOf(context) * (Platform.isAndroid ? 0.75 : 0.6);
       return (stackHeight, menu);
     },
   );

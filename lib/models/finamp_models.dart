@@ -153,6 +153,9 @@ class DefaultSettings {
   static const youtubeShowNew = true;
   static const youtubeSearchByDefault = false;
   static const logLevel = "all";
+  static const automixEnabled = false;
+  static const wordSyncedLyricsEnabled = true;
+  static const neteaseLyricsEnabled = false;
 
   static const listenBrainzToken = "";
   static const lastFmApiKey = "";
@@ -1148,6 +1151,19 @@ class FinampSettings {
   /// Detail of the app's log: `all`, `info` or `warning`.
   @HiveField(196, defaultValue: DefaultSettings.logLevel)
   String logLevel = DefaultSettings.logLevel;
+
+  /// Smart transitions between tracks (see `AutomixPlanner`): crossfades shaped per transition, and none between
+  /// consecutive tracks of the same album.
+  @HiveField(197, defaultValue: DefaultSettings.automixEnabled)
+  bool automixEnabled = DefaultSettings.automixEnabled;
+
+  /// Look up word-by-word lyrics in the AMLL TTML database when the server has none.
+  @HiveField(198, defaultValue: DefaultSettings.wordSyncedLyricsEnabled)
+  bool wordSyncedLyricsEnabled = DefaultSettings.wordSyncedLyricsEnabled;
+
+  /// Also ask NetEase Cloud Music for word-by-word lyrics. Sends the track's title and artist to NetEase.
+  @HiveField(199, defaultValue: DefaultSettings.neteaseLyricsEnabled)
+  bool neteaseLyricsEnabled = DefaultSettings.neteaseLyricsEnabled;
 
   static Future<FinampSettings> create() async {
     final downloadLocation = await DownloadLocation.create(

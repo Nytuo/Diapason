@@ -7,6 +7,8 @@ import 'package:crypto/crypto.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/friendly_error.dart';
+import 'package:diapason/services/uploader/local_name_fallback_client.dart';
+import 'package:diapason/services/uploader/uploader_discovery_service.dart';
 import 'package:diapason/services/youtube/yt_entry.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
@@ -73,7 +75,8 @@ class UploaderException extends AppException {
 }
 
 class UploaderClient {
-  UploaderClient({http.Client? httpClient}) : _http = httpClient ?? http.Client();
+  UploaderClient({http.Client? httpClient})
+    : _http = httpClient ?? LocalNameFallbackClient(http.Client(), serviceType: UploaderDiscoveryService.serviceType);
 
   static final _log = Logger("UploaderClient");
 
@@ -152,7 +155,9 @@ class UploaderClient {
     while (base.endsWith("/")) {
       base = base.substring(0, base.length - 1);
     }
-    final uri = Uri.parse("$base/$path");
+    // A `.local` name that only resolved through Bonjour is replaced by its address, so URLs handed to the player and
+    // to images work too.
+    final uri = LocalNameFallbackClient.rewrite(Uri.parse("$base/$path"));
     return query == null ? uri : uri.replace(queryParameters: query);
   }
 

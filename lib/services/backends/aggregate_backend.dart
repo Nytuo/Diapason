@@ -199,9 +199,10 @@ class AggregateBackend {
     MediaBackend? source,
     bool isPublic = true,
   }) async {
+    // The first item's source, unless it can't hold playlists (YouTube): then the first source that can.
     final backend =
         source ??
-        (itemIds.isNotEmpty ? _registry.forItemId(itemIds.first) : null) ??
+        itemIds.map(_registry.forItemId).nonNulls.where((b) => b.capabilities.playlists).firstOrNull ??
         playlistCapableSources.firstOrNull;
     if (backend == null || !backend.capabilities.playlists) return null;
 
