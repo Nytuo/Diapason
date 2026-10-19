@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:diapason/screens/analytics_settings_screen.dart';
 import 'package:diapason/components/PlaybackReportingSettingsScreen/discord_rpc_icon_selector.dart';
 import 'package:diapason/components/PlaybackReportingSettingsScreen/enabled_discord_rpc.dart';
 import 'package:diapason/components/finamp_app_bar_back_button.dart';
@@ -319,6 +320,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           subtitle: "Cache sizes, clean-up and log detail",
           onTap: _go(StorageSettingsScreen.routeName),
           keywords: ["cache", "clear", "disk", "space", "logs", "debug", "bug", "verbose"],
+        ),
+        _Entry(
+          icon: TablerIcons.chart_bar,
+          title: "Analytics & bug reports",
+          subtitle: "Optional, anonymous, off by default",
+          onTap: _go(AnalyticsSettingsScreen.routeName),
+          keywords: ["privacy", "telemetry", "aptabase", "crash", "usage", "statistics"],
         ),
         _Entry(
           icon: TablerIcons.player_track_next,

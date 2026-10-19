@@ -1668,6 +1668,30 @@ extension FinampSetters on FinampSettingsHelper {
     ).put("FinampSettings", finampSettingsTemp);
   }
 
+  static void setAnalyticsEnabled(bool newAnalyticsEnabled) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.analyticsEnabled = newAnalyticsEnabled;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setBugReportsEnabled(bool newBugReportsEnabled) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.bugReportsEnabled = newBugReportsEnabled;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setAnalyticsPromptShown(bool newAnalyticsPromptShown) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.analyticsPromptShown = newAnalyticsPromptShown;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
   static void setBufferDuration(Duration newBufferDuration) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
     finampSettingsTemp.bufferDuration = newBufferDuration;
@@ -2222,6 +2246,12 @@ extension FinampSettingsProviderSelectors on StreamProvider<FinampSettings> {
       .select((value) => value.requireValue.wordSyncedLyricsEnabled);
   ProviderListenable<bool> get neteaseLyricsEnabled => finampSettingsProvider
       .select((value) => value.requireValue.neteaseLyricsEnabled);
+  ProviderListenable<bool> get analyticsEnabled => finampSettingsProvider
+      .select((value) => value.requireValue.analyticsEnabled);
+  ProviderListenable<bool> get bugReportsEnabled => finampSettingsProvider
+      .select((value) => value.requireValue.bugReportsEnabled);
+  ProviderListenable<bool> get analyticsPromptShown => finampSettingsProvider
+      .select((value) => value.requireValue.analyticsPromptShown);
   ProviderListenable<DownloadProfile> get downloadTranscodingProfile =>
       finampSettingsProvider.select(
         (value) => value.requireValue.downloadTranscodingProfile,

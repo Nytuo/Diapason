@@ -33,6 +33,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
+import 'package:diapason/screens/analytics_settings_screen.dart';
 import 'package:logging/logging.dart';
 
 import '../models/jellyfin_models.dart';
@@ -126,6 +127,9 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(AnalyticsConsentDialog.showIfNeeded(context));
+    });
     // Android is sideloaded, so check GitHub for a newer APK on launch when the
     // user hasn't opted out. Runs after first frame so it never blocks startup.
     if (Platform.isAndroid) {

@@ -20,6 +20,8 @@ import 'package:diapason/services/shortcuts/widget_sync_service.dart';
 import 'package:diapason/utils/device_form_factor.dart';
 import 'package:diapason/utils/tv_focus.dart';
 import 'package:diapason/services/stats/stats_service.dart';
+import 'package:diapason/services/analytics_service.dart';
+import 'package:diapason/screens/analytics_settings_screen.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:diapason/services/backends/media_source_service.dart';
@@ -198,6 +200,7 @@ Future<void> main({bool integrationTesting = false, bool loginTesting = false}) 
     _mainLog.info("Setup edge-to-edge overlay");
     await setupHive();
     _mainLog.info("Setup hive and isar");
+    await AnalyticsService.init();
     applyConfiguredLogLevel();
     await DeviceFormFactorDetector.detect();
     _migrateDownloadLocations();
@@ -257,10 +260,12 @@ Future<void> main({bool integrationTesting = false, bool loginTesting = false}) 
       }
       FlutterError.presentError(details);
       flutterLogger.severe(error, error, details.stack);
+      AnalyticsService.reportError(error, details.stack);
     };
 
     PlatformDispatcher.instance.onError = (error, stack) {
       flutterLogger.severe(error, error, stack);
+      AnalyticsService.reportError(error, stack);
 
       // We have not handled printing to console, flutter should still do that.
       return false;
@@ -272,6 +277,7 @@ Future<void> main({bool integrationTesting = false, bool loginTesting = false}) 
   unawaited(fetchSystemPalette());
   await initDBus();
 
+  AnalyticsService.trackEvent("app_started");
   _mainLog.info("Launching main app");
 
   // Integration testing will launch the widgets itself, so just return
@@ -1127,6 +1133,7 @@ class FinampApp extends ConsumerWidget {
         ArtistSettingsScreen.routeName: (context) => const ArtistSettingsScreen(),
         GenreSettingsScreen.routeName: (context) => const GenreSettingsScreen(),
         NetworkSettingsScreen.routeName: (context) => const NetworkSettingsScreen(),
+        AnalyticsSettingsScreen.routeName: (context) => const AnalyticsSettingsScreen(),
         AccessibilitySettingsScreen.routeName: (context) => const AccessibilitySettingsScreen(),
         PlaylistEditScreen.routeName: (context) =>
             PlaylistEditScreen(playlist: ModalRoute.settingsOf(context)!.arguments as BaseItemDto),

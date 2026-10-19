@@ -156,6 +156,9 @@ class DefaultSettings {
   static const automixEnabled = false;
   static const wordSyncedLyricsEnabled = true;
   static const neteaseLyricsEnabled = false;
+  static const analyticsEnabled = false;
+  static const bugReportsEnabled = false;
+  static const analyticsPromptShown = false;
 
   static const listenBrainzToken = "";
   static const lastFmApiKey = "";
@@ -1164,6 +1167,18 @@ class FinampSettings {
   /// Also ask NetEase Cloud Music for word-by-word lyrics. Sends the track's title and artist to NetEase.
   @HiveField(199, defaultValue: DefaultSettings.neteaseLyricsEnabled)
   bool neteaseLyricsEnabled = DefaultSettings.neteaseLyricsEnabled;
+
+  /// Opt-in: send anonymous usage counts (e.g. app launches) to the self-hosted Aptabase instance.
+  @HiveField(200, defaultValue: DefaultSettings.analyticsEnabled)
+  bool analyticsEnabled = DefaultSettings.analyticsEnabled;
+
+  /// Opt-in, separate from usage counts: send anonymous error reports to the self-hosted Aptabase instance.
+  @HiveField(201, defaultValue: DefaultSettings.bugReportsEnabled)
+  bool bugReportsEnabled = DefaultSettings.bugReportsEnabled;
+
+  /// Whether the one-time analytics consent dialog has been answered.
+  @HiveField(202, defaultValue: DefaultSettings.analyticsPromptShown)
+  bool analyticsPromptShown = DefaultSettings.analyticsPromptShown;
 
   static Future<FinampSettings> create() async {
     final downloadLocation = await DownloadLocation.create(
