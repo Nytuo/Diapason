@@ -9,11 +9,14 @@ import 'package:diapason/services/downloads_service.dart';
 import 'package:diapason/services/friendly_error.dart';
 import 'package:diapason/services/uploader/uploader_client.dart';
 import 'package:diapason/services/youtube_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+
+enum YouTubeImportState { uploading, waiting, added, failed }
 
 /// Puts YouTube tracks into the user's own library through the uploader, when the user keeps them (downloads one,
 /// adds one to a playlist) — never just for listening to or previewing one.
@@ -63,6 +66,34 @@ class YouTubeLibraryImport {
 
   int get pendingCount => _pending.length;
 
+  final ValueNotifier<Map<String, YouTubeImportState>> states = ValueNotifier(const {});
+
+  YouTubeImportState? stateOf(BaseItemDto track) => states.value[track.id.nativeId];
+
+  void _setState(BaseItemDto track, YouTubeImportState state) =>
+      states.value = {...states.value, track.id.nativeId: state};
+
+  Future<void> send(BaseItemDto track) async {
+    if (stateOf(track) == YouTubeImportState.uploading) return;
+    _setState(track, YouTubeImportState.uploading);
+    GlobalSnackbar.message((_) => "Sending '${track.name}' to your library…");
+    final result = await addToLibrary(track);
+    if (result.ok) {
+      _setState(track, YouTubeImportState.added);
+      GlobalSnackbar.message(
+        (_) =>
+            result.duplicate ? "'${track.name}' is already in your library" : "Added '${track.name}' to your library",
+        isConfirmation: true,
+      );
+    } else if (_isUnreachable(result)) {
+      _setState(track, YouTubeImportState.waiting);
+      GlobalSnackbar.message((_) => "Can't reach the uploader. '${track.name}' will be sent once it's back.");
+    } else {
+      _setState(track, YouTubeImportState.failed);
+      GlobalSnackbar.message((_) => "Couldn't add '${track.name}' to your library: ${result.message}");
+    }
+  }
+
   Future<File> _pendingFile() async =>
       File(p.join((await getApplicationSupportDirectory()).path, "uploader", "pending_youtube_imports.json"));
 
@@ -97,6 +128,9 @@ class YouTubeLibraryImport {
         final result = await addToLibrary(entry.track, automatic: true, queueOnFailure: false);
         if (result.ok || !_isUnreachable(result)) {
           _pending.remove(entry);
+          if (stateOf(entry.track) != null) {
+            _setState(entry.track, result.ok ? YouTubeImportState.added : YouTubeImportState.failed);
+          }
           if (result.ok && entry.playlist != null) unawaited(_addOnceInLibrary(entry.playlist!, entry.track));
           if (result.ok)
             GlobalSnackbar.message((_) => "Added '${entry.track.name}' to your library", isConfirmation: true);

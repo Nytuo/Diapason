@@ -1692,6 +1692,14 @@ extension FinampSetters on FinampSettingsHelper {
     ).put("FinampSettings", finampSettingsTemp);
   }
 
+  static void setAutoRadioPreferYouTube(bool newAutoRadioPreferYouTube) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.autoRadioPreferYouTube = newAutoRadioPreferYouTube;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
   static void setBufferDuration(Duration newBufferDuration) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
     finampSettingsTemp.bufferDuration = newBufferDuration;
@@ -2252,6 +2260,8 @@ extension FinampSettingsProviderSelectors on StreamProvider<FinampSettings> {
       .select((value) => value.requireValue.bugReportsEnabled);
   ProviderListenable<bool> get analyticsPromptShown => finampSettingsProvider
       .select((value) => value.requireValue.analyticsPromptShown);
+  ProviderListenable<bool> get autoRadioPreferYouTube => finampSettingsProvider
+      .select((value) => value.requireValue.autoRadioPreferYouTube);
   ProviderListenable<DownloadProfile> get downloadTranscodingProfile =>
       finampSettingsProvider.select(
         (value) => value.requireValue.downloadTranscodingProfile,

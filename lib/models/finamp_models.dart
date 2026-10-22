@@ -122,6 +122,7 @@ class DefaultSettings {
 
   static const interfaceMode = "modern";
   static const autoRadioEnabled = false;
+  static const autoRadioPreferYouTube = true;
   static const crossfadeSeconds = 0;
   static const visualizerEnabled = true;
   static const visualizerBins = 64;
@@ -1179,6 +1180,9 @@ class FinampSettings {
   /// Whether the one-time analytics consent dialog has been answered.
   @HiveField(202, defaultValue: DefaultSettings.analyticsPromptShown)
   bool analyticsPromptShown = DefaultSettings.analyticsPromptShown;
+
+  @HiveField(203, defaultValue: DefaultSettings.autoRadioPreferYouTube)
+  bool autoRadioPreferYouTube = DefaultSettings.autoRadioPreferYouTube;
 
   static Future<FinampSettings> create() async {
     final downloadLocation = await DownloadLocation.create(

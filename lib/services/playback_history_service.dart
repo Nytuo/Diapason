@@ -142,6 +142,7 @@ class PlaybackHistoryService {
             //TODO handle reporting track changes based on history changes, as that is more reliable
             onTrackChanged(currentItem, currentState, prevItem, prevState);
           }
+          unawaited(_extendWithAutoRadio(onlyIfLastTrack: true));
         }
         // handle events that don't change the current track (e.g. loop, pause, seek, etc.)
         // handle play/pause events
@@ -475,15 +476,22 @@ class PlaybackHistoryService {
     );
   }
 
-  Future<void> _extendWithAutoRadio() async {
+  bool _extendingAutoRadio = false;
+
+  Future<void> _extendWithAutoRadio({bool onlyIfLastTrack = false}) async {
     final autoRadio = GetIt.instance<AutoRadioService>();
-    if (!autoRadio.enabled) return;
+    if (!autoRadio.enabled || _extendingAutoRadio) return;
 
     final seed = _currentTrack?.item.baseItem;
     if (seed == null) return;
 
+    _extendingAutoRadio = true;
     try {
       final queue = _queueService.getQueue();
+      if (onlyIfLastTrack &&
+          (queue.nextUp.isNotEmpty || queue.queue.isNotEmpty || _queueService.loopMode != FinampLoopMode.none)) {
+        return;
+      }
       final alreadyQueued = queue.queue
           .followedBy(queue.nextUp)
           .followedBy(queue.previousTracks)
@@ -511,6 +519,8 @@ class PlaybackHistoryService {
       );
     } catch (e) {
       _playbackHistoryServiceLogger.warning("Auto-radio could not extend the queue: $e");
+    } finally {
+      _extendingAutoRadio = false;
     }
   }
 

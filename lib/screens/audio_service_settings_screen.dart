@@ -42,6 +42,7 @@ class _AudioServiceSettingsScreenState extends State<AudioServiceSettingsScreen>
         children: [
           const _CrossfadeSelector(),
           const _AutomixToggle(),
+          const _AutoRadioToggle(),
           if (Platform.isAndroid) const StopForegroundSelector(),
           if (Platform.isAndroid) const EnableDuckingOnInterruptionsToggle(),
           if (Platform.isAndroid) const ForceAudioOffloadingOnAndroidToggle(),
@@ -316,6 +317,36 @@ class _AutomixToggle extends ConsumerWidget {
       ),
       value: ref.watch(finampSettingsProvider.automixEnabled),
       onChanged: FinampSetters.setAutomixEnabled,
+    );
+  }
+}
+
+class _AutoRadioToggle extends ConsumerWidget {
+  const _AutoRadioToggle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final enabled = ref.watch(finampSettingsProvider.autoRadioEnabled);
+    return Column(
+      children: [
+        SwitchListTile.adaptive(
+          secondary: const Icon(TablerIcons.radio),
+          title: const Text("Auto-radio"),
+          subtitle: const Text("When the queue is about to end, keep playing similar music."),
+          value: enabled,
+          onChanged: FinampSetters.setAutoRadioEnabled,
+        ),
+        SwitchListTile.adaptive(
+          secondary: const Icon(TablerIcons.brand_youtube),
+          title: const Text("Prefer YouTube Mix"),
+          subtitle: const Text(
+            "Use YouTube's own recommendations (personalised if yt-dlp has your cookies) first, "
+            "and ListenBrainz/Last.fm as the fallback. Turn off to try those first.",
+          ),
+          value: ref.watch(finampSettingsProvider.autoRadioPreferYouTube),
+          onChanged: enabled ? FinampSetters.setAutoRadioPreferYouTube : null,
+        ),
+      ],
     );
   }
 }

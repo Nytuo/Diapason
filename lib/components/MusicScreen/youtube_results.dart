@@ -6,8 +6,7 @@ import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/discovery/youtube_discover_service.dart';
 import 'package:diapason/services/queue_service.dart';
 import 'package:diapason/services/friendly_error.dart';
-import 'package:diapason/services/uploader/uploader_client.dart';
-import 'package:diapason/services/youtube/youtube_availability.dart';
+import 'package:diapason/components/MusicScreen/youtube_upload_button.dart';
 import 'package:diapason/services/youtube_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -60,21 +59,6 @@ class YouTubeActions {
     }
   }
 
-  static Future<void> saveToServer(BuildContext context, BaseItemDto track) async {
-    _toast(context, "Asking your server to fetch '${track.name ?? "this track"}'…");
-    final result = await GetIt.instance<UploaderClient>().ytDownloadToLibrary(
-      track.id.nativeId,
-      artist: track.albumArtist,
-      title: track.name,
-    );
-    _toast(
-      context,
-      result.ok
-          ? (result.duplicate ? "Already in your library" : "Added to your library")
-          : "Couldn't add it: ${result.message}",
-    );
-  }
-
   static String duration(Duration? duration) {
     if (duration == null) return "";
     final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, "0");
@@ -118,7 +102,6 @@ class YouTubeTrackTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final toServer = GetIt.instance<YouTubeService>().source == YouTubeSource.uploader;
     return ListTile(
       leading: YouTubeThumbnail(track, width: 56.0, height: 40.0),
       title: Text(track.name ?? "Unknown", maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -129,12 +112,8 @@ class YouTubeTrackTile extends StatelessWidget {
           Text(YouTubeActions.duration(track.runTimeTicksDuration())),
           if (onDiscover != null)
             IconButton(icon: const Icon(TablerIcons.radio), tooltip: "Start discover queue", onPressed: onDiscover),
-          if (toServer)
-            IconButton(
-              icon: const Icon(TablerIcons.cloud_download),
-              tooltip: "Add to server library",
-              onPressed: () => YouTubeActions.saveToServer(context, track),
-            )
+          if (YouTubeUploadButton.handles(track))
+            YouTubeUploadButton(track: track)
           else
             DownloadButton(
               item: DownloadStub.fromItem(type: DownloadItemType.track, item: track),

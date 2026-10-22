@@ -358,7 +358,28 @@ class LocalYtDlpService {
     );
   }
 
+  Future<List<YtEntry>> mix(String id, {int limit = 50}) async {
+    if (!_idRe.hasMatch(id)) return const [];
+    final out = await run([
+      "--flat-playlist",
+      "-J",
+      "--skip-download",
+      "--playlist-end",
+      "$limit",
+      "--",
+      "https://www.youtube.com/watch?v=$id&list=RD$id",
+    ]);
+    return _entries(out).where((e) => e.id != id).toList();
+  }
+
   Future<List<YtEntry>> related(String id, {int limit = 20}) async {
+    try {
+      final mixed = await mix(id, limit: limit + 1);
+      if (mixed.isNotEmpty) return mixed.take(limit).toList();
+    } on YtDlpFailure catch (e) {
+      if (e.kind == YtFailureKind.rateLimited || e.kind == YtFailureKind.blocked) rethrow;
+      _log.fine("YouTube Mix unavailable for $id (${e.kind.name}); falling back to a text search");
+    }
     final seed = await lookup(id);
     if (seed == null) return const [];
     final results = await search("${seed.artist} ${seed.title}".trim(), limit: limit + 1);

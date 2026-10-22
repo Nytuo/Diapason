@@ -11,22 +11,37 @@ class YouTubeDiscoverService {
 
   static const _defaultLength = 40;
 
-  Future<List<BaseItemDto>> radioFromSeed(BaseItemDto seed, {int length = _defaultLength}) async {
+  Future<List<BaseItemDto>> radioFromSeed(
+    BaseItemDto seed, {
+    int length = _defaultLength,
+    Set<String> exclude = const {},
+  }) async {
     final chain = <BaseItemDto>[seed];
-    final seen = <String>{seed.id.nativeId};
+    final seen = <String>{seed.id.nativeId, ...exclude};
 
     var current = seed;
     while (chain.length < length) {
       final related = await _youtube.relatedTracks(current);
-      final next = related.firstWhereOrNull((track) => seen.add(track.id.nativeId));
-      if (next == null) {
+      final fresh = related.where((track) => seen.add(track.id.nativeId)).toList();
+      if (fresh.isEmpty) {
         _log.fine("Discover chain dried up after ${chain.length} tracks.");
         break;
       }
-      chain.add(next);
-      current = next;
+      chain.addAll(fresh.take(length - chain.length));
+      current = chain.last;
     }
     return chain;
+  }
+
+  Future<List<BaseItemDto>> radioFor(
+    BaseItemDto track, {
+    int length = _defaultLength,
+    Set<String> exclude = const {},
+  }) async {
+    final seed = await _seedForTrack(track);
+    if (seed == null) return const [];
+    final queue = await radioFromSeed(seed, length: length + 1, exclude: exclude);
+    return queue.where((t) => t.id.nativeId != seed.id.nativeId).toList();
   }
 
   Future<List<BaseItemDto>> radioFromQuery(String query, {int length = _defaultLength}) async {

@@ -14,6 +14,7 @@ import 'package:diapason/menus/components/menuEntries/menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/remove_from_current_playlist_menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/restore_queue_menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/start_radio_menu_entry.dart';
+import 'package:diapason/menus/components/menuEntries/youtube_radio_menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/toggle_favorite_menu_entry.dart';
 import 'package:diapason/menus/components/menu_item_info_header.dart';
 import 'package:diapason/menus/components/playbackActions/playback_action.dart';
@@ -248,6 +249,7 @@ class _TrackMenuState extends ConsumerState<TrackMenu> with TickerProviderStateM
       ),
       InstantMixMenuEntry(baseItem: widget.item),
       StartRadioMenuEntry(baseItem: widget.item),
+      YouTubeRadioMenuEntry(baseItem: widget.item),
       AdaptiveDownloadLockDeleteMenuEntry(baseItem: widget.item),
       ToggleFavoriteMenuEntry(baseItem: widget.item),
       if (widget.showQueueActions) CreatePlaylistFromCurrentQueueMenuEntry(),

@@ -1,5 +1,6 @@
 import 'package:diapason/components/AlbumScreen/download_dialog.dart';
 import 'package:diapason/components/MusicScreen/music_screen_tab_view.dart';
+import 'package:diapason/components/MusicScreen/youtube_upload_button.dart';
 import 'package:diapason/components/confirmation_prompt_dialog.dart';
 import 'package:diapason/components/delete_prompts.dart';
 import 'package:diapason/components/global_snackbar.dart';
@@ -54,6 +55,12 @@ class DownloadButton extends ConsumerWidget {
     String? parentTooltip;
     if (status == null) {
       return const SizedBox.shrink();
+    }
+    if (item.type == DownloadItemType.track &&
+        !status.isRequired &&
+        !isOffline &&
+        YouTubeUploadButton.handles(item.baseItem)) {
+      return YouTubeUploadButton(track: item.baseItem!);
     }
     if (status.isIncidental) {
       var parent = downloadsService.getFirstRequiringItem(item);
