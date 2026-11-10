@@ -21,7 +21,6 @@ import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:diapason/models/jellyfin_models.dart' as jellyfin_models;
 import 'package:diapason/services/current_track_metadata_provider.dart';
 import 'package:diapason/services/favorite_provider.dart';
-import 'package:diapason/services/finamp_user_helper.dart';
 import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:diapason/services/playback_history_service.dart';
 import 'package:diapason/services/queue_service.dart';

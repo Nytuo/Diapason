@@ -177,13 +177,7 @@ class _SmartPlaylistEditorDialogState extends State<_SmartPlaylistEditorDialog> 
                       DropdownMenuItem(value: "false", child: Text("No")),
                     ],
                   )
-                : TextField(
-                    controller: TextEditingController(text: rule.value)
-                      ..selection = TextSelection.collapsed(offset: rule.value.length),
-                    keyboardType: rule.field.isNumeric ? TextInputType.number : TextInputType.text,
-                    decoration: const InputDecoration(isDense: true, hintText: "value"),
-                    onChanged: (v) => rule.value = v,
-                  ),
+                : _RuleValueField(key: ObjectKey(rule), rule: rule),
           ),
           IconButton(
             icon: const Icon(TablerIcons.x, size: 18),
@@ -191,6 +185,38 @@ class _SmartPlaylistEditorDialogState extends State<_SmartPlaylistEditorDialog> 
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The value box of one rule. Owns its controller so rebuilding the dialog (changing another rule, removing one)
+/// doesn't reset the text, cursor and keyboard state of the boxes.
+class _RuleValueField extends StatefulWidget {
+  const _RuleValueField({super.key, required this.rule});
+
+  final SmartRule rule;
+
+  @override
+  State<_RuleValueField> createState() => _RuleValueFieldState();
+}
+
+class _RuleValueFieldState extends State<_RuleValueField> {
+  late final TextEditingController _controller = TextEditingController(text: widget.rule.value)
+    ..selection = TextSelection.collapsed(offset: widget.rule.value.length);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: _controller,
+      keyboardType: widget.rule.field.isNumeric ? TextInputType.number : TextInputType.text,
+      decoration: const InputDecoration(isDense: true, hintText: "value"),
+      onChanged: (v) => widget.rule.value = v,
     );
   }
 }

@@ -330,8 +330,8 @@ String _jellyfinFilters(MusicScreenPlayable request) => request.sortConfig.filte
       (filter) => switch (filter.type) {
         ItemFilterType.isFavorite => "IsFavorite",
         ItemFilterType.isFullyDownloaded => null, // only applicable for offline mode
-        ItemFilterType.startsWithCharacter =>
-          throw UnimplementedError(), //TODO properly handle the "NameStartsWith" filter in the API helper
+        // Not a "Filters" value; nothing in the UI creates it yet. Ignored rather than crashing the whole tab.
+        ItemFilterType.startsWithCharacter => null,
         ItemFilterType.genreFilter => null,
         ItemFilterType.searchTerm => null,
         ItemFilterType.isUnplayed => "IsUnplayed",
@@ -622,17 +622,25 @@ Future<List<BaseItemDto>?> getJellyfinCollection(
             (filter) => switch (filter.type) {
               ItemFilterType.isFavorite => "IsFavorite",
               ItemFilterType.isFullyDownloaded => null, // only applicable for offline mode
-              // ItemFilterType.startsWithCharacter => "NameStartsWith: ${filter.value}",
-              ItemFilterType.startsWithCharacter =>
-                throw UnimplementedError(), //TODO properly handle the "NameStartsWith" filter in the API helper
-              ItemFilterType.genreFilter => throw UnimplementedError(),
-              ItemFilterType.searchTerm => throw UnimplementedError(),
+              // These aren't "Filters" values: genre and search are passed as their own parameters below, and
+              // starts-with isn't offered for collections. Ignore them instead of crashing the section.
+              ItemFilterType.startsWithCharacter => null,
+              ItemFilterType.genreFilter => null,
+              ItemFilterType.searchTerm => null,
               ItemFilterType.isUnplayed => "IsUnplayed",
             },
           )
           .nonNulls
           .join(","),
       isFavorite: JellyfinApiHelper.getIsFavoriteFilter(ContentType.mixed, sortConfig.filters),
+      genreFilter: sortConfig.filters
+          .firstWhereOrNull((filter) => filter.type == ItemFilterType.genreFilter)
+          ?.extraBaseItem
+          .id,
+      searchTerm: sortConfig.filters
+          .firstWhereOrNull((filter) => filter.type == ItemFilterType.searchTerm)
+          ?.extraString
+          .trim(),
       // TODO allow filtering collection child types?
       //includeItemTypes: sectionInfo.contentType.itemType?.jellyfinName,
     );

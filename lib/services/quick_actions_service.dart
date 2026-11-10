@@ -73,7 +73,7 @@ class QuickActionsService {
         assert(action.itemId != null);
         final item = await GetIt.instance<ProviderContainer>().read(itemByIdProvider(action.itemId!).future);
         if (item == null) {
-          GlobalSnackbar.message((_) => "Failed to load item '${action.itemName}*'");
+          GlobalSnackbar.message((_) => "Failed to load item '${action.itemName}'");
         } else {
           await queueService.startPlayback(
             items: await loadChildTracksFromBaseItem(
@@ -85,7 +85,6 @@ class QuickActionsService {
             order: FinampPlaybackOrder.linear,
           );
         }
-        _quickActionsServiceLogger.warning("Quick action $action is not implemented yet.");
         break;
       case FinampQuickActions.surpriseMe:
         await audioServiceHelper.startSurpriseMeMix();

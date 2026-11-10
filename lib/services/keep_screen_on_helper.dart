@@ -46,8 +46,8 @@ class KeepScreenOnHelper {
     });
 
     final container = GetIt.instance<ProviderContainer>();
-    container.listen(finampSettingsProvider.keepScreenOnOption, (_, __) => setKeepScreenOn);
-    container.listen(finampSettingsProvider.keepScreenOnWhilePluggedIn, (_, __) => setKeepScreenOn);
+    container.listen(finampSettingsProvider.keepScreenOnOption, (_, __) => setKeepScreenOn());
+    container.listen(finampSettingsProvider.keepScreenOnWhilePluggedIn, (_, __) => setKeepScreenOn());
   }
 
   void setKeepScreenOn() {

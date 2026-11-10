@@ -1,6 +1,4 @@
-import 'package:diapason/color_schemes.g.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
-import 'package:diapason/services/widget_bindings_observer_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

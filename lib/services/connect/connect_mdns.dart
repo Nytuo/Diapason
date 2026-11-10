@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:flutter/services.dart';

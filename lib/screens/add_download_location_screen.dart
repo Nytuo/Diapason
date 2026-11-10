@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:uuid/v4.dart';
 import 'package:diapason/components/AddDownloadLocationScreen/app_directory_location_form.dart';
 import 'package:diapason/components/AddDownloadLocationScreen/custom_download_location_form.dart';
-import 'package:diapason/components/confirmation_prompt_dialog.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/l10n/app_localizations.dart';

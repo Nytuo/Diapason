@@ -112,7 +112,21 @@ class ConnectPlayerBridge {
 
     if (current == null) return ConnectStatus.stopped;
 
-    final queue = localConnectQueue();
+    // Answered on every status poll: work the queue version out from the ids alone instead of building (and copying)
+    // the whole shared queue, which can hold thousands of tracks.
+    final tags = _player.audioSources
+        .map((source) => (source as IndexedAudioSource).tag)
+        .whereType<FinampQueueItem>()
+        .toList();
+    final shuffled =
+        _queue.playbackOrder == FinampPlaybackOrder.shuffled && _player.shuffleIndices.length == tags.length;
+    final queueVersion = tags.isEmpty
+        ? null
+        : ConnectQueue.versionOf(
+            tags.map((tag) => "${(tag.item.extras!["itemJson"] as Map)["Id"]}"),
+            shuffled ? _player.shuffleIndices : null,
+          );
+    final queueIndex = tags.isEmpty ? null : (_player.sequenceState.currentIndex ?? 0);
     final item = current.baseItem;
     return ConnectStatus(
       song: ConnectSong(
@@ -125,8 +139,8 @@ class ConnectPlayerBridge {
       state: (state?.playing ?? false) ? "playing" : "paused",
       position: _player.playbackPosition.inMilliseconds / 1000,
       volume: _player.volume,
-      queueVersion: queue?.version,
-      queueIndex: queue?.index,
+      queueVersion: queueVersion,
+      queueIndex: queueIndex,
       shuffle: _queue.playbackOrder == FinampPlaybackOrder.shuffled,
       repeat: _queue.loopMode.name,
     );

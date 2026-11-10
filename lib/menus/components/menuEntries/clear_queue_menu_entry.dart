@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/menus/components/menuEntries/menu_entry.dart';

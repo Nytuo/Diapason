@@ -20,7 +20,6 @@ import 'package:path/path.dart' as path_helper;
 import 'package:uuid/uuid.dart';
 
 import '../models/finamp_models.dart';
-import '../models/media_source.dart';
 import 'backends/backend_registry.dart';
 import '../models/jellyfin_models.dart';
 import '../screens/downloads_screen.dart';

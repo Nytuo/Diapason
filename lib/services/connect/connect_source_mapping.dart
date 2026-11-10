@@ -105,3 +105,12 @@ Object? _rewrite(Object? value, String from, String to) => switch (value) {
   List<Object?> l => [for (final e in l) _rewrite(e, from, to)],
   _ => value,
 };
+
+/// The source on this device that a source id from another device stands for, worked out from the kind encoded in
+/// the id when there is no fuller hint: only an unambiguous match (one source of that kind) counts.
+String? localSourceIdForForeign(String foreignSourceId) {
+  final registry = _registry;
+  if (registry == null) return null;
+  if (registry.bySourceId(foreignSourceId) != null) return foreignSourceId;
+  return _matchLocalSource(registry, foreignSourceId, null);
+}

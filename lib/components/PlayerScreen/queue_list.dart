@@ -95,6 +95,8 @@ class _QueueListState extends ConsumerState<QueueList> {
 
   bool _performInitialJump = true;
 
+  StreamSubscription<FinampQueueInfo?>? _queueSubscription;
+
   late List<Widget> _contents;
 
   // Used to jump when changing playback order
@@ -105,7 +107,7 @@ class _QueueListState extends ConsumerState<QueueList> {
   void initState() {
     super.initState();
 
-    _queueService.getQueueStream().listen((queueInfo) {
+    _queueSubscription = _queueService.getQueueStream().listen((queueInfo) {
       _source = queueInfo?.source;
       _previousTrackCount = queueInfo?.previousTracks.length ?? 0;
     });
@@ -127,6 +129,23 @@ class _QueueListState extends ConsumerState<QueueList> {
         FinampSetters.setPreviousTracksExpanded(true);
         break;
     }
+  }
+
+  @override
+  void didUpdateWidget(QueueList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.scrollController != widget.scrollController) {
+      oldWidget.scrollController.removeListener(_updateJumpToTop);
+      widget.scrollController.addListener(_updateJumpToTop);
+    }
+  }
+
+  @override
+  void dispose() {
+    // Without this every opening of the queue left a live subscription and scroll listener behind.
+    _queueSubscription?.cancel();
+    widget.scrollController.removeListener(_updateJumpToTop);
+    super.dispose();
   }
 
   void _updateJumpToTop() {
@@ -710,7 +729,7 @@ class _CurrentTrackState extends ConsumerState<CurrentTrack> {
         if (data != null && currentTrack != null) {
           mediaState = data.mediaState;
 
-          final currentTrackBaseItem = jellyfin_models.BaseItemDto.fromJson(
+          final currentTrackBaseItem = jellyfin_models.baseItemFromItemJson(
             currentTrack!.item.extras?["itemJson"] as Map<String, dynamic>,
           );
 

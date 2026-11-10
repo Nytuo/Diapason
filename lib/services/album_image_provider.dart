@@ -190,11 +190,19 @@ albumImageProvider = Provider.autoDispose.family<AlbumImageInfo, AlbumImageReque
       return AlbumImageInfo(null, request, null, fullQuality: true);
     } else {
       // Allow drawing albums up to 4X intrinsic size by setting scale
+      ImageProvider thumb = CachedImage(
+        NetworkImage(imageUrl.toString(), scale: 0.25, headers: imageHeaders.isEmpty ? null : imageHeaders),
+        key,
+      );
+      final maxWidth = request.maxWidth;
+      final maxHeight = request.maxHeight;
+      if (maxWidth != null && maxHeight != null && maxWidth > 0 && maxHeight > 0) {
+        // Some backends (YouTube, Plex, plain URLs) ignore the requested size and send full-size art; decoding those
+        // at full resolution for every list tile costs memory and frame time, so cap the decode like file images.
+        thumb = ResizeImage(thumb, width: maxWidth * 2, height: maxHeight * 2, policy: ResizeImagePolicy.fit);
+      }
       return AlbumImageInfo(
-        CachedImage(
-          NetworkImage(imageUrl.toString(), scale: 0.25, headers: imageHeaders.isEmpty ? null : imageHeaders),
-          key,
-        ),
+        thumb,
         request,
         imageUrl,
         fullQuality: request.fullQuality,
@@ -210,7 +218,11 @@ albumImageProvider = Provider.autoDispose.family<AlbumImageInfo, AlbumImageReque
     // This helps keep cache usage by fileImages in check
     // Caching smaller at 2X size results in blurriness comparable to
     // NetworkImages fetched with display size
-    out = ResizeImage(out, width: request.maxWidth! * 2, height: request.maxHeight! * 2, policy: ResizeImagePolicy.fit);
+    final maxWidth = request.maxWidth ?? request.maxHeight!;
+    final maxHeight = request.maxHeight ?? request.maxWidth!;
+    if (maxWidth > 0 && maxHeight > 0) {
+      out = ResizeImage(out, width: maxWidth * 2, height: maxHeight * 2, policy: ResizeImagePolicy.fit);
+    }
   }
   return AlbumImageInfo(out, request, Uri.file(downloadedImage.path), fullQuality: request.fullQuality);
 });

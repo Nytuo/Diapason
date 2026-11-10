@@ -105,6 +105,18 @@ class QueueService {
   // Flags for saving and loading saved queues
   int _saveUpdateCycleCount = 0;
   bool _saveUpdateImmediate = false;
+  PlaybackState? _lastPlaybackStateForSave;
+
+  static bool _isMeaningfulPlaybackChange(PlaybackState? previous, PlaybackState current) {
+    if (previous == null) return true;
+    if (previous.playing != current.playing || previous.processingState != current.processingState) return true;
+    // A seek shows up as the reported position drifting away from where steady playback would have put it.
+    final elapsed = current.updateTime.difference(previous.updateTime);
+    final expected = previous.playing
+        ? previous.updatePosition + elapsed * previous.speed
+        : previous.updatePosition;
+    return (current.updatePosition - expected).abs() > const Duration(seconds: 2);
+  }
   SavedQueueState _savedQueueState = SavedQueueState.preInit;
   FinampStorableQueueInfo? _failedSavedQueue;
   static const int _maxSavedQueues = 60;
@@ -137,10 +149,14 @@ class QueueService {
       _currentQueueIndex = event.queueIndex ?? 0;
 
       // Ignore playback events if queue is empty.
+      final previous = _lastPlaybackStateForSave;
+      _lastPlaybackStateForSave = event;
       if (_audioHandler.audioSources.isNotEmpty && (previousIndex != _currentQueueIndex || _currentTrack == null)) {
         _queueServiceLogger.finer("Play queue index changed, new index: $_currentQueueIndex");
         _buildQueueFromNativePlayerQueue();
-      } else {
+      } else if (_isMeaningfulPlaybackChange(previous, event)) {
+        // Only pausing/resuming and seeking warrant the quicker save; playback state also fires for every buffering
+        // update, which used to rewrite the whole saved queue every ten seconds while playing.
         _saveUpdateImmediate = true;
       }
     });
@@ -431,15 +447,19 @@ class QueueService {
         } else {
           shuffleIndicesToRemove = indicesToRemove;
         }
+        // Sets and a sorted list keep this linear-ish; the queue can hold thousands of tracks.
+        final indicesToRemoveSet = indicesToRemove.toSet();
+        final shuffleIndicesToRemoveSet = shuffleIndicesToRemove.toSet();
         trimmedPreviousTracks = trimmedPreviousTracks
-            .mapIndexed((i, x) => indicesToRemove.contains(i) ? null : x)
+            .mapIndexed((i, x) => indicesToRemoveSet.contains(i) ? null : x)
             .nonNulls
             .toList();
-        shuffleIndices = shuffleIndices.map((x) => shuffleIndicesToRemove.contains(x) ? null : x).nonNulls.toList();
+        shuffleIndices = shuffleIndices.where((x) => !shuffleIndicesToRemoveSet.contains(x)).toList();
         queueToSave.previousTracks = trimmedPreviousTracks;
         // repair shuffle indices to close "gaps"
+        final sortedRemoved = shuffleIndicesToRemoveSet.toList()..sort();
         for (int i = 0; i < shuffleIndices.length; i++) {
-          int removedBefore = shuffleIndicesToRemove.where((x) => x < shuffleIndices[i]).length;
+          final removedBefore = lowerBound(sortedRemoved, shuffleIndices[i]);
           shuffleIndices[i] = shuffleIndices[i] - removedBefore;
         }
       }

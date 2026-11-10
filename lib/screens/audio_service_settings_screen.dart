@@ -2,7 +2,6 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'dart:io';
 
 import 'package:diapason/l10n/app_localizations.dart';
-import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,8 +10,6 @@ import 'package:diapason/components/finamp_app_bar_back_button.dart';
 import 'package:diapason/components/AudioServiceSettingsScreen/loadQueueOnStartup_selector.dart';
 import 'package:diapason/components/AudioServiceSettingsScreen/stop_foreground_selector.dart';
 import 'package:diapason/components/AudioServiceSettingsScreen/track_shuffle_item_count_editor.dart';
-import 'package:diapason/l10n/app_localizations.dart';
-import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/music_player_background_task.dart';
 
 class AudioServiceSettingsScreen extends StatefulWidget {

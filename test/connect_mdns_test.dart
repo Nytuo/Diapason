@@ -63,14 +63,18 @@ void main() {
       await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
         channel.name,
         channel.codec.encodeMethodCall(
-          const MethodCall('services', [
-            {
-              'name': 'Phone',
-              'host': '10.0.0.4',
-              'port': 99,
-              'txt': {'token': 'x'},
-            },
-          ]),
+          // Same shape as AppleTvBonjourChannel.swift sends: the browsed type and what is resolved for it.
+          const MethodCall('services', {
+            'type': '_diapason-connect._tcp',
+            'services': [
+              {
+                'name': 'Phone',
+                'host': '10.0.0.4',
+                'port': 99,
+                'txt': {'token': 'x'},
+              },
+            ],
+          }),
         ),
         (_) {},
       );
@@ -81,7 +85,9 @@ void main() {
       latest = null;
       await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
         channel.name,
-        channel.codec.encodeMethodCall(const MethodCall('services', [])),
+        channel.codec.encodeMethodCall(
+          const MethodCall('services', {'type': '_diapason-connect._tcp', 'services': <Object?>[]}),
+        ),
         (_) {},
       );
       expect(latest, isNull, reason: 'nothing is delivered after stopping');

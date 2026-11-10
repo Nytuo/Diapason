@@ -1,6 +1,6 @@
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:flutter/widgets.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 import 'package:intl/src/intl_helpers.dart';
 
 String getDateFormatLocaleString() {
@@ -16,6 +16,6 @@ String getDateFormatLocaleString() {
 }
 
 String getStringComponentsInLocaleOrder(BuildContext context, List<String> components, {String separator = ' '}) {
-  final isLeftToRight = Directionality.of(context) == TextDirection.LTR;
+  final isLeftToRight = Directionality.of(context) == TextDirection.ltr;
   return isLeftToRight ? components.join(separator) : components.reversed.join(separator);
 }

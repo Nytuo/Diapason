@@ -87,6 +87,8 @@ class YouTubeThumbnail extends StatelessWidget {
         url.toString(),
         headers: youtube.imageHeaders.isEmpty ? null : youtube.imageHeaders,
         fit: fit,
+        // Decode at the size shown (YouTube thumbnails can be up to 1280px wide).
+        cacheWidth: width == null ? null : (width! * MediaQuery.devicePixelRatioOf(context) * (fit == BoxFit.cover ? 1.8 : 1)).round(),
         errorBuilder: (_, _, _) => fallback,
       ),
     );

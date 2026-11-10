@@ -58,9 +58,17 @@ class StreamCacheService {
     _progressSubscription?.cancel();
     prefetch.value = StreamPrefetch(title: title, fraction: 0);
 
+    var shown = 0.0;
     _progressSubscription = source.downloadProgressStream.listen(
       (progress) {
-        prefetch.value = progress >= 1.0 ? null : StreamPrefetch(title: title, fraction: progress);
+        if (progress >= 1.0) {
+          prefetch.value = null;
+          return;
+        }
+        // Progress arrives for every downloaded chunk; only republish (and rebuild the bar) per visible percent.
+        if (progress - shown < 0.01 && prefetch.value != null) return;
+        shown = progress;
+        prefetch.value = StreamPrefetch(title: title, fraction: progress);
       },
       onError: (_) => prefetch.value = null,
       onDone: () => prefetch.value = null,
@@ -90,7 +98,6 @@ class StreamCacheService {
     return dir.listSync().whereType<File>().toList();
   }
 
-  Future<List<File>> _entries() async => (await _allFiles()).where((f) => !_isSidecar(f)).toList();
 
   static int _sizeOf(File file) {
     try {
@@ -100,37 +107,51 @@ class StreamCacheService {
     }
   }
 
+  /// Every file in the cache with its stat, read asynchronously in one pass so pruning (run on every track change)
+  /// doesn't block the UI thread with thousands of synchronous file-system calls.
+  Future<Map<String, FileStat>> _statAll() async {
+    final dir = await directory;
+    final stats = <String, FileStat>{};
+    if (!await dir.exists()) return stats;
+    await for (final entity in dir.list(followLinks: false)) {
+      if (entity is! File) continue;
+      try {
+        stats[entity.path] = await entity.stat();
+      } catch (_) {}
+    }
+    return stats;
+  }
+
   Future<int> currentSizeBytes() async {
     var total = 0;
-    for (final file in await _allFiles()) {
-      total += _sizeOf(file);
+    for (final stat in (await _statAll()).values) {
+      total += stat.size;
     }
     return total;
   }
 
-  bool _isDownloading(File entry) => File("${entry.path}.part").existsSync();
+  bool _pruning = false;
 
   Future<void> prune({File? keep}) async {
-    if (!enabled) return;
+    if (!enabled || _pruning) return;
+    _pruning = true;
+    try {
+      final stats = await _statAll();
+      var total = stats.values.fold<int>(0, (sum, stat) => sum + stat.size);
+      if (total <= maxBytes) return;
 
-    var total = await currentSizeBytes();
-    if (total <= maxBytes) return;
+      final entries = stats.entries.where((e) => !_isSidecar(File(e.key))).toList()
+        ..sort((a, b) => a.value.modified.compareTo(b.value.modified));
 
-    final entries = await _entries();
-    entries.sort((a, b) {
-      try {
-        return a.lastModifiedSync().compareTo(b.lastModifiedSync());
-      } catch (_) {
-        return 0;
+      for (final entry in entries) {
+        if (total <= maxBytes) break;
+        if (keep != null && p.equals(entry.key, keep.path)) continue;
+        if (stats.containsKey("${entry.key}.part")) continue; // still downloading
+
+        total -= _evict(File(entry.key));
       }
-    });
-
-    for (final entry in entries) {
-      if (total <= maxBytes) break;
-      if (keep != null && p.equals(entry.path, keep.path)) continue;
-      if (_isDownloading(entry)) continue;
-
-      total -= _evict(entry);
+    } finally {
+      _pruning = false;
     }
   }
 

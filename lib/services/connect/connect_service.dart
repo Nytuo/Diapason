@@ -273,7 +273,10 @@ class ConnectService {
     await _register(device);
 
     _pollTimer?.cancel();
-    _pollTimer = Timer.periodic(_pollInterval, (_) => _pollStatus());
+    // On a slow network a status request can outlast the poll interval; don't stack requests on top of each other.
+    _pollTimer = Timer.periodic(_pollInterval, (_) {
+      if (!_polling) unawaited(_pollStatus());
+    });
     return true;
   }
 
@@ -318,11 +321,18 @@ class ConnectService {
     await _post(device.endpoint("register"), {"name": deviceName, "url": url});
   }
 
+  bool _polling = false;
+
   Future<void> _pollStatus() async {
     final device = connectedDevice.value;
     if (device == null) return;
-
-    final status = await fetchStatus(device);
+    _polling = true;
+    final ConnectStatus? status;
+    try {
+      status = await fetchStatus(device);
+    } finally {
+      _polling = false;
+    }
     if (connectedDevice.value != device) return;
     if (status != null) {
       _failedPolls = 0;

@@ -253,7 +253,7 @@ class _PlaylistEditScreenState extends ConsumerState<PlaylistEditScreen> {
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
         final shouldDiscard = await _confirmDiscardChanges();
-        if (shouldDiscard && mounted) Navigator.of(context).pop();
+        if (shouldDiscard && context.mounted) Navigator.of(context).pop();
       },
       child: Scaffold(
         body: PaddedCustomScrollview(

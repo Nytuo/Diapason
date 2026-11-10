@@ -281,16 +281,21 @@ class PlayOnService {
             switch (request['Data']['Name']) {
               case "DisplayMessage":
                 final messageFromServer = request['Data']['Arguments']['Text'];
-                final header = request['Data']['Arguments']['Header'];
-                final timeout = request['Data']['Arguments']['Timeout'];
+                final header = request['Data']['Arguments']['Header'] as String?;
                 _playOnServiceLogger.info("Displaying message from server: '$messageFromServer'");
-                GlobalSnackbar.message((context) => "$header: $messageFromServer");
+                // The header is optional; don't show "null: ..." when the sender left it out.
+                GlobalSnackbar.message(
+                  (context) => header == null || header.isEmpty ? "$messageFromServer" : "$header: $messageFromServer",
+                );
                 break;
               case "SetVolume":
                 _playOnServiceLogger.info("Server requested a volume adjustment");
 
-                final desiredVolume = request['Data']['Arguments']['Volume'] as String;
-                _audioHandler.setVolume(double.parse(desiredVolume) / 100.0);
+                // Sent as a string by the web client, but as a number by some others.
+                final desiredVolume = double.tryParse("${request['Data']['Arguments']['Volume']}");
+                if (desiredVolume != null) {
+                  _audioHandler.setVolume((desiredVolume / 100.0).clamp(0.0, 1.0));
+                }
             }
             break;
           case "UserDataChanged":

@@ -185,6 +185,7 @@ class _GenreChipContent extends ConsumerWidget {
     }
 
     if (genreItem != null) {
+      if (!context.mounted) return;
       if (applyGenreFilter && updateGenreFilter != null) {
         updateGenreFilter!(genreItem);
         if (!alternativeAction) {

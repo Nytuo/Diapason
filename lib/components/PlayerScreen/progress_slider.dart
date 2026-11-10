@@ -19,14 +19,19 @@ typedef DragCallback = void Function(double? value);
 /// Extracts the chapter list for the given [MediaItem], sorted by start
 /// position. Returns an empty list if the item has no chapters (the vast
 /// majority of tracks won't).
+final Expando<List<jellyfin_models.ChapterInfo>> _sortedChapters = Expando("sortedChapters");
+
+/// Called on every position tick, so the sorted list is kept per item.
 List<jellyfin_models.ChapterInfo> chaptersFromMediaItem(MediaItem? mediaItem) {
   final itemJson = mediaItem?.extras?["itemJson"] as Map<String, dynamic>?;
   if (itemJson == null) return const [];
-  final chapters = jellyfin_models.BaseItemDto.fromJson(itemJson).chapters;
-  if (chapters == null || chapters.isEmpty) return const [];
-  final sorted = List<jellyfin_models.ChapterInfo>.of(chapters);
-  sorted.sort((a, b) => a.startPositionTicks.compareTo(b.startPositionTicks));
-  return List.unmodifiable(sorted);
+  return _sortedChapters[itemJson] ??= () {
+    final chapters = jellyfin_models.baseItemFromItemJson(itemJson).chapters;
+    if (chapters == null || chapters.isEmpty) return const <jellyfin_models.ChapterInfo>[];
+    final sorted = List<jellyfin_models.ChapterInfo>.of(chapters);
+    sorted.sort((a, b) => a.startPositionTicks.compareTo(b.startPositionTicks));
+    return List<jellyfin_models.ChapterInfo>.unmodifiable(sorted);
+  }();
 }
 
 /// Returns the chapter that [position] currently falls within, or null if
@@ -67,9 +72,16 @@ class _ProgressSliderState extends State<ProgressSlider> {
 
   final _audioHandler = GetIt.instance<MusicPlayerBackgroundTask>();
 
+  /// Created once: a new stream on every build made the StreamBuilder resubscribe each time the layout changed.
+  final Stream<ProgressState> _progressStateStream = progressStateStream;
+
+  /// Only used by the greyed-out placeholder slider; kept so it isn't leaked on every rebuild.
+  final _placeholderFocusNode = FocusNode(skipTraversal: true, canRequestFocus: false);
+
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void dispose() {
+    _placeholderFocusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -88,7 +100,7 @@ class _ProgressSliderState extends State<ProgressSlider> {
               data: SliderThemeData(trackHeight: 3.5, trackShape: CustomTrackShape()),
               child: StreamBuilder<ProgressState>(
                 initialData: progressState,
-                stream: progressStateStream,
+                stream: _progressStateStream,
                 builder: (context, snapshot) {
                   if (snapshot.data?.mediaItem == null) {
                     // If nothing is playing or the AudioService isn't connected, return a
@@ -107,7 +119,7 @@ class _ProgressSliderState extends State<ProgressSlider> {
                                       max: 1,
                                       onChanged: null,
                                       autofocus: false,
-                                      focusNode: FocusNode(skipTraversal: true, canRequestFocus: false),
+                                      focusNode: _placeholderFocusNode,
                                     ),
                                   ],
                                 ),

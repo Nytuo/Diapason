@@ -12,7 +12,6 @@ import '../../models/finamp_models.dart';
 import '../../services/downloads_service.dart';
 import '../../services/finamp_settings_helper.dart';
 import '../../services/finamp_user_helper.dart';
-import '../../services/jellyfin_api_helper.dart';
 import '../global_snackbar.dart';
 
 class DownloadDialog extends ConsumerStatefulWidget {

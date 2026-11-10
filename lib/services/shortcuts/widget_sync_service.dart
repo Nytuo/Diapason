@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -25,6 +26,17 @@ class WidgetSyncService {
 
   bool _started = false;
 
+  Timer? _syncDebounce;
+
+  /// Track whose cover is already in the app group, so unrelated queue changes don't copy it again.
+  BaseItemId? _coverWrittenFor;
+
+  /// Queue changes come in bursts (radio refills, reorders, restores); coalesce them into one widget refresh.
+  void _scheduleSync() {
+    _syncDebounce?.cancel();
+    _syncDebounce = Timer(const Duration(milliseconds: 400), () => unawaited(sync()));
+  }
+
   Future<void> start() async {
     if (_started) return;
     if (!Platform.isAndroid && !Platform.isIOS) return;
@@ -37,12 +49,12 @@ class WidgetSyncService {
       _log.fine("Could not set the widget app group: $e");
     }
 
-    GetIt.instance<QueueService>().getQueueStream().listen((_) => sync());
-    GetIt.instance<ShortcutService>().addListener(sync);
+    GetIt.instance<QueueService>().getQueueStream().listen((_) => _scheduleSync());
+    GetIt.instance<ShortcutService>().addListener(_scheduleSync);
     GetIt.instance<MusicPlayerBackgroundTask>().playbackState
         .map((state) => state.playing)
         .distinct()
-        .listen((_) => sync());
+        .listen((_) => _scheduleSync());
 
     await sync();
   }
@@ -79,10 +91,12 @@ class WidgetSyncService {
   /// so the native widget can display it. Stores the on-disk path under "cover".
   Future<void> _syncCover(BaseItemDto? track) async {
     if (track == null) {
+      _coverWrittenFor = null;
       await HomeWidget.saveWidgetData<String>("cover", "");
       return;
     }
 
+    if (_coverWrittenFor == track.id) return;
     if (await _writeCover(track)) return;
 
     Future.delayed(const Duration(milliseconds: 1500), () async {
@@ -107,6 +121,7 @@ class WidgetSyncService {
 
       final bytes = await file.readAsBytes();
       await HomeWidget.saveFile("cover", bytes, extension: _coverExtension(file.path));
+      _coverWrittenFor = track.id;
       return true;
     } catch (e) {
       _log.fine("Widget cover sync failed (keeping previous cover): $e");

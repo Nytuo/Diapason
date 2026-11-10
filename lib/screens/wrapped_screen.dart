@@ -1,15 +1,11 @@
 import 'package:diapason/models/jellyfin_models.dart';
-import 'dart:io';
-import 'dart:ui' as ui;
 
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/queue_service.dart';
+import 'package:diapason/components/wrapped_share_card.dart';
 import 'package:diapason/services/stats/stats_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 
@@ -26,34 +22,6 @@ class _WrappedScreenState extends State<WrappedScreen> {
   WrappedPeriod _period = WrappedPeriod.thisYear;
 
   late Future<WrappedData> _data = GetIt.instance<StatsService>().build(_period);
-
-  final _shareKey = GlobalKey();
-
-  bool _sharing = false;
-
-  Future<void> _share() async {
-    setState(() => _sharing = true);
-    try {
-      final boundary = _shareKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundary == null) return;
-
-      final image = await boundary.toImage(pixelRatio: 3);
-      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-      if (bytes == null) return;
-
-      final dir = await getTemporaryDirectory();
-      final file = File("${dir.path}/diapason-wrapped.png");
-      await file.writeAsBytes(bytes.buffer.asUint8List());
-
-      await Share.shareXFiles([XFile(file.path)], text: "My Diapason Wrapped");
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Couldn't share that.")));
-      }
-    } finally {
-      if (mounted) setState(() => _sharing = false);
-    }
-  }
 
   Future<void> _playTopTracks(WrappedData data) async {
     final aggregate = GetIt.instance<AggregateBackend>();
@@ -112,11 +80,9 @@ class _WrappedScreenState extends State<WrappedScreen> {
                     onPressed: () => _playTopTracks(data),
                   ),
                   IconButton(
-                    tooltip: "Share",
-                    icon: _sharing
-                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(TablerIcons.share),
-                    onPressed: _sharing ? null : _share,
+                    tooltip: "Share as an image",
+                    icon: const Icon(TablerIcons.share),
+                    onPressed: () => showWrappedSharePreview(context, data),
                   ),
                 ],
               );
@@ -156,10 +122,7 @@ class _WrappedScreenState extends State<WrappedScreen> {
                     ),
                   );
                 }
-                return RepaintBoundary(
-                  key: _shareKey,
-                  child: _WrappedBody(data: data),
-                );
+                return _WrappedBody(data: data);
               },
             ),
           ),

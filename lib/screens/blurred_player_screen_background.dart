@@ -142,12 +142,27 @@ class RenderCachePaint extends RenderProxyBox {
       super.paint(context, offset);
       // Save image of child to cache
       final OffsetLayer offsetLayer = layer! as OffsetLayer;
+      // Capture the key now: the screen size (part of the key) can change while the image is being rendered.
+      final key = _cacheKey;
       Future.sync(() async {
-        _cache[_cacheKey] = (_cache[_cacheKey]!.$1, await offsetLayer.toImage(offset & _screenSize));
+        final ui.Image image;
+        try {
+          image = await offsetLayer.toImage(offset & _screenSize);
+        } catch (_) {
+          // Leave the entry empty: users keep painting their child directly.
+          return;
+        }
+        final entry = _cache[key];
+        if (entry == null || entry.$2 != null) {
+          // Every user went away (or another render won) while this one was in flight: don't leak the image.
+          image.dispose();
+          return;
+        }
+        _cache[key] = (entry.$1, image);
         // Schedule repaint next frame because the image is lighter than the full
         // child during compositing, which is more frequent than paints.
-        for (var element in _cache[_cacheKey]!.$1) {
-          element.markNeedsPaint();
+        for (var element in entry.$1) {
+          if (element.attached) element.markNeedsPaint();
         }
       });
     }

@@ -25,6 +25,8 @@ import 'package:diapason/screens/shortcuts_screen.dart';
 import 'package:diapason/screens/ipod/ipod_controller.dart';
 import 'package:diapason/screens/ipod/ipod_shell.dart';
 import 'package:diapason/screens/wrapped_screen.dart';
+import 'package:diapason/screens/backup_screen.dart';
+import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:diapason/screens/scrobbling_settings_screen.dart';
 import 'package:diapason/screens/uploader_settings_screen.dart';
 import 'package:diapason/screens/ytdlp_settings_screen.dart';
@@ -314,6 +316,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ]),
       _Section("Storage & diagnostics", TablerIcons.database, [
+        if (!AppleTvAudioChannel.isSupported)
+          _Entry(
+            icon: TablerIcons.file_export,
+            title: "Backup & restore",
+            subtitle: "Settings, sources and layout in one file",
+            onTap: _go(BackupScreen.routeName),
+            keywords: ["export", "import", "transfer", "new phone", "reinstall", "migrate"],
+          ),
         _Entry(
           icon: TablerIcons.database,
           title: "Storage & logs",
@@ -468,6 +478,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 final localizations = AppLocalizations.of(context)!;
                 final applicationLegalese = AppLocalizations.of(context)!.applicationLegalese(repoLink);
                 PackageInfo packageInfo = await PackageInfo.fromPlatform();
+                if (!context.mounted) return;
 
                 ThemeData theme = Theme.of(context);
                 const linkStyle = TextStyle(color: Colors.blue, decoration: TextDecoration.underline);

@@ -1,3 +1,4 @@
+import 'package:diapason/menus/components/menuEntries/share_link_menu_entry.dart';
 import 'dart:async';
 
 import 'package:diapason/components/themed_bottom_sheet.dart';
@@ -39,6 +40,7 @@ Future<void> showModalPlaylistMenu({
       StartRadioMenuEntry(baseItem: item),
       AdaptiveDownloadLockDeleteMenuEntry(baseItem: item),
       ToggleFavoriteMenuEntry(baseItem: item),
+      ShareLinkMenuEntry(baseItem: item),
       EditItemMenuEntry(baseItem: item),
       DeleteFromServerMenuEntry(baseItem: item),
     ];

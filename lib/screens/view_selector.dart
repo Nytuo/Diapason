@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:diapason/components/finamp_app_bar_back_button.dart';
 import 'package:diapason/screens/desktop/desktop_shell.dart';
 import 'package:diapason/screens/music_screen.dart';
@@ -167,11 +168,14 @@ class _ViewSelectorState extends State<ViewSelector> {
 
         // allow calling _submitChoice() while selector is being built by delaying
         // navigation changes
-        Future.microtask(
-          () => Navigator.of(
-            context,
-          ).pushNamedAndRemoveUntil(isDesktop ? DesktopShell.routeName : MusicScreen.routeName, (route) => false),
-        );
+        Future.microtask(() {
+          if (!context.mounted) return;
+          unawaited(
+            Navigator.of(
+              context,
+            ).pushNamedAndRemoveUntil(isDesktop ? DesktopShell.routeName : MusicScreen.routeName, (route) => false),
+          );
+        });
       } catch (e) {
         GlobalSnackbar.error(e);
       }

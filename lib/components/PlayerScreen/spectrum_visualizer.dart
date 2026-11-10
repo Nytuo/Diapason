@@ -57,7 +57,16 @@ class _SpectrumVisualizerState extends ConsumerState<SpectrumVisualizer> with Si
     } else {
       _attach(null);
     }
-    _ticker = createTicker(_onTick)..start();
+    // The ticker only runs while frames are coming in (or the bars are still falling back to rest); a ticker
+    // left running schedules a frame on every vsync, which keeps the whole app rendering for nothing.
+    _ticker = createTicker(_onTick);
+  }
+
+  void _wakeTicker() {
+    if (mounted && _receiving && !_ticker.isActive) {
+      _lastFrame = Duration.zero;
+      _ticker.start();
+    }
   }
 
   @override
@@ -93,9 +102,11 @@ class _SpectrumVisualizerState extends ConsumerState<SpectrumVisualizer> with Si
     _source = source;
     _frameSubscription = source.frames.listen((frame) {
       _pending = frame;
-      _pendingAt = _elapsed;
+      _pendingAt = _ticker.isActive ? _elapsed : Duration.zero;
+      _wakeTicker();
     });
     setState(() => _receiving = true);
+    _wakeTicker();
   }
 
   Future<void> _detach() async {
@@ -104,12 +115,16 @@ class _SpectrumVisualizerState extends ConsumerState<SpectrumVisualizer> with Si
     await _source?.stop();
     _source = null;
     _pending = null;
+    if (_ticker.isActive) _ticker.stop();
     if (mounted && _receiving) setState(() => _receiving = false);
   }
 
   void _onTick(Duration elapsed) {
     _elapsed = elapsed;
-    if (!_receiving) return;
+    if (!_receiving) {
+      _ticker.stop();
+      return;
+    }
 
     final settings = FinampSettingsHelper.finampSettings;
     final frameDuration = Duration(microseconds: (1000000 / settings.visualizerFps.clamp(1, 120)).round());
@@ -129,8 +144,18 @@ class _SpectrumVisualizerState extends ConsumerState<SpectrumVisualizer> with Si
     final frame = stale ? null : _pending;
 
     if (frame == null) {
+      var peak = 0.0;
       for (var i = 0; i < bands; i++) {
         bars[i] *= 0.97;
+        if (bars[i] > peak) peak = bars[i];
+      }
+      if (peak < 0.002) {
+        // Nothing left to draw (paused, or the source went quiet): sleep until the next frame arrives.
+        bars.fillRange(0, bands, 0);
+        _pending = null;
+        _repaint.value++;
+        _ticker.stop();
+        return;
       }
     } else {
       binFrame(

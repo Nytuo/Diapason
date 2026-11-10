@@ -5,7 +5,6 @@ import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:flutter_chrome_cast/cast_context.dart';
 import 'package:flutter_chrome_cast/discovery.dart';
 import 'package:flutter_chrome_cast/entities.dart';
-import 'package:flutter_chrome_cast/enums.dart';
 import 'package:flutter_chrome_cast/media.dart';
 import 'package:flutter_chrome_cast/models.dart';
 import 'package:flutter_chrome_cast/session.dart';

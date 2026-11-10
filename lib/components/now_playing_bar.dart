@@ -175,7 +175,7 @@ class NowPlayingBar extends ConsumerWidget {
     Duration? playbackPosition;
 
     final currentTrackBaseItem = currentTrack.item.extras?["itemJson"] != null
-        ? jellyfin_models.BaseItemDto.fromJson(currentTrack.item.extras!["itemJson"] as Map<String, dynamic>)
+        ? jellyfin_models.baseItemFromItemJson(currentTrack.item.extras!["itemJson"] as Map<String, dynamic>)
         : null;
     var context = ref.context;
 

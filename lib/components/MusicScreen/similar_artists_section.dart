@@ -1,7 +1,5 @@
 import 'package:diapason/models/finamp_models.dart';
-import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/screens/artist_screen.dart';
-import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/discovery/discovery_service.dart';
 import 'package:diapason/services/queue_service.dart';
 import 'package:flutter/material.dart';

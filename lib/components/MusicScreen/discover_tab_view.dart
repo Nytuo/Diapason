@@ -299,6 +299,8 @@ class _FreshReleaseCard extends StatelessWidget {
                     : Image.network(
                         cover.toString(),
                         fit: BoxFit.cover,
+                        // Cover Art Archive serves full-size scans; decode at tile size instead.
+                        cacheWidth: (140.0 * MediaQuery.devicePixelRatioOf(context)).round(),
                         errorBuilder: (_, _, _) =>
                             const ColoredBox(color: Colors.black12, child: Icon(TablerIcons.disc)),
                       ),

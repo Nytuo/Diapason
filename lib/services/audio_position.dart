@@ -20,5 +20,9 @@ final Stream<Duration> _tvPosition = () {
     // The native player's reports land a little behind the clock; never step back for that, only for a real seek.
     if (live < last && last - live < const Duration(seconds: 1)) return last;
     return last = live;
-  }).asBroadcastStream();
+  }).asBroadcastStream(
+    // Stop ticking while nothing on screen shows the position; resume when something listens again.
+    onCancel: (subscription) => subscription.pause(),
+    onListen: (subscription) => subscription.resume(),
+  );
 }();

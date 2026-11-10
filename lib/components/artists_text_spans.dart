@@ -34,11 +34,12 @@ List<TextSpan> buildArtistsTextSpans(BaseItemDto item, Color? textColour, BuildC
                     ? isarDownloader.getCollectionInfo(id: e.id).then((value) => value!.baseItem!)
                     : jellyfinApiHelper.getItemById(e.id);
 
-                artistFuture.then(
-                  (artist) => popRoutes
+                artistFuture.then((artist) {
+                  if (!context.mounted) return;
+                  popRoutes
                       ? Navigator.of(context).popAndPushNamed(ArtistScreen.routeName, arguments: artist)
-                      : Navigator.of(context).pushNamed(ArtistScreen.routeName, arguments: artist),
-                );
+                      : Navigator.of(context).pushNamed(ArtistScreen.routeName, arguments: artist);
+                });
               },
           ),
         )

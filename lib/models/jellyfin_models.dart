@@ -3855,3 +3855,13 @@ class PlaylistUsers {
   factory PlaylistUsers.fromJson(Map<String, dynamic> json) => _$PlaylistUsersFromJson(json);
   Map<String, dynamic> toJson() => _$PlaylistUsersToJson(this);
 }
+
+
+final Expando<BaseItemDto> _parsedItemJson = Expando<BaseItemDto>("parsedItemJson");
+
+/// Parses the `itemJson` a queue item / [MediaItem] carries in its extras, once per map.
+///
+/// Those maps are built once per queue item and never changed afterwards, but the item behind them is read in many
+/// builds that run on every playback tick, so re-running [BaseItemDto.fromJson] each time added up. The parsed item is
+/// shared: treat it as read-only.
+BaseItemDto baseItemFromItemJson(Map<String, dynamic> json) => _parsedItemJson[json] ??= BaseItemDto.fromJson(json);

@@ -99,6 +99,9 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
   // TODO the tab types should probably just be separate widgets.
 
   String tabTitle = "";
+
+  /// Kept across builds: a controller created in build reset the cursor and IME state on every rebuild.
+  late final TextEditingController _tabTitleController;
   LibraryId tabLibrary = currentLibraryPlaceholder;
   ContentType tabContent = ContentType.tracks;
   StaticSortAndFilterController tabSortController = StaticSortAndFilterController(
@@ -147,6 +150,9 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
     }
     ;
 
+    _tabTitleController = TextEditingController(text: tabTitle)
+      ..selection = TextSelection.collapsed(offset: tabTitle.length);
+
     searchListener.addListener(() {
       setState(() {
         selectedCollection = searchListener.value;
@@ -191,6 +197,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
 
   @override
   void dispose() {
+    _tabTitleController.dispose();
     searchListener.dispose();
     super.dispose();
   }
@@ -523,8 +530,7 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
             child: Text(context.l10n.sectionTitle, style: Theme.of(context).textTheme.bodyMedium),
           ),
           TextField(
-            controller: TextEditingController(text: tabTitle)
-              ..selection = TextSelection.fromPosition(TextPosition(offset: tabTitle.length)),
+            controller: _tabTitleController,
             decoration: InputDecoration(
               hintText: context.l10n.egFavoriteTracks,
               filled: true,
@@ -537,7 +543,10 @@ class _HomeScreenSectionConfigurationMenuState extends ConsumerState<HomeScreenS
               border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(8)),
             ),
             onChanged: (newValue) {
+              final wasEmpty = tabTitle.isEmpty;
               tabTitle = newValue;
+              // Show or hide the "title required" hint as soon as it applies.
+              if (wasEmpty != newValue.isEmpty) setState(() {});
             },
           ),
         ],

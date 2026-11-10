@@ -81,7 +81,6 @@ import 'package:diapason/services/finamp_logs_helper.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/finamp_user_helper.dart';
 import 'package:diapason/services/ios_helpers.dart';
-import 'package:diapason/services/item_by_id_provider.dart';
 import 'package:diapason/services/item_helper.dart';
 import 'package:diapason/services/keep_screen_on_helper.dart';
 import 'package:diapason/services/music_providers.dart';
@@ -159,6 +158,9 @@ import 'screens/shortcuts_screen.dart';
 import 'screens/radio_screen.dart';
 import 'screens/watch/watch_screen.dart';
 import 'screens/wrapped_screen.dart';
+import 'screens/backup_screen.dart';
+import 'package:diapason/services/share_links.dart';
+import 'package:diapason/services/lyrics/lyrics_offset_service.dart';
 import 'screens/uploader_settings_screen.dart';
 import 'screens/ytdlp_settings_screen.dart';
 import 'screens/storage_settings_screen.dart';
@@ -448,6 +450,7 @@ Future<void> setupHive() async {
 
   // The TV's profiles (who is listening) are a few small JSON strings; every platform keeps them in Hive.
   await Hive.openBox<String>(TvProfileService.boxName);
+  await LyricsOffsetService.open();
 
   if (AppleTvAudioChannel.isSupported) {
     // Isar's native core has no tvOS binary, so tvOS never opens it (and
@@ -577,11 +580,15 @@ Future<void> _setupConnect() async {
   GetIt.instance.registerSingleton(ConnectRemoteController());
   GetIt.instance<ConnectRemoteController>().attach();
 
-  try {
-    await GetIt.instance<ConnectService>().start(deviceName: await _connectDeviceName());
-  } catch (e) {
-    _mainLog.warning("Could not start Diapason Connect: $e");
-  }
+  // Binding the server and advertising over mDNS can take a while on some networks; nothing at launch needs it, so
+  // don't hold the splash screen for it.
+  unawaited(() async {
+    try {
+      await GetIt.instance<ConnectService>().start(deviceName: await _connectDeviceName());
+    } catch (e) {
+      _mainLog.warning("Could not start Diapason Connect: $e");
+    }
+  }());
 }
 
 Future<String> _connectDeviceName() async {
@@ -961,9 +968,11 @@ class _FinampState extends State<Finamp> with WindowListener {
         switch (uri.pathSegments) {
           case ["surprisemix"]:
             await GetIt.instance<AudioServiceHelper>().startSurpriseMeMix();
-          case [String itemId]:
-            final item = await container.read(itemByIdProvider(BaseItemId(itemId)).future);
-            if (item != null) {
+          case [String _]:
+            final item = await ShareLinks.resolve(uri, container: container);
+            if (item == null) {
+              GlobalSnackbar.message((_) => "That isn't in your library on this device.");
+            } else {
               await GetIt.instance<QueueService>().startSlicePlayback(
                 await GetIt.instance<ProviderContainer>().read(
                   getPlayableSliceProvider(item: FinampPlayableDto.fromItem(item), startingOffset: 0).future,
@@ -976,9 +985,12 @@ class _FinampState extends State<Finamp> with WindowListener {
 
       case "show":
         switch (uri.pathSegments) {
-          case [String itemId]:
-            final item = await container.read(itemByIdProvider(BaseItemId(itemId)).future);
-            if (item != null) {
+          case [String _]:
+            // Also how shared links open: they may come from another device, see ShareLinks.
+            final item = await ShareLinks.resolve(uri, container: container);
+            if (item == null) {
+              GlobalSnackbar.message((_) => "That isn't in your library on this device.");
+            } else {
               openItemPage(item, state, showTracks: true);
             }
           case _:
@@ -1089,6 +1101,7 @@ class FinampApp extends ConsumerWidget {
         YtDlpSettingsScreen.routeName: (context) => const YtDlpSettingsScreen(),
         ConnectScreen.routeName: (context) => const ConnectScreen(),
         WrappedScreen.routeName: (context) => const WrappedScreen(),
+        BackupScreen.routeName: (context) => const BackupScreen(),
         RadioScreen.routeName: (context) => const RadioScreen(),
         CastScreen.routeName: (context) => const CastScreen(),
         ImportScreen.routeName: (context) => const ImportScreen(),

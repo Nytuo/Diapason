@@ -1,3 +1,4 @@
+import 'package:diapason/menus/components/menuEntries/share_link_menu_entry.dart';
 import 'dart:async';
 
 import 'package:diapason/components/PlayerScreen/queue_list.dart';
@@ -252,6 +253,7 @@ class _TrackMenuState extends ConsumerState<TrackMenu> with TickerProviderStateM
       YouTubeRadioMenuEntry(baseItem: widget.item),
       AdaptiveDownloadLockDeleteMenuEntry(baseItem: widget.item),
       ToggleFavoriteMenuEntry(baseItem: widget.item),
+      ShareLinkMenuEntry(baseItem: widget.item),
       if (widget.showQueueActions) CreatePlaylistFromCurrentQueueMenuEntry(),
       if (widget.showQueueActions) ClearQueueMenuEntry(baseItem: widget.item),
       DeleteFromServerMenuEntry(baseItem: widget.item),

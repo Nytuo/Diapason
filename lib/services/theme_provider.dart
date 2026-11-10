@@ -215,6 +215,9 @@ class FinampThemeFromImage extends _$FinampThemeFromImage {
       return _getColorScheme(cachedColors, brightness);
     }
 
+    var disposed = false;
+    ref.onDispose(() => disposed = true);
+
     Future.sync(() async {
       /*return await ColorScheme.fromImageProvider(
         provider: request.image!,
@@ -239,7 +242,10 @@ class FinampThemeFromImage extends _$FinampThemeFromImage {
       }
       themeProviderLogger.finer("Calculated theme color ${colors.highlight} for image $image");
       return _getColorScheme(colors, brightness);
-    }).then((value) => state = value);
+    }).then((value) {
+      // The colours can take a moment; don't touch a provider nobody listens to any more.
+      if (!disposed) state = value;
+    });
     return getGrayTheme(brightness);
   }
 
@@ -261,7 +267,17 @@ class FinampThemeFromImage extends _$FinampThemeFromImage {
     box.put(blurHash, colors);
   }
 
-  Future<ImageInfo?> _fetchImage(ImageProvider image) {
+  /// Edge length the image is decoded at for colour extraction. The palette of a downscaled cover is practically the
+  /// same, but quantizing ~12k pixels instead of a million+ takes milliseconds instead of seconds.
+  static const _paletteImageSize = 112;
+
+  Future<ImageInfo?> _fetchImage(ImageProvider fullImage) {
+    final image = ResizeImage(
+      fullImage,
+      width: _paletteImageSize,
+      height: _paletteImageSize,
+      policy: ResizeImagePolicy.fit,
+    );
     ImageStream stream = image.resolve(const ImageConfiguration(devicePixelRatio: 1.0, size: Size(5, 5)));
     ImageStreamListener? listener;
     Completer<ImageInfo?> completer = Completer();

@@ -1,4 +1,3 @@
-import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/menus/components/menuEntries/menu_entry.dart';
 import 'package:diapason/screens/logs_screen.dart';

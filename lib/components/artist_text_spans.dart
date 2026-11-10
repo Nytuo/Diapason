@@ -28,11 +28,12 @@ List<TextSpan> getArtistsTextSpans(BaseItemDto item, BuildContext context, bool 
 
                 jellyfinApiHelper
                     .getItemById(e.id)
-                    .then(
-                      (artist) => popRoutes
+                    .then((artist) {
+                      if (!context.mounted) return;
+                      popRoutes
                           ? Navigator.of(context).popAndPushNamed(ArtistScreen.routeName, arguments: artist)
-                          : Navigator.of(context).pushNamed(ArtistScreen.routeName, arguments: artist),
-                    );
+                          : Navigator.of(context).pushNamed(ArtistScreen.routeName, arguments: artist);
+                    });
               },
           ),
         )

@@ -70,6 +70,24 @@ class ShortcutService {
     _notify();
   }
 
+  /// Adds pins from a backup after the existing ones, skipping duplicates and stopping at [maxPins].
+  /// Returns how many were added.
+  Future<int> restorePins(List<PinnedItem> incoming) async {
+    final existing = pins;
+    final ordered = [...incoming]..sort((a, b) => a.sortIndex.compareTo(b.sortIndex));
+    final toAdd = <PinnedItem>[];
+    for (final pin in ordered) {
+      if (existing.length + toAdd.length >= maxPins) break;
+      if (isPinned(BaseItemId(pin.itemId)) || toAdd.any((p) => p.itemId == pin.itemId)) continue;
+      pin.sortIndex = existing.length + toAdd.length;
+      toAdd.add(pin);
+    }
+    if (toAdd.isEmpty) return 0;
+    _isar.writeTxnSync(() => _isar.pinnedItems.putAllSync(toAdd));
+    _notify();
+    return toAdd.length;
+  }
+
   List<SearchHistoryEntry> get recentSearches =>
       _isar.searchHistoryEntrys.where().sortBySearchedAtDesc().limit(maxSearchHistory).findAllSync();
 

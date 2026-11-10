@@ -10,6 +10,7 @@ import 'package:diapason/services/youtube/youtube_availability.dart';
 import 'package:diapason/services/youtube_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:diapason/services/uploader/youtube_library_import.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 
@@ -35,7 +36,10 @@ void main() {
     GetIt.instance
       ..registerSingleton<YouTubeService>(youtube)
       ..registerSingleton<YouTubeAvailability>(availability)
-      ..registerSingleton<UploaderClient>(UploaderClient());
+      // A configured uploader: track rows then offer "add to your library" instead of a local download (which would
+      // need the whole downloads service).
+      ..registerSingleton<UploaderClient>(_ReadyUploader())
+      ..registerSingleton<YouTubeLibraryImport>(YouTubeLibraryImport());
   });
 
   tearDown(() async {
@@ -204,7 +208,7 @@ void main() {
         ),
       );
 
-      expect(find.byTooltip('Add to server library'), findsOneWidget);
+      expect(find.byTooltip('Add to your library'), findsOneWidget);
       expect(find.byTooltip('Start discover queue'), findsOneWidget);
 
       await tester.tap(find.text('Song'));
@@ -270,4 +274,9 @@ void main() {
       expect(isYouTubeAvailable, isFalse);
     });
   });
+}
+
+class _ReadyUploader extends UploaderClient {
+  @override
+  bool get isReady => true;
 }

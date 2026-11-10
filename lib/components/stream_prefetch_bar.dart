@@ -1,5 +1,4 @@
 import 'package:diapason/services/stream_cache_service.dart';
-import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 

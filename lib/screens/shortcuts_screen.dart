@@ -1,5 +1,4 @@
 import 'package:diapason/models/jellyfin_models.dart';
-import 'package:diapason/models/library_shortcut.dart';
 import 'package:diapason/services/shortcuts/shortcut_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';

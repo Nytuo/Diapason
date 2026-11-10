@@ -1,5 +1,4 @@
 import 'package:diapason/components/Buttons/cta_medium.dart';
-import 'package:diapason/components/Buttons/simple_button.dart';
 import 'package:diapason/components/finamp_app_bar_back_button.dart';
 import 'package:diapason/components/NetworkSettingsScreen/active_network_display.dart';
 import 'package:diapason/components/NetworkSettingsScreen/auto_offline_selector.dart';

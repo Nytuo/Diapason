@@ -1,3 +1,4 @@
+import 'package:diapason/menus/components/menuEntries/share_link_menu_entry.dart';
 import 'dart:async';
 
 import 'package:diapason/components/themed_bottom_sheet.dart';
@@ -49,6 +50,7 @@ Future<void> showModalAlbumMenu({
         AdaptiveDownloadLockDeleteMenuEntry(baseItem: baseItem),
         // backend is not flexible too
         ToggleFavoriteMenuEntry(baseItem: baseItem),
+        ShareLinkMenuEntry(baseItem: baseItem),
         HideFromBrowseMenuEntry(baseItem: baseItem),
         DeleteFromServerMenuEntry(baseItem: baseItem),
       ],

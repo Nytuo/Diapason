@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:diapason/color_schemes.g.dart';
@@ -13,11 +14,13 @@ import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/components/lyrics_source_chip.dart';
 import 'package:diapason/services/current_track_metadata_provider.dart';
+import 'package:diapason/services/lyrics/lyrics_offset_service.dart';
 import 'package:diapason/services/lyrics/lyrics_sources.dart';
 import 'package:diapason/services/metadata_provider.dart';
 import 'package:diapason/services/feedback_helper.dart';
 import 'package:diapason/services/music_player_background_task.dart';
 import 'package:diapason/services/progress_state_stream.dart';
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,6 +39,15 @@ import '../services/finamp_settings_helper.dart';
 import '../services/theme_provider.dart';
 import 'blurred_player_screen_background.dart';
 import 'player_screen.dart';
+
+BaseItemId? _trackIdOf(MediaItem? item) {
+  final id = (item?.extras?["itemJson"] as Map?)?["Id"];
+  return id is String ? BaseItemId(id) : null;
+}
+
+/// The point in the lyrics' own timeline that matches [position] in the track, after the track's lyrics offset.
+int _lyricsMicros(Duration position, MediaItem? item) =>
+    position.inMicroseconds - LyricsOffsetService.offsetMs(_trackIdOf(item)) * 1000;
 
 class LyricsScreen extends StatelessWidget {
   const LyricsScreen({super.key});
@@ -192,7 +204,7 @@ class _LyricsViewState extends ConsumerState<LyricsView> with WidgetsBindingObse
     });
 
     progressStateStreamSubscription = progressStateStream.listen((state) {
-      final currentMicros = state.position.inMicroseconds;
+      final currentMicros = _lyricsMicros(state.position, state.mediaItem);
 
       if (!_isSynchronizedLyrics || !_isVisible || !mounted) {
         return;
@@ -390,9 +402,11 @@ class _LyricsViewState extends ConsumerState<LyricsView> with WidgetsBindingObse
                                 lineNumber: index,
                                 line: line,
                                 onTap: () async {
-                                  // Seek to the start of the line + 1 millisecond to account for player inaccuracy
+                                  // Seek to the start of the line + 1 millisecond to account for player inaccuracy,
+                                  // shifted by this track's lyrics offset so the tapped line is the one that plays.
+                                  final offsetMicros = LyricsOffsetService.offsetMs(metadata.value!.item.id) * 1000;
                                   await GetIt.instance<MusicPlayerBackgroundTask>().seek(
-                                    Duration(microseconds: line.startMicros + 1000),
+                                    Duration(microseconds: max(0, line.startMicros + 1000 + offsetMicros)),
                                   );
                                   setState(() {
                                     isAutoScrollEnabled = true;
@@ -431,6 +445,8 @@ class _LyricsViewState extends ConsumerState<LyricsView> with WidgetsBindingObse
                     ),
                   ),
                 ),
+                if (_isSynchronizedLyrics)
+                  Positioned(top: 0, right: 0, child: _LyricsOffsetButton(trackId: metadata.value!.item.id)),
                 if (_isSynchronizedLyrics)
                   Positioned(
                     bottom: 24,
@@ -596,8 +612,11 @@ class _LyricLineTextState extends ConsumerState<_LyricLineText> {
       isCurrentLine = isCurrent;
       cueStream?.cancel();
       if (widget._useCues) {
-        _updateTextFromCues(GetIt.instance<MusicPlayerBackgroundTask>().playbackState.value.position.inMicroseconds);
-        cueStream = progressStateStream.listen((state) => _updateTextFromCues(state.position.inMicroseconds));
+        final handler = GetIt.instance<MusicPlayerBackgroundTask>();
+        _updateTextFromCues(_lyricsMicros(handler.playbackState.value.position, handler.mediaItem.valueOrNull));
+        cueStream = progressStateStream.listen(
+          (state) => _updateTextFromCues(_lyricsMicros(state.position, state.mediaItem)),
+        );
       } else {
         _updateTextWithoutCues();
       }
@@ -844,5 +863,111 @@ class LyricsScrollBehavior extends MaterialScrollBehavior {
           child: child,
         );
     }
+  }
+}
+
+/// Opens the timing nudge for lyrics that run ahead of or behind the music; shows the current offset when one is set.
+class _LyricsOffsetButton extends StatelessWidget {
+  const _LyricsOffsetButton({required this.trackId});
+
+  final BaseItemId trackId;
+
+  @override
+  Widget build(BuildContext context) {
+    final listenable = LyricsOffsetService.listenable(trackId);
+    if (listenable == null) return const SizedBox.shrink();
+    return ValueListenableBuilder(
+      valueListenable: listenable,
+      builder: (context, _, _) {
+        final offset = LyricsOffsetService.offsetMs(trackId);
+        final color = Theme.of(context).textTheme.bodyLarge?.color;
+        return TextButton.icon(
+          style: TextButton.styleFrom(foregroundColor: color, visualDensity: VisualDensity.compact),
+          onPressed: () {
+            FeedbackHelper.feedback(FeedbackType.selection);
+            showModalBottomSheet<void>(
+              context: context,
+              showDragHandle: true,
+              builder: (_) => _LyricsOffsetSheet(trackId: trackId),
+            );
+          },
+          icon: const Icon(TablerIcons.clock_edit, size: 20),
+          label: offset == 0 ? const SizedBox.shrink() : Text(LyricsOffsetService.format(offset)),
+        );
+      },
+    );
+  }
+}
+
+class _LyricsOffsetSheet extends StatelessWidget {
+  const _LyricsOffsetSheet({required this.trackId});
+
+  final BaseItemId trackId;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: LyricsOffsetService.listenable(trackId)!,
+      builder: (context, _, _) {
+        final offset = LyricsOffsetService.offsetMs(trackId);
+        final textTheme = Theme.of(context).textTheme;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text("Lyrics timing", style: textTheme.titleMedium),
+                const SizedBox(height: 4),
+                Text(
+                  "Lyrics too early? Show them later. Remembered for this track.",
+                  style: textTheme.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    FilledButton.tonalIcon(
+                      onPressed: offset <= -LyricsOffsetService.limit
+                          ? null
+                          : () {
+                              FeedbackHelper.feedback(FeedbackType.selection);
+                              LyricsOffsetService.nudge(trackId, -LyricsOffsetService.step);
+                            },
+                      icon: const Icon(TablerIcons.chevrons_left),
+                      label: const Text("Earlier"),
+                    ),
+                    SizedBox(
+                      width: 96,
+                      child: Text(
+                        LyricsOffsetService.format(offset),
+                        textAlign: TextAlign.center,
+                        style: textTheme.titleLarge?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
+                      ),
+                    ),
+                    FilledButton.tonalIcon(
+                      onPressed: offset >= LyricsOffsetService.limit
+                          ? null
+                          : () {
+                              FeedbackHelper.feedback(FeedbackType.selection);
+                              LyricsOffsetService.nudge(trackId, LyricsOffsetService.step);
+                            },
+                      icon: const Icon(TablerIcons.chevrons_right),
+                      label: const Text("Later"),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: offset == 0 ? null : () => LyricsOffsetService.reset(trackId),
+                  child: const Text("Reset"),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }
