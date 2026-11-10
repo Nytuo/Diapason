@@ -1,0 +1,882 @@
+name: build
+
+# Build-only: compiles every release platform and architecture, and runs the
+# unit/widget tests, so a broken build is found before a release is cut.
+# Nothing is published. release.yml calls this same workflow (or reuses the
+# artifacts of an earlier successful run on the same commit and version).
+#
+# Run it by hand from Actions -> build -> Run workflow, or on any PR via
+# workflow_dispatch. Desktop builds are unsigned.
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_integration_tests:
+        description: 'Run the emulator integration tests'
+        type: boolean
+        default: false
+      build_extras:
+        description: 'Also build Snap and Flatpak'
+        type: boolean
+        default: true
+      build_tvos:
+        description: 'Build the tvOS app (needs the flutter-tvos toolchain)'
+        type: boolean
+        default: true
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version to stamp; empty = next version, or the pubspec one if there is nothing new'
+        type: string
+        default: ''
+      run_integration_tests:
+        type: boolean
+        default: false
+      build_extras:
+        type: boolean
+        default: true
+      build_tvos:
+        type: boolean
+        default: true
+
+env:
+  if_condition: &integration_if inputs.run_integration_tests
+  # flutter-tvos release tag: names the CLI version and the Flutter SDK it pins
+  # (v<flutter>-tvos.<cli>). Bump deliberately; tvOS is outside stock Flutter.
+  FLUTTER_TVOS_REF: v3.47.7-tvos.1.11.3
+
+# Due to a flutter bug, flutter build is not generating localizations
+# workaround by always running flutter pub get immediately before building,
+# and performing build for msix:create manually to allow implementing this workaround
+jobs:
+  version:
+    name: Resolve version
+    uses: ./.github/workflows/version.yml
+    with:
+      version: ${{ inputs.version || '' }}
+      strict: false
+
+  # Records what this run built so release.yml can tell whether its artifacts
+  # are reusable (same commit, same version).
+  build-meta:
+    name: Record build metadata
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+    - name: Write metadata
+      env:
+        VERSION: ${{ needs.version.outputs.version }}
+      run: |
+        printf '{"version":"%s","sha":"%s"}\n' "$VERSION" "$GITHUB_SHA" > build-meta.json
+        cat build-meta.json
+    - uses: actions/upload-artifact@v6
+      with:
+        name: build-meta
+        path: build-meta.json
+
+  test:
+    name: Unit and widget tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libmpv-dev mpv libpipewire-0.3-dev
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+        cache: false
+        pub-cache: true
+
+    - run: flutter pub get
+    # integration_test/ needs an emulator and is run by the build-android job
+    # (opt-in), so only test/ is run here.
+    - run: flutter test test/
+
+  build-android:
+    needs: version
+    name: Build for Android
+    runs-on: ubuntu-latest
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v6
+
+    - uses: actions/setup-java@v5
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Apply release version
+      id: version
+      env:
+        VERSION: ${{ needs.version.outputs.version }}
+      run: |
+        set -eu
+        NEW="$VERSION+${GITHUB_RUN_NUMBER}"
+        perl -pi -e "s/^version:.*/version: $NEW/" pubspec.yaml
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+    - name: Check Android TV manifest requirements
+      run: |
+        set -eu
+        M=android/app/src/main/AndroidManifest.xml
+        need() { grep -q "$1" "$M" || { echo "::error::$M is missing: $2"; exit 1; }; }
+        need 'android.intent.category.LEANBACK_LAUNCHER' 'a LEANBACK_LAUNCHER activity (TV home screen entry)'
+        need 'android:banner=' 'android:banner (the TV launcher banner)'
+        need 'android.software.leanback' 'the leanback <uses-feature> (required="false" so phones still install it)'
+        need 'android.hardware.touchscreen' 'a touchscreen <uses-feature> with required="false" (TVs have none)'
+        grep -A1 'android.hardware.touchscreen' "$M" | grep -q 'required="false"' || { echo "::error::touchscreen must be required=false"; exit 1; }
+        ls android/app/src/main/res/drawable*/tv_banner.* >/dev/null 2>&1 || { echo "::error::tv_banner drawable not found"; exit 1; }
+        echo "Android TV manifest requirements are met."
+
+    - name: Configure release signing
+      id: signing
+      shell: bash
+      env:
+        ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      run: |
+        set -euo pipefail
+        if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+          # The password secrets are optional (a keystore can have no password, and GitHub cannot store an
+          # empty secret); the alias is not.
+          if [ -z "$ANDROID_KEY_ALIAS" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 is set, ANDROID_KEY_ALIAS must be too."
+            exit 1
+          fi
+          umask 077
+          KEYSTORE="$RUNNER_TEMP/upload-keystore.jks"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$KEYSTORE"
+          {
+            echo "storeFile=$KEYSTORE"
+            echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
+            echo "keyAlias=$ANDROID_KEY_ALIAS"
+            echo "keyPassword=${ANDROID_KEY_PASSWORD:-$ANDROID_KEYSTORE_PASSWORD}"
+          } > android/key.properties
+          echo "real_key=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "::warning::No ANDROID_KEYSTORE_BASE64 secret: signing with the debug keystore. The AAB will not be uploaded, this build cannot go to Google Play."
+          echo "real_key=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Free up disk space
+      run: |
+        # Remove .NET SDKs
+        sudo rm -rf /usr/share/dotnet
+        # Remove Swift toolchain
+        sudo rm -rf /usr/share/swift
+        # Remove Haskell (GHC)
+        sudo rm -rf /usr/local/.ghcup
+        # Remove Julia
+        sudo rm -rf /usr/local/julia*
+        # Remove PowerShell
+        sudo rm -rf /usr/local/share/powershell
+        df -h
+
+    # Use the same flutter setup as the linux build to allow sharing the pub cache and it utilizing the same cache key
+    - name: Determine Flutter stable version
+      uses: subosito/flutter-action@v2
+      id: flutter-version
+      with:
+        architecture: 'x64'
+        channel: 'stable'
+        dry-run: true
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        # Prebuilt ARM linux builds are not provided, so build flutter from source
+        channel: master
+        flutter-version: "${{ steps.flutter-version.outputs.VERSION }}"
+        cache: false
+        pub-cache: true
+        # Include arch as linux aarch64 include isar overriding
+        # arch can be removed later once isar aarch64 is easily available on pub.dev and overriding is not needed anymore
+        pub-cache-key: "flutter-pub-:os:-:channel:-:version:-:arch:-:hash:"
+
+
+    - name: Gradle cache
+      uses: actions/cache@v5
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        # If exact match is not found, fallback to OS match
+        restore-keys: ${{ runner.os }}-gradle-
+
+    - name: Cache Dart build cache
+      uses: actions/cache@v5
+      with:
+        path: |
+          .dart_tool
+          build
+        key: ${{ runner.os }}-android-dart-build-${{ hashFiles('pubspec.lock') }}
+        restore-keys: ${{ runner.os }}-android-dart-build-
+
+    # Maven Central / the Gradle plugin portal sometimes answer 429 or drop
+    # connections to shared runner IPs; retry the download-heavy builds.
+    - name: Define retry helper
+      run: |
+        cat > "$RUNNER_TEMP/retry.sh" <<'EOF'
+        retry() {
+          local n
+          for n in 1 2 3; do
+            "$@" && return 0
+            echo "::warning::'$*' failed (attempt $n/3), retrying in $((n * 60))s"
+            sleep $((n * 60))
+          done
+          return 1
+        }
+        EOF
+
+    - run: flutter doctor
+    - run: flutter pub get
+
+    - run: . "$RUNNER_TEMP/retry.sh" && retry flutter build apk --release --no-pub
+
+    # A single universal APK, so no arch token in the name.
+    - name: Rename APK
+      run: cp build/app/outputs/flutter-apk/app-release.apk "diapason-${{ steps.version.outputs.version }}_android.apk"
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: diapason-android
+        path: diapason-${{ steps.version.outputs.version }}_android.apk
+        compression-level: 0 # no compression
+
+    # Android TV: the same app, built for the ABIs TVs actually use (no x86),
+    # which makes it a good deal smaller for sideloading with adb or Downloader.
+    # Google Play does not need this file: the single bundle below covers TV.
+    - name: Build Android TV APK
+      run: |
+        . "$RUNNER_TEMP/retry.sh"
+        retry flutter build apk --release --no-pub --target-platform android-arm,android-arm64
+        cp build/app/outputs/flutter-apk/app-release.apk "diapason-${{ steps.version.outputs.version }}_androidtv.apk"
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: diapason-androidtv
+        path: diapason-${{ steps.version.outputs.version }}_androidtv.apk
+        compression-level: 0
+
+    - run: . "$RUNNER_TEMP/retry.sh" && retry flutter build appbundle --release --no-pub
+
+    - name: Rename AAB
+      if: steps.signing.outputs.real_key == 'true'
+      run: cp build/app/outputs/bundle/release/app-release.aab "diapason-${{ steps.version.outputs.version }}_android.aab"
+
+    # Kept out of the GitHub release (not directly installable); only the
+    # google-play job below consumes it.
+    - uses: actions/upload-artifact@v6
+      if: steps.signing.outputs.real_key == 'true'
+      with:
+        name: store-android-aab
+        path: diapason-${{ steps.version.outputs.version }}_android.aab
+        retention-days: 14
+        compression-level: 0
+
+    - name: Enable KVM group perms
+      if: *integration_if
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+
+    - name: Run Integration tests on api 36
+      if: *integration_if
+      timeout-minutes: 20
+      # android emulator is flaky so we retry once
+      uses: Wandalen/wretry.action@v3.8.0
+      with:
+        action: reactivecircus/android-emulator-runner@v2
+        # Use the newest supported version of android
+        with: |
+          api-level: 36
+          arch: x86_64
+          profile: pixel
+          disk-size: 5120M
+          script: |
+            adb logcat -c
+            adb logcat &
+            timeout 13m flutter test integration_test/test_cases.dart -d emulator
+
+    - name: Run Integration tests on api 25
+      if: *integration_if
+      timeout-minutes: 20
+      # android emulator is flaky so we retry once
+      uses: Wandalen/wretry.action@v3.8.0
+      with:
+        action: reactivecircus/android-emulator-runner@v2
+        # We can't use the oldest supported version api 24 because it doesn't recognize the certificates
+        # used by the demo server, so we use the second-oldest api 25.
+        with: |
+          api-level: 25
+          arch: x86_64
+          profile: pixel
+          disk-size: 5120M
+          script: |
+            adb logcat -c
+            adb logcat &
+            timeout 13m flutter test integration_test/test_cases.dart -d emulator
+
+  build-ios:
+    needs: version
+    name: Build for iOS
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+        cache: false
+        pub-cache: true
+
+    # Stamps the dispatched version into pubspec.yaml so the built binaries and
+    # the asset filenames below agree with the release tag. Workspace only —
+    # never committed back to the repo.
+    - name: Apply release version
+      id: version
+      env:
+        VERSION: ${{ needs.version.outputs.version }}
+      run: |
+        set -eu
+        # The store build number (Android versionCode, iOS/tvOS CFBundleVersion)
+        # has to grow with every upload or the stores refuse it, even for a new
+        # version string. The run number only ever goes up.
+        NEW="$VERSION+${GITHUB_RUN_NUMBER}"
+        perl -pi -e "s/^version:.*/version: $NEW/" pubspec.yaml
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+    - name: Cache CocoaPods
+      uses: actions/cache@v5
+      with:
+        path: |
+          ios/Pods
+          ~/.cocoapods
+        key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+        restore-keys: ${{ runner.os }}-pods-
+
+    - name: Cache Dart build cache
+      uses: actions/cache@v5
+      with:
+        path: |
+          .dart_tool
+          build
+        key: ${{ runner.os }}-dart-build-${{ hashFiles('pubspec.lock') }}
+        restore-keys: ${{ runner.os }}-dart-build-
+
+    - run: flutter doctor
+    - run: flutter pub get
+
+    - run: flutter build ios --release --no-pub --no-codesign
+
+    # No signing identity here (--no-codesign), so this is an unsigned IPA:
+    # useful as a release artifact / for resigning, not for direct install.
+    # An IPA is just a zip of a Payload/ dir containing the .app.
+    - name: Package IPA
+      run: |
+        mkdir -p build/ios/ipa/Payload
+        cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/Diapason.app
+        (cd build/ios/ipa && zip -qr "$GITHUB_WORKSPACE/diapason-${{ steps.version.outputs.version }}_ios.ipa" Payload)
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: diapason-ios
+        path: diapason-${{ steps.version.outputs.version }}_ios.ipa
+        compression-level: 0 # already compressed
+
+    # `model` is matched as a literal device name, not a regex, and both it and
+    # os_version shift with the runner image. Constrain to iOS only and let the
+    # action pick whatever device is actually installed.
+    - name: Start simulator
+      id: simulator
+      if: *integration_if
+      uses: futureware-tech/simulator-action@v5
+      with:
+        os: 'iOS'
+        wait_for_boot: true
+        erase_before_boot: true
+        boot_timeout_seconds: 360
+
+    - name: Run Integration Tests
+      if: *integration_if
+      run: flutter test integration_test/test_cases.dart -d ${{ steps.simulator.outputs.udid }}
+
+  build-tvos:
+    needs: version
+    name: Build for tvOS
+    if: ${{ inputs.build_tvos }}
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+
+    # Same store-safe build number as Android and iOS (see build-android).
+    - name: Apply release version
+      id: version
+      env:
+        VERSION: ${{ needs.version.outputs.version }}
+      run: |
+        set -eu
+        NEW="$VERSION+${GITHUB_RUN_NUMBER}"
+        perl -pi -e "s/^version:.*/version: $NEW/" pubspec.yaml
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+    # tvOS is outside stock Flutter: flutter-tvos is a CLI that pins its own
+    # Flutter SDK plus a prebuilt tvOS engine. The tag in FLUTTER_TVOS_REF
+    # names both, so the toolchain is reproducible.
+    - name: Install flutter-tvos
+      run: |
+        set -eux
+        git clone --depth 1 --branch "$FLUTTER_TVOS_REF" https://github.com/fluttertv/flutter-tvos.git "$RUNNER_TEMP/flutter-tvos"
+        echo "$RUNNER_TEMP/flutter-tvos/bin" >> "$GITHUB_PATH"
+
+    - name: Cache pub packages and CocoaPods
+      uses: actions/cache@v5
+      with:
+        path: |
+          ~/.pub-cache
+          tvos/Pods
+          ~/.cocoapods
+        key: ${{ runner.os }}-tvos-${{ env.FLUTTER_TVOS_REF }}-${{ hashFiles('pubspec.lock', 'tvos/Podfile.lock') }}
+        restore-keys: ${{ runner.os }}-tvos-${{ env.FLUTTER_TVOS_REF }}-
+
+    # github.com is occasionally unreachable from the runner ("Could not
+    # resolve host"); the engine download is retried instead of failing the job.
+    - name: Download the tvOS engine
+      run: |
+        for i in 1 2 3 4; do
+          flutter-tvos precache && exit 0
+          echo "::warning::flutter-tvos precache failed (attempt $i), retrying in 30s"
+          sleep 30
+        done
+        exit 1
+    - run: flutter-tvos doctor -v
+
+    # flutter-tvos reads the tvOS plugins itself and wires them into the Xcode project (Swift Package Manager for
+    # the ones that ship a Package.swift, CocoaPods for the rest), so there is nothing to restore by hand.
+    - name: Fetch packages
+      run: flutter-tvos pub get
+
+    # Xcode ships the tvOS SDK but the platform (device support) is a separate
+    # download on some runner images; building without it fails with "tvOS is
+    # not installed".
+    - name: Make sure the tvOS platform is installed
+      run: |
+        set -u
+        if xcodebuild -workspace tvos/Runner.xcworkspace -scheme Runner -showdestinations 2>&1 | grep -q 'tvOS .* is not installed'; then
+          echo "Downloading the tvOS platform…"
+          xcodebuild -downloadPlatform tvOS
+        else
+          echo "tvOS platform already installed."
+        fi
+
+    # One command builds the Dart side and the Xcode app, unsigned. It also yields the IPA for the GitHub release.
+    - name: Build the tvOS app (unsigned) and package an IPA
+      run: |
+        set -euxo pipefail
+        flutter-tvos build tvos --release --no-codesign
+        APP=build/tvos/Release-appletvos/Runner.app
+        test -d "$APP" || { echo "::error::No tvOS .app was produced at $APP"; exit 1; }
+        rm -rf ipa && mkdir -p ipa/Payload
+        cp -R "$APP" ipa/Payload/Diapason.app
+        (cd ipa && zip -qr "$GITHUB_WORKSPACE/diapason-${{ steps.version.outputs.version }}_tvos.ipa" Payload)
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: diapason-tvos
+        path: diapason-${{ steps.version.outputs.version }}_tvos.ipa
+        compression-level: 0
+
+  build-linux:
+    needs: version
+    name: Build for Linux (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-latest
+            flutter_dir: x64
+            ld_arch: x86_64
+            # Prebuilt ARM Linux Flutter SDKs are not published on stable, so the
+            # aarch64 runner builds from the master channel; x64 stays on stable.
+            flutter_channel: stable
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+            flutter_dir: arm64
+            ld_arch: aarch64
+            flutter_channel: master
+    steps:
+    - uses: actions/checkout@v6
+    - name: Apply release version
+      id: version
+      env:
+        VERSION: ${{ needs.version.outputs.version }}
+      run: |
+        set -eu
+        BUILD=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -s -d+ -f2)
+        if [ -n "$BUILD" ]; then NEW="$VERSION+$BUILD"; else NEW="$VERSION"; fi
+        perl -pi -e "s/^version:.*/version: $NEW/" pubspec.yaml
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libmpv-dev mpv libpipewire-0.3-dev
+
+    # ARM has no prebuilt stable SDK, so it builds the master channel from
+    # source; pin it to the exact stable release so the Dart SDK (and thus the
+    # pub resolution) matches what x64 uses instead of floating on a dev SDK.
+    - name: Determine Flutter stable version
+      uses: subosito/flutter-action@v2
+      id: flutter-version
+      with:
+        architecture: 'x64'
+        channel: 'stable'
+        dry-run: true
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: ${{ matrix.flutter_channel }}
+        flutter-version: ${{ matrix.flutter_channel == 'master' && steps.flutter-version.outputs.VERSION || '' }}
+        cache: false
+        pub-cache: true
+
+    - name: Cache Dart build cache
+      uses: actions/cache@v5
+      with:
+        path: |
+          .dart_tool
+          build
+        key: ${{ runner.os }}-linux-${{ matrix.arch }}-dart-build-${{ hashFiles('pubspec.lock') }}
+        restore-keys: ${{ runner.os }}-linux-${{ matrix.arch }}-dart-build-
+
+    - run: flutter doctor
+    - run: flutter pub get
+    - run: flutter build linux --release --no-pub
+
+    - name: Package build
+      run: tar -czf "diapason-${{ steps.version.outputs.version }}_linux_${{ matrix.arch }}.tar.gz" -C build/linux/${{ matrix.flutter_dir }}/release/bundle .
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: diapason-linux-${{ matrix.arch }}
+        path: diapason-${{ steps.version.outputs.version }}_linux_${{ matrix.arch }}.tar.gz
+        compression-level: 0
+
+    # fpm builds both deb and rpm from one staging tree; rpm/rpmbuild is needed
+    # for the rpm target, and linuxdeploy assembles the AppImage.
+    - name: Install packaging tools
+      run: |
+        sudo apt-get install -y rpm ruby ruby-dev
+        sudo gem install --no-document fpm
+        curl -sSLo linuxdeploy.AppImage \
+          https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-${{ matrix.ld_arch }}.AppImage
+        chmod +x linuxdeploy.AppImage
+
+    - name: Build deb / rpm / AppImage
+      run: linux/packaging/build-packages.sh
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: diapason-linux-packages-${{ matrix.arch }}
+        path: build/linux/packages/*
+        compression-level: 0
+
+  # Flatpak and Snap are the least reliable jobs here. The Flutter bundle is
+  # the x64 Linux build (not rebuilt in the container, whose base image has no
+  # package manager we can rely on); the container only runs flatpak-builder.
+  stage-flatpak:
+    needs: build-linux
+    name: Stage Flatpak sources
+    if: inputs.build_extras
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: actions/download-artifact@v6
+      with:
+        name: diapason-linux-x64
+        path: linux-x64
+
+    # The Flathub manifest packages the published release tarballs; swap its
+    # BUNDLE block for the bundle just built so this job tests the new code.
+    - name: Stage bundle for the manifest
+      run: |
+        mkdir -p flatpak/staging/bundle
+        tar -xzf linux-x64/*.tar.gz -C flatpak/staging/bundle
+        python3 - <<'PY'
+        import pathlib, re
+        path = pathlib.Path("flatpak/fr.nytuo.diapason.yml")
+        text = re.sub(
+            r"^([ \t]*)# BUNDLE-BEGIN.*?^[ \t]*# BUNDLE-END[^\n]*\n",
+            lambda m: f"{m.group(1)}- type: dir\n{m.group(1)}  path: staging/bundle\n",
+            path.read_text(),
+            flags=re.M | re.S,
+        )
+        path.write_text(text)
+        PY
+        # a tarball keeps the executable bits that upload-artifact would drop
+        tar -czf flatpak-src.tgz flatpak
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: flatpak-src
+        path: flatpak-src.tgz
+        retention-days: 1
+        compression-level: 0
+
+  build-flatpak:
+    needs: stage-flatpak
+    name: Build Flatpak
+    if: inputs.build_extras
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-25.08
+      options: --privileged
+    steps:
+    - uses: actions/download-artifact@v6
+      with:
+        name: flatpak-src
+
+    - name: Unpack sources
+      run: tar -xzf flatpak-src.tgz
+
+    - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+      with:
+        bundle: diapason.flatpak
+        manifest-path: flatpak/fr.nytuo.diapason.yml
+        cache-key: flatpak-builder-${{ github.sha }}
+
+  build-snap:
+    needs: version
+    name: Build Snap
+    if: inputs.build_extras
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    # snapcraft.yaml takes the snap version from pubspec.yaml (override-pull).
+    - name: Apply release version
+      env:
+        VERSION: ${{ needs.version.outputs.version }}
+      run: |
+        set -eu
+        BUILD=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -s -d+ -f2)
+        if [ -n "$BUILD" ]; then NEW="$VERSION+$BUILD"; else NEW="$VERSION"; fi
+        perl -pi -e "s/^version:.*/version: $NEW/" pubspec.yaml
+
+    - uses: snapcore/action-build@v1
+      id: snapcraft
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: diapason-snap
+        path: ${{ steps.snapcraft.outputs.snap }}
+        compression-level: 0
+
+  build-windows:
+    needs: version
+    name: Build for Windows (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: windows-latest
+            flutter_dir: x64
+            wix_arch: x64
+            flutter_channel: stable
+          - arch: aarch64
+            runner: windows-11-arm
+            flutter_dir: arm64
+            wix_arch: arm64
+            flutter_channel: master
+    steps:
+    - uses: actions/checkout@v6
+
+    # ARM has no prebuilt stable SDK, so it builds the master channel from
+    # source; pin it to the exact stable release so the Dart SDK (and thus the
+    # pub resolution) matches what x64 uses instead of floating on a dev SDK.
+    - name: Determine Flutter stable version
+      uses: subosito/flutter-action@v2
+      id: flutter-version
+      with:
+        architecture: 'x64'
+        channel: 'stable'
+        dry-run: true
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: ${{ matrix.flutter_channel }}
+        flutter-version: ${{ matrix.flutter_channel == 'master' && steps.flutter-version.outputs.VERSION || '' }}
+        cache: false
+        pub-cache: true
+
+    - name: Apply release version
+      id: version
+      shell: pwsh
+      env:
+        VERSION: ${{ needs.version.outputs.version }}
+      run: |
+        $lines = Get-Content pubspec.yaml
+        $cur = ($lines | Where-Object { $_ -match '^version:' } | Select-Object -First 1)
+        $build = if ($cur -match '\+(.+)$') { "+$($Matches[1].Trim())" } else { '' }
+        $lines = $lines | ForEach-Object { if ($_ -match '^version:') { "version: $env:VERSION$build" } else { $_ } }
+        Set-Content -Path pubspec.yaml -Value $lines
+        "version=$env:VERSION" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+    - name: Cache Dart build cache
+      uses: actions/cache@v5
+      with:
+        path: |
+          .dart_tool
+          build
+        key: ${{ runner.os }}-windows-${{ matrix.arch }}-dart-build-${{ hashFiles('pubspec.lock') }}
+        restore-keys: ${{ runner.os }}-windows-${{ matrix.arch }}-dart-build-
+
+    - run: flutter doctor
+    - run: flutter pub get
+    - run: flutter build windows --release --no-pub
+
+    - name: Prepare installer output dir
+      shell: pwsh
+      run: New-Item -ItemType Directory -Force -Path installers | Out-Null
+
+    - name: Package portable zip
+      shell: pwsh
+      run: |
+        $base = "diapason-${{ steps.version.outputs.version }}_win_${{ matrix.arch }}"
+        Compress-Archive -Path "build/windows/${{ matrix.flutter_dir }}/runner/Release/*" -DestinationPath "installers/$base.zip"
+
+    # .exe installer via Inno Setup (6.3+ for the arm64 identifiers).
+    - name: Build .exe installer (Inno Setup)
+      shell: pwsh
+      run: |
+        choco install innosetup -y --no-progress
+        $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+        $base = "diapason-${{ steps.version.outputs.version }}_win_${{ matrix.arch }}"
+        & "$iscc" `
+          "/DMyAppVersion=${{ steps.version.outputs.version }}" `
+          "/DMyArch=${{ matrix.arch }}" `
+          "/DMySourceDir=$(Resolve-Path "build\windows\${{ matrix.flutter_dir }}\runner\Release")" `
+          "/DMyOutputDir=$(Resolve-Path installers)" `
+          "/DMyOutputBaseFilename=$base" `
+          "windows\packaging\diapason.iss"
+
+    # .msi installer via WiX v5. Harvests the whole bundle dir with <Files>.
+    - name: Build .msi installer (WiX)
+      shell: pwsh
+      run: |
+        dotnet tool install --global wix --version 5.*
+        $wix = "$env:USERPROFILE\.dotnet\tools\wix.exe"
+        $base = "diapason-${{ steps.version.outputs.version }}_win_${{ matrix.arch }}"
+        & "$wix" build `
+          -arch ${{ matrix.wix_arch }} `
+          -d Version="${{ steps.version.outputs.version }}" `
+          -d SourceDir="build\windows\${{ matrix.flutter_dir }}\runner\Release" `
+          -o "installers\$base.msi" `
+          "windows\packaging\diapason.wxs"
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: diapason-windows-${{ matrix.arch }}
+        path: installers/*
+        compression-level: 0
+
+  build-macos:
+    needs: version
+    name: Build for macOS
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+        cache: false
+        pub-cache: true
+
+    - name: Apply release version
+      id: version
+      env:
+        VERSION: ${{ needs.version.outputs.version }}
+      run: |
+        set -eu
+        BUILD=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -s -d+ -f2)
+        if [ -n "$BUILD" ]; then NEW="$VERSION+$BUILD"; else NEW="$VERSION"; fi
+        perl -pi -e "s/^version:.*/version: $NEW/" pubspec.yaml
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+    - name: Cache CocoaPods
+      uses: actions/cache@v5
+      with:
+        path: |
+          macos/Pods
+          ~/.cocoapods
+        key: ${{ runner.os }}-macos-pods-${{ hashFiles('macos/Podfile.lock') }}
+        restore-keys: ${{ runner.os }}-macos-pods-
+
+    - name: Cache Dart build cache
+      uses: actions/cache@v5
+      with:
+        path: |
+          .dart_tool
+          build
+        key: ${{ runner.os }}-macos-dart-build-${{ hashFiles('pubspec.lock') }}
+        restore-keys: ${{ runner.os }}-macos-dart-build-
+
+    - run: flutter doctor
+    - run: flutter pub get
+    - run: flutter build macos --release --no-pub
+
+    # macos-latest is an Apple-silicon runner, so the produced app is aarch64.
+    - name: Package build
+      env:
+        VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        BASE="diapason-${VERSION}_macos_aarch64"
+        cd build/macos/Build/Products/Release
+        zip -r -y "$GITHUB_WORKSPACE/${BASE}.zip" Diapason.app
+        mkdir -p "$GITHUB_WORKSPACE/dmg-staging"
+        cp -r Diapason.app "$GITHUB_WORKSPACE/dmg-staging/"
+        ln -s /Applications "$GITHUB_WORKSPACE/dmg-staging/Applications"
+        hdiutil create -volname Diapason -srcfolder "$GITHUB_WORKSPACE/dmg-staging" \
+          -ov -format UDZO "$GITHUB_WORKSPACE/${BASE}.dmg"
+        pkgbuild --identifier fr.nytuo.diapason --version "$VERSION" \
+          --install-location /Applications --component Diapason.app \
+          "$GITHUB_WORKSPACE/${BASE}.pkg"
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: diapason-macos
+        path: |
+          diapason-${{ steps.version.outputs.version }}_macos_aarch64.zip
+          diapason-${{ steps.version.outputs.version }}_macos_aarch64.dmg
+          diapason-${{ steps.version.outputs.version }}_macos_aarch64.pkg
+        compression-level: 0

@@ -1,4 +1,4 @@
-import 'package:clipboard/clipboard.dart';
+import 'package:flutter/services.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/services/censored_log.dart';
 import 'package:diapason/services/contains_login.dart';
@@ -28,14 +28,14 @@ class _LogTileState extends State<LogTile> {
     return GestureDetector(
       onLongPress: () async {
         try {
-          await FlutterClipboard.copy(widget.logRecord.censoredMessage);
+          await Clipboard.setData(ClipboardData(text: widget.logRecord.censoredMessage));
         } catch (e) {
           GlobalSnackbar.error(e);
         }
       },
       onSecondaryTap: () async {
         try {
-          await FlutterClipboard.copy(widget.logRecord.censoredMessage);
+          await Clipboard.setData(ClipboardData(text: widget.logRecord.censoredMessage));
         } catch (e) {
           GlobalSnackbar.error(e);
         }

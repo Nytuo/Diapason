@@ -45,10 +45,18 @@ add_definitions(-D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
 function(APPLY_STANDARD_SETTINGS TARGET)
   target_compile_features(${TARGET} PUBLIC cxx_std_17)
   target_compile_options(${TARGET} PRIVATE /W4 /WX /wd"4100")
+  # clipboard (and other plugins) trip C4189 on newer MSVC, which /WX turns
+  # into an error we cannot fix in a pub package.
+  target_compile_options(${TARGET} PRIVATE /wd"4189")
   target_compile_options(${TARGET} PRIVATE /EHsc)
   target_compile_definitions(${TARGET} PRIVATE "_HAS_EXCEPTIONS=0")
   target_compile_definitions(${TARGET} PRIVATE "$<$<CONFIG:Debug>:_DEBUG>")
 endfunction()
+
+# Some plugins (clipboard) set their own /W4 /WX instead of calling
+# APPLY_STANDARD_SETTINGS, so silence C4189 (unused local) for every target
+# that is added from here on.
+add_compile_options(/wd4189)
 
 # Flutter library and tool build rules.
 set(FLUTTER_MANAGED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/flutter")

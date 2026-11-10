@@ -16,7 +16,9 @@ subprojects {
         if (project.plugins.hasPlugin("com.android.application") ||
                 project.plugins.hasPlugin("com.android.library")) {
             project.android {
-                compileSdkVersion flutter.compileSdkVersion
+                // Plugins may need a newer SDK than Flutter's default (permission_handler_android
+                // 14.x uses Android 17 symbols); never go below what Flutter asks for.
+                compileSdkVersion Math.max(flutter.compileSdkVersion as int, 37)
                 buildToolsVersion "36.0.0"
             }
         }

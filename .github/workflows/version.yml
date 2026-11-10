@@ -1,0 +1,188 @@
+name: version
+
+# Reusable: derives the next semver from the conventional commits since the
+# last release tag (or takes an explicit override) and writes the changelog.
+# Used by release.yml and build.yml so both agree on the version.
+
+on:
+  workflow_call:
+    inputs:
+      bump:
+        type: string
+        default: auto
+      version:
+        type: string
+        default: ''
+      strict:
+        description: 'Fail when there is nothing to release / the tag exists (release); otherwise fall back to the pubspec version (build-only)'
+        type: boolean
+        default: true
+    outputs:
+      version:
+        value: ${{ jobs.version.outputs.version }}
+      tag:
+        value: ${{ jobs.version.outputs.tag }}
+      previous_tag:
+        value: ${{ jobs.version.outputs.previous_tag }}
+      changelog:
+        value: ${{ jobs.version.outputs.changelog }}
+
+jobs:
+  version:
+    name: Resolve version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.semver.outputs.version }}
+      tag: ${{ steps.semver.outputs.tag }}
+      previous_tag: ${{ steps.semver.outputs.previous_tag }}
+      changelog: ${{ steps.semver.outputs.changelog }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute version and changelog
+        id: semver
+        shell: bash
+        env:
+          BUMP_INPUT: ${{ inputs.bump }}
+          VERSION_INPUT: ${{ inputs.version }}
+          STRICT: ${{ inputs.strict }}
+        run: |
+          set -euo pipefail
+
+          D="$RUNNER_TEMP/changelog"
+          mkdir -p "$D"
+
+          # Baseline = the most recently created release tag, accepting every
+          # scheme this repo has used (1.2.3, v1.2.3, app-v1.2.3) so a rename
+          # never makes the next version go backwards.
+          # New tags are always emitted as plain v<semver>.
+          PREV=$(git tag --list --sort=-creatordate \
+            | grep -E '^([A-Za-z][A-Za-z0-9_.-]*-)?v?[0-9]+\.[0-9]+\.[0-9]+$' \
+            | head -n1 || true)
+          if [ -n "$PREV" ]; then
+            RANGE="${PREV}..HEAD"
+            BASE=$(printf '%s' "$PREV" | sed -E 's/^([A-Za-z][A-Za-z0-9_.-]*-)?v?//')
+          else
+            RANGE=""
+            BASE="0.0.0"
+          fi
+          IFS=. read -r MAJOR MINOR PATCH <<<"$BASE"
+          MAJOR=${MAJOR:-0}; MINOR=${MINOR:-0}; PATCH=${PATCH:-0}
+
+          if [ -n "$RANGE" ]; then
+            git log --no-merges --format='%h%x1f%s%x1f%b%x1e' "$RANGE" > "$D/commits"
+          else
+            git log --no-merges --format='%h%x1f%s%x1f%b%x1e' > "$D/commits"
+          fi
+
+          HAS_FEAT=0; HAS_BREAKING=0; COUNT=0
+          while IFS=$'\x1f' read -r -d $'\x1e' SHA SUBJECT BODY; do
+            SHA="${SHA#$'\n'}"
+            [ -z "$SHA" ] && continue
+            COUNT=$((COUNT + 1))
+
+            if [[ "$SUBJECT" =~ ^([a-zA-Z]+)(\(([^\)]*)\))?(!)?:[[:space:]]*(.*)$ ]]; then
+              TYPE=$(printf '%s' "${BASH_REMATCH[1]}" | tr '[:upper:]' '[:lower:]')
+              SCOPE="${BASH_REMATCH[3]}"
+              BANG="${BASH_REMATCH[4]}"
+              DESC="${BASH_REMATCH[5]}"
+            else
+              TYPE="other"; SCOPE=""; BANG=""; DESC="$SUBJECT"
+            fi
+
+            IS_BREAKING=0
+            [ -n "$BANG" ] && IS_BREAKING=1
+            if printf '%s' "$BODY" | grep -qE '^BREAKING[ -]CHANGE'; then
+              IS_BREAKING=1
+            fi
+
+            if [ -n "$SCOPE" ]; then
+              ENTRY="- **${SCOPE}:** ${DESC} (${SHA})"
+            else
+              ENTRY="- ${DESC} (${SHA})"
+            fi
+
+            case "$TYPE" in
+              feat|feature) HAS_FEAT=1; echo "$ENTRY" >> "$D/feat" ;;
+              fix|bugfix)   echo "$ENTRY" >> "$D/fix" ;;
+              perf)         echo "$ENTRY" >> "$D/perf" ;;
+              refactor)     echo "$ENTRY" >> "$D/refactor" ;;
+              docs)         echo "$ENTRY" >> "$D/docs" ;;
+              *)            echo "$ENTRY" >> "$D/misc" ;;
+            esac
+            [ "$IS_BREAKING" = 1 ] && echo "$ENTRY" >> "$D/breaking"
+          done < "$D/commits"
+
+          # Lenient mode (build-only runs): never fail on "nothing to release"
+          # or "tag exists", fall back to the version already in pubspec.yaml.
+          PUBSPEC_VERSION=$(grep '^version:' pubspec.yaml | sed -E 's/version:[[:space:]]*//; s/\+.*//')
+
+          if [ -n "$VERSION_INPUT" ]; then
+            VERSION="${VERSION_INPUT#v}"
+            if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-+].*)?$ ]]; then
+              echo "::error::'$VERSION_INPUT' is not a valid semver version (expected e.g. 1.4.0)"
+              exit 1
+            fi
+          else
+            if [ "$COUNT" -eq 0 ] && [ "$STRICT" = "true" ]; then
+              echo "::error::No commits since ${PREV:-the start of history} — nothing to release."
+              exit 1
+            fi
+            BUMP="$BUMP_INPUT"
+            if [ "$BUMP" = "auto" ]; then
+              if   [ "$HAS_BREAKING" = 1 ]; then BUMP="major"
+              elif [ "$HAS_FEAT" = 1 ];     then BUMP="minor"
+              else                               BUMP="patch"
+              fi
+            fi
+            case "$BUMP" in
+              major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+              minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+              patch) PATCH=$((PATCH + 1)) ;;
+            esac
+            VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          fi
+
+          TAG="v${VERSION}"
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            if [ "$STRICT" = "true" ]; then
+              echo "::error::Tag ${TAG} already exists. Pass an explicit 'version' input to pick another."
+              exit 1
+            fi
+            echo "::warning::Tag ${TAG} already exists, building with the pubspec version ${PUBSPEC_VERSION}."
+            VERSION="$PUBSPEC_VERSION"; TAG="v${VERSION}"
+          fi
+
+          {
+            if [ -s "$D/breaking" ]; then echo "### ⚠ BREAKING CHANGES"; echo; cat "$D/breaking"; echo; fi
+            if [ -s "$D/feat" ];     then echo "### Features";           echo; cat "$D/feat";     echo; fi
+            if [ -s "$D/fix" ];      then echo "### Bug Fixes";          echo; cat "$D/fix";      echo; fi
+            if [ -s "$D/perf" ];     then echo "### Performance";        echo; cat "$D/perf";     echo; fi
+            if [ -s "$D/refactor" ]; then echo "### Refactoring";        echo; cat "$D/refactor"; echo; fi
+            if [ -s "$D/docs" ];     then echo "### Documentation";      echo; cat "$D/docs";     echo; fi
+            if [ -s "$D/misc" ];     then echo "### Other";              echo; cat "$D/misc";     echo; fi
+            if [ -n "$PREV" ]; then
+              echo "**Full changelog**: https://github.com/${GITHUB_REPOSITORY}/compare/${PREV}...${TAG}"
+            else
+              echo "**Full changelog**: https://github.com/${GITHUB_REPOSITORY}/commits/${TAG}"
+            fi
+          } > "$D/changelog.md"
+
+          {
+            echo "version=${VERSION}"
+            echo "tag=${TAG}"
+            echo "previous_tag=${PREV}"
+            echo "changelog<<__CHANGELOG_EOF__"
+            cat "$D/changelog.md"
+            echo "__CHANGELOG_EOF__"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## ${TAG}"
+            echo
+            echo "Previous tag: \`${PREV:-none}\` · commits analysed: ${COUNT}"
+            echo
+            cat "$D/changelog.md"
+          } >> "$GITHUB_STEP_SUMMARY"

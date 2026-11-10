@@ -1,0 +1,311 @@
+name: store-builds
+
+# Reusable: the signed iOS and tvOS builds that go to App Store Connect. Kept
+# apart from build.yml (which only has to prove everything compiles) so a
+# release can reuse an earlier build run for everything else and only redo
+# these, which need the Apple secrets and a fresh, ever-growing build number.
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+      build_tvos:
+        type: boolean
+        default: true
+      build_ios:
+        type: boolean
+        default: true
+
+env:
+  FLUTTER_TVOS_REF: v3.47.7-tvos.1.11.3
+
+jobs:
+  store-ios:
+    name: Signed iOS build (App Store Connect)
+    if: ${{ inputs.build_ios }}
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+        cache: false
+        pub-cache: true
+
+    # Stamps the dispatched version into pubspec.yaml so the built binaries and
+    # the asset filenames below agree with the release tag. Workspace only —
+    # never committed back to the repo.
+    - name: Apply release version
+      id: version
+      env:
+        VERSION: ${{ inputs.version }}
+      run: |
+        set -eu
+        # The store build number (Android versionCode, iOS/tvOS CFBundleVersion)
+        # has to grow with every upload or the stores refuse it, even for a new
+        # version string. The run number only ever goes up.
+        NEW="$VERSION+${GITHUB_RUN_NUMBER}"
+        perl -pi -e "s/^version:.*/version: $NEW/" pubspec.yaml
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+    - name: Cache CocoaPods
+      uses: actions/cache@v5
+      with:
+        path: |
+          ios/Pods
+          ~/.cocoapods
+        key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+        restore-keys: ${{ runner.os }}-pods-
+
+    - name: Cache Dart build cache
+      uses: actions/cache@v5
+      with:
+        path: |
+          .dart_tool
+          build
+        key: ${{ runner.os }}-dart-build-${{ hashFiles('pubspec.lock') }}
+        restore-keys: ${{ runner.os }}-dart-build-
+
+    - run: flutter doctor
+    - run: flutter pub get
+
+    - run: flutter build ios --release --no-pub --no-codesign
+
+    # No signing identity here (--no-codesign), so this is an unsigned IPA:
+    # useful as a release artifact / for resigning, not for direct install.
+    # An IPA is just a zip of a Payload/ dir containing the .app.
+    - name: Import Apple Distribution certificate
+      env:
+        CERT: ${{ secrets.APPLE_DISTRIBUTION_CERT_P12_BASE64 }}
+        CERT_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERT_PASSWORD }}
+      run: |
+        set -euo pipefail
+        KEYCHAIN="$RUNNER_TEMP/ios-signing.keychain-db"
+        KEYCHAIN_PASSWORD=$(uuidgen)
+        printf '%s' "$CERT" | base64 -d > "$RUNNER_TEMP/dist.p12"
+        security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+        security set-keychain-settings -lut 21600 "$KEYCHAIN"
+        security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+        security import "$RUNNER_TEMP/dist.p12" -k "$KEYCHAIN" -P "$CERT_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+        EXISTING=$(security list-keychains -d user | tr -d '"')
+        # shellcheck disable=SC2086
+        security list-keychains -d user -s "$KEYCHAIN" $EXISTING
+        rm -f "$RUNNER_TEMP/dist.p12"
+        security find-identity -v -p codesigning "$KEYCHAIN" | grep "Apple Distribution"
+
+    - name: Build and export signed IPA (App Store Connect)
+      id: appstore_ipa
+      working-directory: ios
+      env:
+        APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+        APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+      run: |
+        set -euo pipefail
+        KEY_DIR="$HOME/.appstoreconnect/private_keys"
+        mkdir -p "$KEY_DIR"
+        printf '%s\n' "$APPLE_API_KEY_P8" > "$KEY_DIR/AuthKey_${APPLE_API_KEY}.p8"
+
+        # Archive without signing. Prevents Xcode from contacting Apple to issue dev certificates.
+        xcodebuild -workspace Runner.xcworkspace -scheme Runner -sdk iphoneos \
+          -configuration Release -archivePath "$RUNNER_TEMP/Runner.xcarchive" \
+          archive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
+
+        cat > "$RUNNER_TEMP/ExportOptions.plist" <<'PLIST'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+          <key>method</key>
+          <string>app-store-connect</string>
+          <key>signingStyle</key>
+          <string>automatic</string>
+          <key>teamID</key>
+          <string>U5WGLFU24B</string>
+        </dict>
+        </plist>
+        PLIST
+
+        # Xcode uses the Distribution certificate already in the keychain and fetches/creates the App Store profile
+        xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/Runner.xcarchive" \
+          -exportPath "$RUNNER_TEMP/export" -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+          -allowProvisioningUpdates \
+          -authenticationKeyPath "$KEY_DIR/AuthKey_${APPLE_API_KEY}.p8" \
+          -authenticationKeyID "$APPLE_API_KEY" \
+          -authenticationKeyIssuerID "$APPLE_API_ISSUER"
+
+        mkdir -p "$GITHUB_WORKSPACE/dist/store"
+        cp "$RUNNER_TEMP"/export/*.ipa "$GITHUB_WORKSPACE/dist/store/diapason-${{ steps.version.outputs.version }}_ios-store.ipa"
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: store-ios-ipa
+        path: dist/store/*.ipa
+        retention-days: 14
+        compression-level: 0
+
+
+  store-tvos:
+    name: Signed tvOS build (App Store Connect)
+    if: ${{ inputs.build_tvos }}
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+
+    # Same store-safe build number as Android and iOS (see build-android).
+    - name: Apply release version
+      id: version
+      env:
+        VERSION: ${{ inputs.version }}
+      run: |
+        set -eu
+        NEW="$VERSION+${GITHUB_RUN_NUMBER}"
+        perl -pi -e "s/^version:.*/version: $NEW/" pubspec.yaml
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+    # tvOS is outside stock Flutter: flutter-tvos is a CLI that pins its own
+    # Flutter SDK plus a prebuilt tvOS engine. The tag in FLUTTER_TVOS_REF
+    # names both, so the toolchain is reproducible.
+    - name: Install flutter-tvos
+      run: |
+        set -eux
+        git clone --depth 1 --branch "$FLUTTER_TVOS_REF" https://github.com/fluttertv/flutter-tvos.git "$RUNNER_TEMP/flutter-tvos"
+        echo "$RUNNER_TEMP/flutter-tvos/bin" >> "$GITHUB_PATH"
+
+    - name: Cache pub packages and CocoaPods
+      uses: actions/cache@v5
+      with:
+        path: |
+          ~/.pub-cache
+          tvos/Pods
+          ~/.cocoapods
+        key: ${{ runner.os }}-tvos-${{ env.FLUTTER_TVOS_REF }}-${{ hashFiles('pubspec.lock', 'tvos/Podfile.lock') }}
+        restore-keys: ${{ runner.os }}-tvos-${{ env.FLUTTER_TVOS_REF }}-
+
+    # github.com is occasionally unreachable from the runner ("Could not
+    # resolve host"); the engine download is retried instead of failing the job.
+    - name: Download the tvOS engine
+      run: |
+        for i in 1 2 3 4; do
+          flutter-tvos precache && exit 0
+          echo "::warning::flutter-tvos precache failed (attempt $i), retrying in 30s"
+          sleep 30
+        done
+        exit 1
+    - run: flutter-tvos doctor -v
+
+    # flutter-tvos reads the tvOS plugins itself and wires them into the Xcode project (Swift Package Manager for
+    # the ones that ship a Package.swift, CocoaPods for the rest), so there is nothing to restore by hand.
+    - name: Fetch packages
+      run: flutter-tvos pub get
+
+    # Xcode ships the tvOS SDK but the platform (device support) is a separate
+    # download on some runner images; building without it fails with "tvOS is
+    # not installed".
+    - name: Make sure the tvOS platform is installed
+      run: |
+        set -u
+        if xcodebuild -workspace tvos/Runner.xcworkspace -scheme Runner -showdestinations 2>&1 | grep -q 'tvOS .* is not installed'; then
+          echo "Downloading the tvOS platform…"
+          xcodebuild -downloadPlatform tvOS
+        else
+          echo "tvOS platform already installed."
+        fi
+
+    - name: Import the Apple Distribution certificate
+      env:
+        CERT: ${{ secrets.APPLE_DISTRIBUTION_CERT_P12_BASE64 }}
+        CERT_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERT_PASSWORD }}
+      run: |
+        set -euo pipefail
+        KEYCHAIN="$RUNNER_TEMP/tvos-signing.keychain-db"
+        KEYCHAIN_PASSWORD=$(uuidgen)
+        printf '%s' "$CERT" | base64 -d > "$RUNNER_TEMP/dist.p12"
+        security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+        security set-keychain-settings -lut 21600 "$KEYCHAIN"
+        security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+        security import "$RUNNER_TEMP/dist.p12" -k "$KEYCHAIN" -P "$CERT_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+        EXISTING=$(security list-keychains -d user | tr -d '"')
+        # shellcheck disable=SC2086 # the existing keychain list is intentionally word-split
+        security list-keychains -d user -s "$KEYCHAIN" $EXISTING
+        rm -f "$RUNNER_TEMP/dist.p12"
+        security find-identity -v -p codesigning "$KEYCHAIN" | grep "Apple Distribution"
+
+    - name: Build, archive and export signed IPA (App Store Connect)
+      id: appstore_ipa
+      env:
+        APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+        APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+      run: |
+        set -euo pipefail
+        KEY_DIR="$HOME/.appstoreconnect/private_keys"
+        mkdir -p "$KEY_DIR"
+        printf '%s\n' "$APPLE_API_KEY_P8" > "$KEY_DIR/AuthKey_${APPLE_API_KEY}.p8"
+
+        # flutter-tvos forwards these to xcodebuild so it can fetch the
+        # provisioning profile on a machine with no signed-in Xcode account.
+        export APP_STORE_CONNECT_KEY_PATH="$KEY_DIR/AuthKey_${APPLE_API_KEY}.p8"
+        export APP_STORE_CONNECT_KEY_ID="$APPLE_API_KEY"
+        export APP_STORE_CONNECT_ISSUER_ID="$APPLE_API_ISSUER"
+
+        # Stage the Dart build and the frameworks the archive embeds. flutter-tvos signs the engine with the
+        # Apple Distribution certificate in the keychain (Apple's ITMS-91065 check wants that signature on the
+        # engine itself), but the app is not signed here: a "Release" build signs with a development identity, and
+        # a development provisioning profile cannot be made on a team that has no registered devices.
+        flutter-tvos build tvos --release --no-codesign
+
+        # Archive without signing, then let the export sign it for the App Store: with automatic signing and the
+        # API key, Xcode makes the distribution profile (no devices needed) and signs with the certificate.
+        cd tvos
+        xcodebuild -workspace Runner.xcworkspace -scheme Runner -destination 'generic/platform=tvOS' \
+          -configuration Release -archivePath "$RUNNER_TEMP/RunnerTV.xcarchive" \
+          archive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
+
+        cat > "$RUNNER_TEMP/ExportOptionsTV.plist" <<'PLIST'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+          <key>method</key>
+          <string>app-store-connect</string>
+          <key>signingStyle</key>
+          <string>automatic</string>
+          <key>teamID</key>
+          <string>U5WGLFU24B</string>
+        </dict>
+        </plist>
+        PLIST
+
+        xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/RunnerTV.xcarchive" \
+          -exportPath "$RUNNER_TEMP/export-tv" -exportOptionsPlist "$RUNNER_TEMP/ExportOptionsTV.plist" \
+          -allowProvisioningUpdates \
+          -authenticationKeyPath "$APP_STORE_CONNECT_KEY_PATH" \
+          -authenticationKeyID "$APPLE_API_KEY" \
+          -authenticationKeyIssuerID "$APPLE_API_ISSUER"
+
+        mkdir -p "$GITHUB_WORKSPACE/dist/store"
+        cp "$RUNNER_TEMP"/export-tv/*.ipa "$GITHUB_WORKSPACE/dist/store/diapason-${{ steps.version.outputs.version }}_tvos-store.ipa"
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: store-tvos-ipa
+        path: dist/store/*.ipa
+        retention-days: 14
+        compression-level: 0
+
+

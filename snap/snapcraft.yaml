@@ -46,6 +46,8 @@ parts:
       - libgtk-3-dev
       - liblzma-dev
       - libmpv-dev
+      # linux/CMakeLists.txt requires libpipewire-0.3 (audio spectrum capture).
+      - libpipewire-0.3-dev
       - curl
       - git
       - unzip
@@ -58,6 +60,7 @@ parts:
       # libmpv is loaded at runtime, not linked, so it has to be staged by name.
       - libmpv1
       - mpv
+      - libpipewire-0.3-0
     override-build: |
       set -eux
       # Snapcraft's flutter plugin is unmaintained on core22, so drive the SDK
@@ -66,6 +69,13 @@ parts:
         git clone --depth 1 -b stable https://github.com/flutter/flutter.git "$CRAFT_PART_BUILD/flutter-sdk"
       fi
       export PATH="$CRAFT_PART_BUILD/flutter-sdk/bin:$PATH"
+      # flutter_discord_rpc builds Rust through cargokit, which insists on rustup
+      # (distro cargo/rustc are not enough). The build container has none.
+      if ! command -v rustup >/dev/null; then
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain stable
+      fi
+      export PATH="$HOME/.cargo/bin:$PATH"
+      rustup --version
       flutter config --no-analytics --enable-linux-desktop
       flutter doctor
       flutter pub get

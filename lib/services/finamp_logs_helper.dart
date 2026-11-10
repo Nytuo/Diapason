@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:archive/archive_io.dart';
-import 'package:clipboard/clipboard.dart';
+import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:diapason/services/censored_log.dart';
 import 'package:diapason/services/environment_metadata.dart';
@@ -88,7 +88,7 @@ class FinampLogsHelper {
     return fullLogsBuffer.toString();
   }
 
-  Future<void> copyLogs() async => await FlutterClipboard.copy(getSanitisedLogs());
+  Future<void> copyLogs() async => await Clipboard.setData(ClipboardData(text: getSanitisedLogs()));
 
   /// Write logs to a file and share the file
   Future<void> shareLogs() async {
