@@ -274,8 +274,8 @@ class _QueueListState extends ConsumerState<QueueList> {
 
     return ScrollbarTheme(
       data: ScrollbarThemeData(
-        thumbColor: WidgetStateProperty.all(Theme.of(context).colorScheme.primary.withOpacity(0.7)),
-        trackColor: WidgetStateProperty.all(Theme.of(context).colorScheme.primary.withOpacity(0.2)),
+        thumbColor: WidgetStateProperty.all(Theme.of(context).colorScheme.primary.withValues(alpha: 0.7)),
+        trackColor: WidgetStateProperty.all(Theme.of(context).colorScheme.primary.withValues(alpha: 0.2)),
         radius: const Radius.circular(6.0),
         thickness: WidgetStateProperty.all(12.0),
         // thumbVisibility: MaterialStateProperty.all(true),
@@ -738,12 +738,12 @@ class _CurrentTrackState extends ConsumerState<CurrentTrack> {
 
           final elapsedPartBackgroundColor = ColorScheme.of(context).primary;
           final remainingPartBackgroundColor = Color.alphaBlend(
-            elapsedPartBackgroundColor.withOpacity(0.7),
+            elapsedPartBackgroundColor.withValues(alpha: 0.7),
             // this is an approximation, the actual background has the blurred cover image
             ref.watch(brightnessProvider) == Brightness.dark ? Colors.black : Colors.white,
           );
           final averageBackgroundColor = Color.alphaBlend(
-            elapsedPartBackgroundColor.withOpacity(0.5),
+            elapsedPartBackgroundColor.withValues(alpha: 0.5),
             remainingPartBackgroundColor,
           );
           Color primaryTextColor = AtContrast.getContrastiveTintedTextColor(onBackground: averageBackgroundColor);
@@ -774,7 +774,9 @@ class _CurrentTrackState extends ConsumerState<CurrentTrack> {
                       alignment: Alignment.center,
                       children: [
                         if (ref.watch(finampSettingsProvider.showProgressOnNowPlayingBar))
-                          Positioned.fill(child: ColoredBox(color: IconTheme.of(context).color!.withOpacity(0.75))),
+                          Positioned.fill(
+                            child: ColoredBox(color: IconTheme.of(context).color!.withValues(alpha: 0.75)),
+                          ),
                         AlbumImage(borderRadius: BorderRadius.zero, imageListenable: currentAlbumImageProvider),
                         AudioFadeProgressVisualizerContainer(
                           key: const Key("AlbumArtAudioFadeProgressVisualizer"),
@@ -1098,7 +1100,7 @@ class QueueSectionHeader extends ConsumerWidget {
                           iconSize: 28.0,
                           color: info?.order == FinampPlaybackOrder.shuffled
                               ? IconTheme.of(context).color!
-                              : (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white).withOpacity(0.85),
+                              : (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white).withValues(alpha: 0.85),
                           visualDensity: VisualDensity.standard,
                           onPressed: () async {
                             await queueService.togglePlaybackOrder();
@@ -1127,11 +1129,11 @@ class QueueSectionHeader extends ConsumerWidget {
                           },
                           iconSize: 28.0,
                           color: radioEnabled
-                              ? (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white).withOpacity(0.3)
+                              ? (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white).withValues(alpha: 0.3)
                               : (info?.loop != FinampLoopMode.none
                                     ? IconTheme.of(context).color!
-                                    : (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white).withOpacity(
-                                        0.85,
+                                    : (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white).withValues(
+                                        alpha: 0.85,
                                       )),
                           visualDensity: VisualDensity.standard,
                           onPressed: () {
@@ -1157,7 +1159,7 @@ class QueueSectionHeader extends ConsumerWidget {
                           iconSize: 28.0,
                           color: currentRadioAvailabilityStatus.isAvailable
                               ? IconTheme.of(context).color!
-                              : (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white).withOpacity(0.85),
+                              : (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white).withValues(alpha: 0.85),
                           visualDensity: VisualDensity.standard,
                           onPressed: () {
                             toggleRadio();

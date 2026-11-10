@@ -107,12 +107,14 @@ final class AppleTvAudioChannel: NSObject {
     private func load(url: URL, headers: [String: String]?) {
         teardownPlayer()
 
-        let asset: AVURLAsset
+        // Precise timing: without it AVFoundation seeks FLAC by a bitrate
+        // estimate and plays far past the end of the track (see
+        // packages/just_audio UriAudioSource.m).
+        var options: [String: Any] = [AVURLAssetPreferPreciseDurationAndTimingKey: true]
         if let headers, !headers.isEmpty {
-            asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
-        } else {
-            asset = AVURLAsset(url: url)
+            options["AVURLAssetHTTPHeaderFieldsKey"] = headers
         }
+        let asset = AVURLAsset(url: url, options: options)
         let item = AVPlayerItem(asset: asset)
         spectrumTap.attach(to: item)
         player.replaceCurrentItem(with: item)

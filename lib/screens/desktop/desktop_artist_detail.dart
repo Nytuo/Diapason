@@ -19,7 +19,7 @@ class DesktopArtistDetail extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final p = DesktopThemeScope.of(context);
     final albumsAsync = ref.watch(getPerformingArtistAlbumsProvider(artist: artist));
-    final albums = albumsAsync.valueOrNull ?? [];
+    final albums = albumsAsync.value ?? [];
 
     return Material(
       color: p.bg,

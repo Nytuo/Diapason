@@ -173,8 +173,9 @@ void main() {
           await tester.enterText(find.byType(TextField).first, 'Open');
           await tester.settle(frames: 10);
         }
-        if (tip == 'Menu')
+        if (tip == 'Menu') {
           await exploreTop(tester, taps: 5, seed: 13, avoid: r'log ?out|delete|remove|clear|reset|window');
+        }
         await back(tester);
       }
       GlobalSnackbar.navigatorState!.popUntil((r) => r.isFirst);

@@ -53,27 +53,22 @@ class AudioServiceHelper {
       );
     }
 
-    if (items != null) {
-      QueueItemSource source = (genreFilter != null)
-          ? QueueItemSource(
-              type: QueueItemSourceType.genre,
-              name: QueueItemSourceName(
-                type: QueueItemSourceNameType.preTranslated,
-                pretranslatedName: genreFilter.name,
-              ),
-              id: genreFilter.id,
-              item: genreFilter,
-            )
-          : QueueItemSource.rawId(
-              type: onlyShowFavorites ? QueueItemSourceType.favorites : QueueItemSourceType.allTracks,
-              name: QueueItemSourceName(
-                type: onlyShowFavorites ? QueueItemSourceNameType.yourLikes : QueueItemSourceNameType.shuffleAll,
-              ),
-              id: "shuffleAll",
-            );
+    QueueItemSource source = (genreFilter != null)
+        ? QueueItemSource(
+            type: QueueItemSourceType.genre,
+            name: QueueItemSourceName(type: QueueItemSourceNameType.preTranslated, pretranslatedName: genreFilter.name),
+            id: genreFilter.id,
+            item: genreFilter,
+          )
+        : QueueItemSource.rawId(
+            type: onlyShowFavorites ? QueueItemSourceType.favorites : QueueItemSourceType.allTracks,
+            name: QueueItemSourceName(
+              type: onlyShowFavorites ? QueueItemSourceNameType.yourLikes : QueueItemSourceNameType.shuffleAll,
+            ),
+            id: "shuffleAll",
+          );
 
-      await _queueService.startPlayback(items: items, source: source, order: FinampPlaybackOrder.shuffled);
-    }
+    await _queueService.startPlayback(items: items, source: source, order: FinampPlaybackOrder.shuffled);
   }
 
   /// Start instant mix from item.

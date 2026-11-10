@@ -16,7 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce/hive.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path_helper;
 import 'package:rxdart/rxdart.dart';
@@ -113,18 +113,10 @@ class DownloadsService {
   /// Provider for the download status of an item.  See [getStatus] for details.
   /// This provider relies on the fact that [_syncDownload] always re-inserts
   /// processed items into Isar to know when to re-check status.
-  late final statusProvider = Provider.family.autoDispose<DownloadItemStatus, (DownloadStub, int?)>((ref, record) {
-    var (stub, childCount) = record;
-    assert(stub.type != DownloadItemType.image && stub.type != DownloadItemType.anchor);
-    // Refresh on addDownload/removeDownload as well as state change
-    if (AppleTvAudioChannel.isSupported) return DownloadItemStatus.notNeeded;
-    ref.watch(_anchorProvider);
-    var sub = _isar.downloadItems.watchObjectLazy(stub.isarId).listen((_) {
-      ref.state = getStatus(stub, childCount);
-    });
-    ref.onDispose(sub.cancel);
-    return getStatus(stub, childCount);
-  });
+  late final statusProvider = NotifierProvider.autoDispose
+      .family<DownloadStatusNotifier, DownloadItemStatus, (DownloadStub, int?)>(
+        (record) => DownloadStatusNotifier(this, record),
+      );
 
   /// Provider for the actual download item associated with a stub.  This is used
   /// inside the downloads screen.
@@ -261,7 +253,7 @@ class DownloadsService {
                   unawaited(
                     File(listener.file!.path)
                         .rename(listener.file!.path.replaceFirst(RegExp(r'\.image$'), extension))
-                        .then((_) => null, onError: (e) => GlobalSnackbar.error(e)),
+                        .then((_) => null, onError: (Object e) => GlobalSnackbar.error(e)),
                   );
                   listener.path = listener.path!.replaceFirst(RegExp(r'\.image$'), extension);
                 }
@@ -594,27 +586,19 @@ class DownloadsService {
     // in repair step 5 will enforce the restriction that you must be required to require
     // other nodes.
     _isar.writeTxnSync(() {
-      List<
-        (
-          DownloadItemType,
-          QueryBuilder<DownloadItem, DownloadItem, QAfterFilterCondition> Function(
-            QueryBuilder<DownloadItem, DownloadItem, QFilterCondition>,
-          )?,
-        )
-      >
-      requireFilters = [
+      List<_TypeFilter> requireFilters = [
         (DownloadItemType.anchor, null),
         (DownloadItemType.finampCollection, null),
         (
           DownloadItemType.collection,
-          (q) => q.allOf([
+          (q) => q.allOf<BaseItemDtoType, QAfterFilterCondition>([
             BaseItemDtoType.album,
             BaseItemDtoType.playlist,
           ], (q, element) => q.not().baseItemTypeEqualTo(element)),
         ),
         (
           DownloadItemType.collection,
-          (q) => q.anyOf([
+          (q) => q.anyOf<BaseItemDtoType, QAfterFilterCondition>([
             BaseItemDtoType.album,
             BaseItemDtoType.playlist,
           ], (q, element) => q.baseItemTypeEqualTo(element)),
@@ -631,7 +615,7 @@ class DownloadsService {
             .filter()
             .optional(requireFilters[i].$2 != null, (q) => requireFilters[i].$2!(q))
             .requires(
-              (q) => q.anyOf(
+              (q) => q.anyOf<_TypeFilter, QAfterFilterCondition>(
                 requireFilters.slice(0, i + 1),
                 (q, element) => q.typeEqualTo(element.$1).optional(element.$2 != null, (q) => element.$2!(q)),
               ),
@@ -644,27 +628,19 @@ class DownloadsService {
         }
       }
 
-      List<
-        (
-          DownloadItemType,
-          QueryBuilder<DownloadItem, DownloadItem, QAfterFilterCondition> Function(
-            QueryBuilder<DownloadItem, DownloadItem, QFilterCondition>,
-          )?,
-        )
-      >
-      infoFilters = [
+      List<_TypeFilter> infoFilters = [
         (DownloadItemType.anchor, null),
         (DownloadItemType.finampCollection, null),
         (
           DownloadItemType.collection,
-          (q) => q.anyOf([
+          (q) => q.anyOf<BaseItemDtoType, QAfterFilterCondition>([
             BaseItemDtoType.album,
             BaseItemDtoType.playlist,
           ], (q, element) => q.baseItemTypeEqualTo(element)),
         ),
         (
           DownloadItemType.collection,
-          (q) => q.allOf([
+          (q) => q.allOf<BaseItemDtoType, QAfterFilterCondition>([
             BaseItemDtoType.album,
             BaseItemDtoType.playlist,
           ], (q, element) => q.not().baseItemTypeEqualTo(element)),
@@ -683,7 +659,7 @@ class DownloadsService {
             .requiredByIsEmpty()
             .optional(infoFilters[i].$2 != null, (q) => infoFilters[i].$2!(q))
             .info(
-              (q) => q.anyOf(
+              (q) => q.anyOf<_TypeFilter, QAfterFilterCondition>(
                 infoFilters.slice(0, i + 1),
                 (q, element) => q.typeEqualTo(element.$1).optional(element.$2 != null, (q) => element.$2!(q)),
               ),
@@ -697,7 +673,7 @@ class DownloadsService {
       }
     });
     // Allow other tasks to run between these steps, which are both synchronous
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future<void>.delayed(const Duration(milliseconds: 100));
 
     // Step 2 - Get all items into correct state matching filesystem and downloader.
     _downloadsLogger.info("Starting downloads repair step 2");
@@ -829,7 +805,7 @@ class DownloadsService {
     var imageFilePaths =
         Directory(path_helper.join(FinampSettingsHelper.finampSettings.internalTrackDir.currentPath, "images"))
             .list()
-            .handleError((e) => _downloadsLogger.info("Error while cleaning image directories: $e"))
+            .handleError((Object e) => _downloadsLogger.info("Error while cleaning image directories: $e"))
             .where((event) => event is File)
             .map((event) => path_helper.canonicalize(event.path));
     var filePaths = await imageFilePaths.toSet();
@@ -841,7 +817,7 @@ class DownloadsService {
             .map((e) => e.currentPath)) {
       var trackFilePaths = Directory(path_helper.join(trackBasePath, FINAMP_BASE_DOWNLOAD_DIRECTORY))
           .list()
-          .handleError((e) => _downloadsLogger.info("Error while cleaning track directories: $e"))
+          .handleError((Object e) => _downloadsLogger.info("Error while cleaning track directories: $e"))
           .where((event) => event is File)
           .map((event) => path_helper.canonicalize(event.path));
       filePaths.addAll(await trackFilePaths.toSet());
@@ -1134,7 +1110,7 @@ class DownloadsService {
     unawaited(
       repairAllDownloads().then(
         (value) => null,
-        onError: (error) {
+        onError: (Object error) {
           _downloadsLogger.severe("Error $error in hive migration downloads repair.");
           GlobalSnackbar.show(
             (scaffold) => SnackBar(
@@ -1395,7 +1371,7 @@ class DownloadsService {
                 q.stateEqualTo(DownloadItemState.complete).or().stateEqualTo(DownloadItemState.needsRedownloadComplete),
           ),
         )
-        .optional(onlyFavorites, (q) => q.anyOf(favoriteIds, (q, v) => q.isarIdEqualTo(v)))
+        .optional(onlyFavorites, (q) => q.anyOf<int, QAfterFilterCondition>(favoriteIds, (q, v) => q.isarIdEqualTo(v)))
         // Returns items that have a certain genreId assigned
         .optional(
           genreFilter != null,
@@ -1441,7 +1417,7 @@ class DownloadsService {
           (q) =>
               q.stateEqualTo(DownloadItemState.complete).or().stateEqualTo(DownloadItemState.needsRedownloadComplete),
         )
-        .optional(onlyFavorites, (q) => q.anyOf(favoriteIds, (q, v) => q.isarIdEqualTo(v)))
+        .optional(onlyFavorites, (q) => q.anyOf<int, QAfterFilterCondition>(favoriteIds, (q, v) => q.isarIdEqualTo(v)))
         .optional(nameFilter != null, (q) => q.nameContains(nameFilter!, caseSensitive: false))
         .optional(
           relatedTo != null,
@@ -1542,7 +1518,10 @@ class DownloadsService {
         .optional(nameFilter != null, (q) => q.nameContains(nameFilter!, caseSensitive: false))
         .optional(
           includeItemTypes.isNotEmpty,
-          (q) => q.anyOf(includeItemTypes, (q, type) => q.baseItemTypeEqualTo(type)),
+          (q) => q.anyOf<BaseItemDtoType, QAfterFilterCondition>(
+            includeItemTypes,
+            (q, type) => q.baseItemTypeEqualTo(type),
+          ),
         )
         // If allPlaylists is info downloaded, we may have info for empty
         // playlists.  We should only return playlists with at least 1 required
@@ -1576,10 +1555,10 @@ class DownloadsService {
                 .not()
                 .stateEqualTo(DownloadItemState.notDownloaded)
                 .or()
-                .anyOf(libraryFilteredIds, (q, v) => q.isarIdEqualTo(v)),
+                .anyOf<int, QAfterFilterCondition>(libraryFilteredIds, (q, v) => q.isarIdEqualTo(v)),
           ),
         )
-        .optional(onlyFavorites, (q) => q.anyOf(favoriteIds, (q, v) => q.isarIdEqualTo(v)))
+        .optional(onlyFavorites, (q) => q.anyOf<int, QAfterFilterCondition>(favoriteIds, (q, v) => q.isarIdEqualTo(v)))
         .optional(
           viewFilter != null,
           (q) => q.group(
@@ -1806,3 +1785,34 @@ class DownloadsService {
     }
   }
 }
+
+/// Backs [DownloadsService.statusProvider]: recomputes the status whenever Isar
+/// re-inserts the item (see [DownloadsService.getStatus]).
+class DownloadStatusNotifier extends Notifier<DownloadItemStatus> {
+  DownloadStatusNotifier(this._service, this._record);
+
+  final DownloadsService _service;
+  final (DownloadStub, int?) _record;
+
+  @override
+  DownloadItemStatus build() {
+    var (stub, childCount) = _record;
+    assert(stub.type != DownloadItemType.image && stub.type != DownloadItemType.anchor);
+    // Refresh on addDownload/removeDownload as well as state change
+    if (AppleTvAudioChannel.isSupported) return DownloadItemStatus.notNeeded;
+    ref.watch(_service._anchorProvider);
+    var sub = _service._isar.downloadItems.watchObjectLazy(stub.isarId).listen((_) {
+      state = _service.getStatus(stub, childCount);
+    });
+    ref.onDispose(sub.cancel);
+    return _service.getStatus(stub, childCount);
+  }
+}
+
+/// A download item type, optionally narrowed by an extra filter; used by the link-repair queries.
+typedef _TypeFilter = (
+  DownloadItemType,
+  QueryBuilder<DownloadItem, DownloadItem, QAfterFilterCondition> Function(
+    QueryBuilder<DownloadItem, DownloadItem, QFilterCondition>,
+  )?,
+);

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:diapason/screens/home_screen_settings_screen.dart';
 import 'package:diapason/screens/transcoding_settings_screen.dart';
 import 'package:diapason/screens/downloads_settings_screen.dart';
@@ -236,11 +234,6 @@ void main() {
   });
 
   group('album page and track menu', () {
-    int total() {
-      final q = queueService().getQueue();
-      return q.previousTracks.length + (q.currentTrack == null ? 0 : 1) + q.nextUp.length + q.queue.length;
-    }
-
     /// Something is already playing before the album page opens, so the buttons here only add to the queue.
     Future<void> playAlbumFirst(WidgetTester tester) async {
       // From another album than the one whose page is opened next: showing the art of the track that has just

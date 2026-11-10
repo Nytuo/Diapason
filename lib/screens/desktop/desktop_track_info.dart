@@ -12,7 +12,7 @@ class DesktopTrackInfoLine extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final p = DesktopThemeScope.of(context);
-    final metadata = ref.watch(currentTrackMetadataProvider).valueOrNull;
+    final metadata = ref.watch(currentTrackMetadataProvider).value;
     if (metadata == null) return const SizedBox.shrink();
 
     final source = metadata.mediaSourceInfo;

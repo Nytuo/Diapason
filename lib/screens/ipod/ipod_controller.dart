@@ -147,7 +147,7 @@ class IpodController extends ChangeNotifier {
   void previous() => _player.skipToPrevious();
 
   void _scrub(int steps) {
-    final duration = _queue.getQueue().currentTrack?.baseItem?.runTimeTicksDuration();
+    final duration = _queue.getQueue().currentTrack?.baseItem.runTimeTicksDuration();
     if (duration == null || duration == Duration.zero) return;
 
     final position = _player.playbackState.valueOrNull?.position ?? Duration.zero;

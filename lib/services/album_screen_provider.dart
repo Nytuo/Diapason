@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

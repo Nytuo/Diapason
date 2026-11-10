@@ -157,7 +157,7 @@ class _ItemCollectionWrapperState extends ConsumerState<ItemWrapper> {
       onTapDown: (_) {
         if (!widget.interactive) return;
         // Begin precalculating theme for menu
-        ref.listenManual(finampThemeProvider(ThemeInfo(widget.item)), (_, __) {});
+        ref.listenManual(finampThemeProvider(ThemeInfo(widget.item)), (_, _) {});
       },
       onLongPressStart: (details) => widget.interactive ? openItemMenu(context: context, item: widget.item) : null,
       onSecondaryTapDown: (details) => widget.interactive ? openItemMenu(context: context, item: widget.item) : null,

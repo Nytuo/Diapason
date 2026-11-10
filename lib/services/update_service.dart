@@ -119,10 +119,12 @@ class UpdateService {
     bool matches(String name) {
       final n = name.toLowerCase();
       if (Platform.isAndroid) return n.endsWith(".apk");
-      if (Platform.isMacOS)
+      if (Platform.isMacOS) {
         return n.endsWith(".dmg") || n.endsWith(".pkg") || n.contains("macos") || n.contains("darwin");
-      if (Platform.isWindows)
+      }
+      if (Platform.isWindows) {
         return n.endsWith(".exe") || n.endsWith(".msi") || n.contains("windows") || n.contains("_win_");
+      }
       if (Platform.isLinux) return n.endsWith(".appimage") || n.endsWith(".deb") || n.contains("linux");
       return false;
     }

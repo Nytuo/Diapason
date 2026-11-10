@@ -14,7 +14,7 @@ import 'package:diapason/services/smart_playlist_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce/hive.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
@@ -105,7 +105,10 @@ class BackupService {
 
   /// Fields holding credentials for third-party services. Left out of a backup made without sign-ins, and never
   /// cleared on restore by a backup that doesn't have them.
-  static void _forEachSecret(FinampSettings settings, void Function(String Function() get, void Function(String) set) visit) {
+  static void _forEachSecret(
+    FinampSettings settings,
+    void Function(String Function() get, void Function(String) set) visit,
+  ) {
     visit(() => settings.listenBrainzToken, (v) => settings.listenBrainzToken = v);
     visit(() => settings.lastFmApiKey, (v) => settings.lastFmApiKey = v);
     visit(() => settings.lastFmApiSecret, (v) => settings.lastFmApiSecret = v);
@@ -233,7 +236,11 @@ class BackupService {
 
     for (final raw in (json["sources"] as List?)?.whereType<Map<String, dynamic>>() ?? const <Map<String, dynamic>>[]) {
       try {
-        await _restoreSource(MediaSourceConfig.fromTvOSStorageJson(raw), includesSignIns: includesSignIns, report: report);
+        await _restoreSource(
+          MediaSourceConfig.fromTvOSStorageJson(raw),
+          includesSignIns: includesSignIns,
+          report: report,
+        );
       } catch (e) {
         _log.warning("Skipped a source from the backup: $e");
         report.sourcesSkipped++;
@@ -244,7 +251,10 @@ class BackupService {
       final box = Hive.isBoxOpen("SmartPlaylists")
           ? Hive.box<String>("SmartPlaylists")
           : await Hive.openBox<String>("SmartPlaylists");
-      await box.putAll({for (final e in playlists.entries) if (e.value is String) e.key: e.value as String});
+      await box.putAll({
+        for (final e in playlists.entries)
+          if (e.value is String) e.key: e.value as String,
+      });
       report.smartPlaylists = playlists.length;
     }
 
@@ -260,7 +270,10 @@ class BackupService {
     }
 
     if (json["lyricsOffsets"] case final Map<String, dynamic> offsets) {
-      final valid = {for (final e in offsets.entries) if (e.value is int) e.key: e.value as int};
+      final valid = {
+        for (final e in offsets.entries)
+          if (e.value is int) e.key: e.value as int,
+      };
       await LyricsOffsetService.restore(valid);
       report.lyricsOffsets = valid.length;
     }

@@ -1,9 +1,8 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: deprecated_member_use_from_same_package, strict_raw_type
+// ignore_for_file: deprecated_member_use_from_same_package, strict_raw_type, unused_element, unused_local_variable
 
 // dart format off
-
 
 part of 'finamp_settings_helper.dart';
 
@@ -1710,7 +1709,8 @@ extension FinampSetters on FinampSettingsHelper {
 }
 
 /// Generated providers to easily watch only specific fields in finampSettings
-extension FinampSettingsProviderSelectors on StreamProvider<FinampSettings> {
+extension FinampSettingsProviderSelectors
+    on StreamNotifierProvider<FinampSettingsNotifier, FinampSettings> {
   ProviderListenable<bool> get isOffline =>
       finampSettingsProvider.select((value) => value.requireValue.isOffline);
   ProviderListenable<bool> get shouldTranscode => finampSettingsProvider.select(
@@ -2286,27 +2286,3 @@ class _LengthEqualsIterable<E> extends DelegatingIterable<E> {
   @override
   int get hashCode => Object.hash(length, '_LengthEqualsIterable');
 }
-
-// **************************************************************************
-// RiverpodGenerator
-// **************************************************************************
-
-String _$finampSettingsHash() => r'298d6dcfef9bacbabf1c0d39f1b0c4155f511639';
-
-/// See also [finampSettings].
-@ProviderFor(finampSettings)
-final finampSettingsProvider = StreamProvider<FinampSettings>.internal(
-  finampSettings,
-  name: r'finampSettingsProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$finampSettingsHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef FinampSettingsRef = StreamProviderRef<FinampSettings>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

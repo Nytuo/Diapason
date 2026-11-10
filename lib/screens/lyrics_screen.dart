@@ -307,11 +307,11 @@ class _LyricsViewState extends ConsumerState<LyricsView> with WidgetsBindingObse
   Widget build(BuildContext context) {
     //!!! use unwrapPrevious() to prevent getting previous values. If we don't have the lyrics for the current track yet, we want to show the loading state, and not the lyrics for the previous track
     final metadata = ref.watch(currentTrackMetadataProvider).unwrapPrevious();
-    final item = metadata.valueOrNull?.item;
+    final item = metadata.value?.item;
     // The source the user picked in the lyrics source menu, else the automatic one.
     final chosen = item == null ? null : ref.watch(chosenLyricsProvider(item.id));
-    final shown = chosen ?? metadata.valueOrNull?.lyricsOption;
-    lyrics = chosen?.lyrics.lyrics ?? metadata.valueOrNull?.lyrics?.lyrics;
+    final shown = chosen ?? metadata.value?.lyricsOption;
+    lyrics = chosen?.lyrics.lyrics ?? metadata.value?.lyrics?.lyrics;
     if (!_isSynchronizedLyrics) {
       currentLineNotifier.value = null;
     }
@@ -366,7 +366,7 @@ class _LyricsViewState extends ConsumerState<LyricsView> with WidgetsBindingObse
                     behavior: const FinampScrollBehavior(scrollbars: false),
                     child: LyricsListMask(
                       child: ListView.builder(
-                        key: PageStorageKey(metadata.valueOrNull?.item),
+                        key: PageStorageKey(metadata.value?.item),
                         controller: autoScrollController,
                         itemCount: lyricLines.length + 2,
                         itemBuilder: (context, rawIndex) {
@@ -780,10 +780,10 @@ class LyricsListMask extends StatelessWidget {
           end: Alignment.bottomCenter,
           colors: [
             Colors.transparent,
-            Colors.white.withOpacity(0.5),
+            Colors.white.withValues(alpha: 0.5),
             Colors.white,
             Colors.white,
-            Colors.white.withOpacity(0.5),
+            Colors.white.withValues(alpha: 0.5),
             Colors.transparent,
           ],
           stops: const [0.0, 0.05, 0.10, 0.90, 0.95, 1.0],

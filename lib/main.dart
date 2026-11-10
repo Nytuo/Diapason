@@ -105,7 +105,7 @@ import 'package:get_it/get_it.dart';
 import 'package:hive_ce_flutter/adapters.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl_standalone.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:diapason/screens/tv/tv_profile_edit_screen.dart';
 import 'package:diapason/screens/tv/tv_profile_picker_screen.dart';
 import 'package:diapason/services/tv/tv_profile_service.dart';
@@ -495,8 +495,11 @@ Future<void> _setupProviders() async {
   var container = ProviderContainer(observers: [FinampProviderObserver()]);
   GetIt.instance.registerSingleton<ProviderContainer>(container);
   // Make sure that finampSettingsProvider always has a value available
-  container.listen(finampSettingsProvider, (_, __) {});
-  await container.read(finampSettingsProvider.future);
+  container.listen(finampSettingsProvider, (_, _) {});
+  // Riverpod 3 pauses providers nobody listens to, so a bare read of a stream provider's future never completes.
+  final settingsSubscription = container.listen(finampSettingsProvider.future, (_, _) {});
+  await settingsSubscription.read();
+  settingsSubscription.close();
 
   await initImageCache();
 
@@ -1393,14 +1396,18 @@ class NoTransitionPageTransitionsBuilder extends PageTransitionsBuilder {
   }
 }
 
-class FinampProviderObserver extends ProviderObserver {
+final _providerObserverLogger = Logger("ProviderObserver");
+
+final class FinampProviderObserver extends ProviderObserver {
   @override
-  void providerDidFail(
-    ProviderBase<Object?> provider,
-    Object error,
-    StackTrace stackTrace,
-    ProviderContainer container,
-  ) {
+  void providerDidFail(ProviderObserverContext context, Object error, StackTrace stackTrace) {
+    // A build that was still awaiting when its provider was disposed or rebuilt fails with an UnmountedRefException
+    // (Riverpod 3). Nothing is listening to that result any more, so it is not worth telling the user about.
+    // Riverpod does not export the type, hence the name check.
+    if (error.runtimeType.toString() == "UnmountedRefException") {
+      _providerObserverLogger.fine("Ignoring a stale build of ${context.provider}: $error");
+      return;
+    }
     GlobalSnackbar.error(error);
   }
 }

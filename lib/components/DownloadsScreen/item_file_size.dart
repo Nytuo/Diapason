@@ -15,7 +15,7 @@ class ItemFileSize extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textFunction = ref.watch(downloadSizeTextProvider(stub)).valueOrNull;
+    final textFunction = ref.watch(downloadSizeTextProvider(stub)).value;
     final text = textFunction == null ? "" : textFunction(context);
     if (text.startsWith("!!!")) {
       return Text(text.substring(3), style: TextStyle(color: Colors.red));

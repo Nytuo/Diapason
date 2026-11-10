@@ -144,7 +144,7 @@ void main() {
   });
 
   test('no music library, a server error, or an unreachable server mean "not connected"', () async {
-    plex.routes['/library/sections'] = {'Directory': []};
+    plex.routes['/library/sections'] = {'Directory': <Object?>[]};
     expect(await backend.ping(), isFalse);
     plex.status = 500;
     expect(await backend.ping(), isFalse);

@@ -11,6 +11,7 @@ import 'package:diapason/services/lyrics/lrclib_client.dart';
 import 'package:diapason/services/lyrics/word_sync_parser.dart';
 import 'package:diapason/services/lyrics/word_synced_lyrics_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;

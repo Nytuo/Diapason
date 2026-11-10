@@ -123,7 +123,7 @@ class ConnectQueue {
   static ConnectQueue? tryParse(Map<String, dynamic>? json) {
     final raw = json?["items"];
     if (raw is! List) return null;
-    final items = raw.whereType<Map>().map((e) => e.cast<String, dynamic>()).toList();
+    final items = raw.whereType<Map<dynamic, dynamic>>().map((e) => e.cast<String, dynamic>()).toList();
     final order = (json?["shuffleOrder"] as List?)?.map((e) => (e as num).toInt()).toList();
     return ConnectQueue(
       items: items,

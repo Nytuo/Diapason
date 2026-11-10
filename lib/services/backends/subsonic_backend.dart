@@ -552,7 +552,7 @@ class SubsonicBackend implements MediaBackend {
   Future<void> updatePlaylistMetadata(BaseItemDto playlist, {String? name, bool? isPublic}) async {
     await _get("updatePlaylist", {
       "playlistId": playlist.id.nativeId,
-      if (name != null) "name": name,
+      "name": ?name,
       if (isPublic != null) "public": "$isPublic",
     });
   }

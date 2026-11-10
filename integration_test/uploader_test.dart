@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:diapason/screens/uploader_settings_screen.dart';

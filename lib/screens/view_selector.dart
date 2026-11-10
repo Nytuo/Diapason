@@ -137,7 +137,7 @@ class _ViewSelectorState extends State<ViewSelector> {
                     onTap: () async {
                       final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
 
-                      await jellyfinApiHelper.logoutCurrentUser().onError((_, __) {});
+                      await jellyfinApiHelper.logoutCurrentUser().onError((_, _) {});
 
                       if (!context.mounted) return;
 

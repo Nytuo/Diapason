@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/models/media_source.dart';
-import 'package:diapason/services/backends/item_mapper.dart';
 import 'package:diapason/services/backends/mpd_backend.dart';
 import 'package:diapason/services/mpd/mpd_client.dart';
 import 'package:flutter_test/flutter_test.dart';

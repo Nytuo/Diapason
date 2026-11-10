@@ -28,7 +28,7 @@ class _FakeStreamCache implements StreamCacheService {
   }
 
   @override
-  noSuchMethod(Invocation invocation) => throw UnimplementedError();
+  Never noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }
 
 /// Settings → Storage & logs: what the app keeps, how to free it, and how chatty the log is.
@@ -43,7 +43,10 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final container = ProviderContainer();
     addTearDown(container.dispose);
-    await container.read(finampSettingsProvider.future);
+    // Riverpod 3 pauses providers nobody listens to, so a bare read of a stream provider's future never completes.
+    final settingsSubscription = container.listen(finampSettingsProvider.future, (_, _) {});
+    await settingsSubscription.read();
+    settingsSubscription.close();
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,

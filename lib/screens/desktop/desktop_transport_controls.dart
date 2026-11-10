@@ -1,6 +1,6 @@
 import 'package:diapason/services/audio_position.dart';
 import 'package:audio_service/audio_service.dart';
-import 'package:diapason/components/PlayerScreen/progress_slider.dart';
+import 'package:diapason/components/PlayerScreen/chapter_track.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart' as jellyfin_models;
 import 'package:diapason/screens/desktop/desktop_theme.dart';
@@ -78,7 +78,7 @@ class DesktopTransportControls extends StatelessWidget {
               height: playSize + 20,
               child: Material(
                 borderRadius: BorderRadius.circular(14),
-                color: p.accent.withOpacity(0.15),
+                color: p.accent.withValues(alpha: 0.15),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(14),
                   onTap: onToggle ?? () => audioHandler.togglePlayback(),
@@ -227,12 +227,13 @@ class _DesktopSeekBarState extends State<DesktopSeekBar> with SingleTickerProvid
         ),
       );
     } else {
-      final slider = SliderTheme(
+      Widget slider(List<double> boundaries, int? hoveredSegment) => SliderTheme(
         data: SliderThemeData(
           trackHeight: 4,
+          trackShape: ChapterTrackShape(boundaries: boundaries, hoveredSegment: hoveredSegment),
           activeTrackColor: p.accent,
           inactiveTrackColor: p.surface,
-          secondaryActiveTrackColor: p.accent.withOpacity(0.28),
+          secondaryActiveTrackColor: p.accent.withValues(alpha: 0.28),
           thumbColor: p.accent,
           overlayShape: SliderComponentShape.noOverlay,
           thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
@@ -244,22 +245,15 @@ class _DesktopSeekBarState extends State<DesktopSeekBar> with SingleTickerProvid
           onChangeEnd: totalMs == 0 ? null : seek,
         ),
       );
+      // The plain slider keeps its own height; with chapters it gets room for the taller hovered segment.
       track = widget.chapters.isEmpty || totalMs == 0
-          ? slider
+          ? slider(const [], null)
           : SizedBox(
               height: 24,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  slider,
-                  ChapterMarkers(
-                    chapters: widget.chapters,
-                    duration: widget.duration,
-                    position: position,
-                    color: p.accent,
-                    onSeek: (to) async => seek(to.inMilliseconds / totalMs),
-                  ),
-                ],
+              child: ChapterHoverRegion(
+                chapters: widget.chapters,
+                duration: widget.duration,
+                builder: (context, boundaries, hovered) => slider(boundaries, hovered),
               ),
             );
     }
@@ -311,7 +305,7 @@ class _IndeterminatePainter extends CustomPainter {
 
     final rect = Rect.fromLTWH(start, 0, segWidth, size.height);
     final shader = LinearGradient(
-      colors: [accent.withOpacity(0.0), accent, accent.withOpacity(0.0)],
+      colors: [accent.withValues(alpha: 0.0), accent, accent.withValues(alpha: 0.0)],
       stops: const [0.0, 0.5, 1.0],
     ).createShader(rect);
     canvas.drawRect(rect, Paint()..shader = shader);

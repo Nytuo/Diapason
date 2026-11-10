@@ -15,12 +15,23 @@ import '../models/jellyfin_models.dart';
 
 part 'finamp_settings_helper.g.dart';
 
-@Riverpod(keepAlive: true)
-Stream<FinampSettings> finampSettings(Ref ref) {
-  return Hive.box<FinampSettings>("FinampSettings")
-      .watch()
-      .map<FinampSettings>((event) => event.value! as FinampSettings)
-      .startWith(FinampSettingsHelper.finampSettings);
+final finampSettingsProvider = StreamNotifierProvider<FinampSettingsNotifier, FinampSettings>(
+  FinampSettingsNotifier.new,
+);
+
+class FinampSettingsNotifier extends StreamNotifier<FinampSettings> {
+  @override
+  Stream<FinampSettings> build() {
+    return Hive.box<FinampSettings>("FinampSettings")
+        .watch()
+        .map<FinampSettings>((event) => event.value! as FinampSettings)
+        .startWith(FinampSettingsHelper.finampSettings);
+  }
+
+  /// Settings are saved by mutating the one [FinampSettings] instance and putting it back, so every event carries the
+  /// same object. Riverpod 3 compares the new value to the old with `==` and would drop every one of those updates.
+  @override
+  bool updateShouldNotify(AsyncValue<FinampSettings> previous, AsyncValue<FinampSettings> next) => true;
 }
 
 class FinampSettingsHelper {
@@ -313,7 +324,7 @@ class FinampSettingsHelper {
   }) {
     return IconButton(
       onPressed: () async {
-        await showDialog(
+        await showDialog<void>(
           context: context,
           builder: (context) => ConfirmationPromptDialog(
             promptText: isGlobal

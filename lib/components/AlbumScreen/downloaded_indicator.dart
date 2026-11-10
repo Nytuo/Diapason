@@ -35,7 +35,7 @@ class DownloadedIndicator extends ConsumerWidget {
     final downloadsService = GetIt.instance<DownloadsService>();
     AsyncValue<DownloadItemState?> status = ref.watch(downloadsService.stateProvider(item));
     if (status.hasValue) {
-      switch (status.valueOrNull) {
+      switch (status.value) {
         case null:
         case DownloadItemState.notDownloaded:
           return const SizedBox.shrink();
@@ -44,7 +44,7 @@ class DownloadedIndicator extends ConsumerWidget {
         case DownloadItemState.needsRedownload:
           return Icon(
             TablerIcons.cloud_download,
-            color: Theme.of(context).textTheme.bodyMedium!.color?.withOpacity(0.75),
+            color: Theme.of(context).textTheme.bodyMedium!.color?.withValues(alpha: 0.75),
             size: size,
           );
         case DownloadItemState.failed:

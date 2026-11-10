@@ -46,8 +46,8 @@ class KeepScreenOnHelper {
     });
 
     final container = GetIt.instance<ProviderContainer>();
-    container.listen(finampSettingsProvider.keepScreenOnOption, (_, __) => setKeepScreenOn());
-    container.listen(finampSettingsProvider.keepScreenOnWhilePluggedIn, (_, __) => setKeepScreenOn());
+    container.listen(finampSettingsProvider.keepScreenOnOption, (_, _) => setKeepScreenOn());
+    container.listen(finampSettingsProvider.keepScreenOnWhilePluggedIn, (_, _) => setKeepScreenOn());
   }
 
   void setKeepScreenOn() {
@@ -132,7 +132,7 @@ class KeepScreenOnObserver extends NavigatorObserver {
 
   static final _lyricsCheck = ModalRoute.withName(LyricsScreen.routeName);
   @override
-  void didPush(Route route, Route? previousRoute) {
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     // Just pushed to lyrics?
     if (_lyricsCheck(route)) {
       keepScreenOnHelper.setCondition(isLyricsShowing: true);
@@ -141,7 +141,7 @@ class KeepScreenOnObserver extends NavigatorObserver {
   }
 
   @override
-  void didPop(Route route, Route? previousRoute) {
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     // Just popped lyrics?
     if (_lyricsCheck(route)) {
       keepScreenOnHelper.setCondition(isLyricsShowing: false);

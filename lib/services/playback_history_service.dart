@@ -495,7 +495,7 @@ class PlaybackHistoryService {
       final alreadyQueued = queue.queue
           .followedBy(queue.nextUp)
           .followedBy(queue.previousTracks)
-          .map((item) => item.baseItem?.id.raw)
+          .map((item) => item.baseItem.id.raw)
           .nonNulls
           .toSet();
 

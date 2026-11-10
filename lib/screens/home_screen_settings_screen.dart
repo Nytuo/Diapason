@@ -72,7 +72,7 @@ class QuickActionsSelector extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: 8.0, left: 12.0, right: 12.0),
                 child: ListTile(
                   tileColor: Color.alphaBlend(
-                    ColorScheme.of(context).primary.withOpacity(0.05),
+                    ColorScheme.of(context).primary.withValues(alpha: 0.05),
                     ColorScheme.of(context).surface,
                   ),
                   title: Padding(padding: const EdgeInsets.only(left: 4.0), child: Text(action.getTitle(context.l10n))),
@@ -185,7 +185,7 @@ class HomeScreenSectionsSelector extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: 8.0, left: 12.0, right: 12.0),
                 child: ListTile(
                   tileColor: Color.alphaBlend(
-                    ColorScheme.of(context).primary.withOpacity(0.05),
+                    ColorScheme.of(context).primary.withValues(alpha: 0.05),
                     ColorScheme.of(context).surface,
                   ),
                   title: Padding(
@@ -371,7 +371,7 @@ class _GlobalSearchBoxState extends ConsumerState<GlobalSearchBox> {
             hintText: MaterialLocalizations.of(context).searchFieldLabel,
             filled: true,
             fillColor: Color.alphaBlend(
-              ColorScheme.of(context).onSurface.withOpacity(0.1),
+              ColorScheme.of(context).onSurface.withValues(alpha: 0.1),
               ColorScheme.of(context).surface,
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
@@ -471,7 +471,7 @@ class _GlobalSearchBoxState extends ConsumerState<GlobalSearchBox> {
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
         ),
         backgroundColor: WidgetStateProperty.all<Color>(
-          Color.alphaBlend(ColorScheme.of(context).onSurface.withOpacity(0.2), ColorScheme.of(context).surface),
+          Color.alphaBlend(ColorScheme.of(context).onSurface.withValues(alpha: 0.2), ColorScheme.of(context).surface),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -480,8 +480,8 @@ class _GlobalSearchBoxState extends ConsumerState<GlobalSearchBox> {
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide.none),
         filled: true,
         fillColor: Color.alphaBlend(
-          ColorScheme.of(context).primary.withOpacity(0.075),
-          ColorScheme.of(context).onSurface.withOpacity(0.1),
+          ColorScheme.of(context).primary.withValues(alpha: 0.075),
+          ColorScheme.of(context).onSurface.withValues(alpha: 0.1),
         ),
         visualDensity: VisualDensity(horizontal: -4.0, vertical: -4.0),
         errorBorder: InputBorder.none,
@@ -501,8 +501,8 @@ class _GlobalSearchBoxState extends ConsumerState<GlobalSearchBox> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8.0),
         color: Color.alphaBlend(
-          ColorScheme.of(context).primary.withOpacity(0.075),
-          ColorScheme.of(context).onSurface.withOpacity(0.1),
+          ColorScheme.of(context).primary.withValues(alpha: 0.075),
+          ColorScheme.of(context).onSurface.withValues(alpha: 0.1),
         ),
       ),
       child: child,

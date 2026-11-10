@@ -23,7 +23,7 @@ class DesktopAlbumDetail extends ConsumerWidget {
     final p = DesktopThemeScope.of(context);
     final isPlaylist = BaseItemDtoType.fromItem(parent) == BaseItemDtoType.playlist;
     final tracksAsync = ref.watch(getAlbumOrPlaylistTracksProvider(parent));
-    final (allTracks, playableTracks) = tracksAsync.valueOrNull ?? (null, null);
+    final (allTracks, playableTracks) = tracksAsync.value ?? (null, null);
     final display = allTracks ?? [];
     final queue = playableTracks ?? [];
 

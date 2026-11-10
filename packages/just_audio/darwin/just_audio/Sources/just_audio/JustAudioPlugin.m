@@ -1,0 +1,77 @@
+#import "./include/just_audio/JustAudioPlugin.h"
+#import "./include/just_audio/AudioPlayer.h"
+#import "./include/just_audio/BetterEventChannel.h"
+#import <AVFoundation/AVFoundation.h>
+#include <TargetConditionals.h>
+
+@implementation JustAudioPlugin {
+    NSObject<FlutterPluginRegistrar>* _registrar;
+    NSMutableDictionary<NSString *, AudioPlayer *> *_players;
+    // Shared by every player: only the one actually rendering audio emits frames,
+    // so events need no player id.
+    BetterEventChannel *_spectrumChannel;
+}
+
++ (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
+    FlutterMethodChannel* channel = [FlutterMethodChannel
+        methodChannelWithName:@"com.ryanheise.just_audio.methods"
+              binaryMessenger:[registrar messenger]];
+    JustAudioPlugin* instance = [[JustAudioPlugin alloc] initWithRegistrar:registrar];
+    [registrar addMethodCallDelegate:instance channel:channel];
+}
+
+- (instancetype)initWithRegistrar:(NSObject<FlutterPluginRegistrar> *)registrar {
+    self = [super init];
+    NSAssert(self, @"super init cannot be nil");
+    _registrar = registrar;
+    _players = [[NSMutableDictionary alloc] init];
+    _spectrumChannel = [[BetterEventChannel alloc]
+        initWithName:@"com.ryanheise.just_audio.spectrum"
+           messenger:[registrar messenger]];
+    return self;
+}
+
+- (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    //NSLog(@"plugin method: %@", call.method);
+    if ([@"init" isEqualToString:call.method]) {
+        NSDictionary *request = (NSDictionary *)call.arguments;
+        NSString *playerId = (NSString *)request[@"id"];
+        NSDictionary *loadConfiguration = (NSDictionary *)request[@"audioLoadConfiguration"];
+        BOOL useLazyPreparation = [((NSNumber *)request[@"useLazyPreparation"]) boolValue];
+        NSArray *darwinAudioEffects = (NSArray *)request[@"darwinAudioEffects"];
+        if (![darwinAudioEffects isKindOfClass:[NSArray class]]) {
+            darwinAudioEffects = @[];
+        }
+        if ([_players objectForKey:playerId] != nil) {
+            FlutterError *flutterError = [FlutterError errorWithCode:@"error" message:@"Platform player already exists" details:nil];
+            result(flutterError);
+        } else {
+            AudioPlayer* player = [[AudioPlayer alloc] initWithRegistrar:_registrar playerId:playerId loadConfiguration:loadConfiguration useLazyPreparation:useLazyPreparation spectrumChannel:_spectrumChannel darwinAudioEffects:darwinAudioEffects];
+            [_players setValue:player forKey:playerId];
+            result(nil);
+        }
+    } else if ([@"disposePlayer" isEqualToString:call.method]) {
+        NSDictionary *request = (NSDictionary *)call.arguments;
+        NSString *playerId = request[@"id"];
+        [_players[playerId] dispose:NO];
+        [_players setValue:nil forKey:playerId];
+        result(@{});
+    } else if ([@"disposeAllPlayers" isEqualToString:call.method]) {
+        for (NSString *playerId in _players) {
+            [_players[playerId] dispose:NO];
+        }
+        [_players removeAllObjects];
+        result(@{});
+    } else {
+        result(FlutterMethodNotImplemented);
+    }
+}
+
+- (void)dealloc {
+    for (NSString *playerId in _players) {
+        [_players[playerId] dispose:YES];
+    }
+    [_players removeAllObjects];
+}
+
+@end

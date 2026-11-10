@@ -115,7 +115,7 @@ Widget buildPlayerSplitScreenScaffold(BuildContext context, Widget? widget) {
                         child: ScaffoldMessenger(
                           child: Navigator(
                             pages: const [MaterialPage(child: PlayerScreen())],
-                            onPopPage: (_, __) => false,
+                            onPopPage: (_, _) => false,
                             onGenerateRoute: (x) {
                               GlobalSnackbar.navigatorState!.pushNamed(x.name!, arguments: x.arguments);
                               return EmptyRoute();
@@ -139,7 +139,7 @@ Widget buildPlayerSplitScreenScaffold(BuildContext context, Widget? widget) {
   );
 }
 
-class EmptyRoute extends Route {
+class EmptyRoute extends Route<void> {
   @override
   List<OverlayEntry> get overlayEntries => [OverlayEntry(builder: (_) => const SizedBox.shrink())];
   @override
@@ -166,7 +166,7 @@ class SplitScreenNavigatorObserver extends NavigatorObserver {
     });
   }
 
-  static bool shouldNotPop(Route route) {
+  static bool shouldNotPop(Route<dynamic> route) {
     return !_playerCheck(route) && !_lyricsCheck(route);
   }
 }

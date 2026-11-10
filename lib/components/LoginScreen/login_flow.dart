@@ -73,9 +73,9 @@ class _LoginFlowState extends State<LoginFlow> {
         key: loginNavigatorKey,
         initialRoute: widget.jellyfinOnly ? LoginServerSelectionPage.routeName : LoginSplashPage.routeName,
         onGenerateRoute: (RouteSettings settings) {
-          Route route;
+          Route<dynamic> route;
 
-          Route createRoute(Widget page) => PageRouteBuilder(
+          Route<dynamic> createRoute(Widget page) => PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) => page,
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               if (MediaQuery.disableAnimationsOf(context)) {

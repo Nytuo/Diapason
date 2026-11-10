@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/models/music_slices.dart';
@@ -32,7 +30,7 @@ void main() {
       }
     }
 
-    List<String?> names(List<FinampQueueItem> l) => l.map((i) => i.baseItem?.name).toList();
+    List<String?> names(List<FinampQueueItem> l) => l.map((i) => i.baseItem.name).toList();
     int total() {
       final q = queue.getQueue();
       return q.previousTracks.length + (q.currentTrack == null ? 0 : 1) + q.nextUp.length + q.queue.length;
@@ -53,7 +51,7 @@ void main() {
       await fresh(tester);
 
       expect(total(), tracks.length);
-      expect(queue.getQueue().currentTrack!.baseItem!.id, tracks.first.id);
+      expect(queue.getQueue().currentTrack!.baseItem.id, tracks.first.id);
       expect(queue.getQueue().previousTracks, isEmpty);
       expect(queue.playbackOrder, FinampPlaybackOrder.linear);
     }, timeout: slow);
@@ -100,7 +98,7 @@ void main() {
       await fresh(tester);
       List<String?> all() {
         final q = queue.getQueue();
-        return [...names(q.previousTracks), q.currentTrack!.baseItem!.name, ...names(q.nextUp), ...names(q.queue)]
+        return [...names(q.previousTracks), q.currentTrack!.baseItem.name, ...names(q.nextUp), ...names(q.queue)]
           ..sort((a, b) => '$a'.compareTo('$b'));
       }
 

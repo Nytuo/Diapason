@@ -238,7 +238,7 @@ class PlayOnService {
           _startReconnectionLoop();
         }
       },
-      onError: (error) {
+      onError: (Object error) {
         _playOnServiceLogger.severe("WebSocket Error: $error");
         _keepaliveSubscription?.cancel();
         socketState = SocketState.disconnected;

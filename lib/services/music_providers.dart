@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:diapason/components/MusicScreen/sort_and_filter_row.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -313,7 +312,7 @@ Future<PlayableSlice> _fetchFromChildren(
 
 @riverpod
 Future<PlayableSlice> getAlbumShuffledPlayerSlice(Ref ref, {required FinampPlayable item}) async {
-  assert(item is Genre || item is Artist || (item is FinampSortable<Album> && item is FinampPlayable));
+  assert(item is Genre || item is Artist || (item is FinampSortable<Album>));
   final albumPlayable =
       switch (item) {
             FinampSortable<Album>() => item,

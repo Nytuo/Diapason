@@ -54,7 +54,7 @@ void main() {
 
   test('never grows past the requested length', () async {
     var n = 0;
-    youtube.onRelated = (_) async => [ytTrack('${(n++).toString().padLeft(11, 'x')}', 'T$n')];
+    youtube.onRelated = (_) async => [ytTrack((n++).toString().padLeft(11, 'x'), 'T$n')];
 
     final queue = await discover.radioFromSeed(ytTrack('seedseedsee', 'Seed'), length: 6);
 

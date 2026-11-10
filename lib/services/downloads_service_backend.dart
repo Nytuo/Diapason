@@ -13,7 +13,7 @@ import 'package:diapason/services/backends/jellyfin_backend.dart';
 import 'package:diapason/services/downloads_service.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get_it/get_it.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path_helper;
@@ -87,7 +87,7 @@ class IsarPersistentStorage implements PersistentStorage {
     // Isar database gets opened by main
   }
 
-  Future<void> _store(IsarTaskDataType type, String id, dynamic data) async {
+  Future<void> _store(IsarTaskDataType<dynamic> type, String id, dynamic data) async {
     type.check(data); // Verify the data object has the correct type
     String json = jsonEncode(data.toJson());
     _isar.writeTxnSync(() {
@@ -105,7 +105,7 @@ class IsarPersistentStorage implements PersistentStorage {
     return items.map((e) => type.fromJson(jsonDecode(e.jsonData) as Map<String, dynamic>)).toList();
   }
 
-  Future<void> _remove(IsarTaskDataType type, String? id) async {
+  Future<void> _remove(IsarTaskDataType<dynamic> type, String? id) async {
     _isar.writeTxnSync(() {
       if (id != null) {
         _isar.isarTaskDatas.deleteSync(IsarTaskData.getHash(type, id));
@@ -152,7 +152,7 @@ class IsarTaskData<T> {
       jsonData = _toJson(data),
       age = age ?? globalAge++;
 
-  static int getHash(IsarTaskDataType type, String id) => _fastHash(type.name + id);
+  static int getHash(IsarTaskDataType<dynamic> type, String id) => _fastHash(type.name + id);
 
   @ignore
   T get data => type.fromJson(jsonDecode(jsonData) as Map<String, dynamic>);
@@ -234,8 +234,6 @@ class SyncNode {
 class IsarTaskQueue implements TaskQueue {
   static final _enqueueLog = Logger('IsarTaskQueue');
   final DownloadsService _downloadsService;
-  final _jellyfinApiData = GetIt.instance<JellyfinApiHelper>();
-  final _finampUserHelper = GetIt.instance<FinampUserHelper>();
 
   bool get _hasSources => GetIt.instance<BackendRegistry>().configured.isNotEmpty;
 
@@ -318,7 +316,7 @@ class IsarTaskQueue implements TaskQueue {
             .where()
             .stateEqualTo(DownloadItemState.enqueued)
             .filter()
-            .allOf(_activeDownloads, (q, element) => q.not().isarIdEqualTo(element))
+            .allOf<int, QAfterFilterCondition>(_activeDownloads, (q, element) => q.not().isarIdEqualTo(element))
             .limit(20)
             .findAllSync();
         if (nextTasks.isEmpty || !_downloadsService.allowDownloads || FinampSettingsHelper.finampSettings.isOffline) {
@@ -334,7 +332,7 @@ class IsarTaskQueue implements TaskQueue {
           }
           while (_activeDownloads.length >= FinampSettingsHelper.finampSettings.maxConcurrentDownloads ||
               !_hasSources) {
-            await Future.delayed(const Duration(milliseconds: 500));
+            await Future<void>.delayed(const Duration(milliseconds: 500));
           }
           await SchedulerBinding.instance.scheduleTask(() async {
             _activeDownloads.add(task.isarId);
@@ -382,7 +380,7 @@ class IsarTaskQueue implements TaskQueue {
             // Set priority high to prevent stalling
           }, Priority.animation + 50);
           // This helps prevent choking the method channel, see MemoryTaskQueue
-          await Future.delayed(const Duration(milliseconds: 20));
+          await Future<void>.delayed(const Duration(milliseconds: 20));
         }
       }
     } finally {
@@ -498,7 +496,7 @@ class DownloadsDeleteService {
             .where()
             .typeEqualTo(type)
             .filter()
-            .allOf(_activeDeletes, (q, value) => q.not().idEqualTo(value))
+            .allOf<int, QAfterFilterCondition>(_activeDeletes, (q, value) => q.not().idEqualTo(value))
             .sortByAge() // Try to process oldest deletes first as they are more likely to be deletable
             .limit(_batchSize)
             .findAllSync();
@@ -684,7 +682,6 @@ class DownloadsSyncService {
   final DownloadsService _downloadsService;
   final _syncLogger = Logger("SyncBuffer");
   final _jellyfinApiData = GetIt.instance<JellyfinApiHelper>();
-  final _finampUserHelper = GetIt.instance<FinampUserHelper>();
 
   bool get _hasSources => GetIt.instance<BackendRegistry>().configured.isNotEmpty;
 
@@ -765,7 +762,7 @@ class DownloadsSyncService {
             .where()
             .typeEqualTo(type)
             .filter()
-            .allOf(_activeSyncs, (q, value) => q.not().idEqualTo(value))
+            .allOf<int, QAfterFilterCondition>(_activeSyncs, (q, value) => q.not().idEqualTo(value))
             .sortByAge() // Prioritize required nodes
             .limit(_batchSize)
             .findAllSync();
@@ -1201,7 +1198,7 @@ class DownloadsSyncService {
         ? <int>[]
         : _isar.downloadItems
               .where()
-              .anyOf(missingChildIds, (q, int id) => q.isarIdEqualTo(id))
+              .anyOf<int, QAfterWhereClause>(missingChildIds, (q, int id) => q.isarIdEqualTo(id))
               .isarIdProperty()
               .findAllSync();
     // This is only used for IsarLink.update, which only cares about ID, so stubs are fine

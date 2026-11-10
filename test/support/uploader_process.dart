@@ -27,7 +27,7 @@ class UploaderProcess {
 
   static Directory? _sourceDir() {
     final fromEnv = Platform.environment['DIAPASON_UPLOADER_DIR'];
-    final candidates = [if (fromEnv != null) fromEnv, '../diapason-uploader'];
+    final candidates = [?fromEnv, '../diapason-uploader'];
     for (final c in candidates) {
       if (File('$c/main.go').existsSync()) return Directory(c);
     }

@@ -48,11 +48,11 @@ class ItemCard extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.all(4.0),
                       color: Theme.brightnessOf(context) == Brightness.dark
-                          ? ColorScheme.of(context).primary.withOpacity(0.08)
+                          ? ColorScheme.of(context).primary.withValues(alpha: 0.08)
                           : Color.alphaBlend(
-                              ColorScheme.of(context).primary.withOpacity(0.1),
+                              ColorScheme.of(context).primary.withValues(alpha: 0.1),
                               Colors.white,
-                            ).withOpacity(1.0),
+                            ).withValues(alpha: 1.0),
                       child: Align(
                         alignment: Alignment.center,
                         child: _ItemCollectionCardText(item: item, onImage: true),
@@ -145,13 +145,13 @@ class HomeScreenQueueTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     int remainingTracks = info.trackCount - info.previousTracks.length;
 
-    BaseItemDto? track = info.currentTrack == null ? null : ref.watch(itemByIdProvider(info.currentTrack!)).valueOrNull;
+    BaseItemDto? track = info.currentTrack == null ? null : ref.watch(itemByIdProvider(info.currentTrack!)).value;
 
     QueueItemSource source = info.source;
     if (source.wantsItem) {
       // BaseItemId uses String equals, the linter is mistaken.
       // ignore: provider_parameters
-      final sourceItem = ref.watch(itemByIdProvider(BaseItemId(source.id))).valueOrNull;
+      final sourceItem = ref.watch(itemByIdProvider(BaseItemId(source.id))).value;
       if (sourceItem != null) {
         source = source.withItem(sourceItem);
       }
@@ -169,8 +169,11 @@ class HomeScreenQueueTile extends ConsumerWidget {
           child: Container(
             decoration: BoxDecoration(
               color: Theme.brightnessOf(context) == Brightness.dark
-                  ? ColorScheme.of(context).primary.withOpacity(0.08)
-                  : Color.alphaBlend(ColorScheme.of(context).primary.withOpacity(0.1), Colors.white).withOpacity(1.0),
+                  ? ColorScheme.of(context).primary.withValues(alpha: 0.08)
+                  : Color.alphaBlend(
+                      ColorScheme.of(context).primary.withValues(alpha: 0.1),
+                      Colors.white,
+                    ).withValues(alpha: 1.0),
               borderRadius: BorderRadius.circular(8.0),
             ),
             padding: const EdgeInsets.all(8.0),

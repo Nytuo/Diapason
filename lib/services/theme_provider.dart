@@ -79,7 +79,7 @@ class _PrecachingThemeState extends ConsumerState<_PrecachingTheme> {
         _warm.remove(stale)!.close();
       }
       for (final info in wanted) {
-        _warm.putIfAbsent(info, () => ref.listenManual(finampThemeProvider(info), (_, __) {}));
+        _warm.putIfAbsent(info, () => ref.listenManual(finampThemeProvider(info), (_, _) {}));
       }
     });
   }
@@ -367,7 +367,7 @@ class FinampThemeFromImage extends _$FinampThemeFromImage {
     final isDark = brightness == Brightness.dark;
 
     final background = Color.alphaBlend(
-      isDark ? Colors.black.withOpacity(0.675) : Colors.white.withOpacity(0.675),
+      isDark ? Colors.black.withValues(alpha: 0.675) : Colors.white.withValues(alpha: 0.675),
       colors.background,
     );
 
@@ -378,7 +378,7 @@ class FinampThemeFromImage extends _$FinampThemeFromImage {
     );
 
     final surfaceText = Color.alphaBlend(
-      isDark ? Colors.white.withOpacity(0.92) : Colors.black.withOpacity(0.85),
+      isDark ? Colors.white.withValues(alpha: 0.92) : Colors.black.withValues(alpha: 0.85),
       colors.highlight,
     );
 
@@ -401,12 +401,12 @@ ColorScheme getGrayTheme(Brightness brightness) {
   Color accent = brightness == Brightness.dark
       ? grayForDarkTheme.atContrast(
           FinampSettingsHelper.finampSettings.useHighContrastColors ? 8.0 : 5.5,
-          Color.alphaBlend(Colors.black.withOpacity(0.675), grayForDarkTheme),
+          Color.alphaBlend(Colors.black.withValues(alpha: 0.675), grayForDarkTheme),
           true,
         )
       : grayForLightTheme.atContrast(
           FinampSettingsHelper.finampSettings.useHighContrastColors ? 8.0 : 5.5,
-          Color.alphaBlend(Colors.white.withOpacity(0.675), grayForLightTheme),
+          Color.alphaBlend(Colors.white.withValues(alpha: 0.675), grayForLightTheme),
           true,
         );
 

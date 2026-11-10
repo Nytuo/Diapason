@@ -32,7 +32,9 @@ class _SpectrumVisualizerState extends ConsumerState<SpectrumVisualizer> with Si
 
   late final Ticker _ticker;
 
-  SpectrumSource? _source;
+  /// This visualizer's registration with [SpectrumHub]; a fresh token per attach, so a late release from a superseded
+  /// attach can never drop a newer one.
+  Object? _hubToken;
   int? _sessionId;
   int _attachGeneration = 0;
   StreamSubscription<int?>? _sessionSubscription;
@@ -84,23 +86,23 @@ class _SpectrumVisualizerState extends ConsumerState<SpectrumVisualizer> with Si
     await _detach();
     if (!FinampSettingsHelper.finampSettings.visualizerEnabled) return;
 
-    final source = createSpectrumSource(
+    final token = Object();
+    _hubToken = token;
+    final flowing = await SpectrumHub.instance.acquire(
+      token,
       androidSessionId: sessionId,
       fps: FinampSettingsHelper.finampSettings.visualizerFps,
     );
-    if (source == null) return;
-
-    if (!await source.start()) {
+    if (!mounted || generation != _attachGeneration) {
+      // A newer attach (or dispose) took over and already released this token.
+      return;
+    }
+    if (!flowing) {
       _logger.info("No spectrum source available; visualizer stays hidden");
       return;
     }
-    if (!mounted || generation != _attachGeneration) {
-      await source.stop();
-      return;
-    }
 
-    _source = source;
-    _frameSubscription = source.frames.listen((frame) {
+    _frameSubscription = SpectrumHub.instance.frames.listen((frame) {
       _pending = frame;
       _pendingAt = _ticker.isActive ? _elapsed : Duration.zero;
       _wakeTicker();
@@ -112,8 +114,9 @@ class _SpectrumVisualizerState extends ConsumerState<SpectrumVisualizer> with Si
   Future<void> _detach() async {
     await _frameSubscription?.cancel();
     _frameSubscription = null;
-    await _source?.stop();
-    _source = null;
+    final token = _hubToken;
+    _hubToken = null;
+    if (token != null) await SpectrumHub.instance.release(token);
     _pending = null;
     if (_ticker.isActive) _ticker.stop();
     if (mounted && _receiving) setState(() => _receiving = false);
@@ -183,7 +186,7 @@ class _SpectrumVisualizerState extends ConsumerState<SpectrumVisualizer> with Si
     ref.listen(finampSettingsProvider.visualizerEnabled, (_, _) => _attach(_sessionId));
     ref.listen(finampSettingsProvider.visualizerFps, (_, _) => _attach(_sessionId));
 
-    final settings = ref.watch(finampSettingsProvider).valueOrNull;
+    final settings = ref.watch(finampSettingsProvider).value;
     if (settings == null || !settings.visualizerEnabled || !_receiving) {
       return const SizedBox.shrink();
     }

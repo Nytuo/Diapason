@@ -1,9 +1,8 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: deprecated_member_use_from_same_package, strict_raw_type
+// ignore_for_file: deprecated_member_use_from_same_package, strict_raw_type, unused_element, unused_local_variable
 
 // dart format off
-
 
 part of 'downloads_service_backend.dart';
 
@@ -12,7 +11,7 @@ part of 'downloads_service_backend.dart';
 // **************************************************************************
 
 // coverage:ignore-file
-// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types, experimental_member_use
 
 extension GetIsarTaskDataCollection on Isar {
   IsarCollection<IsarTaskData> get isarTaskDatas => this.collection();
@@ -62,7 +61,7 @@ const IsarTaskDataSchema = CollectionSchema(
   getId: _isarTaskDataGetId,
   getLinks: _isarTaskDataGetLinks,
   attach: _isarTaskDataAttach,
-  version: '3.1.0+1',
+  version: '3.4.1',
 );
 
 int _isarTaskDataEstimateSize(

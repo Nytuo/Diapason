@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:diapason/screens/sources_settings_screen.dart';
 import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/services/backends/media_source_service.dart';

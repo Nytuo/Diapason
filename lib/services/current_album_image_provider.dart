@@ -18,23 +18,21 @@ final currentAlbumImageProvider = Provider<FinampImage>((ref) {
   );
   for (final itemToPrecache in precacheItems) {
     BaseItemDto? base = itemToPrecache.baseItem;
-    if (base != null) {
-      final request = AlbumImageRequest(item: base);
-      // full quality player images are cached immediately upon albumImageProvider creation, so we don't need to
-      // resolve the provider like we would to initiate caching with a NetworkImage
-      ref.listen(albumImageProvider(request), (_, latest) {});
-      // TODO maybe we still want to resolve the images to make sure the decoded image is already in memory?
-      /*var image = ref.watch(albumImageProvider(request)).image;
-      if (image != null) {
-        // Cache the returned image
-        var stream = image.resolve(const ImageConfiguration(devicePixelRatio: 1.0));
-        var listener = ImageStreamListener((image, synchronousCall) {});
-        ref.onDispose(() {
-          stream.removeListener(listener);
-        });
-        stream.addListener(listener);
-      }*/
-    }
+    final request = AlbumImageRequest(item: base);
+    // full quality player images are cached immediately upon albumImageProvider creation, so we don't need to
+    // resolve the provider like we would to initiate caching with a NetworkImage
+    ref.listen(albumImageProvider(request), (_, latest) {});
+    // TODO maybe we still want to resolve the images to make sure the decoded image is already in memory?
+    /*var image = ref.watch(albumImageProvider(request)).image;
+    if (image != null) {
+      // Cache the returned image
+      var stream = image.resolve(const ImageConfiguration(devicePixelRatio: 1.0));
+      var listener = ImageStreamListener((image, synchronousCall) {});
+      ref.onDispose(() {
+        stream.removeListener(listener);
+      });
+      stream.addListener(listener);
+    }*/
   }
 
   final currentTrack = ref.watch(currentTrackProvider).value?.baseItem;

@@ -148,7 +148,7 @@ class ConnectPlayerBridge {
 
   Future<List<BaseItemDto>> _itemsFrom(Object? raw) async {
     final list = raw is List
-        ? raw.whereType<Map>().map((e) => e.cast<String, dynamic>()).toList()
+        ? raw.whereType<Map<dynamic, dynamic>>().map((e) => e.cast<String, dynamic>()).toList()
         : <Map<String, dynamic>>[];
     return resolveConnectItems(list);
   }

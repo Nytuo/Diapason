@@ -3,7 +3,6 @@ import 'package:diapason/models/media_source.dart';
 import 'package:diapason/screens/settings_screen.dart';
 import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
-import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/backends/media_backend.dart';
 import 'package:diapason/utils/platform_helper.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +19,10 @@ Future<void> pumpSettings(WidgetTester tester) async {
   // The app has the settings stream running before any screen is built; do the same here.
   final container = ProviderContainer();
   addTearDown(container.dispose);
-  await container.read(finampSettingsProvider.future);
+  // Riverpod 3 pauses providers nobody listens to, so a bare read of a stream provider's future never completes.
+  final settingsSubscription = container.listen(finampSettingsProvider.future, (_, _) {});
+  await settingsSubscription.read();
+  settingsSubscription.close();
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,
@@ -216,5 +218,5 @@ class _Fake implements MediaBackend {
   String get sourceId => config.sourceId;
 
   @override
-  noSuchMethod(Invocation invocation) => throw UnimplementedError();
+  Never noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }

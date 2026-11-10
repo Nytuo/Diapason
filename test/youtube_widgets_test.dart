@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:diapason/components/MusicScreen/youtube_results.dart';
 import 'package:diapason/components/YtDlp/youtube_setup_view.dart';
 import 'package:diapason/models/jellyfin_models.dart';
-import 'package:diapason/services/backends/item_mapper.dart';
 import 'package:diapason/services/friendly_error.dart';
 import 'package:diapason/services/uploader/uploader_client.dart';
 import 'package:diapason/services/youtube/youtube_availability.dart';

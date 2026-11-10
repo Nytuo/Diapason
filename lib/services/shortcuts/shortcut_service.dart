@@ -1,7 +1,7 @@
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/models/library_shortcut.dart';
 import 'package:get_it/get_it.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:logging/logging.dart';
 
 class ShortcutService {

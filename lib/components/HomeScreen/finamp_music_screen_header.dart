@@ -148,7 +148,7 @@ class FinampMusicScreenHeader extends ConsumerWidget implements PreferredSizeWid
                           36,
                           36,
                           overrideColor: ref.watch(finampSettingsProvider.isOffline)
-                              ? TextTheme.of(context).bodyMedium?.color?.withOpacity(0.6)
+                              ? TextTheme.of(context).bodyMedium?.color?.withValues(alpha: 0.6)
                               : null,
                         ),
                         Positioned(bottom: -4, right: -2, child: Icon(statusIcon, size: 16)),

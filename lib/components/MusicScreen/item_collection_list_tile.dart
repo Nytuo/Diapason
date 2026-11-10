@@ -69,7 +69,7 @@ class ItemCollectionListTile extends ConsumerWidget {
     );
     final titleText = Text(item.name ?? AppLocalizations.of(context)!.unknownName, overflow: TextOverflow.ellipsis);
     final isCurrentlyPlaying = ref.watch(
-      currentTrackProvider.select((queueItem) => queueItem.valueOrNull?.source.id == item.id.raw),
+      currentTrackProvider.select((queueItem) => queueItem.value?.source.id == item.id.raw),
     );
 
     final sortIconMeta = {
@@ -86,7 +86,7 @@ class ItemCollectionListTile extends ConsumerWidget {
       if (meta == null) return null;
 
       final textTheme = Theme.of(context).textTheme.bodyMedium!;
-      final color = textTheme.color!.withOpacity(0.7);
+      final color = textTheme.color!.withValues(alpha: 0.7);
 
       return WidgetSpan(
         alignment: PlaceholderAlignment.baseline,
@@ -131,14 +131,14 @@ class ItemCollectionListTile extends ConsumerWidget {
           additionalInfoSortBy == SortBy.premiereDate) {
         return TextSpan(
           text: ReleaseDateHelper.autoFormat(item) ?? l10n.noReleaseDate,
-          style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7)),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7)),
         );
       }
       switch (additionalInfoSortBy) {
         case SortBy.runtime:
           return TextSpan(
             text: printDuration(item.runTimeTicksDuration()),
-            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7)),
+            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7)),
           );
         case SortBy.dateCreated:
           return WidgetSpan(
@@ -147,7 +147,7 @@ class ItemCollectionListTile extends ConsumerWidget {
             child: RelativeDateTimeTextFromString(
               dateString: item.dateCreated,
               fallback: l10n.noDateAdded,
-              style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7)),
+              style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7)),
               disableTextScaling: true,
             ),
           );
@@ -188,7 +188,7 @@ class ItemCollectionListTile extends ConsumerWidget {
           if (downloadedIndicator.isVisible(ref))
             WidgetSpan(child: SizedBox(width: (additionalInfo != null) ? 5.0 : 2.0)),
           if (additionalInfo != null) ...[
-            if (additionalInfoIcon != null) additionalInfoIcon,
+            ?additionalInfoIcon,
             additionalInfo,
             TextSpan(
               text: (itemType == BaseItemDtoType.album && albumShowsYearAndDurationInstead)
@@ -252,15 +252,15 @@ class ItemCollectionListTile extends ConsumerWidget {
             themeOverride: (imageTheme) {
               return imageTheme.copyWith(
                 colorScheme: imageTheme.colorScheme.copyWith(
-                  surfaceContainer: imageTheme.colorScheme.primary.withOpacity(
-                    imageTheme.brightness == Brightness.dark ? 0.35 : 0.3,
+                  surfaceContainer: imageTheme.colorScheme.primary.withValues(
+                    alpha: imageTheme.brightness == Brightness.dark ? 0.35 : 0.3,
                   ),
                 ),
                 textTheme: imageTheme.textTheme.copyWith(
                   bodyLarge: imageTheme.textTheme.bodyLarge?.copyWith(
                     color: Color.alphaBlend(
-                      (imageTheme.colorScheme.secondary.withOpacity(
-                        imageTheme.brightness == Brightness.light ? 0.5 : 0.1,
+                      (imageTheme.colorScheme.secondary.withValues(
+                        alpha: imageTheme.brightness == Brightness.light ? 0.5 : 0.1,
                       )),
                       imageTheme.textTheme.bodyLarge?.color ??
                           (imageTheme.brightness == Brightness.light ? Colors.black : Colors.white),

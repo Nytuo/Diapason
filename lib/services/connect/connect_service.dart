@@ -176,7 +176,8 @@ class ConnectService {
             // Devices from before queue mirroring send {songs: [{id, ...}], startIndex}.
             ConnectQueue.tryParse({
               "items": [
-                for (final song in (body?["songs"] as List<dynamic>? ?? const []).whereType<Map>()) {"Id": song["id"]},
+                for (final song in (body?["songs"] as List<dynamic>? ?? const []).whereType<Map<dynamic, dynamic>>())
+                  {"Id": song["id"]},
               ],
               "index": body?["startIndex"] ?? 0,
             });

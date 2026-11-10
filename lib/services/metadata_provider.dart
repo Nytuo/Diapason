@@ -5,6 +5,7 @@ import 'package:diapason/services/lyrics/lyrics_sources.dart';
 import 'package:collection/collection.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 
@@ -48,7 +49,7 @@ class MetadataProvider {
 }
 
 PlaybackInfoResponse _playbackInfoFromItem(BaseItemDto item) => PlaybackInfoResponse(
-  mediaSources: item.mediaSources?.isNotEmpty == true
+  mediaSources: item.mediaSources?.isNotEmpty ?? false
       ? item.mediaSources
       : [
           MediaSourceInfo(
@@ -74,12 +75,16 @@ PlaybackInfoResponse _playbackInfoFromItem(BaseItemDto item) => PlaybackInfoResp
         ],
 );
 
-final AutoDisposeFutureProviderFamily<MetadataProvider?, BaseItemDto> metadataProvider = FutureProvider.autoDispose
+final FutureProviderFamily<MetadataProvider?, BaseItemDto> metadataProvider = FutureProvider.autoDispose
     .family<MetadataProvider?, BaseItemDto>((ref, item) async {
       Future<BaseItemDto?>? parentFuture;
       if (item.parentId != null) {
         parentFuture = ref.watch(albumProvider(item.parentId!).future);
       }
+
+      // Watch everything before the first await: Riverpod 3 forbids using ref once the provider has been disposed,
+      // which can happen while this build is suspended.
+      final isOffline = ref.watch(finampSettingsProvider.isOffline);
 
       final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
       final downloadsService = GetIt.instance<DownloadsService>();
@@ -90,6 +95,7 @@ final AutoDisposeFutureProviderFamily<MetadataProvider?, BaseItemDto> metadataPr
       PlaybackInfoResponse? localPlaybackInfo;
 
       final downloadStub = await downloadsService.getTrackInfo(id: item.id);
+      if (!ref.mounted) return null;
       if (downloadStub != null) {
         final downloadItem = await ref.watch(downloadsService.itemProvider(downloadStub).future);
         if (downloadItem != null && downloadItem.state.isComplete) {
@@ -170,7 +176,7 @@ final AutoDisposeFutureProviderFamily<MetadataProvider?, BaseItemDto> metadataPr
       final backend = GetIt.instance<BackendRegistry>().forItem(item);
       final isJellyfin = backend == null || backend.config.kind == MediaSourceKind.jellyfin;
 
-      if (ref.watch(finampSettingsProvider.isOffline)) {
+      if (isOffline) {
         playbackInfo = localPlaybackInfo;
       } else if (!isJellyfin) {
         playbackInfo = localPlaybackInfo ?? _playbackInfoFromItem(item);
@@ -248,7 +254,7 @@ final AutoDisposeFutureProviderFamily<MetadataProvider?, BaseItemDto> metadataPr
         metadata.qualifiesForPlaybackSpeedControl = true;
       }
 
-      if (ref.watch(finampSettingsProvider.isOffline)) {
+      if (isOffline) {
         if (metadata.hasLyrics) {
           final downloadedLyrics = await downloadsService.getLyricsDownload(baseItem: item);
           if (downloadedLyrics != null) {
@@ -278,7 +284,7 @@ final AutoDisposeFutureProviderFamily<MetadataProvider?, BaseItemDto> metadataPr
       return metadata;
     });
 
-final AutoDisposeFutureProviderFamily<BaseItemDto?, BaseItemId> albumProvider = FutureProvider.autoDispose
+final FutureProviderFamily<BaseItemDto?, BaseItemId> albumProvider = FutureProvider.autoDispose
     .family<BaseItemDto?, BaseItemId>((ref, parentId) async {
       final downloadsService = GetIt.instance<DownloadsService>();
 

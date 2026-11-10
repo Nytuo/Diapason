@@ -4,7 +4,6 @@ import 'package:diapason/components/curated_item_filter_row.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:diapason/services/backends/jellyfin_backend.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

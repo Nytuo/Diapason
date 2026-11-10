@@ -25,8 +25,10 @@ class _FinampSettingsGenerator extends Generator {
       return '';
     }
     ClassElement? settings;
-    for (var import in library.element.definingCompilationUnit.libraryImports) {
-      settings = LibraryReader(import.importedLibrary!).findType("FinampSettings");
+    for (var import in library.element.firstFragment.libraryImports) {
+      final imported = import.importedLibrary;
+      if (imported == null) continue;
+      settings = LibraryReader(imported).findType("FinampSettings");
       if (settings != null) break;
     }
     if (settings == null) {
@@ -34,20 +36,22 @@ class _FinampSettingsGenerator extends Generator {
       return '';
     }
 
+    const ignoreChecker = TypeChecker.typeNamed(SettingsHelperIgnore, inPackage: "diapason");
+    const mapChecker = TypeChecker.typeNamed(SettingsHelperMap, inPackage: "diapason");
+
     var settersCode = "";
     var selectorsCode = "";
-    for (var property in settings.accessors) {
-      if (!property.nonSynthetic.hasDeprecated &&
-          TypeChecker.fromRuntime(SettingsHelperIgnore).firstAnnotationOfExact(property.nonSynthetic) == null) {
-        final mapAnnotationObj = TypeChecker.fromRuntime(
-          SettingsHelperMap,
-        ).firstAnnotationOfExact(property.nonSynthetic);
+    final List<PropertyAccessorElement> accessors = [...settings.getters, ...settings.setters];
+    for (var property in accessors) {
+      if (!property.nonSynthetic.metadata.hasDeprecated &&
+          ignoreChecker.firstAnnotationOfExact(property.nonSynthetic) == null) {
+        final mapAnnotationObj = mapChecker.firstAnnotationOfExact(property.nonSynthetic);
 
-        if (property.isSetter) {
-          if (property.parameters.length != 1) {
-            log.warning("Unexpected param count for ${property.displayName}: ${property.parameters.length}");
+        if (property is SetterElement) {
+          if (property.formalParameters.length != 1) {
+            log.warning("Unexpected param count for ${property.displayName}: ${property.formalParameters.length}");
           }
-          var typeArg = property.parameters.first.type;
+          var typeArg = property.formalParameters.first.type;
           // setter name with first letter uppercase for adding prefixes to
           var paramName = "${property.displayName.substring(0, 1).toUpperCase()}${property.displayName.substring(1)}";
 
@@ -94,7 +98,7 @@ class _FinampSettingsGenerator extends Generator {
           }
         }
 
-        if (property.isGetter) {
+        if (property is GetterElement) {
           if (mapAnnotationObj != null) {
             if (!property.returnType.isDartCoreMap) {
               throw "Error on FinampSettings.${property.displayName} - Non-Maps cannot have SettingsHelperMap annotation.";
@@ -138,7 +142,7 @@ class _FinampSettingsGenerator extends Generator {
     }
     
     /// Generated providers to easily watch only specific fields in finampSettings
-    extension FinampSettingsProviderSelectors on StreamProvider<FinampSettings>{
+    extension FinampSettingsProviderSelectors on StreamNotifierProvider<FinampSettingsNotifier, FinampSettings> {
       $selectorsCode
     }
     

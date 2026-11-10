@@ -15,7 +15,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 const clientCertificateAuthenticationRouteName = "/client-certificate-authentication-menu";
 
 Future<void> showClientCertificateMenu({required BuildContext context, VoidCallback? onImported}) async {
-  await showThemedBottomSheet(
+  await showThemedBottomSheet<void>(
     context: context,
     routeName: clientCertificateAuthenticationRouteName,
     minDraggableHeight: 0.3,
@@ -69,10 +69,10 @@ class _ClientCertificateMenuContentState extends ConsumerState<_ClientCertificat
   Future<void> _importCertificate() async {
     final l10n = AppLocalizations.of(context)!;
 
-    final result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: ['p12', 'pfx']);
-    if (result == null || result.files.single.path == null) return;
+    final result = await FilePicker.pickFile(type: FileType.custom, allowedExtensions: ['p12', 'pfx']);
+    if (result == null || result.path == null) return;
 
-    final filePath = result.files.single.path!;
+    final filePath = result.path!;
 
     if (!mounted) return;
     final password = await _showPasswordDialog(context);

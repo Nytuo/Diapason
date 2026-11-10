@@ -63,7 +63,7 @@ void main() {
           ],
         });
       }
-      return _json(200, {'results': []});
+      return _json(200, {'results': <Object?>[]});
     };
   }
 

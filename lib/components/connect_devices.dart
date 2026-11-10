@@ -250,7 +250,7 @@ class _DeviceTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (selected) Icon(TablerIcons.volume, color: accent, size: 18),
-          if (trailing != null) trailing!,
+          ?trailing,
         ],
       ),
       onTap: selected ? null : onTap,
@@ -377,7 +377,7 @@ class _SendAccountsDialogState extends State<SendAccountsDialog> {
                 title: Text(source.name),
                 subtitle: Text(source.publicAddress.isEmpty ? source.kind.name : source.publicAddress),
                 onChanged: (on) =>
-                    setState(() => on == true ? _chosen.add(source.sourceId) : _chosen.remove(source.sourceId)),
+                    setState(() => on ?? false ? _chosen.add(source.sourceId) : _chosen.remove(source.sourceId)),
               ),
             const SizedBox(height: 8.0),
             const Text(

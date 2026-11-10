@@ -49,10 +49,7 @@ class LyricsOffsetService {
   static ValueListenable<Box<int>>? listenable(BaseItemId id) => _box?.listenable(keys: [id.raw]);
 
   /// Every stored offset, for backups.
-  static Map<String, int> all() => {
-    for (final key in _box?.keys ?? const <dynamic>[])
-      if (_box!.get(key) case final value?) "$key": value,
-  };
+  static Map<String, int> all() => {for (final key in _box?.keys ?? const <dynamic>[]) "$key": ?_box!.get(key)};
 
   static Future<void> restore(Map<String, int> offsets) async {
     final box = _box;

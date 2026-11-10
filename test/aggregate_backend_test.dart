@@ -51,7 +51,7 @@ class _FakeBackend implements MediaBackend {
   }
 
   @override
-  noSuchMethod(Invocation invocation) => throw UnimplementedError();
+  Never noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }
 
 AggregateBackend _aggregateOver(List<_FakeBackend> backends) {

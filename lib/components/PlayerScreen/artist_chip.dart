@@ -19,7 +19,7 @@ part 'artist_chip.g.dart';
 const _radius = Radius.circular(4);
 const _borderRadius = BorderRadius.all(_radius);
 const _height = 24.0; // I'm sure this magic number will work on all devices
-final _defaultBackgroundColour = Colors.white.withOpacity(0.1);
+final _defaultBackgroundColour = Colors.white.withValues(alpha: 0.1);
 
 @riverpod
 Future<BaseItemDto?> artistItem(Ref ref, BaseItemId id) async {
@@ -84,7 +84,7 @@ class ArtistChip extends ConsumerWidget {
     final localColor = color ?? Theme.of(context).textTheme.bodySmall?.color ?? Colors.white;
     final BaseItemDto? localArtist;
     if (artist != null && ref.watch(finampSettingsProvider.showArtistChipImage)) {
-      localArtist = ref.watch(artistItemProvider(artist!.id)).valueOrNull ?? artist;
+      localArtist = ref.watch(artistItemProvider(artist!.id)).value ?? artist;
     } else {
       localArtist = artist;
     }

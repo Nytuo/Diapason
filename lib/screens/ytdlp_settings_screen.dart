@@ -30,7 +30,7 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
   final _service = GetIt.instance<LocalYtDlpService>();
   final _availability = GetIt.instance<YouTubeAvailability>();
 
-  late YtDlpConfig _cfg = _service.config.value.clone();
+  late final YtDlpConfig _cfg = _service.config.value.clone();
   bool _dirty = false;
   bool _busy = false;
   String? _testResult;
@@ -180,8 +180,8 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
   }
 
   Future<void> _pickBinary() async {
-    final picked = await FilePicker.pickFiles(dialogTitle: "Choose your yt-dlp executable");
-    final path = picked?.files.single.path;
+    final picked = await FilePicker.pickFile(dialogTitle: "Choose your yt-dlp executable");
+    final path = picked?.path;
     if (path != null) {
       _custom.text = path;
       _change(() {});
@@ -189,8 +189,8 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
   }
 
   Future<void> _pickCookies() async {
-    final picked = await FilePicker.pickFiles(dialogTitle: "Choose a cookies.txt file");
-    final path = picked?.files.single.path;
+    final picked = await FilePicker.pickFile(dialogTitle: "Choose a cookies.txt file");
+    final path = picked?.path;
     if (path != null) {
       _cookiesFile.text = path;
       _change(() {});
@@ -407,8 +407,11 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
       ),
       SwitchListTile(
         contentPadding: EdgeInsets.zero,
-        title: const Text("Prefer my uploader's yt-dlp"),
-        subtitle: const Text("Use the one on your server even when this computer has its own."),
+        title: const Text("Use only my uploader's yt-dlp"),
+        subtitle: const Text(
+          "Search, stream and add to library with the one on your server, even when this computer has its own. "
+          "Otherwise this computer's yt-dlp fetches the track and sends it to your uploader.",
+        ),
         value: _cfg.preferUploader,
         onChanged: (v) => _change(() => _cfg.preferUploader = v),
       ),

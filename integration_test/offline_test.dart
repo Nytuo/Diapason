@@ -7,7 +7,6 @@ import 'package:diapason/screens/downloads_screen.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/downloads_service.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
-import 'package:diapason/services/queue_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 
@@ -18,7 +17,6 @@ void main() {
 
   AggregateBackend backend() => GetIt.instance<AggregateBackend>();
   DownloadsService downloads() => GetIt.instance<DownloadsService>();
-  QueueService queue() => GetIt.instance<QueueService>();
 
   late BaseItemDto album;
   late DownloadStub stub;

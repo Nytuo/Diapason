@@ -8,7 +8,6 @@ import 'package:diapason/models/theme_mode_adapter.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce_flutter/adapters.dart';
-import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 

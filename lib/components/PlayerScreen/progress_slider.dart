@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:diapason/components/PlayerScreen/chapter_track.dart';
 import 'package:diapason/components/print_duration.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/jellyfin_models.dart' as jellyfin_models;
@@ -69,8 +70,6 @@ class ProgressSlider extends StatefulWidget {
 class _ProgressSliderState extends State<ProgressSlider> {
   /// Value used to hold the slider's value when dragging.
   double? _dragValue;
-
-  final _audioHandler = GetIt.instance<MusicPlayerBackgroundTask>();
 
   /// Created once: a new stream on every build made the StreamBuilder resubscribe each time the layout changed.
   final Stream<ProgressState> _progressStateStream = progressStateStream;
@@ -143,24 +142,11 @@ class _ProgressSliderState extends State<ProgressSlider> {
                                 playbackState: snapshot.data!.playbackState,
                                 position: snapshot.data!.position,
                                 mediaItem: snapshot.data!.mediaItem,
+                                chapters: chapters,
                                 onDrag: (value) => setState(() {
                                   _dragValue = value;
                                 }),
                               ),
-                              // Tick marks showing where each chapter starts. Drawn on
-                              // top of, but not blocking, the slider track.
-                              if (chapters.isNotEmpty && snapshot.data!.mediaItem?.duration != null)
-                                IgnorePointer(
-                                  ignoring: !widget.allowSeeking,
-                                  child: ChapterMarkers(
-                                    chapters: chapters,
-                                    duration: snapshot.data!.mediaItem!.duration!,
-                                    position: _dragValue == null
-                                        ? snapshot.data!.position
-                                        : Duration(microseconds: _dragValue!.toInt()),
-                                    onSeek: _audioHandler.seek,
-                                  ),
-                                ),
                             ],
                           ),
                         ),
@@ -262,120 +248,6 @@ class _ProgressSliderDuration extends StatelessWidget {
   }
 }
 
-typedef ChapterSeekCallback = Future<void> Function(Duration position);
-
-/// Renders tick marks over a progress slider showing where each chapter
-/// starts. Hovering (desktop) or tapping (mobile) a tick shows the chapter
-/// name via [Tooltip]; tapping seeks to that chapter's start. The chapter
-/// containing [position], if given, is drawn brighter with a soft glow.
-/// Shared by the full player screen's [ProgressSlider] and the desktop
-/// bottom bar/mini player's `DesktopSeekBar`.
-class ChapterMarkers extends StatelessWidget {
-  const ChapterMarkers({
-    super.key,
-    required this.chapters,
-    required this.duration,
-    required this.onSeek,
-    this.position,
-    this.color,
-  });
-
-  final List<jellyfin_models.ChapterInfo> chapters;
-  final Duration duration;
-  final ChapterSeekCallback onSeek;
-  final Duration? position;
-
-  /// Tick color; defaults to the theme's primary color.
-  final Color? color;
-
-  @override
-  Widget build(BuildContext context) {
-    final totalMicros = duration.inMicroseconds;
-    if (totalMicros <= 0) return const SizedBox.shrink();
-    final tickColor = color ?? Theme.of(context).colorScheme.primary;
-    final active = position == null ? null : currentChapter(chapters, position!);
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Stack(
-          clipBehavior: Clip.none,
-          children: [
-            for (final chapter in chapters)
-              if (chapter.startPositionTicks > 0)
-                Positioned(
-                  left: (chapter.startPosition.inMicroseconds / totalMicros).clamp(0.0, 1.0) * constraints.maxWidth - 7,
-                  top: 0,
-                  bottom: 0,
-                  width: 14,
-                  child: _ChapterTick(
-                    chapter: chapter,
-                    color: tickColor,
-                    isActive: identical(chapter, active),
-                    onTap: () => onSeek(chapter.startPosition),
-                  ),
-                ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _ChapterTick extends StatefulWidget {
-  const _ChapterTick({required this.chapter, required this.color, required this.isActive, required this.onTap});
-
-  final jellyfin_models.ChapterInfo chapter;
-  final Color color;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  @override
-  State<_ChapterTick> createState() => _ChapterTickState();
-}
-
-class _ChapterTickState extends State<_ChapterTick> {
-  bool _hovering = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = widget.isActive ? widget.color : widget.color.withOpacity(_hovering ? 0.85 : 0.5);
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovering = true),
-      onExit: (_) => setState(() => _hovering = false),
-      child: Tooltip(
-        message: widget.chapter.name?.isNotEmpty ?? false
-            ? widget.chapter.name!
-            : printDuration(widget.chapter.startPosition),
-        triggerMode: TooltipTriggerMode.tap,
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: widget.onTap,
-          child: Center(
-            child: AnimatedScale(
-              scale: _hovering ? 1.35 : 1.0,
-              duration: const Duration(milliseconds: 120),
-              curve: Curves.easeOut,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 120),
-                width: widget.isActive ? 3.5 : 2.5,
-                height: widget.isActive ? 13 : 10,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(2),
-                  boxShadow: widget.isActive
-                      ? [BoxShadow(color: widget.color.withOpacity(0.55), blurRadius: 5, spreadRadius: 0.5)]
-                      : null,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _PlaybackProgressSlider extends ConsumerStatefulWidget {
   const _PlaybackProgressSlider({
     required this.allowSeeking,
@@ -383,10 +255,14 @@ class _PlaybackProgressSlider extends ConsumerStatefulWidget {
     required this.playbackState,
     required this.position,
     required this.onDrag,
+    this.chapters = const [],
   });
 
   final bool allowSeeking;
   final MediaItem? mediaItem;
+
+  /// Splits the track into one segment per chapter.
+  final List<jellyfin_models.ChapterInfo> chapters;
   final PlaybackState playbackState;
   final Duration position;
   final DragCallback onDrag; // should probably be nullable but its never null
@@ -453,23 +329,33 @@ class __PlaybackProgressSliderState extends ConsumerState<_PlaybackProgressSlide
   }
 
   Widget _buildSlider(BuildContext context) {
+    return ChapterHoverRegion(
+      chapters: widget.chapters,
+      duration: widget.mediaItem?.duration ?? Duration.zero,
+      enabled: widget.allowSeeking,
+      builder: (context, boundaries, hovered) => _buildChapterSlider(context, boundaries, hovered),
+    );
+  }
+
+  Widget _buildChapterSlider(BuildContext context, List<double> boundaries, int? hoveredSegment) {
     return SliderTheme(
       data: widget.allowSeeking
           // ? _sliderThemeData.copyWith(
           ? SliderTheme.of(context).copyWith(
-              inactiveTrackColor: IconTheme.of(context).color!.withOpacity(0.35),
-              secondaryActiveTrackColor: IconTheme.of(context).color!.withOpacity(0.6),
+              inactiveTrackColor: IconTheme.of(context).color!.withValues(alpha: 0.35),
+              secondaryActiveTrackColor: IconTheme.of(context).color!.withValues(alpha: 0.6),
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+              trackShape: ChapterTrackShape(boundaries: boundaries, hoveredSegment: hoveredSegment),
             )
           // )
           // : _sliderThemeData.copyWith(
           : SliderTheme.of(context).copyWith(
-              inactiveTrackColor: IconTheme.of(context).color!.withOpacity(0.35),
-              secondaryActiveTrackColor: IconTheme.of(context).color!.withOpacity(0.6),
+              inactiveTrackColor: IconTheme.of(context).color!.withValues(alpha: 0.35),
+              secondaryActiveTrackColor: IconTheme.of(context).color!.withValues(alpha: 0.6),
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 0.1),
               // gets rid of both horizontal and vertical padding
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 0.1),
-              trackShape: const RectangularSliderTrackShape(),
+              trackShape: ChapterTrackShape(boundaries: boundaries, rounded: false),
               // rectangular shape is thinner than round
               trackHeight: 4.0,
             ),

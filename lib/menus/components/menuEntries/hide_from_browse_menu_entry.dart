@@ -13,7 +13,7 @@ class HideFromBrowseMenuEntry extends ConsumerWidget implements HideableMenuEntr
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hiddenIds = ref.watch(hiddenItemIdsProvider).valueOrNull ?? HiddenItemsService.hiddenIds;
+    final hiddenIds = ref.watch(hiddenItemIdsProvider).value ?? HiddenItemsService.hiddenIds;
     final isHidden = hiddenIds.contains(baseItem.id.raw);
 
     return MenuEntry(

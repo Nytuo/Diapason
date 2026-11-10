@@ -97,8 +97,8 @@ class PlayerScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Color.alphaBlend(
           Theme.brightnessOf(context) == Brightness.dark
-              ? IconTheme.of(context).color!.withOpacity(0.35)
-              : IconTheme.of(context).color!.withOpacity(0.5),
+              ? IconTheme.of(context).color!.withValues(alpha: 0.35)
+              : IconTheme.of(context).color!.withValues(alpha: 0.5),
           Theme.brightnessOf(context) == Brightness.dark ? Colors.black : Colors.white,
         ),
         // Required for sleep timer input
@@ -155,8 +155,8 @@ class _PlayerScreenContent extends ConsumerWidget {
 
     final isLyricsLoading = metadata.isLoading || metadata.isRefreshing;
     final isLyricsAvailable =
-        (metadata.valueOrNull?.hasLyrics ?? false) &&
-        (metadata.valueOrNull?.lyrics != null || metadata.isLoading) &&
+        (metadata.value?.hasLyrics ?? false) &&
+        (metadata.value?.lyrics != null || metadata.isLoading) &&
         !metadata.hasError;
 
     return Stack(

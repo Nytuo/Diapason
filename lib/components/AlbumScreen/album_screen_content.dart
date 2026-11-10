@@ -76,7 +76,7 @@ class _AlbumScreenContentState extends ConsumerState<AlbumScreenContent> {
     final tracksAsync = parentIsPlaylist
         ? ref.watch(getSortedPlaylistTracksProvider(widget.parent, sortSetting))
         : ref.watch(getAlbumOrPlaylistTracksProvider(widget.parent));
-    final (allTracks, playableTracks) = tracksAsync.valueOrNull ?? (null, null);
+    final (allTracks, playableTracks) = tracksAsync.value ?? (null, null);
     final isLoading = allTracks == null;
 
     final displayChildren = allTracks ?? [];

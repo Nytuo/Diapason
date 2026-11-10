@@ -317,7 +317,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
             });
             _searchHistoryDebounce?.cancel();
             _searchHistoryDebounce = Timer(const Duration(milliseconds: 1200), () {
-              if (value != null && value.trim().length > 1) {
+              if (value.trim().length > 1) {
                 GetIt.instance<ShortcutService>().recordSearch(value);
               }
             });

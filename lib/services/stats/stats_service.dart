@@ -3,7 +3,7 @@ import 'package:diapason/models/playback_event.dart';
 import 'package:diapason/services/scrobbling/scrobble_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:logging/logging.dart';
 
 enum WrappedPeriod {

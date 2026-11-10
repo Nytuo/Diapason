@@ -259,10 +259,10 @@ class SortAndFilterRow extends ConsumerWidget {
                                 fontWeight: activeFilterCount > 0 ? FontWeight.w600 : FontWeight.normal,
                                 iconColor: activeFilterCount > 0
                                     ? ColorScheme.of(context).primary
-                                    : TextTheme.of(context).bodyMedium?.color?.withOpacity(0.7),
+                                    : TextTheme.of(context).bodyMedium?.color?.withValues(alpha: 0.7),
                                 textColor: activeFilterCount > 0
                                     ? ColorScheme.of(context).primary
-                                    : TextTheme.of(context).bodyMedium?.color?.withOpacity(0.7),
+                                    : TextTheme.of(context).bodyMedium?.color?.withValues(alpha: 0.7),
                                 onPressed: showMenu,
                               ),
                         if (showChips)
@@ -337,8 +337,8 @@ class ActiveFilterChip extends StatelessWidget {
       text: text,
       label: l10n.removeFilter,
       icon: TablerIcons.x,
-      iconColor: TextTheme.of(context).bodyMedium?.color?.withOpacity(0.7),
-      backgroundColor: ColorScheme.of(context).primary.withOpacity(0.1),
+      iconColor: TextTheme.of(context).bodyMedium?.color?.withValues(alpha: 0.7),
+      backgroundColor: ColorScheme.of(context).primary.withValues(alpha: 0.1),
       iconPosition: IconPosition.end,
       onPressed: onRemove,
       onPressedSecondary: onSecondaryPress,
@@ -608,6 +608,7 @@ mixin _SortAndFilterMenuEntriesMixin<T extends ConsumerStatefulWidget> on Consum
 
 class _SortAndFilterMenuState extends ConsumerState<SortAndFilterMenu>
     with _SortAndFilterMenuEntriesMixin<SortAndFilterMenu> {
+  @override
   late SortAndFilterConfiguration currentConfig;
 
   @override
@@ -702,6 +703,7 @@ class SortAndFilterEmbeddedMenu extends ConsumerStatefulWidget {
 
 class _SortAndFilterEmbeddedMenuState extends ConsumerState<SortAndFilterEmbeddedMenu>
     with _SortAndFilterMenuEntriesMixin<SortAndFilterEmbeddedMenu> {
+  @override
   late SortAndFilterConfiguration currentConfig;
 
   @override

@@ -276,8 +276,8 @@ class MockSubsonicServer {
         return json({
           'starred2': {
             'song': songs.where((s) => starred.contains(s['id'])).map(_song).toList(),
-            'album': [],
-            'artist': [],
+            'album': <Object?>[],
+            'artist': <Object?>[],
           },
         });
       case 'star':
@@ -319,7 +319,7 @@ class MockSubsonicServer {
         );
         return json({});
       case 'getInternetRadioStations':
-        return json({'internetRadioStations': {}});
+        return json({'internetRadioStations': <String, Object?>{}});
       case 'getLyricsBySongId':
         final lines = lyrics[p['id']];
         if (lines == null) return error(70, 'No lyrics');

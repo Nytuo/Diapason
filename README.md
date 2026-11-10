@@ -74,7 +74,7 @@ _Diapason_ derives from the French term for tuning fork, metaphorically represen
 git clone https://github.com/Nytuo/diapason.git
 cd diapason
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 flutter run
 ```
 

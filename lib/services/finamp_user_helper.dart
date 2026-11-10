@@ -5,9 +5,10 @@ import 'package:diapason/services/jellyfin_api.dart' as jellyfin_api;
 import 'package:diapason/services/jellyfin_api_helper.dart';
 import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce/hive.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:logging/logging.dart';
 
 final finampUserHelperLogger = Logger("FinampUserHelper");
@@ -168,38 +169,9 @@ class UserInfo {
 }
 
 class UserInfoProviders {
-  static final AutoDisposeFutureProviderFamily<UserInfo?, String> userInfoProvider = FutureProvider.autoDispose
-      .family<UserInfo?, String>((ref, userId) async {
-        final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
-
-        final currentUserInfo = ref.watch(FinampUserHelper.finampCurrentUserProvider);
-        final bool isCurrentUser = currentUserInfo?.id == userId;
-        UserInfo userInfo = UserInfo(jellyfinUser: null, finampUser: currentUserInfo);
-        finampUserHelperLogger.fine("Fetching user info for '$userId'");
-
-        //!!! return last-known value if offline, instead of making a network request
-        if (ref.watch(finampSettingsProvider.isOffline)) {
-          return ref.state.value;
-        }
-
-        UserDto jellyfinUser;
-        try {
-          final user = await jellyfinApiHelper.getUserById(userId);
-          if (user == null) {
-            throw Exception("Received null user info");
-          }
-          jellyfinUser = user;
-        } catch (e) {
-          finampUserHelperLogger.severe("Failed to fetch user '$userId':", e);
-          return null;
-        }
-
-        userInfo = UserInfo(jellyfinUser: jellyfinUser, finampUser: isCurrentUser ? currentUserInfo : null);
-
-        finampUserHelperLogger.fine("Fetched user info for '$userId': $userInfo");
-
-        return userInfo;
-      });
+  static final AsyncNotifierProviderFamily<UserInfoNotifier, UserInfo?, String> userInfoProvider = AsyncNotifierProvider
+      .autoDispose
+      .family<UserInfoNotifier, UserInfo?, String>(UserInfoNotifier.new);
 
   /// Provider for additional user info fetched from the server
   static final currentUserInfoProvider = Provider<AsyncValue<UserInfo?>>((ref) {
@@ -209,4 +181,55 @@ class UserInfoProviders {
     }
     return const AsyncValue.data(null);
   });
+}
+
+/// Backs [userInfoProvider]. A notifier so the last known value can be returned while offline.
+class UserInfoNotifier extends AsyncNotifier<UserInfo?> {
+  UserInfoNotifier(this.userId);
+
+  final String userId;
+
+  /// The value from before this rebuild, used as the offline fallback.
+  UserInfo? get _lastKnown {
+    try {
+      return state.value;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<UserInfo?> build() => _fetchUserInfo(ref, userId, _lastKnown);
+}
+
+Future<UserInfo?> _fetchUserInfo(Ref ref, String userId, UserInfo? lastKnown) async {
+  final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
+
+  final currentUserInfo = ref.watch(FinampUserHelper.finampCurrentUserProvider);
+  final bool isCurrentUser = currentUserInfo?.id == userId;
+  UserInfo userInfo = UserInfo(jellyfinUser: null, finampUser: currentUserInfo);
+  finampUserHelperLogger.fine("Fetching user info for '$userId'");
+
+  //!!! return last-known value if offline, instead of making a network request
+  if (ref.watch(finampSettingsProvider.isOffline)) {
+    return lastKnown;
+  }
+
+  UserDto jellyfinUser;
+  try {
+    final user = await jellyfinApiHelper.getUserById(userId);
+    if (user == null) {
+      throw Exception("Received null user info");
+    }
+    jellyfinUser = user;
+  } catch (e) {
+    finampUserHelperLogger.severe("Failed to fetch user '$userId':", e);
+    return null;
+  }
+
+  userInfo = UserInfo(jellyfinUser: jellyfinUser, finampUser: isCurrentUser ? currentUserInfo : null);
+
+  finampUserHelperLogger.fine("Fetched user info for '$userId': $userInfo");
+
+  return userInfo;
 }

@@ -4,8 +4,6 @@ import 'dart:async';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/downloads_service.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
-import 'package:diapason/services/jellyfin_api_helper.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -13,7 +11,6 @@ part 'item_by_id_provider.g.dart';
 
 @riverpod
 Future<BaseItemDto?> itemById(Ref ref, BaseItemId baseItemId) async {
-  final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
   final downloadsService = GetIt.instance<DownloadsService>();
 
   BaseItemDto? baseItem;

@@ -13,6 +13,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path_helper;
@@ -21,7 +22,6 @@ import 'package:path_provider/path_provider.dart';
 import '../models/jellyfin_models.dart';
 import 'downloads_service.dart';
 import 'finamp_settings_helper.dart';
-import 'jellyfin_api_helper.dart';
 
 final albumImageProviderLogger = Logger("AlbumImageProvider");
 
@@ -92,8 +92,23 @@ final _imageCache = DefaultCacheManager();
 
 const _infiniteHeight = 999999;
 
-final AutoDisposeProviderFamily<AlbumImageInfo, AlbumImageRequest>
-albumImageProvider = Provider.autoDispose.family<AlbumImageInfo, AlbumImageRequest>((ref, request) {
+final NotifierProviderFamily<AlbumImageNotifier, AlbumImageInfo, AlbumImageRequest> albumImageProvider =
+    NotifierProvider.autoDispose.family<AlbumImageNotifier, AlbumImageInfo, AlbumImageRequest>(AlbumImageNotifier.new);
+
+/// Backs [albumImageProvider]. A notifier rather than a plain provider because full-quality images are fetched in the
+/// background and published once the image cache has them.
+class AlbumImageNotifier extends Notifier<AlbumImageInfo> {
+  AlbumImageNotifier(this.request);
+
+  final AlbumImageRequest request;
+
+  @override
+  AlbumImageInfo build() => _buildAlbumImage(ref, request, (info) {
+    if (ref.mounted) state = info;
+  });
+}
+
+AlbumImageInfo _buildAlbumImage(Ref ref, AlbumImageRequest request, void Function(AlbumImageInfo) publish) {
   String? requestCacheKey = request.item.blurHash ?? request.item.imageId;
   // We currently only support square image requests
   assert(request.maxWidth == request.maxHeight);
@@ -117,7 +132,6 @@ albumImageProvider = Provider.autoDispose.family<AlbumImageInfo, AlbumImageReque
     return AlbumImageInfo.empty(request);
   }
 
-  final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
   final isardownloader = GetIt.instance<DownloadsService>();
 
   File? downloadedImage = isardownloader.getImageDownload(item: request.item)?.file;
@@ -179,11 +193,13 @@ albumImageProvider = Provider.autoDispose.family<AlbumImageInfo, AlbumImageReque
           await _imageCache.store.putFile(cacheObject);
         }
         _playerImageCache[key] = imageFile;
-        ref.state = AlbumImageInfo(
-          FileImage(imageFile.file, scale: 0.25),
-          request,
-          Uri.file(imageFile.file.path),
-          fullQuality: true,
+        publish(
+          AlbumImageInfo(
+            FileImage(imageFile.file, scale: 0.25),
+            request,
+            Uri.file(imageFile.file.path),
+            fullQuality: true,
+          ),
         );
       });
       // Temporary result for the frame or so the cache loads
@@ -201,12 +217,7 @@ albumImageProvider = Provider.autoDispose.family<AlbumImageInfo, AlbumImageReque
         // at full resolution for every list tile costs memory and frame time, so cap the decode like file images.
         thumb = ResizeImage(thumb, width: maxWidth * 2, height: maxHeight * 2, policy: ResizeImagePolicy.fit);
       }
-      return AlbumImageInfo(
-        thumb,
-        request,
-        imageUrl,
-        fullQuality: request.fullQuality,
-      );
+      return AlbumImageInfo(thumb, request, imageUrl, fullQuality: request.fullQuality);
     }
   }
 
@@ -225,7 +236,7 @@ albumImageProvider = Provider.autoDispose.family<AlbumImageInfo, AlbumImageReque
     }
   }
   return AlbumImageInfo(out, request, Uri.file(downloadedImage.path), fullQuality: request.fullQuality);
-});
+}
 
 class CachedImage extends ImageProvider<CachedImage> {
   CachedImage(ImageProvider base, this.cacheKey) : _base = base;

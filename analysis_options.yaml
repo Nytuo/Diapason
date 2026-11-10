@@ -7,12 +7,11 @@ linter:
     - always_declare_return_types
     - use_if_null_to_convert_nulls_to_bools
 analyzer:
-  plugins:
-    - custom_lint
   exclude:
     - lib/**.chopper.dart
     - lib/color_schemes.g.dart
     - build/**
+    - packages/**
     - android/**
     - ios/**
     - windows/**

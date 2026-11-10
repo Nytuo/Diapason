@@ -40,7 +40,7 @@ class StreamCacheService {
   int get maxBytes => FinampSettingsHelper.finampSettings.maxCacheSizeMegabytes * 1024 * 1024;
 
   Future<File> fileFor(BaseItemDto item) async {
-    final extension = item.container?.isNotEmpty == true ? item.container! : "mp3";
+    final extension = item.container?.isNotEmpty ?? false ? item.container! : "mp3";
     return fileForId(item.id.raw, extension);
   }
 
@@ -82,12 +82,6 @@ class StreamCacheService {
     prefetch.value = null;
   }
 
-  Future<void> _delete(File file) async {
-    try {
-      if (file.existsSync()) await file.delete();
-    } catch (_) {}
-  }
-
   static const _sidecarExtensions = {".part", ".mime"};
 
   static bool _isSidecar(File file) => _sidecarExtensions.contains(p.extension(file.path).toLowerCase());
@@ -97,7 +91,6 @@ class StreamCacheService {
     if (!dir.existsSync()) return const [];
     return dir.listSync().whereType<File>().toList();
   }
-
 
   static int _sizeOf(File file) {
     try {

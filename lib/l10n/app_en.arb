@@ -1694,10 +1694,6 @@
     "@redownloadcomplete": {
         "description": "Mesage when Automatically Redownload Transcodes transcode setting completes operations."
     },
-    "flacSeekWarningIos": "Seeking is unreliable in FLAC files on iOS: Apple's decoder jumps to the wrong place, so playback can continue past the end of the track. Remux your FLACs into MP4 to fix it — the audio stays lossless.",
-    "@flacSeekWarningIos": {
-        "description": "Warning shown once per session on iOS when a FLAC track is played, since AVFoundation mis-seeks raw FLAC."
-    },
     "redownloadTitle": "Automatically Redownload Transcodes",
     "@redownloadTitle": {
         "description": "Title for download transcode setting which redownloads tracks with higher allowed qualities"

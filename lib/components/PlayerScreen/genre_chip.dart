@@ -38,7 +38,7 @@ class GenreIconAndText extends StatelessWidget {
         children: [
           Icon(
             TablerIcons.color_swatch,
-            color: theme.iconTheme.color?.withOpacity(theme.brightness == Brightness.light ? 0.38 : 0.5),
+            color: theme.iconTheme.color?.withValues(alpha: theme.brightness == Brightness.light ? 0.38 : 0.5),
           ),
           const SizedBox(width: 4),
           Expanded(
@@ -46,7 +46,7 @@ class GenreIconAndText extends StatelessWidget {
                 ? GenreChips(
                     parentType: BaseItemDtoType.fromItem(parent),
                     genres: genres,
-                    backgroundColor: IconTheme.of(context).color!.withOpacity(0.1),
+                    backgroundColor: IconTheme.of(context).color!.withValues(alpha: 0.1),
                     sortConfig: sortConfig,
                     sortConfigController: sortConfigController,
                   )
@@ -179,9 +179,9 @@ class _GenreChipContent extends ConsumerWidget {
       // so we have to get the gneres BaseItemDto in a different way.
       genreItem = await getPlaylistGenreBaseItemDto(genre.name!, isOffline);
     } else if (isOffline) {
-      genreItem = (await isarDownloader.getCollectionInfo(id: genre.id!))?.baseItem;
+      genreItem = (await isarDownloader.getCollectionInfo(id: genre.id))?.baseItem;
     } else {
-      genreItem = await jellyfinApiHelper.getItemById(genre.id!);
+      genreItem = await jellyfinApiHelper.getItemById(genre.id);
     }
 
     if (genreItem != null) {
@@ -222,7 +222,7 @@ class _GenreChipContent extends ConsumerWidget {
       excludeSemantics: true,
       container: true,
       child: Material(
-        color: backgroundColor ?? Colors.white.withOpacity(0.1),
+        color: backgroundColor ?? Colors.white.withValues(alpha: 0.1),
         borderRadius: _borderRadius,
         child: InkWell(
           borderRadius: _borderRadius,

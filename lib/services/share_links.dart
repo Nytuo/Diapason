@@ -26,7 +26,7 @@ class ShareLinks {
     queryParameters: {
       if (item.type != null) "t": item.type!,
       if (item.name?.isNotEmpty ?? false) "n": item.name!,
-      if (artistOf(item) case final artist?) "a": artist,
+      "a": ?artistOf(item),
     },
   );
 
@@ -87,7 +87,8 @@ class ShareLinks {
       if (artist != null && artist.isNotEmpty) {
         final sameArtist = sameName.where(
           (item) =>
-              _norm(item.albumArtist) == _norm(artist) || (item.artists ?? const []).any((a) => _norm(a) == _norm(artist)),
+              _norm(item.albumArtist) == _norm(artist) ||
+              (item.artists ?? const []).any((a) => _norm(a) == _norm(artist)),
         );
         if (sameArtist.isNotEmpty) return sameArtist.first;
       }

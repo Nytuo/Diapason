@@ -1,9 +1,8 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: deprecated_member_use_from_same_package, strict_raw_type
+// ignore_for_file: deprecated_member_use_from_same_package, strict_raw_type, unused_element, unused_local_variable
 
 // dart format off
-
 
 part of 'finamp_models.dart';
 
@@ -4024,7 +4023,7 @@ class ItemFilterTypeAdapter extends TypeAdapter<ItemFilterType> {
 // **************************************************************************
 
 // coverage:ignore-file
-// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types, experimental_member_use
 
 extension GetFinampUserCollection on Isar {
   IsarCollection<FinampUser> get finampUsers => this.collection();
@@ -4082,7 +4081,7 @@ const FinampUserSchema = CollectionSchema(
   getId: _finampUserGetId,
   getLinks: _finampUserGetLinks,
   attach: _finampUserAttach,
-  version: '3.1.0+1',
+  version: '3.4.1',
 );
 
 int _finampUserEstimateSize(
@@ -5949,7 +5948,7 @@ extension FinampUserQueryProperty
 }
 
 // coverage:ignore-file
-// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types, experimental_member_use
 
 extension GetDownloadItemCollection on Isar {
   IsarCollection<DownloadItem> get downloadItems => this.collection();
@@ -6090,7 +6089,7 @@ const DownloadItemSchema = CollectionSchema(
   getId: _downloadItemGetId,
   getLinks: _downloadItemGetLinks,
   attach: _downloadItemAttach,
-  version: '3.1.0+1',
+  version: '3.4.1',
 );
 
 int _downloadItemEstimateSize(
@@ -8787,7 +8786,7 @@ extension DownloadItemQueryProperty
 }
 
 // coverage:ignore-file
-// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types, experimental_member_use
 
 extension GetDownloadedLyricsCollection on Isar {
   IsarCollection<DownloadedLyrics> get downloadedLyrics => this.collection();
@@ -8816,7 +8815,7 @@ const DownloadedLyricsSchema = CollectionSchema(
   getId: _downloadedLyricsGetId,
   getLinks: _downloadedLyricsGetLinks,
   attach: _downloadedLyricsAttach,
-  version: '3.1.0+1',
+  version: '3.4.1',
 );
 
 int _downloadedLyricsEstimateSize(
@@ -9266,7 +9265,7 @@ extension DownloadedLyricsQueryProperty
 // **************************************************************************
 
 // coverage:ignore-file
-// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types, experimental_member_use
 
 const DownloadProfileSchema = Schema(
   name: r'DownloadProfile',
@@ -9744,8 +9743,8 @@ FinampCollection _$FinampCollectionFromJson(Map json) => FinampCollection(
 Map<String, dynamic> _$FinampCollectionToJson(FinampCollection instance) =>
     <String, dynamic>{
       'Type': _$FinampCollectionTypeEnumMap[instance.type]!,
-      if (instance.library?.toJson() case final value?) 'Library': value,
-      if (instance.item?.toJson() case final value?) 'Item': value,
+      'Library': ?instance.library?.toJson(),
+      'Item': ?instance.item?.toJson(),
     };
 
 const _$FinampCollectionTypeEnumMap = {
@@ -9925,12 +9924,8 @@ Map<String, dynamic> _$HomeScreenSectionConfigurationToJson(
 ) => <String, dynamic>{
   'base': instance.base,
   'sortConfig': instance.sortConfig,
-  if (instance.customSectionTitle case final value?)
-    'customSectionTitle': value,
-  if (_$HomeScreenSectionPresetTypeEnumMap[instance.presetType]
-      case final value?)
-    'presetType': value,
-  'hashCode': instance.hashCode,
+  'customSectionTitle': ?instance.customSectionTitle,
+  'presetType': ?_$HomeScreenSectionPresetTypeEnumMap[instance.presetType],
   'id': instance.id,
 };
 
@@ -10035,13 +10030,11 @@ QuickActionConfig _$QuickActionConfigFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$QuickActionConfigToJson(QuickActionConfig instance) =>
     <String, dynamic>{
       'action': _$FinampQuickActionsEnumMap[instance.action]!,
-      if (_$JsonConverterToJson<String, BaseItemId>(
-            instance.itemId,
-            const BaseItemIdConverter().toJson,
-          )
-          case final value?)
-        'itemId': value,
-      if (instance.itemName case final value?) 'itemName': value,
+      'itemId': ?_$JsonConverterToJson<String, BaseItemId>(
+        instance.itemId,
+        const BaseItemIdConverter().toJson,
+      ),
+      'itemName': ?instance.itemName,
     };
 
 const _$FinampQuickActionsEnumMap = {

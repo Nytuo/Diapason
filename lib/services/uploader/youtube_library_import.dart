@@ -8,6 +8,7 @@ import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:diapason/services/downloads_service.dart';
 import 'package:diapason/services/friendly_error.dart';
 import 'package:diapason/services/uploader/uploader_client.dart';
+import 'package:diapason/services/youtube/local_ytdlp_service.dart';
 import 'package:diapason/services/youtube_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
@@ -21,8 +22,9 @@ enum YouTubeImportState { uploading, waiting, added, failed }
 /// Puts YouTube tracks into the user's own library through the uploader, when the user keeps them (downloads one,
 /// adds one to a playlist) — never just for listening to or previewing one.
 ///
-/// When the uploader runs yt-dlp itself it is asked to fetch the track (nothing goes through this device);
-/// otherwise this device sends the file: the downloaded one, or a copy of the stream fetched for the purpose.
+/// When this device has a working yt-dlp it fetches the track and sends the file to the uploader (the downloaded
+/// one, or a copy of the stream fetched for the purpose). The uploader is asked to fetch it itself only when the
+/// user chose to use only the uploader's yt-dlp, or this device has none.
 class YouTubeLibraryImport {
   YouTubeLibraryImport({http.Client? httpClient}) : _http = httpClient ?? http.Client();
 
@@ -132,8 +134,9 @@ class YouTubeLibraryImport {
             _setState(entry.track, result.ok ? YouTubeImportState.added : YouTubeImportState.failed);
           }
           if (result.ok && entry.playlist != null) unawaited(_addOnceInLibrary(entry.playlist!, entry.track));
-          if (result.ok)
+          if (result.ok) {
             GlobalSnackbar.message((_) => "Added '${entry.track.name}' to your library", isConfirmation: true);
+          }
         }
       }
       await _savePending();
@@ -197,7 +200,12 @@ class YouTubeLibraryImport {
         source: capabilities.state == UploaderState.unreachable ? ErrorSource.connection : ErrorSource.uploader,
       );
     }
-    if (capabilities.ytdlp) {
+    // The local yt-dlp fetches the track and this device uploads it, unless the user chose to use only the uploader's
+    // yt-dlp (or there is no usable local one).
+    final local = GetIt.instance<LocalYtDlpService>();
+    final localReady = LocalYtDlpService.supported && local.status.value.isReady;
+    final onlyUploader = local.config.value.preferUploader;
+    if (capabilities.ytdlp && (onlyUploader || !localReady)) {
       _log.info("Asking the uploader to fetch '${track.name}' from YouTube");
       return _uploader.ytDownloadToLibrary(track.id.nativeId, artist: artist, title: track.name);
     }

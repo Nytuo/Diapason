@@ -52,7 +52,7 @@ class _FakeGitHub {
   Map<String, dynamic> _release(String tag, List<String> names) => {
     'tag_name': tag,
     'assets': omitAssets
-        ? []
+        ? <Map<String, String>>[]
         : [
             for (final n in names) {'name': n, 'browser_download_url': 'https://dl.test/$tag/$n'},
           ],
@@ -90,8 +90,9 @@ class _FakeGitHub {
       final lines = ytdlpSumsOverride ?? _ytdlpNames.map((n) => '${_sha(ytdlp)}  $n').join('\n');
       return reply(200, utf8.encode(lines));
     }
-    if (name.endsWith('.sha256sum'))
+    if (name.endsWith('.sha256sum')) {
       return reply(200, utf8.encode('${_sha(denoZip)}  ${name.replaceAll('.sha256sum', '')}'));
+    }
 
     if (downloadDelay > Duration.zero) await Future<void>.delayed(downloadDelay);
     if (downloadStatus != 200) return reply(downloadStatus, const []);

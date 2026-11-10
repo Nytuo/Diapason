@@ -565,7 +565,7 @@ class ShuffleAlbumsPlaybackAction extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final queueService = GetIt.instance<QueueService>();
-    assert(item is Genre || item is Artist || (item is FinampSortable<Album> && item is FinampPlayable));
+    assert(item is Genre || item is Artist || (item is FinampSortable<Album>));
 
     return PlaybackAction(
       icon: TablerIcons.arrows_shuffle,
@@ -602,7 +602,7 @@ class ShuffleAlbumsNextPlaybackAction extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final queueService = GetIt.instance<QueueService>();
-    assert(item is Genre || item is Artist || (item is FinampSortable<Album> && item is FinampPlayable));
+    assert(item is Genre || item is Artist || (item is FinampSortable<Album>));
 
     return PlaybackAction(
       icon: TablerIcons.corner_right_down,
@@ -642,7 +642,7 @@ class ShuffleAlbumsToNextUpPlaybackAction extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final queueService = GetIt.instance<QueueService>();
-    assert(item is Genre || item is Artist || (item is FinampSortable<Album> && item is FinampPlayable));
+    assert(item is Genre || item is Artist || (item is FinampSortable<Album>));
 
     return PlaybackAction(
       icon: TablerIcons.corner_right_down_double,
@@ -685,7 +685,7 @@ class ShuffleAlbumsToQueuePlaybackAction extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final queueService = GetIt.instance<QueueService>();
-    assert(item is Genre || item is Artist || (item is FinampSortable<Album> && item is FinampPlayable));
+    assert(item is Genre || item is Artist || (item is FinampSortable<Album>));
 
     return PlaybackAction(
       icon: TablerIcons.playlist,

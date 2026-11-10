@@ -78,7 +78,7 @@ void main() {
         await done.future;
       }
 
-      Future<void> _poke(WidgetTester tester, {required int taps, required int seed}) async {
+      Future<void> pokeOnce(WidgetTester tester, {required int taps, required int seed}) async {
         final random = Random(seed);
         final start = topRoute();
         var done = 0;
@@ -125,7 +125,7 @@ void main() {
       }
 
       Future<void> poke(WidgetTester tester, {required int taps, required int seed}) =>
-          watched(() => _poke(tester, taps: taps, seed: seed));
+          watched(() => pokeOnce(tester, taps: taps, seed: seed));
 
       for (final view in [
         'Home',
@@ -164,8 +164,9 @@ void main() {
           'ImportScreen',
           'CastScreen',
           'ConnectScreen',
-        }.contains(entry.key))
+        }.contains(entry.key)) {
           continue;
+        }
         testApp('${entry.key} survives being poked', (tester) async {
           await launch(tester);
           GlobalSnackbar.navigatorState!.pushNamed(entry.value);

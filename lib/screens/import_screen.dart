@@ -34,11 +34,11 @@ class _ImportScreenState extends State<ImportScreen> {
   }
 
   Future<void> _pickFiles() async {
-    final result = await FilePicker.pickFiles(allowMultiple: true, type: FileType.audio);
-    if (result == null || result.files.isEmpty) return;
+    final result = await FilePicker.pickFiles(type: FileType.audio);
+    if (result.isEmpty) return;
 
     setState(() => _importingFiles = true);
-    final files = result.files.map((f) => f.path).nonNulls.map(File.new);
+    final files = result.map((f) => f.path).nonNulls.map(File.new);
     final imported = await GetIt.instance<ImportService>().importFiles(files);
 
     if (!mounted) return;

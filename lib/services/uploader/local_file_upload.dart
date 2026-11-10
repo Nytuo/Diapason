@@ -38,14 +38,10 @@ class LocalFileUpload {
   static Future<LocalUploadSummary?> pickAndUpload({
     void Function(int done, int total, String name)? onProgress,
   }) async {
-    final picked = await FilePicker.pickFiles(
-      allowMultiple: true,
-      type: FileType.custom,
-      allowedExtensions: UploaderClient.audioExtensions,
-    );
-    if (picked == null) return null;
+    final picked = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: UploaderClient.audioExtensions);
+    if (picked.isEmpty) return null;
 
-    final files = picked.files.where((f) => f.path != null).toList();
+    final files = picked.where((f) => f.path != null).toList();
     final uploader = GetIt.instance<UploaderClient>();
 
     var stored = 0, duplicates = 0;

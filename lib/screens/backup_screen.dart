@@ -35,14 +35,13 @@ class _BackupScreenState extends State<BackupScreen> {
     try {
       final bytes = await _service.export(includeSignIns: _includeSignIns);
       if (_isDesktop) {
-        final path = await FilePicker.saveFile(
+        final saved = await FilePicker.saveFile(
           dialogTitle: "Save Diapason backup",
           fileName: BackupService.suggestedFileName(),
-          type: FileType.custom,
-          allowedExtensions: const ["json"],
+          mimeType: "application/json",
+          bytes: bytes,
         );
-        if (path == null) return;
-        await File(path).writeAsBytes(bytes, flush: true);
+        if (saved == null) return;
         _toast("Backup saved.");
       } else {
         // On phones the share sheet covers Files, Drive, AirDrop, email, …
@@ -65,12 +64,15 @@ class _BackupScreenState extends State<BackupScreen> {
   }
 
   Future<void> _restore() async {
-    final picked = await FilePicker.pickFiles(dialogTitle: "Choose a Diapason backup", withData: true);
-    final file = picked?.files.singleOrNull;
+    final file = await FilePicker.pickFile(dialogTitle: "Choose a Diapason backup");
     if (file == null) return;
 
-    Uint8List? bytes = file.bytes;
-    if (bytes == null && file.path != null) bytes = await File(file.path!).readAsBytes();
+    Uint8List? bytes;
+    try {
+      bytes = await file.readAsBytes();
+    } catch (_) {
+      bytes = null;
+    }
     if (bytes == null) {
       _toast("Couldn't read that file.");
       return;

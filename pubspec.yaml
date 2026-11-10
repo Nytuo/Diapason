@@ -13,19 +13,15 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  background_downloader: ^9.2.3
-  json_annotation: ^4.8.1
-  chopper: ^8.0.0
-  get_it: ^8.2.0
-  # just_audio: ^0.10.5
-  # Fork carrying the Darwin SpectrumTap patch (MTAudioProcessingTap + vDSP
-  # FFT for the iOS visualizer) and the in-app Darwin equalizer. `main` is
-  # the consolidated branch; all fork work merges there.
+  background_downloader: ^9.5.9
+  json_annotation: ^4.12.0
+  chopper: ^8.7.1
+  get_it: ^9.3.0
+  # Vendored copy of just_audio 0.10.6 with Diapason's Darwin patches
+  # (SpectrumTap FFT visualizer, 10-band equalizer, tvOS build, precise
+  # FLAC seeking). See packages/README.md.
   just_audio:
-    git:
-      url: https://github.com/Nytuo/just_audio_fork.git
-      ref: main
-      path: just_audio
+    path: packages/just_audio
   just_audio_media_kit:
     git:
       url: https://github.com/Komodo5197/just_audio_media_kit.git
@@ -56,33 +52,32 @@ dependencies:
   file_sizes: ^1.0.6
   logging: ^1.3.0
   collection: ^1.18.0
-  clipboard: ^2.0.2
+  clipboard: ^3.0.14
   archive: ^4.0.9
-  file_picker: ^11.0.2
+  file_picker: ^13.3.3
   file: ^7.0.1
-  permission_handler: ^12.0.0
+  permission_handler: ^13.0.2
   provider: ^6.0.5
   uuid: ^4.5.1
   infinite_scroll_pagination: ^5.0.0
-  flutter_sticky_header: ^0.8.0
+  flutter_sticky_header: ^0.11.0
   flutter_user_certificates_android:
     git:
       url: https://github.com/jfly/flutter_user_certificates_android.git
       ref: db81e4ff3222a7db1308ed03c4bc3142c0d271d5
-  device_info_plus: ^12.1.0
+  device_info_plus: ^13.3.0
   app_set_id: ^1.2.1
-  package_info_plus: ^9.0.0
+  package_info_plus: ^10.2.2
   octo_image: ^2.0.0
   split_view:
     git:
       url: https://github.com/odriverobotics/split_view.git
       ref: 8b2b0f0e1c8470183cb2df40815a05bfdb3fe219
-  share_plus: ^12.0.0
-  isar: ^3.1.0
-  isar_flutter_libs:
-    git:
-      url: https://github.com/Komodo5197/isar_flutter_libs.git
-      ref: 21c20862e94bb33fca9e9c14b5ca72fc41307f4b
+  share_plus: ^13.3.1
+  # Community-maintained continuation of isar 3 (same on-disk format). Its
+  # generator supports current analyzers, which unblocks build_runner.
+  isar_community: ^3.4.1
+  isar_community_flutter_libs: ^3.4.1
 
   path: ^1.9.0
   path_provider_platform_interface: ^2.1.2
@@ -95,8 +90,8 @@ dependencies:
       ref: 4992c3b
       path: packages/palette_generator
   flutter_tabler_icons: ^1.43.0
-  flutter_riverpod: ^2.6.1
-  riverpod_annotation: ^2.6.1
+  flutter_riverpod: ^3.0.0
+  riverpod_annotation: ^4.0.3
   locale_names: ^1.1.1
   flutter_cache_manager: ^3.4.1
   balanced_text:
@@ -106,33 +101,33 @@ dependencies:
   flutter_to_airplay: ^2.0.5
   flutter_blurhash: ^0.9.1
   scroll_to_index: ^3.0.1
-  window_manager: ^0.5.1
+  window_manager: ^0.5.2
   url_launcher: ^6.3.1
   wakelock_plus: ^1.2.10
   battery_plus: ^7.0.0
   focus_on_it: ^2.0.1
   flutter_svg: ^2.0.17
   meta: ^1.15.0
-  analyzer: ^7.0.0
-  build: ^2.4.2
-  source_gen: ^2.0.0
+  analyzer: ^12.1.0
+  build: ^4.0.0
+  source_gen: ^4.1.2
   web_socket_channel: ^3.0.2
   connectivity_plus: ^7.0.0
   progress_border: ^0.1.5
   visibility_detector: ^0.4.0+2
   gaimon: ^1.4.0
   http: ^1.4.0
-  xml: ^6.6.1
+  xml: ^7.0.0
   ffi: ^2.2.0
   yaml: ^3.1.3
-  app_links: ^6.4.0
+  app_links: ^7.2.2
   flutter_discord_rpc: ^1.0.0
   shared_preferences: ^2.5.3
   # Android in-app updater: hands a downloaded APK to the system package
   # installer (sideload builds only; the store build never shows the updater).
-  open_filex: ^4.7.0
-  flex_color_picker: ^3.7.1
-  dynamic_color: ^1.8.1
+  open_filex: ^5.0.0
+  flex_color_picker: ^3.8.0
+  dynamic_color: ^2.1.0
   dbus: ^0.7.11
   bits: ^1.4.0
   flutter_carplay:
@@ -144,8 +139,8 @@ dependencies:
   audio_metadata_reader: ^1.6.0
   http_parser: ^4.1.2
   nsd: ^5.0.1
-  flutter_chrome_cast: ^1.4.6
-  home_widget: ^0.9.3
+  flutter_chrome_cast: ^2.0.0
+  home_widget: ^0.10.0
 
   # tvOS-only plugin forks: the tvOS implementations of the plugins above.
   # flutter build ignores them on every other platform; flutter-tvos picks them up for tvOS.
@@ -167,37 +162,29 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: ^2.3.3
-  flutter_gen_runner: 5.13.0+1
-  chopper_generator: ^8.0.0
-  hive_ce_generator: ^1.8.1
-  json_serializable: ^6.9.0
+  build_runner: ^2.10.0
+  flutter_gen_runner: ^5.15.0
+  chopper_generator: ^8.7.1
+  hive_ce_generator: ^1.11.2
+  json_serializable: ^6.15.0
   flutter_launcher_icons: ^0.14.1
   flutter_lints: ^6.0.0
-  riverpod_generator: ^2.6.1
-  custom_lint: ^0.7.0
-  riverpod_lint: ^2.6.3
-  isar_generator:
-    git:
-      url: https://github.com/callumw-k/isar.git
-      ref: f070a067378c215b9212a2a22ea593293671c9c9
-      path: packages/isar_generator
-  msix: ^3.16.9
+  riverpod_generator: ^4.0.4
+  # riverpod_lint is left out until Flutter ships Dart 3.13: the release that
+  # supports analyzer 14 (needed by hive_ce_generator) requires it.
+  # Vendored: upstream reads @Name/@Enumerated/@Backlink only from the
+  # synthetic field, so annotations on a getter/setter pair are dropped
+  # (e.g. FinampUser.isarCurrentViewId would be renamed in the schema).
+  isar_community_generator:
+    path: packages/isar_community_generator
+  msix: ^3.18.0
 
 dependency_overrides:
-  isar:
-    git:
-      url: https://github.com/Komodo5197/isar-community.git
-      ref: a602cd8999048faba043f7e1ce7ba92f4d812762
-      path: packages/isar
-  # The fork also patches just_audio_platform_interface (adds the Darwin
-  # equalizer request/response), so the transitive dep must resolve to the
-  # fork's copy rather than the pub.dev release.
+  # The vendored just_audio also patches its platform interface (Darwin
+  # equalizer request/response); just_audio_media_kit depends on the pub.dev
+  # release, so force everything onto the vendored copy.
   just_audio_platform_interface:
-    git:
-      url: https://github.com/Nytuo/just_audio_fork.git
-      ref: main
-      path: just_audio_platform_interface
+    path: packages/just_audio_platform_interface
 
 flutter:
   uses-material-design: true

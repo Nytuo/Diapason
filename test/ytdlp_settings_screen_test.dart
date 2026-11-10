@@ -9,7 +9,6 @@ import 'package:diapason/services/youtube/youtube_availability.dart';
 import 'package:diapason/services/youtube/ytdlp_config.dart';
 import 'package:diapason/services/youtube/ytdlp_paths.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 

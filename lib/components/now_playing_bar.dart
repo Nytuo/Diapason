@@ -54,8 +54,8 @@ class NowPlayingBar extends ConsumerWidget {
         blurRadius: 12.0,
         spreadRadius: 8.0,
         color: Theme.brightnessOf(context) == Brightness.light
-            ? darkColorScheme.surface.withOpacity(0.15)
-            : darkColorScheme.surface.withOpacity(0.7),
+            ? darkColorScheme.surface.withValues(alpha: 0.15)
+            : darkColorScheme.surface.withValues(alpha: 0.7),
       ),
     ],
   );
@@ -66,14 +66,14 @@ class NowPlayingBar extends ConsumerWidget {
 
   Color getProgressBackgroundColor(WidgetRef ref) {
     return Color.alphaBlend(
-      getProgressForegroundColor(ref).withOpacity(0.75),
+      getProgressForegroundColor(ref).withValues(alpha: 0.75),
       // this is an approximation, the actual background has the blurred cover image
       ref.watch(brightnessProvider) == Brightness.dark ? Colors.black : Colors.white,
     );
   }
 
   Widget buildLoadingQueueBar(WidgetRef ref, void Function()? retryCallback) {
-    final progressBackgroundColor = getProgressBackgroundColor(ref).withOpacity(0.5);
+    final progressBackgroundColor = getProgressBackgroundColor(ref).withValues(alpha: 0.5);
     var context = ref.context;
 
     return SimpleGestureDetector(
@@ -90,11 +90,11 @@ class NowPlayingBar extends ConsumerWidget {
           child: Material(
             shadowColor: ColorScheme.of(
               context,
-            ).primary.withOpacity(Theme.brightnessOf(context) == Brightness.light ? 0.75 : 0.3),
+            ).primary.withValues(alpha: Theme.brightnessOf(context) == Brightness.light ? 0.75 : 0.3),
             borderRadius: BorderRadius.circular(12.0),
             clipBehavior: Clip.antiAlias,
             color: Theme.brightnessOf(context) == Brightness.dark
-                ? IconTheme.of(context).color!.withOpacity(0.1)
+                ? IconTheme.of(context).color!.withValues(alpha: 0.1)
                 : Theme.of(context).cardColor,
             elevation: 8.0,
             child: Container(
@@ -182,7 +182,7 @@ class NowPlayingBar extends ConsumerWidget {
     final elapsedPartBackgroundColor = getProgressForegroundColor(ref);
     final remainingPartBackgroundColor = getProgressBackgroundColor(ref);
     final averageBackgroundColor = Color.alphaBlend(
-      elapsedPartBackgroundColor.withOpacity(0.5),
+      elapsedPartBackgroundColor.withValues(alpha: 0.5),
       remainingPartBackgroundColor,
     );
     Color primaryTextColor = AtContrast.getContrastiveTintedTextColor(onBackground: averageBackgroundColor);
@@ -233,11 +233,11 @@ class NowPlayingBar extends ConsumerWidget {
                   child: Material(
                     shadowColor: ColorScheme.of(
                       context,
-                    ).primary.withOpacity(Theme.brightnessOf(context) == Brightness.light ? 0.75 : 0.3),
+                    ).primary.withValues(alpha: Theme.brightnessOf(context) == Brightness.light ? 0.75 : 0.3),
                     borderRadius: BorderRadius.circular(12.0),
                     clipBehavior: Clip.antiAlias,
                     color: Theme.brightnessOf(context) == Brightness.dark
-                        ? IconTheme.of(context).color!.withOpacity(0.1)
+                        ? IconTheme.of(context).color!.withValues(alpha: 0.1)
                         : Theme.of(context).cardColor,
                     elevation: 8.0,
                     child: StreamBuilder<MediaState>(
@@ -249,8 +249,6 @@ class NowPlayingBar extends ConsumerWidget {
                       ),
                       builder: (context, snapshot) {
                         final MediaState mediaState = snapshot.data!;
-                        final playbackState = mediaState.playbackState;
-                        final fadeState = mediaState.fadeState;
                         // If we have a media item and the player hasn't finished, show
                         // the now playing bar.
                         if (mediaState.mediaItem != null) {
@@ -426,14 +424,14 @@ class NowPlayingBar extends ConsumerWidget {
                                                                             ? 20
                                                                             : 14,
                                                                         fontWeight: FontWeight.w400,
-                                                                        color: primaryTextColor.withOpacity(0.8),
+                                                                        color: primaryTextColor.withValues(alpha: 0.8),
                                                                       ),
                                                                     ),
                                                                     const SizedBox(width: 2),
                                                                     Text(
                                                                       '/',
                                                                       style: TextStyle(
-                                                                        color: primaryTextColor.withOpacity(0.8),
+                                                                        color: primaryTextColor.withValues(alpha: 0.8),
                                                                         fontSize: DeviceFormFactorDetector.current.isTv
                                                                             ? 20
                                                                             : 14,
@@ -449,7 +447,7 @@ class NowPlayingBar extends ConsumerWidget {
                                                                           ? "${mediaState.mediaItem?.duration?.inHours.toString()}:${((mediaState.mediaItem?.duration?.inMinutes ?? 0) % 60).toString().padLeft(2, '0')}:${((mediaState.mediaItem?.duration?.inSeconds ?? 0) % 60).toString().padLeft(2, '0')}"
                                                                           : "${mediaState.mediaItem?.duration?.inMinutes.toString()}:${((mediaState.mediaItem?.duration?.inSeconds ?? 0) % 60).toString().padLeft(2, '0')}",
                                                                       style: TextStyle(
-                                                                        color: primaryTextColor.withOpacity(0.8),
+                                                                        color: primaryTextColor.withValues(alpha: 0.8),
                                                                         fontSize: DeviceFormFactorDetector.current.isTv
                                                                             ? 20
                                                                             : 14,

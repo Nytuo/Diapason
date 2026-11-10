@@ -303,7 +303,7 @@ Future<List<BaseItemDto>> generateRadioTracks(
     "Generating $minNumTracks radio tracks from ${overrideSeedItem == null ? "queue" : "override"} item '${actualSeed?.name}' using '${FinampSettingsHelper.finampSettings.radioMode.name}' mode.",
   );
 
-  Future<BaseItemDto?> _expandTrackSeedForPooling(BaseItemDto? seed) async {
+  Future<BaseItemDto?> expandTrackSeedForPooling(BaseItemDto? seed) async {
     if (seed == null || BaseItemDtoType.fromItem(seed) != BaseItemDtoType.track) return seed;
     final albumId = seed.albumId;
     if (albumId == null) return seed;
@@ -324,7 +324,7 @@ Future<List<BaseItemDto>> generateRadioTracks(
     final queueWithoutRadioTracks = currentQueue.fullQueue
         .whereNot((e) => e.source.type == QueueItemSourceType.radio)
         .toList();
-    final poolSeed = await _expandTrackSeedForPooling(actualSeed);
+    final poolSeed = await expandTrackSeedForPooling(actualSeed);
     // Items originally in the currently playing source (or manually added)
     final originalQueue =
         (poolSeed != null
@@ -775,8 +775,8 @@ final currentRadioAvailabilityStatusProvider = Provider<RadioModeAvailabilitySta
   return !radioEnabled ? RadioModeAvailabilityStatus.disabled : radioModeAvailable;
 });
 
-final radioModeAvailabilityStatusProvider =
-    AutoDisposeProviderFamily<RadioModeAvailabilityStatus, (RadioMode, BaseItemDto?)>((
+final radioModeAvailabilityStatusProvider = Provider.autoDispose
+    .family<RadioModeAvailabilityStatus, (RadioMode, BaseItemDto?)>((
       ref,
       (RadioMode radioMode, BaseItemDto? source) arguments,
     ) {
@@ -800,7 +800,7 @@ final radioModeAvailabilityStatusProvider =
     });
 
 final _randomAndReshuffleRadioModeAvailabilityStatusProvider =
-    ProviderFamily<RadioModeAvailabilityStatus, BaseItemDto?>((ref, BaseItemDto? baseItem) {
+    Provider.family<RadioModeAvailabilityStatus, BaseItemDto?>((ref, BaseItemDto? baseItem) {
       if (baseItem != null) {
         final downloadsService = GetIt.instance<DownloadsService>();
 
@@ -824,7 +824,7 @@ final _randomAndReshuffleRadioModeAvailabilityStatusProvider =
     });
 
 final _similarAndContinuousRadioModeAvailabilityStatusProvider =
-    ProviderFamily<RadioModeAvailabilityStatus, BaseItemDto?>((ref, BaseItemDto? baseItem) {
+    Provider.family<RadioModeAvailabilityStatus, BaseItemDto?>((ref, BaseItemDto? baseItem) {
       // only available online when source is not null
       return ref.watch(finampSettingsProvider.isOffline)
           ? RadioModeAvailabilityStatus.unavailableOffline
@@ -843,7 +843,7 @@ BaseItemId? getAlbumMixRadioModeSeedId(BaseItemDto? baseItem) {
       : null;
 }
 
-final _albumMixRadioModeAvailabilityStatusProvider = ProviderFamily<RadioModeAvailabilityStatus, BaseItemDto?>((
+final _albumMixRadioModeAvailabilityStatusProvider = Provider.family<RadioModeAvailabilityStatus, BaseItemDto?>((
   ref,
   BaseItemDto? baseItem,
 ) {
@@ -854,7 +854,7 @@ final _albumMixRadioModeAvailabilityStatusProvider = ProviderFamily<RadioModeAva
       : RadioModeAvailabilityStatus.unavailableSourceTypeNotSupported;
 });
 
-final getActiveRadioSeedProvider = ProviderFamily<BaseItemDto?, RadioMode>((Ref ref, RadioMode radioMode) {
+final getActiveRadioSeedProvider = Provider.family<BaseItemDto?, RadioMode>((Ref ref, RadioMode radioMode) {
   final currentQueue = ref.watch(QueueService.queueProvider);
   switch (radioMode) {
     case RadioMode.continuous:

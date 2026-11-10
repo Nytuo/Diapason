@@ -15,7 +15,7 @@ import 'package:diapason/services/tv/tv_profile_service.dart';
 import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce/hive.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:logging/logging.dart';
 
 /// Isar has no tvOS native binary, so on tvOS this stores configs as JSON in
@@ -32,6 +32,7 @@ class MediaSourceService implements TvProfileSources {
 
   Box<String> get _tvOSSources => Hive.box<String>("MediaSourceConfigs");
 
+  @override
   List<MediaSourceConfig> get sources => _isTvOS
       ? _tvOSSources.values
             .map((json) => MediaSourceConfig.fromTvOSStorageJson(jsonDecode(json) as Map<String, dynamic>))
@@ -85,8 +86,9 @@ class MediaSourceService implements TvProfileSources {
 
   Future<void> removeSource(String sourceId) async {
     await _registry.unregister(sourceId);
-    if (GetIt.instance.isRegistered<TvProfileService>())
+    if (GetIt.instance.isRegistered<TvProfileService>()) {
       await GetIt.instance<TvProfileService>().detachSource(sourceId);
+    }
     if (_isTvOS) {
       _tvOSSources.delete(sourceId);
     } else {

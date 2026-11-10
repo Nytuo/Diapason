@@ -284,7 +284,7 @@ void main() {
     });
 
     test('an offer is read from JSON, and refused when malformed', () {
-      expect(SourceOffer.tryParse({'sources': []}), isNull);
+      expect(SourceOffer.tryParse({'sources': <Object?>[]}), isNull);
       expect(
         SourceOffer.tryParse({
           'sources': ['nope'],

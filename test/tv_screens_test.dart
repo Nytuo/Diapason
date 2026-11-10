@@ -7,7 +7,6 @@ import 'package:diapason/screens/tv/tv_profile_picker_screen.dart';
 import 'package:diapason/screens/tv/tv_widgets.dart';
 import 'package:diapason/services/connect/connect_mdns.dart';
 import 'package:diapason/services/connect/connect_models.dart';
-import 'package:diapason/services/connect/connect_player_bridge.dart';
 import 'package:diapason/services/connect/connect_service.dart';
 import 'package:diapason/services/tv/tv_profile_service.dart';
 import 'package:flutter/material.dart';

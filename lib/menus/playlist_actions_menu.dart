@@ -28,7 +28,7 @@ Future<void> showPlaylistActionsMenu({
 
   var playlistsFuture = GetIt.instance<AggregateBackend>().getItems(includeItemTypes: "Playlist", sortBy: "SortName");
 
-  await showThemedBottomSheet(
+  await showThemedBottomSheet<void>(
     context: context,
     item: items.length == 1 ? items.first : null,
     routeName: playlistActionsMenuRouteName,
@@ -48,7 +48,7 @@ Future<void> showPlaylistActionsMenu({
                 leading: AspectRatio(
                   aspectRatio: 1.0,
                   child: DecoratedBox(
-                    decoration: BoxDecoration(color: themeColor.withOpacity(0.3)),
+                    decoration: BoxDecoration(color: themeColor.withValues(alpha: 0.3)),
                     child: const Center(child: Icon(TablerIcons.heart, size: 36.0, color: Colors.white)),
                   ),
                 ),
@@ -64,7 +64,7 @@ Future<void> showPlaylistActionsMenu({
             },
           ),
         FutureBuilder(
-          future: playlistsFuture.then((value) => value?.firstWhereOrNull((x) => x.id == parentPlaylist?.id)),
+          future: playlistsFuture.then((value) => value.firstWhereOrNull((x) => x.id == parentPlaylist?.id)),
           initialData: parentPlaylist,
           builder: (context, snapshot) {
             if (snapshot.data != null) {
@@ -101,7 +101,7 @@ Future<void> showPlaylistActionsMenu({
             child: AddToPlaylistList(
               itemsToAdd: items,
               playlistsFuture: playlistsFuture.then(
-                (value) => (value?.where((element) => element.id != parentPlaylist?.id).toList() ?? []),
+                (value) => value.where((element) => element.id != parentPlaylist?.id).toList(),
               ),
             ),
           ),

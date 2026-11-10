@@ -116,7 +116,7 @@ class _PlaylistEditScreenState extends ConsumerState<PlaylistEditScreen> {
     _name = playlist.name;
     _fetchPublicVisibility();
     final tracksAsync = ref.read(getDefaultSortedPlaylistTracksProvider(playlist));
-    final (allTracks, playableTracks) = tracksAsync.valueOrNull ?? (<BaseItemDto>[], <BaseItemDto>[]);
+    final (allTracks, playableTracks) = tracksAsync.value ?? (<BaseItemDto>[], <BaseItemDto>[]);
     playlistTracks = List.from(allTracks);
     if (tracksAsync.hasValue) {
       setState(() => _isLoading = false);
@@ -127,7 +127,7 @@ class _PlaylistEditScreenState extends ConsumerState<PlaylistEditScreen> {
         (_, tracksAsyncLoaded) {
           if (mounted) {
             final (allTracksLoaded, playableTracksLoaded) =
-                tracksAsyncLoaded.valueOrNull ?? (<BaseItemDto>[], <BaseItemDto>[]);
+                tracksAsyncLoaded.value ?? (<BaseItemDto>[], <BaseItemDto>[]);
             setState(() {
               playlistTracks = List.from(allTracksLoaded);
               _initialTrackIdsOrder = playlistTracks.map((t) => t.id.raw).toList();
@@ -143,9 +143,9 @@ class _PlaylistEditScreenState extends ConsumerState<PlaylistEditScreen> {
   }
 
   Future<File?> filePicker() async {
-    final result = await FilePicker.pickFiles(type: FileType.image);
+    final result = await FilePicker.pickFile(type: FileType.image);
     if (result == null) return null;
-    return File(result.files.single.path!);
+    return File(result.path!);
   }
 
   Future<void> _fetchPublicVisibility() async {
@@ -157,7 +157,7 @@ class _PlaylistEditScreenState extends ConsumerState<PlaylistEditScreen> {
       });
       return;
     }
-    final resultPlaylist = await _jellyfinApiHelper.getPlaylist(playlist.id!);
+    final resultPlaylist = await _jellyfinApiHelper.getPlaylist(playlist.id);
     setState(() {
       _publicVisibility = resultPlaylist.openAccess;
       _initialVisibility = _publicVisibility ?? false;
@@ -197,7 +197,7 @@ class _PlaylistEditScreenState extends ConsumerState<PlaylistEditScreen> {
           if (GetIt.instance<BackendRegistry>().forItem(playlist) is! JellyfinBackend) {
             throw Exception("This source doesn't support a custom playlist cover.");
           }
-          await _jellyfinApiHelper.setItemPrimaryImage(itemId: playlist.id!, imageFile: newAlbumImage!);
+          await _jellyfinApiHelper.setItemPrimaryImage(itemId: playlist.id, imageFile: newAlbumImage!);
         }
         musicScreenRefreshStream.add(null); // refresh playlist content
         ref.invalidate(getAlbumOrPlaylistTracksProvider(playlist));
@@ -331,7 +331,7 @@ class _PlaylistEditScreenState extends ConsumerState<PlaylistEditScreen> {
                 onReorderStart: (_) => FeedbackHelper.feedback(FeedbackType.selection),
                 findChildIndexCallback: (Key key) {
                   key = key as GlobalObjectKey;
-                  final valueKey = key.value as ValueKey<String>;
+                  final valueKey = key.value as ValueKey<BaseItemId>;
                   final index = playlistTracks.indexWhere((item) => item.id == valueKey.value);
                   if (index == -1) return null;
                   return index;
@@ -390,8 +390,7 @@ class _HeaderSection extends ConsumerWidget {
     required this.onNameChanged,
     required this.onVisibilityChanged,
     required this.onSubmit,
-    Key? key,
-  }) : super(key: key);
+  });
 
   final GlobalKey<FormState> formKey;
   final double coverSize;
@@ -416,7 +415,7 @@ class _HeaderSection extends ConsumerWidget {
           margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
           decoration: BoxDecoration(
-            color: ColorScheme.of(context).primary.withOpacity(0.25),
+            color: ColorScheme.of(context).primary.withValues(alpha: 0.25),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Column(
@@ -446,7 +445,7 @@ class _HeaderSection extends ConsumerWidget {
                                 fit: BoxFit.cover,
                                 width: coverSize,
                                 height: coverSize,
-                                errorBuilder: (_, __, ___) => const ColoredBox(color: Colors.black26),
+                                errorBuilder: (_, _, _) => const ColoredBox(color: Colors.black26),
                               ),
                             )
                           else
@@ -489,8 +488,8 @@ class _HeaderSection extends ConsumerWidget {
                               floatingLabelBehavior: FloatingLabelBehavior.never,
                               filled: true,
                               fillColor: Theme.brightnessOf(context) == Brightness.dark
-                                  ? Colors.black.withOpacity(0.8)
-                                  : Colors.white.withOpacity(0.8),
+                                  ? Colors.black.withValues(alpha: 0.8)
+                                  : Colors.white.withValues(alpha: 0.8),
                               border: OutlineInputBorder(
                                 borderSide: BorderSide.none,
                                 borderRadius: BorderRadius.circular(6),

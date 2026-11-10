@@ -202,7 +202,7 @@ class PlexBackend implements MediaBackend {
       final String s when s.contains("PlayCount") => "viewCount:desc",
       _ => null,
     };
-    final container = await _get("/library/sections/$section/albums", {if (sort case final s?) "sort": s});
+    final container = await _get("/library/sections/$section/albums", {"sort": ?sort});
     return _list(container?["Metadata"]).map(_album).toList();
   }
 

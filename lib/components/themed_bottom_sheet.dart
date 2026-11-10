@@ -36,7 +36,7 @@ Future<T?> showThemedBottomSheet<T>({
   FeedbackHelper.feedback(FeedbackType.selection);
   bool useDefaultTheme = false;
   final menu = ThemedBottomSheet(
-    key: ValueKey((item?.id?.raw ?? "") + routeName),
+    key: ValueKey((item?.id.raw ?? "") + routeName),
     buildSlivers: buildSlivers,
     buildWrapper: buildWrapper,
     minDraggableHeight: minDraggableHeight,
@@ -65,7 +65,7 @@ Future<T?> showThemedBottomSheet<T>({
       context: context,
       useRootNavigator: true,
       routeSettings: RouteSettings(name: routeName),
-      barrierColor: Colors.black.withOpacity(0.45),
+      barrierColor: Colors.black.withValues(alpha: 0.45),
       barrierDismissible: true,
       builder: (BuildContext context) {
         final scheme = ColorScheme.of(context);
@@ -76,7 +76,7 @@ Future<T?> showThemedBottomSheet<T>({
           backgroundColor: ElevationOverlay.applySurfaceTint(scheme.surface, scheme.surfaceTint, 2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14.0),
-            side: BorderSide(color: scheme.outlineVariant.withOpacity(0.5)),
+            side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
           ),
           child: ConstrainedBox(
             constraints: BoxConstraints(

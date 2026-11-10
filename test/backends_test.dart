@@ -17,7 +17,7 @@ class _FakeBackend implements MediaBackend {
   String get sourceId => config.sourceId;
 
   @override
-  noSuchMethod(Invocation invocation) => throw UnimplementedError();
+  Never noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }
 
 MediaSourceConfig _config(String sourceId, MediaSourceKind kind) =>

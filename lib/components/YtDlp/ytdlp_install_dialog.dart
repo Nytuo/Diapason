@@ -97,8 +97,8 @@ class _InstallDialogState extends State<_InstallDialog> {
   }
 
   Future<void> _useExisting() async {
-    final picked = await FilePicker.pickFiles(dialogTitle: "Choose your yt-dlp executable");
-    final path = picked?.files.single.path;
+    final picked = await FilePicker.pickFile(dialogTitle: "Choose your yt-dlp executable");
+    final path = picked?.path;
     if (path == null) return;
     final cfg = _service.config.value.clone()..customBinaryPath = path;
     await _service.saveConfig(cfg);

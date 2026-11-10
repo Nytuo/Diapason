@@ -5,9 +5,10 @@ import 'package:diapason/services/backends/jellyfin_backend.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/jellyfin_api_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:get_it/get_it.dart';
 
-final AutoDisposeProviderFamily<bool, BaseItemDto> canDeleteFromServerProvider = AutoDisposeProviderFamily((
+final ProviderFamily<bool, BaseItemDto> canDeleteFromServerProvider = Provider.autoDispose.family((
   ref,
   BaseItemDto item,
 ) {
@@ -39,25 +40,24 @@ final AutoDisposeProviderFamily<bool, BaseItemDto> canDeleteFromServerProvider =
   }
 });
 
-final AutoDisposeFutureProviderFamily<bool?, BaseItemId> _canDeleteFromServerAsyncProvider =
-    AutoDisposeFutureProviderFamily((ref, BaseItemId id) {
-      if (GetIt.instance<BackendRegistry>().forItemId(id) is! JellyfinBackend) {
-        return Future.value(null);
-      }
-      return GetIt.instance<JellyfinApiHelper>()
-          .getItemById(id)
-          .then((response) {
-            return response.canDelete;
-          })
-          .catchError((_) {
-            return false;
-          });
-    });
-
-final AutoDisposeProviderFamily<bool, BaseItemDto> canEditPlaylistProvider = AutoDisposeProviderFamily((
+final FutureProviderFamily<bool?, BaseItemId> _canDeleteFromServerAsyncProvider = FutureProvider.autoDispose.family((
   ref,
-  BaseItemDto item,
+  BaseItemId id,
 ) {
+  if (GetIt.instance<BackendRegistry>().forItemId(id) is! JellyfinBackend) {
+    return Future.value(null);
+  }
+  return GetIt.instance<JellyfinApiHelper>()
+      .getItemById(id)
+      .then((response) {
+        return response.canDelete;
+      })
+      .catchError((_) {
+        return false;
+      });
+});
+
+final ProviderFamily<bool, BaseItemDto> canEditPlaylistProvider = Provider.autoDispose.family((ref, BaseItemDto item) {
   var itemType = BaseItemDtoType.fromItem(item);
   assert(itemType == BaseItemDtoType.playlist, "canEditPlaylistProvider should only be used with playlists");
 
@@ -78,22 +78,24 @@ final AutoDisposeProviderFamily<bool, BaseItemDto> canEditPlaylistProvider = Aut
   }
 });
 
-final AutoDisposeFutureProviderFamily<bool?, BaseItemId> _canEditPlaylistAsyncProvider =
-    AutoDisposeFutureProviderFamily((ref, BaseItemId id) {
-      if (GetIt.instance<BackendRegistry>().forItemId(id) is! JellyfinBackend) {
-        return Future.value(null);
-      }
-      return GetIt.instance<JellyfinApiHelper>()
-          .getPlaylistUser(id)
-          .then((response) {
-            return response.canEdit;
-          })
-          .catchError((_) {
-            return false;
-          });
-    });
+final FutureProviderFamily<bool?, BaseItemId> _canEditPlaylistAsyncProvider = FutureProvider.autoDispose.family((
+  ref,
+  BaseItemId id,
+) {
+  if (GetIt.instance<BackendRegistry>().forItemId(id) is! JellyfinBackend) {
+    return Future.value(null);
+  }
+  return GetIt.instance<JellyfinApiHelper>()
+      .getPlaylistUser(id)
+      .then((response) {
+        return response.canEdit;
+      })
+      .catchError((_) {
+        return false;
+      });
+});
 
-final AutoDisposeProviderFamily<bool, BaseItemDto> canEditMetadataProvider = AutoDisposeProviderFamily((ref, item) {
+final ProviderFamily<bool, BaseItemDto> canEditMetadataProvider = Provider.autoDispose.family((ref, BaseItemDto item) {
   // editing metadata while offline (e.g., through caching or edit queues) probably isn't a good idea
   bool offline = ref.watch(finampSettingsProvider.isOffline);
   if (offline) {
@@ -106,7 +108,7 @@ final AutoDisposeProviderFamily<bool, BaseItemDto> canEditMetadataProvider = Aut
   return serverReturn ?? false;
 });
 
-final AutoDisposeFutureProvider<bool> _canEditMetadataAsyncProvider = AutoDisposeFutureProvider((ref) {
+final FutureProvider<bool> _canEditMetadataAsyncProvider = FutureProvider.autoDispose((ref) {
   return GetIt.instance<JellyfinApiHelper>()
       .getUser()
       .then((response) {

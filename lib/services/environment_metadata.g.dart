@@ -1,9 +1,8 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: deprecated_member_use_from_same_package, strict_raw_type
+// ignore_for_file: deprecated_member_use_from_same_package, strict_raw_type, unused_element, unused_local_variable
 
 // dart format off
-
 
 part of 'environment_metadata.dart';
 

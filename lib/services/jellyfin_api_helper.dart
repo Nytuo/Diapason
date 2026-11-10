@@ -17,7 +17,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_user_certificates_android/flutter_user_certificates_android.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/io_client.dart' as http;
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -1147,7 +1147,7 @@ class JellyfinApiHelper {
     List<String> builtPath = List<String>.from(parsedBaseUrl.pathSegments);
     builtPath.addAll(["Items", item.imageId!, "Images", "Primary"]);
     final Map<String, dynamic> queryParams = {
-      if (format != null) "format": format,
+      "format": ?format,
       if (quality != null) "quality": quality.toString(),
       if (maxWidth != null) "MaxWidth": maxWidth.toString(),
       if (maxHeight != null) "MaxHeight": maxHeight.toString(),
@@ -1184,7 +1184,7 @@ class JellyfinApiHelper {
       userInfo: baseUrl.userInfo,
       pathSegments: builtPath,
       queryParameters: {
-        if (format != null) "format": format,
+        "format": ?format,
         if (quality != null) "quality": quality.toString(),
         if (maxWidth != null) "MaxWidth": maxWidth.toString(),
         if (maxHeight != null) "MaxHeight": maxHeight.toString(),

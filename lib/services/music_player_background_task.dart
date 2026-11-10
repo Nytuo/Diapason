@@ -1,3 +1,4 @@
+// ignore_for_file: experimental_member_use (audio_session's AudioDeviceType, see _bluetoothOutputTypes)
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -16,7 +17,6 @@ import 'package:diapason/services/connect/remote_playback.dart';
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/stream_cache_service.dart';
 import 'package:diapason/services/youtube_service.dart';
-import 'package:hive_ce/hive.dart';
 import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:diapason/models/jellyfin_models.dart' as jellyfin_models;
 import 'package:diapason/services/current_track_metadata_provider.dart';
@@ -133,6 +133,13 @@ class PlayerVolumeController {
     return _player.setVolume(totalVol.clamp(0.0, 1.0));
   }
 }
+
+// AudioDeviceType is marked experimental in audio_session; it is the only way to tell Bluetooth outputs apart.
+const _bluetoothOutputTypes = {
+  AudioDeviceType.bluetoothA2dp,
+  AudioDeviceType.bluetoothSco,
+  AudioDeviceType.bluetoothLe,
+};
 
 /// This provider handles the currently playing music so that multiple widgets
 /// can control music.
@@ -488,11 +495,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
         _outputLogger.info('Devices removed: ${event.devicesRemoved}');
 
         final addedBluetoothOutputDevices = event.devicesAdded.where(
-          (device) =>
-              device.isOutput &&
-              (device.type == AudioDeviceType.bluetoothA2dp ||
-                  device.type == AudioDeviceType.bluetoothSco ||
-                  device.type == AudioDeviceType.bluetoothLe),
+          (device) => device.isOutput && _bluetoothOutputTypes.contains(device.type),
         );
         if (addedBluetoothOutputDevices.isNotEmpty && FinampSettingsHelper.finampSettings.resumeOnBluetoothConnect) {
           _audioServiceBackgroundTaskLogger.info(
@@ -627,7 +630,6 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     _setupCrossfade();
     _setupStreamCacheProgressTracking();
     _setupDurationReconciliation();
-    _setupFlacSeekWarning();
     _setupStuckAtEndWatchdog();
 
     if (AppleTvAudioChannel.isSupported) {
@@ -778,32 +780,6 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     _pushTvPlaybackState();
   }
 
-  void _setupFlacSeekWarning() {
-    if (!Platform.isIOS) return;
-
-    // Persisted so the notice is shown once ever, not once per session.
-    var warned = false;
-    mediaItem.listen((item) async {
-      if (warned || item == null) return;
-      final json = item.extras?["itemJson"] as Map<String, dynamic>?;
-      if (json == null) return;
-      if (item.extras?["shouldTranscode"] as bool? ?? false) return;
-
-      final container = jellyfin_models.BaseItemDto.fromJson(json).container;
-      if (container?.toLowerCase() != "flac") return;
-
-      warned = true;
-      final noticeBox = await Hive.openBox<bool>("OneTimeNotices");
-      if (noticeBox.get("flacSeekWarningIos") ?? false) return;
-      await noticeBox.put("flacSeekWarningIos", true);
-      _audioServiceBackgroundTaskLogger.warning(
-        "Playing a FLAC on iOS ('${item.title}'): AVFoundation mis-seeks this container, "
-        "so seeking will be inaccurate and playback can run past the end of the track.",
-      );
-      GlobalSnackbar.message((scaffold) => AppLocalizations.of(scaffold)!.flacSeekWarningIos);
-    });
-  }
-
   AudioPlayer _buildPlayer({required AudioPipeline audioPipeline, required Duration maxBufferDuration}) {
     return AudioPlayer(
       maxSkipsOnError: 0,
@@ -858,7 +834,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     DateTime? atEndSince;
     int? atEndIndex;
     Timer.periodic(const Duration(milliseconds: 500), (_) async {
-      if (!_player.playing || _transition?.running == true || RemotePlayback.isForwarding) {
+      if (!_player.playing || (_transition?.running ?? false) || RemotePlayback.isForwarding) {
         atEndSince = null;
         return;
       }
@@ -2271,7 +2247,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
           FinampSettingsHelper.finampSettings.volumeNormalizationMode != VolumeNormalizationMode.hybrid) {
         return;
       }
-      if (previous?.valueOrNull?.parentNormalizationGain != next.valueOrNull?.parentNormalizationGain) {
+      if (previous?.value?.parentNormalizationGain != next.value?.parentNormalizationGain) {
         _applyVolumeNormalization(mediaItem.valueOrNull);
       }
     });
@@ -2500,10 +2476,7 @@ double? getGainForCurrentPlayback(MediaItem currentTrack, jellyfin_models.BaseIt
       // Requires that provided arguments are the only fields of request,
       // along with `includeLyrics` always being true in currentTrackMetadataProvider
       // Otherwise, use code commented above
-      final parentNormalizationGain = providerContainer
-          .read(metadataProvider(baseItem))
-          .valueOrNull
-          ?.parentNormalizationGain;
+      final parentNormalizationGain = providerContainer.read(metadataProvider(baseItem)).value?.parentNormalizationGain;
 
       effectiveGainChange =
           parentNormalizationGain ??
