@@ -378,23 +378,32 @@ class _Shelf extends StatelessWidget {
   }
 }
 
-class SearchSourceSwitcher extends StatelessWidget {
-  const SearchSourceSwitcher({super.key, required this.youtube, required this.onChanged});
+enum SearchSource { all, library, youtube }
 
-  final bool youtube;
-  final ValueChanged<bool> onChanged;
+class SearchSourceSwitcher extends StatelessWidget {
+  const SearchSourceSwitcher({super.key, required this.source, required this.onChanged, this.showYouTube = true});
+
+  final SearchSource source;
+  final bool showYouTube;
+  final ValueChanged<SearchSource> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 4.0),
-      child: SegmentedButton<bool>(
+      child: SegmentedButton<SearchSource>(
         showSelectedIcon: false,
-        segments: const [
-          ButtonSegment(value: false, icon: Icon(TablerIcons.books), label: Text("Library")),
-          ButtonSegment(value: true, icon: Icon(TablerIcons.brand_youtube), label: Text("YouTube")),
+        segments: [
+          const ButtonSegment(value: SearchSource.all, icon: Icon(TablerIcons.layout_grid), label: Text("All")),
+          const ButtonSegment(value: SearchSource.library, icon: Icon(TablerIcons.books), label: Text("Filter")),
+          if (showYouTube)
+            const ButtonSegment(
+              value: SearchSource.youtube,
+              icon: Icon(TablerIcons.brand_youtube),
+              label: Text("YouTube"),
+            ),
         ],
-        selected: {youtube},
+        selected: {source},
         onSelectionChanged: (selection) => onChanged(selection.first),
       ),
     );

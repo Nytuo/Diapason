@@ -558,6 +558,16 @@ class SubsonicBackend implements MediaBackend {
   }
 
   @override
+  Future<void> deleteItem(BaseItemId id, {required bool isPlaylist}) async {
+    if (!isPlaylist) {
+      throw UnsupportedError("${config.name} only supports deleting playlists.");
+    }
+    if (await _get("deletePlaylist", {"id": id.nativeId}) == null) {
+      throw Exception("${config.name} refused to delete the playlist.");
+    }
+  }
+
+  @override
   Future<void> reorderPlaylist(BaseItemDto playlist, List<BaseItemId> orderedItemIds) async {
     final current = await _children(playlist, "Audio");
     await _get("updatePlaylist", {

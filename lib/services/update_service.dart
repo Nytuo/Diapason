@@ -145,7 +145,14 @@ class UpdateService {
       }
     }
     if (candidates.isEmpty) return null;
-    if (!Platform.isAndroid) {
+    if (Platform.isAndroid) {
+      // Releases carry the universal APK and a smaller Android TV one
+      // (..._androidtv.apk, arm only). Don't depend on asset order to avoid
+      // handing the TV build to a phone.
+      for (final entry in candidates.entries) {
+        if (!entry.key.contains("androidtv")) return entry.value;
+      }
+    } else {
       for (final token in _archTokens) {
         for (final entry in candidates.entries) {
           if (entry.key.contains(token)) return entry.value;

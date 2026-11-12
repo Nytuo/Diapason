@@ -20,9 +20,25 @@ Diapason changes, all on Apple platforms (`just_audio/darwin`):
   The platform interface gains the matching equalizer request/response.
 - tvOS build (`just_audio/tvos`, its `Classes` is a symlink to the Darwin
   sources).
-- `UriAudioSource.m`: `AVURLAssetPreferPreciseDurationAndTimingKey` defaults
-  to YES. Without it AVFoundation seeks FLAC by a bitrate estimate and keeps
-  playing far past the end of the track.
+- `UriAudioSource.m`: `AVURLAssetPreferPreciseDurationAndTimingKey` is YES
+  for `file://` URIs only. Without it AVFoundation seeks FLAC by a bitrate
+  estimate and keeps playing past the end of the track. Not for http(s) / the
+  LockCachingAudioSource proxy: scanning a file that is still downloading froze
+  the UI and played silent gaps.
+- `LockCachingAudioSource(waitForFullDownload: true)`: the file is downloaded
+  and served by `lib/background_cache_server.dart`, a loopback HTTP server in
+  its own isolate, instead of the main-isolate proxy. Player requests wait
+  until the file is cached, then are answered from it (with ranges), and the
+  source asks AVFoundation for precise timing
+  (`StreamAudioSource.preferPreciseTiming`). Used for FLAC: accurate seeks,
+  and neither the download nor streaming the file to AVFoundation touches the
+  UI isolate. Only progress messages cross back.
+- `LockCachingAudioSource`: byte-range requests that arrive after the last
+  download chunk are served from the finished cache file (they used to hang
+  forever), a request unanswered for 90 s fails instead of hanging the player,
+  a failing client connection no longer restarts a download that is still
+  running (two writers corrupted the cache file), and a dead download is
+  restartable.
 - `LockCachingAudioSource` is no longer marked `@experimental`.
 
 `just_audio_platform_interface` is also pinned through `dependency_overrides`,

@@ -83,6 +83,18 @@ Future<(List<BaseItemDto>, List<BaseItemDto>)> getSortedPlaylistTracks(
     }).toList();
   }
 
+  final query = sortConfig.searchQuery?.toLowerCase();
+  if (query != null) {
+    playlistAllTracksSorted = playlistAllTracksSorted.where((track) {
+      return [
+        track.name,
+        track.album,
+        track.albumArtist,
+        ...?track.artists,
+      ].any((field) => field != null && field.toLowerCase().contains(query));
+    }).toList();
+  }
+
   if (sortConfig.favoritesFilter) {
     playlistAllTracksSorted = playlistAllTracksSorted.where((track) {
       return track.userData?.isFavorite ?? true;

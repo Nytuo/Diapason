@@ -2305,7 +2305,15 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
             if (cacheFile.existsSync() && !File("${cacheFile.path}.part").existsSync() && cacheFile.lengthSync() > 0) {
               return AudioSource.file(cacheFile.path, tag: queueItem);
             }
-            return LockCachingAudioSource(source.uri, cacheFile: cacheFile, headers: headers, tag: queueItem);
+            return LockCachingAudioSource(
+              source.uri,
+              cacheFile: cacheFile,
+              headers: headers,
+              tag: queueItem,
+              // AVFoundation seeks a FLAC by a bitrate estimate unless it can scan the whole file, which is only
+              // safe on a finished download: load in the background (progress bar), then play from the cache.
+              waitForFullDownload: item.container?.toLowerCase() == "flac",
+            );
           } catch (e, stack) {
             _audioServiceBackgroundTaskLogger.warning(
               "Could not cache '${queueItem.item.title}'; streaming it",

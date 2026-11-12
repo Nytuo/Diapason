@@ -5,7 +5,7 @@ import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/screens/album_screen.dart';
 import 'package:diapason/services/downloads_service.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
-import 'package:diapason/services/jellyfin_api_helper.dart';
+import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
@@ -51,7 +51,6 @@ Future<void> askBeforeDeleteFromServerAndDevice(
   DownloadItemStatus status = GetIt.instance<DownloadsService>().getStatus(stub, null);
   String type = stub.baseItemType.name;
 
-  final jellyfinApiHelper = GetIt.instance<JellyfinApiHelper>();
   final downloadsService = GetIt.instance<DownloadsService>();
 
   final deleteType = status.toDeleteType();
@@ -63,7 +62,9 @@ Future<void> askBeforeDeleteFromServerAndDevice(
       confirmButtonText: AppLocalizations.of(context)!.deleteFromTargetConfirmButton("server"),
       onConfirmed: () async {
         try {
-          await jellyfinApiHelper.deleteItem(BaseItemId(stub.id));
+          final backend = GetIt.instance<BackendRegistry>().forItemId(BaseItemId(stub.id));
+          if (backend == null) throw StateError("No source is registered for item '${stub.id}'.");
+          await backend.deleteItem(BaseItemId(stub.id), isPlaylist: stub.baseItemType == BaseItemDtoType.playlist);
           GlobalSnackbar.message((scaffold) => AppLocalizations.of(scaffold)!.itemDeletedSnackbar("server", type));
 
           if (status.isRequired) {

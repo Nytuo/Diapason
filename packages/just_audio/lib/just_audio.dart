@@ -15,6 +15,8 @@ import 'package:rxdart/rxdart.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:uuid/uuid.dart';
 
+import 'background_cache_server.dart';
+
 const _uuid = Uuid();
 
 JustAudioPlatform? _pluginPlatformCache;
@@ -3303,6 +3305,11 @@ abstract class StreamAudioSource extends IndexedAudioSource {
   Uri? _uri;
   StreamAudioSource({dynamic tag}) : super(tag: tag);
 
+  /// Diapason: ask AVFoundation (Darwin) for precise duration and timing. Only
+  /// safe when [request] serves complete, static data: scanning a file that is
+  /// still growing freezes loading.
+  bool get preferPreciseTiming => false;
+
   @override
   Future<void> _onLoad() async {
     await super._onLoad();
@@ -3311,10 +3318,19 @@ abstract class StreamAudioSource extends IndexedAudioSource {
       _uri ??= _encodeDataUrl(await base64.encoder.bind(response.stream).join(),
           response.contentType);
     } else {
-      await _player!._proxy.ensureRunning();
-      _uri = _player!._proxy.addStreamAudioSource(this);
+      final custom = await _provideUri();
+      if (custom != null) {
+        _uri = custom;
+      } else {
+        await _player!._proxy.ensureRunning();
+        _uri = _player!._proxy.addStreamAudioSource(this);
+      }
     }
   }
+
+  /// Diapason: lets a subclass supply its own loopback URL (served outside the
+  /// UI isolate) instead of going through the main-isolate proxy.
+  Future<Uri?> _provideUri() async => null;
 
   /// Used by the player to request a byte range of encoded audio data in small
   /// chunks, from byte position [start] inclusive (or from the beginning of the
@@ -3325,7 +3341,16 @@ abstract class StreamAudioSource extends IndexedAudioSource {
 
   @override
   AudioSourceMessage _toMessage() => ProgressiveAudioSourceMessage(
-      id: _id, uri: _uri.toString(), headers: null, tag: tag);
+      id: _id,
+      uri: _uri.toString(),
+      headers: null,
+      tag: tag,
+      options: preferPreciseTiming
+          ? const ProgressiveAudioSourceOptions(
+                  darwinAssetOptions: DarwinAssetOptions(
+                      preferPreciseDurationAndTiming: true))
+              ._toMessage()
+          : null);
 }
 
 /// The response for a [StreamAudioSource]. This API is experimental.
@@ -3377,6 +3402,44 @@ class LockCachingAudioSource extends StreamAudioSource {
   final Uri uri;
   final Map<String, String>? headers;
   final Future<File> cacheFile;
+
+  /// Diapason: if true, the file is downloaded and served by a separate
+  /// isolate ([BackgroundCacheServer]) instead of this proxy: the player's
+  /// requests wait until the whole file is cached (see
+  /// [downloadProgressStream]) and are then answered from the finished file
+  /// with precise timing. Needed for FLAC, which AVFoundation otherwise seeks
+  /// by a bitrate estimate. Nothing of it runs on the UI isolate.
+  final bool waitForFullDownload;
+
+  @override
+  bool get preferPreciseTiming => waitForFullDownload;
+
+  String? _backgroundId;
+
+  @override
+  Future<Uri?> _provideUri() async {
+    if (!waitForFullDownload) return null;
+    final file = await cacheFile;
+    if (_backgroundId != null) BackgroundCacheServer.instance.unregister(_backgroundId!);
+    final id = _backgroundId = const Uuid().v4();
+    return BackgroundCacheServer.instance.register(
+      id: id,
+      remote: uri,
+      headers: headers,
+      cachePath: file.path,
+      userAgent: _player?._userAgent,
+      onProgress: (m) {
+        if (m.error != null) {
+          _downloadProgressSubject.add(0.0);
+        } else if (m.done) {
+          _downloadProgressSubject.add(1.0);
+        } else if (m.total != null && m.total! > 0) {
+          _downloadProgressSubject.add(m.received / m.total!);
+        }
+      },
+    );
+  }
+
   int _progress = 0;
   final _requests = <_StreamingByteRangeRequest>[];
   final _downloadProgressSubject = BehaviorSubject<double>();
@@ -3392,6 +3455,7 @@ class LockCachingAudioSource extends StreamAudioSource {
     this.uri, {
     this.headers,
     File? cacheFile,
+    this.waitForFullDownload = false,
     dynamic tag,
   })  : cacheFile =
             cacheFile != null ? Future.value(cacheFile) : _getCacheFile(uri),
@@ -3473,6 +3537,15 @@ class LockCachingAudioSource extends StreamAudioSource {
   /// entire file continues in parallel.
   Future<HttpClientResponse> _fetch() async {
     _downloading = true;
+    try {
+      return await _fetchStream();
+    } catch (_) {
+      _downloading = false;
+      rethrow;
+    }
+  }
+
+  Future<HttpClientResponse> _fetchStream() async {
     final cacheFile = await this.cacheFile;
     final partialCacheFile = await _partialCacheFile;
 
@@ -3633,8 +3706,25 @@ class LockCachingAudioSource extends StreamAudioSource {
       await subscription.cancel();
       httpClient.close();
       _downloading = false;
+      // Diapason: requests that arrived after the last chunk would never be
+      // answered (the data callback no longer runs) and the player would wait
+      // on them forever. Serve them from the finished cache file.
+      final stranded = _requests.toList();
+      _requests.clear();
+      for (final request in stranded) {
+        try {
+          request.complete(await _cachedResponse(cacheFile, request.start, request.end));
+        } catch (e, st) {
+          request.fail(e, st);
+        }
+      }
     }, onError: (Object e, StackTrace stackTrace) async {
-      (await _partialCacheFile).deleteSync();
+      // The download is gone: allow the next request to start a fresh one
+      // instead of waiting forever on this dead response.
+      _response = null;
+      try {
+        (await _partialCacheFile).deleteSync();
+      } catch (_) {}
       httpClient.close();
       // Fail all pending requests
       for (final req in _requests) {
@@ -3651,19 +3741,23 @@ class LockCachingAudioSource extends StreamAudioSource {
     return response;
   }
 
+  Future<StreamAudioResponse> _cachedResponse(File cacheFile, int? start, int? end) async {
+    final sourceLength = cacheFile.lengthSync();
+    return StreamAudioResponse(
+      rangeRequestsSupported: true,
+      sourceLength: start != null ? sourceLength : null,
+      contentLength: (end ?? sourceLength) - (start ?? 0),
+      offset: start,
+      contentType: await _readCachedMimeType(),
+      stream: cacheFile.openRead(start, end).asBroadcastStream(),
+    );
+  }
+
   @override
   Future<StreamAudioResponse> request([int? start, int? end]) async {
     final cacheFile = await this.cacheFile;
     if (cacheFile.existsSync()) {
-      final sourceLength = cacheFile.lengthSync();
-      return StreamAudioResponse(
-        rangeRequestsSupported: true,
-        sourceLength: start != null ? sourceLength : null,
-        contentLength: (end ?? sourceLength) - (start ?? 0),
-        offset: start,
-        contentType: await _readCachedMimeType(),
-        stream: cacheFile.openRead(start, end).asBroadcastStream(),
-      );
+      return _cachedResponse(cacheFile, start, end);
     }
     final byteRangeRequest = _StreamingByteRangeRequest(start, end);
     _requests.add(byteRangeRequest);
@@ -3677,8 +3771,18 @@ class LockCachingAudioSource extends StreamAudioSource {
       }
       return Future<HttpClientResponse>.error(error as Object, stackTrace);
     });
-    return byteRangeRequest.future.then((response) {
+    // Diapason: never let the player wait forever on a proxy request; a
+    // timeout surfaces as a load error instead of a frozen player.
+    return byteRangeRequest.future.timeout(const Duration(seconds: 90), onTimeout: () {
+      _requests.remove(byteRangeRequest);
+      throw TimeoutException('LockCachingAudioSource request timed out');
+    }).then((response) {
       response.stream.listen((event) {}, onError: (Object e, StackTrace st) {
+        // Diapason: a single client connection failing (AVFoundation aborts
+        // them when tracks are skipped) must not touch the shared download.
+        // Restarting it while it still runs would start a second writer on the
+        // same .part file and corrupt it (heard as silent gaps in the track).
+        if (_downloading) return;
         // So that we can restart later
         _response = null;
         // Cancel any pending request

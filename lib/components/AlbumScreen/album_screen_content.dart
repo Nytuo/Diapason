@@ -46,6 +46,7 @@ class _AlbumScreenContentState extends ConsumerState<AlbumScreenContent> {
   //bool get disableDownloads => sortAndFilterController.value.filters.isNotEmpty;
 
   StreamSubscription<void>? _listener;
+  String _trackQuery = "";
 
   @override
   void initState() {
@@ -70,7 +71,9 @@ class _AlbumScreenContentState extends ConsumerState<AlbumScreenContent> {
 
     final parentIsPlaylist = BaseItemDtoType.fromItem(widget.parent) == BaseItemDtoType.playlist;
 
-    final sortSetting = ref.watch(resolveSortProvider(sortAndFilterController));
+    final sortSetting = ref
+        .watch(resolveSortProvider(sortAndFilterController))
+        .copyWithSearch(parentIsPlaylist && _trackQuery.trim().isNotEmpty ? _trackQuery : null);
     final disableDownloads = sortSetting.filters.isNotEmpty && parentIsPlaylist;
 
     final tracksAsync = parentIsPlaylist
@@ -158,6 +161,10 @@ class _AlbumScreenContentState extends ConsumerState<AlbumScreenContent> {
             );
           },
         ),
+        if (parentIsPlaylist)
+          SliverToBoxAdapter(
+            child: PlaylistTrackSearchField(onChanged: (value) => setState(() => _trackQuery = value)),
+          ),
         if (!isLoading &&
             displayChildren.length > 1 &&
             childrenPerDisc.length > 1) // show headers only for multi disc albums
@@ -223,6 +230,30 @@ class _AlbumScreenContentState extends ConsumerState<AlbumScreenContent> {
         else
           SliverFillRemaining(child: Center(child: CircularProgressIndicator.adaptive())),
       ],
+    );
+  }
+}
+
+/// Small "search in this playlist" field shown above a playlist's tracks.
+class PlaylistTrackSearchField extends StatelessWidget {
+  const PlaylistTrackSearchField({super.key, required this.onChanged});
+
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: TextField(
+        onChanged: onChanged,
+        textInputAction: TextInputAction.search,
+        decoration: InputDecoration(
+          isDense: true,
+          hintText: "Search in playlist",
+          prefixIcon: const Icon(TablerIcons.search, size: 18),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
+        ),
+      ),
     );
   }
 }

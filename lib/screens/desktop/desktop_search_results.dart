@@ -1,4 +1,5 @@
 import 'package:diapason/components/MusicScreen/music_screen_tab_view.dart';
+import 'package:diapason/components/MusicScreen/search_all_results.dart';
 import 'package:diapason/components/MusicScreen/youtube_results.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/youtube/youtube_availability.dart';
@@ -29,7 +30,8 @@ class _DesktopSearchResultsState extends ConsumerState<DesktopSearchResults> {
   ];
 
   final Map<ContentType, SortAndFilterController> _controllers = {};
-  ContentType _active = ContentType.albums;
+  // `mixed` stands for the "All" tab.
+  ContentType _active = ContentType.mixed;
   bool _youtube = FinampSettingsHelper.finampSettings.youtubeSearchByDefault;
 
   QueueItemSource get _source => QueueItemSource.rawId(
@@ -55,6 +57,7 @@ class _DesktopSearchResultsState extends ConsumerState<DesktopSearchResults> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
+              _segment(p, ContentType.mixed, "All", TablerIcons.layout_grid),
               for (final tab in _tabs) _segment(p, tab.$1, tab.$2, tab.$3),
               if (ref.watch(youTubeAvailableProvider)) ...[
                 const SizedBox(width: 8),
@@ -68,6 +71,11 @@ class _DesktopSearchResultsState extends ConsumerState<DesktopSearchResults> {
               ? Material(
                   type: MaterialType.transparency,
                   child: YouTubeSearchResults(query: widget.query),
+                )
+              : _active == ContentType.mixed
+              ? Material(
+                  type: MaterialType.transparency,
+                  child: SearchAllResults(query: widget.query, onSeeAll: (t) => setState(() => _active = t)),
                 )
               : _results(_active),
         ),

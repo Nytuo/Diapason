@@ -261,6 +261,11 @@ class MpdBackend implements MediaBackend {
       throw UnsupportedError("MPD does not support playlists here.");
 
   @override
+  Future<void> deleteItem(BaseItemId id, {required bool isPlaylist}) {
+    throw UnsupportedError("Deleting items is not supported by this source.");
+  }
+
+  @override
   Future<void> reorderPlaylist(BaseItemDto playlist, List<BaseItemId> orderedItemIds) =>
       throw UnsupportedError("MPD does not support playlists here.");
 

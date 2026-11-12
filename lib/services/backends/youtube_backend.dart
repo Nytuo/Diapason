@@ -80,6 +80,11 @@ class YouTubeBackend implements MediaBackend {
   }
 
   @override
+  Future<void> deleteItem(BaseItemId id, {required bool isPlaylist}) {
+    throw UnsupportedError("Deleting items is not supported by this source.");
+  }
+
+  @override
   Future<void> reorderPlaylist(BaseItemDto playlist, List<BaseItemId> orderedItemIds) {
     throw UnsupportedError("${config.name} does not support playlists.");
   }

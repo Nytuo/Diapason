@@ -207,6 +207,9 @@ class JellyfinBackend implements MediaBackend {
   );
 
   @override
+  Future<void> deleteItem(BaseItemId id, {required bool isPlaylist}) => _api.deleteItem(id);
+
+  @override
   Future<void> reorderPlaylist(BaseItemDto playlist, List<BaseItemId> orderedItemIds) => _api.updatePlaylist(
     itemId: playlist.id,
     newPlaylist: NewPlaylist(ids: orderedItemIds, userId: GetIt.instance<FinampUserHelper>().currentUserId),

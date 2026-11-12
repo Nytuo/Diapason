@@ -2,6 +2,7 @@ import 'package:diapason/services/shortcuts/shortcut_service.dart';
 import 'dart:async';
 import 'package:diapason/components/MusicScreen/discover_tab_view.dart';
 import 'package:diapason/components/MusicScreen/downloads_tab_view.dart';
+import 'package:diapason/components/MusicScreen/search_all_results.dart';
 import 'package:diapason/components/MusicScreen/youtube_results.dart';
 import 'package:diapason/services/youtube/youtube_availability.dart';
 import 'package:diapason/components/MusicScreen/youtube_tab_view.dart';
@@ -62,6 +63,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
   bool isSearching = false;
 
   bool searchYouTube = false;
+  bool searchAll = true;
 
   Timer? _searchHistoryDebounce;
   TextEditingController textEditingController = TextEditingController();
@@ -92,6 +94,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
       searchQuery = null;
       isSearching = false;
       searchYouTube = false;
+      searchAll = true;
     });
   }
 
@@ -299,6 +302,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
           tabController: _tabController,
           onSearch: () => setState(() {
             isSearching = true;
+            searchAll = true;
             searchYouTube =
                 FinampSettingsHelper.finampSettings.youtubeSearchByDefault && ref.read(youTubeAvailableProvider);
             if (_tabController != null &&
@@ -419,7 +423,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
               }).toList(),
             );
 
-            final child = _searchBody(tabs);
+            final child = _searchBody(tabs, sortedTabs.toList());
 
             // This tracks whether the latest scroll was the tabbar or a child widget.
             // The drawer open gesture ignores the gesture arena because it always looses to the tab view, and instead
@@ -461,13 +465,45 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
 
   /// While searching, shows a Library | YouTube switch under the search field and
   /// swaps the tab content for YouTube results when YouTube is picked.
-  Widget _searchBody(Widget libraryContent) {
-    if (!isSearching || widget.singleTabConfig != null || !ref.watch(youTubeAvailableProvider)) return libraryContent;
+  Widget _searchBody(Widget libraryContent, List<ContentType> sortedTabs) {
+    if (!isSearching || widget.singleTabConfig != null) return libraryContent;
+    final youtubeAvailable = ref.watch(youTubeAvailableProvider);
+    final source = searchYouTube && youtubeAvailable
+        ? SearchSource.youtube
+        : searchAll
+        ? SearchSource.all
+        : SearchSource.library;
     return Column(
       children: [
-        SearchSourceSwitcher(youtube: searchYouTube, onChanged: (value) => setState(() => searchYouTube = value)),
+        SearchSourceSwitcher(
+          source: source,
+          showYouTube: youtubeAvailable,
+          onChanged: (value) => setState(() {
+            searchYouTube = value == SearchSource.youtube;
+            searchAll = value == SearchSource.all;
+          }),
+        ),
         Expanded(
-          child: searchYouTube ? Material(child: YouTubeSearchResults(query: searchQuery ?? "")) : libraryContent,
+          child: switch (source) {
+            SearchSource.youtube => Material(child: YouTubeSearchResults(query: searchQuery ?? "")),
+            SearchSource.all => Material(
+              child: SearchAllResults(
+                query: searchQuery ?? "",
+                // "See all" drops to the library filter view on the matching tab.
+                onSeeAll: (tab) {
+                  var index = sortedTabs.indexOf(tab);
+                  if (index < 0 && tab == ContentType.performingArtists) {
+                    index = sortedTabs.indexWhere(
+                      (t) => t == ContentType.albumArtists || t == ContentType.genericArtists,
+                    );
+                  }
+                  setState(() => searchAll = false);
+                  if (index >= 0) _tabController?.animateTo(index);
+                },
+              ),
+            ),
+            SearchSource.library => libraryContent,
+          },
         ),
       ],
     );

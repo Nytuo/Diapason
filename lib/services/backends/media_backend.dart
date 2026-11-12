@@ -66,6 +66,11 @@ abstract class MediaBackend {
     throw UnsupportedError("${config.name} does not support playlists.");
   }
 
+  /// Deletes an item (album, playlist or track) from the server.
+  Future<void> deleteItem(BaseItemId id, {required bool isPlaylist}) {
+    throw UnsupportedError("${config.name} does not support deleting items.");
+  }
+
   Future<void> reportPlaybackStart(BaseItemDto item, {String? playSessionId});
   Future<void> reportPlaybackProgress(
     BaseItemDto item, {

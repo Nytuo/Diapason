@@ -1,6 +1,7 @@
 import 'package:diapason/components/AlbumScreen/album_screen_content.dart';
 import 'package:diapason/components/album_image.dart';
 import 'package:diapason/components/MusicScreen/item_wrapper.dart';
+import 'package:diapason/components/MusicScreen/sort_and_filter_row.dart';
 import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
@@ -13,16 +14,31 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 
-class DesktopAlbumDetail extends ConsumerWidget {
+class DesktopAlbumDetail extends ConsumerStatefulWidget {
   const DesktopAlbumDetail({super.key, required this.parent});
 
   final BaseItemDto parent;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DesktopAlbumDetail> createState() => _DesktopAlbumDetailState();
+}
+
+class _DesktopAlbumDetailState extends ConsumerState<DesktopAlbumDetail> {
+  final _sortController = SortAndFilterController.trackSettings(ContentType.inPlaylist);
+  String _query = "";
+
+  BaseItemDto get parent => widget.parent;
+
+  @override
+  Widget build(BuildContext context) {
     final p = DesktopThemeScope.of(context);
     final isPlaylist = BaseItemDtoType.fromItem(parent) == BaseItemDtoType.playlist;
-    final tracksAsync = ref.watch(getAlbumOrPlaylistTracksProvider(parent));
+    final sortConfig = ref
+        .watch(resolveSortProvider(_sortController))
+        .copyWithSearch(isPlaylist && _query.trim().isNotEmpty ? _query : null);
+    final tracksAsync = isPlaylist
+        ? ref.watch(getSortedPlaylistTracksProvider(parent, sortConfig))
+        : ref.watch(getAlbumOrPlaylistTracksProvider(parent));
     final (allTracks, playableTracks) = tracksAsync.value ?? (null, null);
     final display = allTracks ?? [];
     final queue = playableTracks ?? [];
@@ -158,6 +174,42 @@ class DesktopAlbumDetail extends ConsumerWidget {
               ),
             ),
           ),
+          if (isPlaylist)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 320,
+                      child: TextField(
+                        onChanged: (v) => setState(() => _query = v),
+                        style: TextStyle(color: p.textPrimary, fontSize: 13),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          hintText: "Search in playlist",
+                          hintStyle: TextStyle(color: p.textTertiary),
+                          prefixIcon: Icon(TablerIcons.search, size: 16, color: p.textTertiary),
+                          filled: true,
+                          fillColor: p.surface,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Material(
+                        type: MaterialType.transparency,
+                        child: SortAndFilterRow(tabType: ContentType.inPlaylist, controller: _sortController),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           if (tracksAsync.isLoading)
             const SliverToBoxAdapter(
               child: Padding(

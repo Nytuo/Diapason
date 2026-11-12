@@ -30,6 +30,10 @@ final ProviderFamily<bool, BaseItemDto> canDeleteFromServerProvider = Provider.a
   if (![BaseItemDtoType.album, BaseItemDtoType.playlist, BaseItemDtoType.track].contains(itemType)) {
     return false;
   }
+  // Only Jellyfin can delete arbitrary items; other servers (e.g. Subsonic/Navidrome) only support playlists.
+  if (!isPlaylist && GetIt.instance<BackendRegistry>().forItemId(item.id) is! JellyfinBackend) {
+    return false;
+  }
   bool? serverReturn = ref.watch(_canDeleteFromServerAsyncProvider(item.id)).value;
   if (serverReturn == null) {
     // fallback to allowing deletion even if the response is invalid, since the user might still be able to delete

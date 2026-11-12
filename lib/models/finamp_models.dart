@@ -4838,6 +4838,12 @@ class SortAndFilterConfiguration {
 
   bool get favoritesFilter => filters.firstWhereOrNull((x) => x.type == ItemFilterType.isFavorite) != null;
 
+  /// The current free-text search, if any (empty/blank counts as no search).
+  String? get searchQuery {
+    final query = filters.firstWhereOrNull((x) => x.type == ItemFilterType.searchTerm)?.extraString.trim();
+    return (query == null || query.isEmpty) ? null : query;
+  }
+
   SortAndFilterConfiguration copyWith({
     SortBy? sortBy,
     SortOrder? sortOrder,

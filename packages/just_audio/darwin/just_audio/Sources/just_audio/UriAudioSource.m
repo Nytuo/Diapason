@@ -34,14 +34,16 @@
     IndexedPlayerItem *item;
     NSMutableDictionary *assetOptions = [[NSMutableDictionary alloc] init];
 
-    // Diapason: ask for precise timing unless the caller says otherwise.
-    // Without it AVFoundation seeks FLAC (and VBR MP3) by estimating a byte
-    // offset from the average bitrate, lands tens of seconds away from the
-    // requested time while still reporting the requested time, and then
-    // plays far past the track's duration. Measured on real FLACs: up to
-    // 160 s of overrun without the key, under 1 s with it, and no measurable
-    // cost to time-to-ready, locally or over HTTP.
-    assetOptions[AVURLAssetPreferPreciseDurationAndTimingKey] = @YES;
+    // Diapason: ask for precise timing on local files unless the caller says
+    // otherwise. Without it AVFoundation seeks FLAC (and VBR MP3) by estimating
+    // a byte offset from the average bitrate and plays far past the track's
+    // duration. NOT for http(s) / the LockCachingAudioSource proxy: there it
+    // makes AVFoundation scan the whole file through the proxy while it is
+    // still downloading, which froze the UI when skipping tracks and played
+    // silent gaps. Once a track is fully cached it plays from a file://.
+    if ([uri hasPrefix:@"file://"]) {
+        assetOptions[AVURLAssetPreferPreciseDurationAndTimingKey] = @YES;
+    }
     if (_options != (id)[NSNull null]) {
         NSDictionary *darwinOptions = _options[@"darwinAssetOptions"];
         if (darwinOptions != nil && darwinOptions != (id)[NSNull null]) {

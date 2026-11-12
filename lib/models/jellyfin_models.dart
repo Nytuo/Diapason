@@ -3333,6 +3333,7 @@ enum SortBy {
           SortBy.runtime,
           SortBy.random,
         ];
+        if (type == BaseItemDtoType.playlist) options.insert(2, SortBy.premiereDate);
       case BaseItemDtoType.collection:
         options = [SortBy.sortName, SortBy.datePlayed, SortBy.dateCreated, SortBy.runtime, SortBy.random];
       case BaseItemDtoType.genre:
