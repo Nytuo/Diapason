@@ -2024,6 +2024,23 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     return refreshPlaybackStateAndMediaNotification();
   }
 
+  bool _pendingLoad = false;
+
+  /// Shows the player's normal loading state immediately, before the player has
+  /// actually started loading. Used when resolving a stream takes a while (yt-dlp)
+  /// so the UI reacts to the tap. Real player events can't undo it: it stays until
+  /// [endPendingLoad] (the player has taken over, or starting failed).
+  void showPendingLoad() {
+    _pendingLoad = true;
+    unawaited(refreshPlaybackStateAndMediaNotification());
+  }
+
+  void endPendingLoad() {
+    if (!_pendingLoad) return;
+    _pendingLoad = false;
+    unawaited(refreshPlaybackStateAndMediaNotification());
+  }
+
   Future<void> refreshPlaybackStateAndMediaNotification() async {
     // re-trigger the playbackState update to update the notification
     final event = _transformEvent(_player.playbackEvent);
@@ -2193,11 +2210,11 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
           ? const {MediaAction.seek, MediaAction.seekForward, MediaAction.seekBackward}
           : {},
       androidCompactActionIndices: const [0, 1, 2],
-      processingState: processingState,
+      processingState: _pendingLoad ? AudioProcessingState.loading : processingState,
       playing: playing,
       //!!! use the current player position, since there might be a delay before this event is processed.
       // Do **not** use [event.updatePosition] or [event.bufferedPosition], since that could lead to a discontinuity in the playback position (resetting to 0) and cause incorrect history entries
-      updatePosition: reportedPosition,
+      updatePosition: _pendingLoad ? Duration.zero : reportedPosition,
       bufferedPosition: isTvOS ? reportedPosition : _player.bufferedPosition,
       speed: _player.speed,
       queueIndex: _player.shuffleModeEnabled && shuffleIndices.isNotEmpty && event.currentIndex != null

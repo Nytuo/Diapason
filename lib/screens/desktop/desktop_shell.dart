@@ -4,6 +4,10 @@ import 'package:diapason/components/YtDlp/youtube_setup_view.dart';
 import 'package:diapason/components/update_dialog.dart';
 import 'package:diapason/screens/analytics_settings_screen.dart';
 import 'package:diapason/services/updater_prefs.dart';
+import 'package:diapason/screens/desktop/desktop_command_palette.dart';
+import 'package:diapason/services/shortcuts/shortcut_service.dart';
+import 'package:flutter/services.dart';
+import 'package:get_it/get_it.dart';
 import 'package:diapason/screens/desktop/desktop_content.dart';
 import 'package:diapason/screens/desktop/desktop_fullscreen_player.dart';
 import 'package:diapason/screens/desktop/desktop_header_bar.dart';
@@ -31,19 +35,21 @@ class DesktopShell extends StatefulWidget {
 
 class _DesktopShellState extends State<DesktopShell> {
   DesktopNav _nav = DesktopNav.home;
-  final _searchController = TextEditingController();
   String _searchQuery = "";
   BaseItemDto? _openPlaylist;
   BaseItemDto? _detailItem;
   bool _detailIsArtist = false;
   bool _lyricsOpen = false;
   bool _fullscreen = false;
+  DesktopPalette? _palette;
+  ThemeData? _themeData;
   bool _miniMode = false;
   Size? _restoreSize;
 
   @override
   void initState() {
     super.initState();
+    HardwareKeyboard.instance.addHandler(_onKey);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) unawaited(AnalyticsConsentDialog.showIfNeeded(context));
     });
@@ -57,9 +63,49 @@ class _DesktopShellState extends State<DesktopShell> {
     });
   }
 
+  bool _onKey(KeyEvent event) {
+    if (event is! KeyDownEvent || event.logicalKey != LogicalKeyboardKey.keyK) return false;
+    final kb = HardwareKeyboard.instance;
+    if (!(kb.isMetaPressed || kb.isControlPressed) || !mounted) return false;
+    // Only when the shell itself is on top (not Settings, a dialog, ...).
+    if (ModalRoute.of(context)?.isCurrent != true) return false;
+    _openPalette();
+    return true;
+  }
+
+  void _openPalette() {
+    final result = ValueNotifier<String?>(_searchQuery);
+    unawaited(
+      showDesktopCommandPalette(
+        context,
+        result: result,
+        palette: _palette ?? DesktopPalette.fromScheme(Theme.of(context).colorScheme),
+        theme: _themeData ?? Theme.of(context),
+        initialQuery: _searchQuery,
+        actions: DesktopPaletteActions(
+          onGo: _select,
+          onOpenAlbum: (item) => _openDetail(item, isArtist: false),
+          onOpenArtist: (item) => _openDetail(item, isArtist: true),
+          onOpenPlaylist: _openPlaylistDetail,
+          onSearchAll: (q) {
+            if (GetIt.instance.isRegistered<ShortcutService>()) {
+              unawaited(GetIt.instance<ShortcutService>().recordSearch(q));
+            }
+            setState(() => _searchQuery = q);
+          },
+        ),
+      ).then((_) {
+        // Only now, with the palette gone, show what was typed in the header / results behind it.
+        final typed = result.value;
+        if (mounted && typed != null && typed != _searchQuery) setState(() => _searchQuery = typed);
+        result.dispose();
+      }),
+    );
+  }
+
   @override
   void dispose() {
-    _searchController.dispose();
+    HardwareKeyboard.instance.removeHandler(_onKey);
     super.dispose();
   }
 
@@ -69,7 +115,6 @@ class _DesktopShellState extends State<DesktopShell> {
       _nav = nav;
       _openPlaylist = null;
       _detailItem = null;
-      _searchController.clear();
       _searchQuery = "";
     });
   }
@@ -79,7 +124,6 @@ class _DesktopShellState extends State<DesktopShell> {
       _nav = DesktopNav.playlists;
       _openPlaylist = playlist;
       _detailItem = null;
-      _searchController.clear();
       _searchQuery = "";
     });
   }
@@ -91,7 +135,6 @@ class _DesktopShellState extends State<DesktopShell> {
       _openPlaylist = null;
       _detailItem = item;
       _detailIsArtist = isArtist;
-      _searchController.clear();
       _searchQuery = "";
     });
   }
@@ -126,10 +169,12 @@ class _DesktopShellState extends State<DesktopShell> {
   @override
   Widget build(BuildContext context) {
     return PlayerScreenTheme(
-      themeTransitionDuration: const Duration(milliseconds: 200),
+      themeTransitionDuration: Duration.zero,
       child: Builder(
         builder: (context) {
           final palette = DesktopPalette.fromScheme(Theme.of(context).colorScheme);
+          _palette = palette;
+          _themeData = Theme.of(context);
           return DesktopThemeScope(
             palette: palette,
             child: Scaffold(backgroundColor: palette.bg, body: _body(palette)),
@@ -171,12 +216,14 @@ class _DesktopShellState extends State<DesktopShell> {
                   children: [
                     DesktopHeaderBar(
                       title: _nav.label,
-                      searchController: _searchController,
-                      onSearchChanged: (v) => setState(() => _searchQuery = v),
+                      query: _searchQuery,
+                      onOpenSearch: _openPalette,
+                      onClearSearch: () => setState(() => _searchQuery = ""),
                     ),
                     Expanded(
                       child: DesktopSearchScope(
-                        query: _searchQuery,
+                        query: parseSearchQuery(_searchQuery).$2,
+                        type: parseSearchQuery(_searchQuery).$1,
                         child: DesktopContent(
                           nav: _nav,
                           openItem: _openPlaylist,

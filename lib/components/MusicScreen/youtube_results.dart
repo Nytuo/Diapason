@@ -4,6 +4,7 @@ import 'package:diapason/components/AlbumScreen/download_button.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/discovery/youtube_discover_service.dart';
+import 'package:diapason/services/music_player_background_task.dart';
 import 'package:diapason/services/queue_service.dart';
 import 'package:diapason/services/friendly_error.dart';
 import 'package:diapason/components/MusicScreen/youtube_upload_button.dart';
@@ -30,6 +31,10 @@ class YouTubeActions {
     int index = 0,
     String name = "YouTube",
   }) async {
+    // Resolving the stream through yt-dlp can take a few seconds: switch the player
+    // to its loading state right away instead of waiting for it to answer.
+    final handler = GetIt.instance<MusicPlayerBackgroundTask>();
+    handler.showPendingLoad();
     try {
       await GetIt.instance<QueueService>().startPlayback(
         items: tracks,
@@ -38,6 +43,8 @@ class YouTubeActions {
       );
     } catch (e, stack) {
       _toast(context, "Couldn't play that. ${FriendlyError.reportGlobal("Play YouTube track", e, stack)}");
+    } finally {
+      handler.endPendingLoad();
     }
   }
 
@@ -88,7 +95,9 @@ class YouTubeThumbnail extends StatelessWidget {
         headers: youtube.imageHeaders.isEmpty ? null : youtube.imageHeaders,
         fit: fit,
         // Decode at the size shown (YouTube thumbnails can be up to 1280px wide).
-        cacheWidth: width == null ? null : (width! * MediaQuery.devicePixelRatioOf(context) * (fit == BoxFit.cover ? 1.8 : 1)).round(),
+        cacheWidth: width == null
+            ? null
+            : (width! * MediaQuery.devicePixelRatioOf(context) * (fit == BoxFit.cover ? 1.8 : 1)).round(),
         errorBuilder: (_, _, _) => fallback,
       ),
     );

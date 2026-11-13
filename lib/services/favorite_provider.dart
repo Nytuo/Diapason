@@ -38,11 +38,12 @@ class IsFavorite extends _$IsFavorite {
         _initializing = Future.sync(() async {
           try {
             final newItem = await GetIt.instance<AggregateBackend>().getItemById(item.id);
-            if (!_changed && newItem != null) {
+            // The provider may have been disposed/rebuilt while the request was in flight.
+            if (ref.mounted && !_changed && newItem != null) {
               state = newItem.userData?.isFavorite ?? false;
             }
           } catch (e) {
-            GlobalSnackbar.error(e);
+            if (ref.mounted) GlobalSnackbar.error(e);
           }
         });
       }

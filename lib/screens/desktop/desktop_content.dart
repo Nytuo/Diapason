@@ -21,15 +21,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DesktopSearchScope extends InheritedWidget {
-  const DesktopSearchScope({super.key, required this.query, required super.child});
+  const DesktopSearchScope({super.key, required this.query, this.type, required super.child});
 
   final String query;
+
+  /// Content type picked with a `song:`-style prefix, if any.
+  final ContentType? type;
+
+  static ContentType? typeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<DesktopSearchScope>()?.type;
 
   static String of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<DesktopSearchScope>()?.query ?? "";
 
   @override
-  bool updateShouldNotify(DesktopSearchScope oldWidget) => query != oldWidget.query;
+  bool updateShouldNotify(DesktopSearchScope oldWidget) => query != oldWidget.query || type != oldWidget.type;
 }
 
 class DesktopContent extends StatelessWidget {
@@ -46,15 +52,20 @@ class DesktopContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // While searching, drop any album/artist/playlist detail pages so the
+    // search results (which live on the root route) are what's on screen.
+    final searching = DesktopSearchScope.of(context).trim().isNotEmpty;
+    final openItem = searching ? null : this.openItem;
+    final detailItem = searching ? null : this.detailItem;
     return Navigator(
-      key: ValueKey((nav, openItem?.id, detailItem?.id, detailIsArtist)),
+      key: ValueKey((nav, openItem?.id, detailItem?.id, detailIsArtist, searching)),
       onGenerateInitialRoutes: (navigator, initialRoute) {
         final routes = <Route<dynamic>>[MaterialPageRoute(builder: (_) => _DesktopNavRoot(nav: nav))];
         if (openItem != null) {
           routes.add(
             MaterialPageRoute(
               settings: RouteSettings(name: AlbumScreen.routeName, arguments: openItem),
-              builder: (_) => DesktopAlbumDetail(parent: openItem!),
+              builder: (_) => DesktopAlbumDetail(parent: openItem),
             ),
           );
         }
@@ -66,7 +77,7 @@ class DesktopContent extends StatelessWidget {
                 arguments: detailItem,
               ),
               builder: (_) =>
-                  detailIsArtist ? DesktopArtistDetail(artist: detailItem!) : DesktopAlbumDetail(parent: detailItem!),
+                  detailIsArtist ? DesktopArtistDetail(artist: detailItem) : DesktopAlbumDetail(parent: detailItem),
             ),
           );
         }
@@ -121,7 +132,7 @@ class _DesktopNavRootState extends ConsumerState<_DesktopNavRoot> {
   Widget build(BuildContext context) {
     final query = DesktopSearchScope.of(context).trim();
     if (query.isNotEmpty) {
-      return DesktopSearchResults(query: query);
+      return DesktopSearchResults(query: query, initialType: DesktopSearchScope.typeOf(context));
     }
     switch (widget.nav) {
       case DesktopNav.home:

@@ -13,9 +13,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 
 class DesktopSearchResults extends ConsumerStatefulWidget {
-  const DesktopSearchResults({super.key, required this.query});
+  const DesktopSearchResults({super.key, required this.query, this.initialType});
 
   final String query;
+
+  /// Tab to show first (from a `song:` style prefix); follows changes to it.
+  final ContentType? initialType;
 
   @override
   ConsumerState<DesktopSearchResults> createState() => _DesktopSearchResultsState();
@@ -31,8 +34,17 @@ class _DesktopSearchResultsState extends ConsumerState<DesktopSearchResults> {
 
   final Map<ContentType, SortAndFilterController> _controllers = {};
   // `mixed` stands for the "All" tab.
-  ContentType _active = ContentType.mixed;
+  late ContentType _active = widget.initialType ?? ContentType.mixed;
   bool _youtube = FinampSettingsHelper.finampSettings.youtubeSearchByDefault;
+
+  @override
+  void didUpdateWidget(DesktopSearchResults old) {
+    super.didUpdateWidget(old);
+    if (widget.initialType != old.initialType) {
+      _active = widget.initialType ?? ContentType.mixed;
+      _youtube = false;
+    }
+  }
 
   QueueItemSource get _source => QueueItemSource.rawId(
     type: QueueItemSourceType.allTracks,

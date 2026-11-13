@@ -7,13 +7,15 @@ class DesktopHeaderBar extends StatelessWidget {
   const DesktopHeaderBar({
     super.key,
     required this.title,
-    required this.searchController,
-    required this.onSearchChanged,
+    required this.query,
+    required this.onOpenSearch,
+    required this.onClearSearch,
   });
 
   final String title;
-  final TextEditingController searchController;
-  final ValueChanged<String> onSearchChanged;
+  final String query;
+  final VoidCallback onOpenSearch;
+  final VoidCallback onClearSearch;
 
   @override
   Widget build(BuildContext context) {
@@ -32,36 +34,7 @@ class DesktopHeaderBar extends StatelessWidget {
             style: TextStyle(color: p.textPrimary, fontSize: 15, fontWeight: FontWeight.bold, letterSpacing: -0.2),
           ),
           const Spacer(),
-          SizedBox(
-            width: 280,
-            height: 38,
-            child: TextField(
-              controller: searchController,
-              onChanged: onSearchChanged,
-              style: TextStyle(color: p.textPrimary, fontSize: 13),
-              decoration: InputDecoration(
-                isDense: true,
-                hintText: "Search your library…",
-                hintStyle: TextStyle(color: p.textTertiary, fontSize: 13),
-                prefixIcon: Icon(TablerIcons.search, size: 16, color: p.textTertiary),
-                filled: true,
-                fillColor: p.surface,
-                contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(999),
-                  borderSide: BorderSide(color: p.border),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(999),
-                  borderSide: BorderSide(color: p.border),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(999),
-                  borderSide: BorderSide(color: p.accent),
-                ),
-              ),
-            ),
-          ),
+          _SearchTrigger(query: query, onOpen: onOpenSearch, onClear: onClearSearch),
           const SizedBox(width: 8),
           IconButton(
             tooltip: "Settings",
@@ -71,6 +44,75 @@ class DesktopHeaderBar extends StatelessWidget {
             onPressed: () => Navigator.of(context).pushNamed(SettingsScreen.routeName),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Looks like a search field but opens the command palette, so there is a single
+/// place to search from. Shows the active query with a clear button.
+class _SearchTrigger extends StatelessWidget {
+  const _SearchTrigger({required this.query, required this.onOpen, required this.onClear});
+
+  final String query;
+  final VoidCallback onOpen;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = DesktopThemeScope.of(context);
+    final active = query.trim().isNotEmpty;
+    final mac = Theme.of(context).platform == TargetPlatform.macOS;
+    return Tooltip(
+      message: "Search (${mac ? '⌘' : 'Ctrl+'}K)",
+      child: Material(
+        color: p.surface,
+        shape: StadiumBorder(side: BorderSide(color: active ? p.accent : p.border)),
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: onOpen,
+          child: SizedBox(
+            width: 300,
+            height: 38,
+            child: Row(
+              children: [
+                const SizedBox(width: 12),
+                Icon(TablerIcons.search, size: 16, color: active ? p.accent : p.textTertiary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    active ? query : "Search or jump to…",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: active ? p.textPrimary : p.textTertiary, fontSize: 13),
+                  ),
+                ),
+                if (active)
+                  IconButton(
+                    tooltip: "Clear search",
+                    iconSize: 14,
+                    visualDensity: VisualDensity.compact,
+                    color: p.textSecondary,
+                    icon: const Icon(TablerIcons.x),
+                    onPressed: onClear,
+                  )
+                else
+                  Container(
+                    margin: const EdgeInsets.only(right: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: p.border),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      mac ? "⌘K" : "Ctrl K",
+                      style: TextStyle(color: p.textTertiary, fontSize: 10.5, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

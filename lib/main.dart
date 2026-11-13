@@ -1206,6 +1206,9 @@ class FinampApp extends ConsumerWidget {
         pageTransitionsTheme: transitionBuilder,
       ),
       scrollBehavior: FinampScrollBehavior(),
+      // Cross-fading the whole app's ThemeData (light/dark, accent) re-lays out every
+      // widget each frame and visibly lags; switch instantly instead.
+      themeAnimationDuration: Duration.zero,
       themeMode: themeMode,
       localizationsDelegates: const [
         AppLocalizations.delegate,

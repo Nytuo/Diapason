@@ -12,6 +12,7 @@ import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/current_album_image_provider.dart';
 import 'package:diapason/services/media_state_stream.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/music_player_background_task.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -43,7 +44,7 @@ class DesktopPlayerBar extends ConsumerStatefulWidget {
 
 class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
   final _audioHandler = GetIt.instance<MusicPlayerBackgroundTask>();
-  double _volume = 1.0;
+  double _volume = FinampSettingsHelper.finampSettings.currentVolume.clamp(0.0, 1.0);
 
   @override
   Widget build(BuildContext context) {
