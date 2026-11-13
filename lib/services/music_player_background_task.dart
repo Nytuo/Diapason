@@ -1339,6 +1339,8 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       return;
     }
     if (RemotePlayback.isForwarding) return RemotePlayback.current!.play();
+    // Mirroring the controlled device's queue: never start the local player, the device is the one playing.
+    if (RemotePlayback.isActive) return;
     if (AppleTvAudioChannel.isSupported) {
       return _tvPlay();
     }

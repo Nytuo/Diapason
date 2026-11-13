@@ -851,7 +851,8 @@ class QueueService {
     bool skipRadioCacheInvalidation = false,
   }) async {
     // Controlling another device: whatever the user starts plays there.
-    if (beginPlaying && !isRestoredQueue && RemotePlayback.isForwarding && itemList.isNotEmpty) {
+    // (isActive, not isForwarding: a tap while the device's queue is being mirrored must not play here too.)
+    if (beginPlaying && !isRestoredQueue && RemotePlayback.isActive && itemList.isNotEmpty) {
       return RemotePlayback.current!.playItems(
         itemList.map((item) => item.toJson()).toList(),
         startIndex: initialIndex ?? (order == FinampPlaybackOrder.shuffled ? Random().nextInt(itemList.length) : 0),

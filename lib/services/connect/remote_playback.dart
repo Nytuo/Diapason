@@ -8,6 +8,9 @@ abstract interface class RemotePlayback {
 
   static bool get isForwarding => current?.forwarding ?? false;
 
+  /// A device is controlled, even while its queue is being mirrored. The local player must stay silent then.
+  static bool get isActive => current?.active ?? false;
+
   /// A device is being controlled, and we are not in the middle of mirroring its queue locally.
   bool get forwarding;
 
