@@ -108,7 +108,8 @@ dependencies:
   focus_on_it: ^2.0.1
   flutter_svg: ^2.0.17
   meta: ^1.15.0
-  analyzer: ^12.1.0
+  # 12.x on Flutter 3.44 (Dart 3.12); newer SDKs pin test/matcher versions that force analyzer 13+.
+  analyzer: ">=12.1.0 <15.0.0"
   build: ^4.0.0
   source_gen: ^4.1.2
   web_socket_channel: ^3.0.2

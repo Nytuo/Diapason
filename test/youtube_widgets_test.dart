@@ -47,16 +47,26 @@ void main() {
   });
 
   group('Library | YouTube switch', () {
-    testWidgets('shows both choices and reports the pick', (tester) async {
-      bool? picked;
-      await tester.pumpWidget(_app(SearchSourceSwitcher(youtube: false, onChanged: (v) => picked = v)));
+    testWidgets('shows every choice and reports the pick', (tester) async {
+      SearchSource? picked;
+      await tester.pumpWidget(_app(SearchSourceSwitcher(source: SearchSource.all, onChanged: (v) => picked = v)));
 
-      expect(find.text('Library'), findsOneWidget);
+      expect(find.text('All'), findsOneWidget);
+      expect(find.text('Filter'), findsOneWidget);
       expect(find.text('YouTube'), findsOneWidget);
 
       await tester.tap(find.text('YouTube'));
       await tester.pump();
-      expect(picked, isTrue);
+      expect(picked, SearchSource.youtube);
+    });
+
+    testWidgets('hides YouTube when it is turned off', (tester) async {
+      await tester.pumpWidget(
+        _app(SearchSourceSwitcher(source: SearchSource.all, showYouTube: false, onChanged: (_) {})),
+      );
+
+      expect(find.text('YouTube'), findsNothing);
+      expect(find.text('Filter'), findsOneWidget);
     });
   });
 
