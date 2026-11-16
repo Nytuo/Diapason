@@ -59,6 +59,26 @@ class LrclibClient {
     return null;
   }
 
+  /// Free-text search, for the user to pick an upload by hand when the automatic lookup found nothing or the wrong
+  /// song. Uploads without any lyrics (or instrumentals) are left out.
+  Future<List<LrclibMatch>> search(String query) async {
+    if (query.trim().isEmpty) return const [];
+    final results = await _getList("/api/search", {"q": query.trim()});
+    return [
+      for (final result in results)
+        if (_toLyrics(result, syncedOnly: false) case final lyrics?)
+          LrclibMatch(
+            title: result["trackName"] as String? ?? "",
+            artist: result["artistName"] as String? ?? "",
+            album: result["albumName"] as String?,
+            duration: (result["duration"] as num?) == null
+                ? null
+                : Duration(milliseconds: ((result["duration"] as num) * 1000).round()),
+            lyrics: lyrics,
+          ),
+    ];
+  }
+
   static const _tolerance = 2.5;
   static const _wordSyncTolerance = 4.0;
 
@@ -130,4 +150,15 @@ class LrclibClient {
       return const [];
     }
   }
+}
+
+/// One LRCLIB upload found by a manual search.
+class LrclibMatch {
+  const LrclibMatch({required this.title, required this.artist, this.album, this.duration, required this.lyrics});
+
+  final String title;
+  final String artist;
+  final String? album;
+  final Duration? duration;
+  final LyricDto lyrics;
 }

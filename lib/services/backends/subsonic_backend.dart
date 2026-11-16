@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
@@ -73,19 +75,26 @@ class SubsonicBackend implements MediaBackend {
     );
   }
 
-  Future<Map<String, dynamic>?> _probe(String endpoint, String id) => _get(endpoint, {"id": id}, true);
+  /// Looks an id up. A "not found" answer is null, but a network/server failure throws, so callers can tell a
+  /// missing item from an unreachable server (restoring the queue must not drop tracks just because the network
+  /// wasn't up yet).
+  Future<Map<String, dynamic>?> _probe(String endpoint, String id) => _get(endpoint, {"id": id}, true, true);
 
   Future<Map<String, dynamic>?> _get(
     String endpoint, [
     Map<String, dynamic> params = const {},
     bool quiet = false,
+    bool throwOnTransportFailure = false,
   ]) async {
     void complain(String message) => quiet ? _log.fine(message) : _log.warning(message);
 
     try {
-      final response = await _http.get(_url(endpoint, params));
+      final response = await _http.get(_url(endpoint, params)).timeout(const Duration(seconds: 15));
       if (response.statusCode != 200) {
         complain("$endpoint failed: HTTP ${response.statusCode}");
+        if (throwOnTransportFailure && response.statusCode >= 500) {
+          throw http.ClientException("$endpoint failed: HTTP ${response.statusCode}");
+        }
         return null;
       }
       final body = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
@@ -97,6 +106,9 @@ class SubsonicBackend implements MediaBackend {
       return envelope;
     } catch (e) {
       complain("$endpoint failed on ${config.name}: $e");
+      if (throwOnTransportFailure && (e is IOException || e is TimeoutException || e is http.ClientException)) {
+        rethrow;
+      }
       return null;
     }
   }

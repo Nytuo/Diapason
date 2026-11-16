@@ -294,7 +294,7 @@ class _LyricsViewState extends ConsumerState<LyricsView> with WidgetsBindingObse
               Text(message, style: TextStyle(color: Theme.of(context).textTheme.headlineMedium!.color, fontSize: 16)),
               if (metadata != null) ...[
                 const SizedBox(height: 16),
-                LyricsSourceChip(item: metadata.item, automatic: metadata.lyricsOption, shown: null),
+                LyricsManageButton(item: metadata.item, automatic: metadata.lyricsOption, shown: null, showLabel: true),
               ],
             ],
           );
@@ -434,19 +434,14 @@ class _LyricsViewState extends ConsumerState<LyricsView> with WidgetsBindingObse
                   ),
                 ),
                 Positioned(
-                  top: 4,
-                  left: 0,
-                  right: 8,
-                  child: Center(
-                    child: LyricsSourceChip(
-                      item: metadata.value!.item,
-                      automatic: metadata.value!.lyricsOption,
-                      shown: shown,
-                    ),
+                  top: 0,
+                  right: 0,
+                  child: LyricsManageButton(
+                    item: metadata.value!.item,
+                    automatic: metadata.value!.lyricsOption,
+                    shown: shown,
                   ),
                 ),
-                if (_isSynchronizedLyrics)
-                  Positioned(top: 0, right: 0, child: _LyricsOffsetButton(trackId: metadata.value!.item.id)),
                 if (_isSynchronizedLyrics)
                   Positioned(
                     bottom: 24,
@@ -863,111 +858,5 @@ class LyricsScrollBehavior extends MaterialScrollBehavior {
           child: child,
         );
     }
-  }
-}
-
-/// Opens the timing nudge for lyrics that run ahead of or behind the music; shows the current offset when one is set.
-class _LyricsOffsetButton extends StatelessWidget {
-  const _LyricsOffsetButton({required this.trackId});
-
-  final BaseItemId trackId;
-
-  @override
-  Widget build(BuildContext context) {
-    final listenable = LyricsOffsetService.listenable(trackId);
-    if (listenable == null) return const SizedBox.shrink();
-    return ValueListenableBuilder(
-      valueListenable: listenable,
-      builder: (context, _, _) {
-        final offset = LyricsOffsetService.offsetMs(trackId);
-        final color = Theme.of(context).textTheme.bodyLarge?.color;
-        return TextButton.icon(
-          style: TextButton.styleFrom(foregroundColor: color, visualDensity: VisualDensity.compact),
-          onPressed: () {
-            FeedbackHelper.feedback(FeedbackType.selection);
-            showModalBottomSheet<void>(
-              context: context,
-              showDragHandle: true,
-              builder: (_) => _LyricsOffsetSheet(trackId: trackId),
-            );
-          },
-          icon: const Icon(TablerIcons.clock_edit, size: 20),
-          label: offset == 0 ? const SizedBox.shrink() : Text(LyricsOffsetService.format(offset)),
-        );
-      },
-    );
-  }
-}
-
-class _LyricsOffsetSheet extends StatelessWidget {
-  const _LyricsOffsetSheet({required this.trackId});
-
-  final BaseItemId trackId;
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: LyricsOffsetService.listenable(trackId)!,
-      builder: (context, _, _) {
-        final offset = LyricsOffsetService.offsetMs(trackId);
-        final textTheme = Theme.of(context).textTheme;
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text("Lyrics timing", style: textTheme.titleMedium),
-                const SizedBox(height: 4),
-                Text(
-                  "Lyrics too early? Show them later. Remembered for this track.",
-                  style: textTheme.bodySmall,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    FilledButton.tonalIcon(
-                      onPressed: offset <= -LyricsOffsetService.limit
-                          ? null
-                          : () {
-                              FeedbackHelper.feedback(FeedbackType.selection);
-                              LyricsOffsetService.nudge(trackId, -LyricsOffsetService.step);
-                            },
-                      icon: const Icon(TablerIcons.chevrons_left),
-                      label: const Text("Earlier"),
-                    ),
-                    SizedBox(
-                      width: 96,
-                      child: Text(
-                        LyricsOffsetService.format(offset),
-                        textAlign: TextAlign.center,
-                        style: textTheme.titleLarge?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
-                      ),
-                    ),
-                    FilledButton.tonalIcon(
-                      onPressed: offset >= LyricsOffsetService.limit
-                          ? null
-                          : () {
-                              FeedbackHelper.feedback(FeedbackType.selection);
-                              LyricsOffsetService.nudge(trackId, LyricsOffsetService.step);
-                            },
-                      icon: const Icon(TablerIcons.chevrons_right),
-                      label: const Text("Later"),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: offset == 0 ? null : () => LyricsOffsetService.reset(trackId),
-                  child: const Text("Reset"),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 }

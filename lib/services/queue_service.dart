@@ -112,11 +112,10 @@ class QueueService {
     if (previous.playing != current.playing || previous.processingState != current.processingState) return true;
     // A seek shows up as the reported position drifting away from where steady playback would have put it.
     final elapsed = current.updateTime.difference(previous.updateTime);
-    final expected = previous.playing
-        ? previous.updatePosition + elapsed * previous.speed
-        : previous.updatePosition;
+    final expected = previous.playing ? previous.updatePosition + elapsed * previous.speed : previous.updatePosition;
     return (current.updatePosition - expected).abs() > const Duration(seconds: 2);
   }
+
   SavedQueueState _savedQueueState = SavedQueueState.preInit;
   FinampStorableQueueInfo? _failedSavedQueue;
   static const int _maxSavedQueues = 60;
@@ -492,7 +491,14 @@ class QueueService {
           }
 
           if (FinampSettingsHelper.finampSettings.autoloadLastQueueOnStartup && !await _hasInitialPlayLink()) {
-            await loadSavedQueue(info);
+            try {
+              await loadSavedQueue(info);
+            } catch (e) {
+              // Leave the saved queue untouched (state is "failed") and keep trying in the background, as the network
+              // is often not up yet when the OS relaunches the app.
+              _queueServiceLogger.warning("Initial queue restore failed, will retry: $e");
+              unawaited(_retryInitialLoad());
+            }
           } else {
             _savedQueueState = SavedQueueState.pendingSave;
           }
@@ -500,6 +506,19 @@ class QueueService {
       } catch (e) {
         _queueServiceLogger.severe(e);
         rethrow;
+      }
+    }
+  }
+
+  Future<void> _retryInitialLoad() async {
+    for (final delay in const [Duration(seconds: 10), Duration(seconds: 30), Duration(minutes: 2)]) {
+      await Future<void>.delayed(delay);
+      if (_savedQueueState != SavedQueueState.failed || _failedSavedQueue == null) return;
+      try {
+        await loadSavedQueue(_failedSavedQueue!);
+        return;
+      } catch (e) {
+        _queueServiceLogger.warning("Queue restore retry failed: $e");
       }
     }
   }
@@ -528,6 +547,24 @@ class QueueService {
   Future<void> retryQueueLoad() async {
     if (_savedQueueState == SavedQueueState.failed && _failedSavedQueue != null) {
       await loadSavedQueue(_failedSavedQueue!);
+    }
+  }
+
+  /// Retries transient failures (no network yet after a cold start from the background, a sleeping server, ...);
+  /// throws if the source stays unreachable.
+  Future<jellyfin_models.BaseItemDto?> _fetchItemWithRetry(
+    AggregateBackend aggregate,
+    jellyfin_models.BaseItemId id,
+  ) async {
+    const delays = [Duration(seconds: 1), Duration(seconds: 3), Duration(seconds: 6)];
+    for (var attempt = 0; ; attempt++) {
+      try {
+        return await aggregate.getItemById(id);
+      } catch (e) {
+        if (attempt >= delays.length) rethrow;
+        _queueServiceLogger.info("Could not fetch '$id' for the saved queue (attempt ${attempt + 1}): $e");
+        await Future<void>.delayed(delays[attempt]);
+      }
     }
   }
 
@@ -594,12 +631,19 @@ class QueueService {
         }
       } else {
         final aggregate = GetIt.instance<AggregateBackend>();
-        final fetched = await Future.wait(missingIds.map((id) async => (id, await aggregate.getItemById(id))));
-        for (final (id, item) in fetched) {
-          if (item != null) {
-            idMap[id] = item;
-          } else {
-            _queueServiceLogger.warning("Track '$id' is in the saved queue but its source no longer has it.");
+        // Fetch a few at a time (a big queue used to fire hundreds of simultaneous requests, which time out on
+        // mobile networks). An unreachable server throws instead of looking like "track no longer exists": that
+        // would drop the tracks and then overwrite the saved queue with the truncated one.
+        const batchSize = 8;
+        for (var start = 0; start < missingIds.length; start += batchSize) {
+          final batch = missingIds.skip(start).take(batchSize);
+          final fetched = await Future.wait(batch.map((id) async => (id, await _fetchItemWithRetry(aggregate, id))));
+          for (final (id, item) in fetched) {
+            if (item != null) {
+              idMap[id] = item;
+            } else {
+              _queueServiceLogger.warning("Track '$id' is in the saved queue but its source no longer has it.");
+            }
           }
         }
       }
