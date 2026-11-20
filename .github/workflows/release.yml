@@ -196,6 +196,7 @@ jobs:
     secrets: inherit
     with:
       version: ${{ needs.version.outputs.version }}
+      build_number: ${{ needs.version.outputs.build_number }}
       run_integration_tests: ${{ inputs.run_integration_tests }}
       build_extras: ${{ inputs.build_extras }}
       build_tvos: ${{ inputs.build_tvos }}
@@ -210,6 +211,7 @@ jobs:
     secrets: inherit
     with:
       version: ${{ needs.version.outputs.version }}
+      build_number: ${{ needs.version.outputs.build_number }}
       build_ios: ${{ needs.mobile-plan.outputs.publish_ios == 'true' }}
       build_tvos: ${{ needs.mobile-plan.outputs.publish_tvos == 'true' }}
 

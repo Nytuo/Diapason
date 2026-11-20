@@ -38,6 +38,10 @@ on:
       build_tvos:
         type: boolean
         default: true
+      build_number:
+        description: 'Store build number to stamp; empty = the commit count'
+        type: string
+        default: ''
 
 env:
   if_condition: &integration_if inputs.run_integration_tests
@@ -115,9 +119,10 @@ jobs:
       id: version
       env:
         VERSION: ${{ needs.version.outputs.version }}
+        BUILD_NUMBER: ${{ inputs.build_number || needs.version.outputs.build_number }}
       run: |
         set -eu
-        NEW="$VERSION+${GITHUB_RUN_NUMBER}"
+        NEW="$VERSION+$BUILD_NUMBER"
         perl -pi -e "s/^version:.*/version: $NEW/" pubspec.yaml
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
@@ -353,12 +358,13 @@ jobs:
       id: version
       env:
         VERSION: ${{ needs.version.outputs.version }}
+        BUILD_NUMBER: ${{ inputs.build_number || needs.version.outputs.build_number }}
       run: |
         set -eu
         # The store build number (Android versionCode, iOS/tvOS CFBundleVersion)
         # has to grow with every upload or the stores refuse it, even for a new
-        # version string. The run number only ever goes up.
-        NEW="$VERSION+${GITHUB_RUN_NUMBER}"
+        # version string. It is the commit count (see version.yml), shared by every workflow.
+        NEW="$VERSION+$BUILD_NUMBER"
         perl -pi -e "s/^version:.*/version: $NEW/" pubspec.yaml
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
@@ -434,9 +440,10 @@ jobs:
       id: version
       env:
         VERSION: ${{ needs.version.outputs.version }}
+        BUILD_NUMBER: ${{ inputs.build_number || needs.version.outputs.build_number }}
       run: |
         set -eu
-        NEW="$VERSION+${GITHUB_RUN_NUMBER}"
+        NEW="$VERSION+$BUILD_NUMBER"
         perl -pi -e "s/^version:.*/version: $NEW/" pubspec.yaml
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
