@@ -441,6 +441,117 @@ void main() {
     });
   });
 
+  group('home network address with a remote fallback', () {
+    setUp(() {
+      env.updateSettings((s) {
+        s.uploaderUrl = 'https://music.example.com';
+        s.uploaderLocalUrl = 'http://music.local:8688';
+        s.uploaderNetworkPolicy = 'internet';
+      });
+    });
+
+    test('uses the home address while it answers', () async {
+      respond = (_) async => _json(200, {'ytdlp': true});
+
+      await client.capabilities();
+
+      expect(client.baseUrl, 'http://music.local:8688');
+      expect(seen.last.url.host, 'music.local');
+    });
+
+    test('uses the remote address when the home one does not answer', () async {
+      respond = (req) async {
+        if (req.url.host == 'music.local') throw const SocketException('Failed host lookup: music.local');
+        return _json(200, {'ytdlp': true});
+      };
+
+      final caps = await client.capabilities();
+
+      expect(caps.state, UploaderState.ok);
+      expect(client.baseUrl, 'https://music.example.com');
+      expect(seen.last.url.host, 'music.example.com');
+    });
+
+    test('a call that fails on the current address is retried on the other one', () async {
+      respond = (_) async => _json(200, {'ytdlp': true});
+      await client.capabilities(); // at home
+      respond = (req) async {
+        if (req.url.host == 'music.local') throw const SocketException('Network is unreachable');
+        return _json(200, {'results': []});
+      };
+
+      await client.ytSearch('x');
+
+      expect(client.baseUrl, 'https://music.example.com');
+    });
+
+    test('capabilities report the public address the server advertises', () async {
+      respond = (_) async => _json(200, {'publicUrl': 'https://music.example.com'});
+
+      expect((await client.capabilities()).publicUrl, 'https://music.example.com');
+    });
+
+    test('with only a remote address, that one is used', () async {
+      env.updateSettings((s) => s.uploaderLocalUrl = '');
+      respond = (_) async => _json(200, {});
+
+      await client.capabilities();
+
+      expect(client.baseUrl, 'https://music.example.com');
+    });
+  });
+
+  group('stream probe: the uploader explains itself before the player runs', () {
+    test('asks for a single byte, with the token', () async {
+      respond = (_) async => http.Response('x', 206);
+
+      await client.probeStream('aaaaaaaaaaa');
+
+      expect(seen.single.url.path, '/api/v1/ytdlp/stream/aaaaaaaaaaa');
+      expect(seen.single.headers['Range'], 'bytes=0-0');
+      expect(seen.single.headers['Authorization'], 'Bearer secret-token');
+    });
+
+    test('YouTube refusing the stream becomes the uploader\'s message, not a player error', () async {
+      respond = (_) async => _json(
+        502,
+        {'error': 'YouTube refused the stream (upstream HTTP 403 Forbidden)', 'code': 'bad_gateway'},
+        headers: {'x-request-id': 'abc123'},
+      );
+
+      final e = await _catch(() => client.probeStream('aaaaaaaaaaa'));
+
+      expect(e, isA<UploaderException>());
+      final ex = e as UploaderException;
+      expect(ex.message, contains('Your uploader couldn\'t stream this track'));
+      expect(ex.message, contains('YouTube refused the stream'));
+      expect(ex.source, ErrorSource.uploader);
+      expect(ex.requestId, 'abc123');
+    });
+
+    test('a yt-dlp failure keeps its own source and code', () async {
+      respond = (_) async => _json(422, {
+        'error': 'YouTube says this video isn\'t available.',
+        'code': 'video_unavailable',
+        'component': 'ytdlp',
+      });
+
+      final ex = await _catch(() => client.probeStream('aaaaaaaaaaa')) as UploaderException;
+
+      expect(ex.source, ErrorSource.ytdlp);
+      expect(ex.code, 'video_unavailable');
+    });
+
+    test('an unreachable uploader is reported as a connection problem', () async {
+      respond = (_) async => throw const SocketException('Connection refused');
+
+      final ex = await _catch(() => client.probeStream('aaaaaaaaaaa')) as UploaderException;
+
+      expect(ex.source, ErrorSource.connection);
+      expect(ex.message, contains('Your uploader couldn\'t stream this track'));
+    });
+  });
+
   group('pairing', () {
     test('returns the token the server issued', () async {
       respond = (req) async {
@@ -450,7 +561,16 @@ void main() {
         return _json(201, {'token': 'fresh-device-token', 'deviceId': 'd1', 'name': 'My Mac'});
       };
 
-      expect(await client.pair('http://192.168.1.10:8688/', 'My Mac'), 'fresh-device-token');
+      final paired = await client.pair('http://192.168.1.10:8688/', 'My Mac');
+      expect(paired.token, 'fresh-device-token');
+      expect(paired.publicUrl, isNull);
+    });
+
+    test('carries the address the server offers for use away from home', () async {
+      respond = (_) async =>
+          _json(201, {'token': 't', 'deviceId': 'd1', 'name': 'x', 'publicUrl': 'https://music.example.com'});
+
+      expect((await client.pair('http://192.168.1.10:8688', 'x')).publicUrl, 'https://music.example.com');
     });
 
     test('a closed pairing window comes back as the server\'s own explanation', () async {

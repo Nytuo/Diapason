@@ -21,6 +21,7 @@ class UploaderSettingsScreen extends ConsumerStatefulWidget {
 
 class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen> {
   late final _url = TextEditingController(text: FinampSettingsHelper.finampSettings.uploaderUrl);
+  late final _localUrl = TextEditingController(text: FinampSettingsHelper.finampSettings.uploaderLocalUrl);
   late final _token = TextEditingController(text: FinampSettingsHelper.finampSettings.uploaderToken);
   final _discovery = UploaderDiscoveryService();
 
@@ -43,6 +44,12 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
 
   Future<void> _refreshCapabilities() async {
     final caps = await _client.capabilities();
+    // The server can say how to reach it from outside the home network; take it if none was set.
+    final publicUrl = caps.publicUrl;
+    if (mounted && publicUrl != null && _url.text.trim().isEmpty) {
+      _url.text = publicUrl;
+      FinampSetters.setUploaderUrl(publicUrl);
+    }
     if (mounted) setState(() => _caps = caps);
     // The YouTube tab appears or disappears with what the uploader can do.
     await GetIt.instance<YouTubeAvailability>().refresh();
@@ -100,17 +107,24 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
     _discovery.devices.removeListener(_onDevicesChanged);
     _discovery.stop();
     _url.dispose();
+    _localUrl.dispose();
     _token.dispose();
     super.dispose();
   }
 
-  void _save({bool quiet = false}) {
-    var url = _url.text.trim();
+  static String _trimSlash(String value) {
+    var url = value.trim();
     while (url.endsWith("/")) {
       url = url.substring(0, url.length - 1);
     }
-    _url.text = url;
-    FinampSetters.setUploaderUrl(url);
+    return url;
+  }
+
+  void _save({bool quiet = false}) {
+    _url.text = _trimSlash(_url.text);
+    _localUrl.text = _trimSlash(_localUrl.text);
+    FinampSetters.setUploaderUrl(_url.text);
+    FinampSetters.setUploaderLocalUrl(_localUrl.text);
     FinampSetters.setUploaderToken(_token.text.trim());
     if (!quiet) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Uploader saved")));
@@ -121,7 +135,10 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
 
   Future<void> _useDiscovered(DiscoveredUploader device) async {
     final messenger = ScaffoldMessenger.of(context);
-    _url.text = device.baseUrl;
+    // What was found over mDNS is the home-network address. An older setup stored it as the only address; it is
+    // the local one now, and the remote one is left for the server to offer (or the user to type).
+    _localUrl.text = device.baseUrl;
+    if (_url.text.trim() == device.baseUrl) _url.text = "";
     FinampSetters.setUploaderEnabled(true);
 
     if (!device.canPair) {
@@ -131,8 +148,10 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
     }
 
     try {
-      final token = await _client.pair(device.baseUrl, "Diapason on ${_deviceName()}");
-      _token.text = token;
+      final paired = await _client.pair(device.baseUrl, "Diapason on ${_deviceName()}");
+      _token.text = paired.token;
+      final publicUrl = paired.publicUrl;
+      if (publicUrl != null && _url.text.trim().isEmpty) _url.text = publicUrl;
       if (!mounted) return;
       _save(quiet: true);
       _refreshCapabilities();
@@ -172,8 +191,16 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
     final proxy = ref.watch(finampSettingsProvider.uploaderYtProxy);
 
     final url = _url.text.trim();
+    final localUrl = _localUrl.text.trim();
+    final hasAddress = url.isNotEmpty || localUrl.isNotEmpty;
     final allowInsecure = ref.watch(finampSettingsProvider.uploaderAllowInsecure);
-    final blockReason = url.isEmpty ? null : UploaderClient.blockReason(url, policy, allowInsecure: allowInsecure);
+    // With both addresses set, one that the policy blocks only costs the fallback, not the whole feature.
+    final reasons = [
+      if (url.isNotEmpty) UploaderClient.blockReason(url, policy, allowInsecure: allowInsecure),
+      if (localUrl.isNotEmpty) UploaderClient.blockReason(localUrl, policy, allowInsecure: allowInsecure),
+    ];
+    final blockReason = reasons.isNotEmpty && reasons.every((r) => r != null) ? reasons.first : null;
+    final partialBlock = blockReason == null ? reasons.nonNulls.firstOrNull : null;
     final cleartext = url.startsWith("http://") && blockReason == null;
     final host = Uri.tryParse(url)?.host ?? "";
     // Plain HTTP to a name that doesn't look private: offer the "already secure" escape hatch.
@@ -233,7 +260,25 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
             autocorrect: false,
             keyboardType: TextInputType.url,
             onChanged: (_) => setState(() {}),
-            decoration: const InputDecoration(labelText: "Sidecar address", hintText: "https://music.example.com"),
+            decoration: const InputDecoration(
+              labelText: "Remote address (works anywhere)",
+              hintText: "https://music.example.com",
+              helperText: "Used when you're away from home. Your server can fill this in itself (DIAPASON_PUBLIC_URL).",
+              helperMaxLines: 2,
+            ),
+          ),
+          const SizedBox(height: 16.0),
+          TextField(
+            controller: _localUrl,
+            autocorrect: false,
+            keyboardType: TextInputType.url,
+            onChanged: (_) => setState(() {}),
+            decoration: const InputDecoration(
+              labelText: "Home network address",
+              hintText: "http://music.local:8688",
+              helperText: "Tried first; if it doesn't answer, the remote address is used. Filled in when you pair.",
+              helperMaxLines: 2,
+            ),
           ),
           const SizedBox(height: 16.0),
           TextField(
@@ -273,6 +318,12 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
 
           if (blockReason != null)
             _notice(TablerIcons.alert_triangle, blockReason, Theme.of(context).colorScheme.error)
+          else if (partialBlock != null)
+            _notice(
+              TablerIcons.alert_triangle,
+              "One address is blocked, so it will be skipped: $partialBlock",
+              Theme.of(context).colorScheme.tertiary,
+            )
           else if (cleartext)
             _notice(
               TablerIcons.lock_open,
@@ -341,7 +392,7 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
           const Text("Pick audio files from your storage and send them to your server's library."),
           const SizedBox(height: 8.0),
           OutlinedButton.icon(
-            onPressed: _uploadStatus != null || blockReason != null || url.isEmpty ? null : _pickAndUpload,
+            onPressed: _uploadStatus != null || blockReason != null || !hasAddress ? null : _pickAndUpload,
             icon: const Icon(TablerIcons.upload),
             label: const Text("Choose files…"),
           ),
@@ -366,7 +417,7 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
                   : "Your uploader is connected but its YouTube feature is off (set DIAPASON_YTDLP_ENABLED=true on it).",
             ),
             value: proxy,
-            onChanged: blockReason == null && url.isNotEmpty
+            onChanged: blockReason == null && hasAddress
                 ? (value) async {
                     FinampSetters.setUploaderYtProxy(value);
                     await GetIt.instance<YouTubeAvailability>().refresh();

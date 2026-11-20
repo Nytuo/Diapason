@@ -150,18 +150,26 @@ class YouTubeService {
       ? _uploader.ytThumbnail(item.id.nativeId)
       : Uri.parse("https://i.ytimg.com/vi/${item.id.nativeId}/mqdefault.jpg");
 
-  Future<YouTubeStream?> streamUrl(BaseItemDto item) async {
+  /// The address to play [item] from. Throws the reason (the uploader's own message when it's the one that can't
+  /// serve it) instead of returning null.
+  Future<YouTubeStream> resolveStream(BaseItemDto item) {
     final id = item.id.nativeId;
-    try {
-      return await _viaSource<YouTubeStream>(
-        "stream '${item.name}'",
-        local: (l) async {
-          final s = await l.streamUrl(id);
-          return YouTubeStream(s.url, s.ext);
-        },
+    return _viaSource<YouTubeStream>(
+      "stream '${item.name}'",
+      local: (l) async {
+        final s = await l.streamUrl(id);
+        return YouTubeStream(s.url, s.ext);
+      },
+      uploader: (u) async {
+        await u.probeStream(id);
+        return YouTubeStream(u.ytStream(id), null, headers: u.authHeaders);
+      },
+    );
+  }
 
-        uploader: (u) async => YouTubeStream(u.ytStream(id), null, headers: u.authHeaders),
-      );
+  Future<YouTubeStream?> streamUrl(BaseItemDto item) async {
+    try {
+      return await resolveStream(item);
     } catch (_) {
       return null;
     }

@@ -36,6 +36,15 @@ class UploadResult {
   final ErrorSource? source;
 }
 
+class PairResult {
+  const PairResult(this.token, this.publicUrl);
+
+  final String token;
+
+  /// The address the server offers for use away from the home network, if it has one set.
+  final String? publicUrl;
+}
+
 enum UploaderState { unconfigured, ok, unreachable, unauthorized, notAnUploader }
 
 class UploaderCapabilities {
@@ -47,6 +56,7 @@ class UploaderCapabilities {
     this.jsRuntime,
     this.tagging = false,
     this.pairing = false,
+    this.publicUrl,
   });
 
   static const none = UploaderCapabilities(state: UploaderState.unconfigured);
@@ -60,6 +70,9 @@ class UploaderCapabilities {
   final String? jsRuntime;
   final bool tagging;
   final bool pairing;
+
+  /// The address the server says works from outside the home network (`DIAPASON_PUBLIC_URL`).
+  final String? publicUrl;
 
   bool get reachable => state == UploaderState.ok;
 }
@@ -90,7 +103,55 @@ class UploaderClient {
   final http.Client _http;
 
   bool get enabled => FinampSettingsHelper.finampSettings.uploaderEnabled;
-  String get baseUrl => FinampSettingsHelper.finampSettings.uploaderUrl.trim();
+
+  /// The address that works from anywhere (reverse proxy, VPN name…).
+  String get remoteUrl => FinampSettingsHelper.finampSettings.uploaderUrl.trim();
+
+  /// The address on the home network (`.local` name or LAN IP). Used while it answers.
+  String get localUrl => FinampSettingsHelper.finampSettings.uploaderLocalUrl.trim();
+
+  bool _onLocal = false;
+  DateTime? _routeCheckedAt;
+
+  bool _usable(String url) => url.isNotEmpty && isAllowed(url, policy, allowInsecure: allowInsecure);
+
+  /// The address requests go to right now: [localUrl] while the home network answers, [remoteUrl] otherwise. With
+  /// only one address set, that one.
+  String get baseUrl {
+    final first = _onLocal ? localUrl : remoteUrl;
+    final second = _onLocal ? remoteUrl : localUrl;
+    if (_usable(first)) return first;
+    if (_usable(second)) return second;
+    return first.isNotEmpty ? first : second;
+  }
+
+  /// True if the other address could be tried when [baseUrl] fails.
+  bool get hasAlternate => _usable(localUrl) && _usable(remoteUrl);
+
+  /// Works out whether the home-network address answers from here (2 s probe, remembered for 30 s).
+  Future<void> refreshRoute({bool force = false}) async {
+    if (!hasAlternate) {
+      _onLocal = remoteUrl.isEmpty || !_usable(remoteUrl);
+      return;
+    }
+    final checked = _routeCheckedAt;
+    if (!force && checked != null && DateTime.now().difference(checked) < const Duration(seconds: 30)) return;
+    _routeCheckedAt = DateTime.now();
+    var base = localUrl;
+    while (base.endsWith("/")) {
+      base = base.substring(0, base.length - 1);
+    }
+    try {
+      final response = await _http
+          .get(LocalNameFallbackClient.rewrite(Uri.parse("$base/api/v1/capabilities")), headers: authHeaders)
+          .timeout(const Duration(seconds: 2));
+      _onLocal = response.statusCode == 200;
+    } catch (_) {
+      _onLocal = false;
+    }
+    _log.fine("Uploader route: ${_onLocal ? "home network ($localUrl)" : "remote ($remoteUrl)"}");
+  }
+
   String get token => FinampSettingsHelper.finampSettings.uploaderToken.trim();
   UploaderNetworkPolicy get policy =>
       UploaderNetworkPolicy.fromName(FinampSettingsHelper.finampSettings.uploaderNetworkPolicy);
@@ -241,9 +302,24 @@ class UploaderClient {
     Duration timeout = const Duration(seconds: 30),
     Set<int> accept = const {},
   }) async {
-    final http.Response response;
+    http.Response response;
     try {
-      response = await send().timeout(timeout);
+      try {
+        response = await send().timeout(timeout);
+      } on UploaderException {
+        rethrow;
+      } catch (e) {
+        // The route may have changed (left or came back to the home network): re-check and try the other address.
+        if (!hasAlternate) rethrow;
+        final before = baseUrl;
+        await refreshRoute(force: true);
+        if (baseUrl == before) {
+          _onLocal = !_onLocal;
+          if (baseUrl == before) rethrow;
+        }
+        _log.info("$what couldn't reach $before; trying $baseUrl");
+        response = await send().timeout(timeout);
+      }
     } on UploaderException {
       rethrow;
     } catch (e, stack) {
@@ -255,8 +331,12 @@ class UploaderClient {
     throw _fromResponse(what, response);
   }
 
-  Future<Map<String, dynamic>> _getJson(String what, Uri uri, {Duration timeout = const Duration(seconds: 60)}) async {
-    final response = await _call(what, () => _http.get(uri, headers: authHeaders), timeout: timeout);
+  Future<Map<String, dynamic>> _getJson(
+    String what,
+    Uri Function() uri, {
+    Duration timeout = const Duration(seconds: 60),
+  }) async {
+    final response = await _call(what, () => _http.get(uri(), headers: authHeaders), timeout: timeout);
     try {
       return jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
     } catch (e) {
@@ -270,7 +350,8 @@ class UploaderClient {
   }
 
   Future<UploaderCapabilities> capabilities() async {
-    if (baseUrl.isEmpty) return UploaderCapabilities.none;
+    if (remoteUrl.isEmpty && localUrl.isEmpty) return UploaderCapabilities.none;
+    await refreshRoute();
     final reason = blockReason(baseUrl, policy, allowInsecure: allowInsecure);
     if (reason != null) {
       return UploaderCapabilities(state: UploaderState.unconfigured, problem: reason);
@@ -278,7 +359,7 @@ class UploaderClient {
     try {
       final body = await _getJson(
         "capabilities",
-        _endpoint("api/v1/capabilities"),
+        () => _endpoint("api/v1/capabilities"),
         timeout: const Duration(seconds: 10),
       );
       return UploaderCapabilities(
@@ -287,6 +368,7 @@ class UploaderClient {
         jsRuntime: (body["ytdlpJsRuntime"] as String?)?.isEmpty ?? true ? null : body["ytdlpJsRuntime"] as String?,
         tagging: body["ytdlpTagging"] == true,
         pairing: body["pairing"] == true,
+        publicUrl: (body["publicUrl"] as String?)?.isEmpty ?? true ? null : body["publicUrl"] as String?,
       );
     } on UploaderException catch (e) {
       final state = switch (e.code) {
@@ -301,7 +383,7 @@ class UploaderClient {
 
   Future<String?> testConnection() async => (await capabilities()).problem;
 
-  Future<String> pair(String url, String deviceName) async {
+  Future<PairResult> pair(String url, String deviceName) async {
     final reason = blockReason(url, UploaderNetworkPolicy.internet, allowInsecure: allowInsecure);
     if (reason != null) throw UploaderException(reason, source: ErrorSource.connection, code: "blocked_address");
     var base = url.trim();
@@ -317,7 +399,9 @@ class UploaderClient {
       ),
       timeout: const Duration(seconds: 10),
     );
-    return (jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>)["token"] as String;
+    final body = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+    final publicUrl = body["publicUrl"] as String?;
+    return PairResult(body["token"] as String, publicUrl == null || publicUrl.isEmpty ? null : publicUrl);
   }
 
   Future<void> openPairing() async {
@@ -332,7 +416,7 @@ class UploaderClient {
     try {
       final body = await _getJson(
         "exists",
-        _endpoint("api/v1/exists", {"hash": sha256Hash}),
+        () => _endpoint("api/v1/exists", {"hash": sha256Hash}),
         timeout: const Duration(seconds: 15),
       );
       return body["exists"] == true;
@@ -438,17 +522,39 @@ class UploaderClient {
       (body["results"] as List? ?? const []).map((e) => YtEntry.fromJson(e as Map<String, dynamic>)).toList();
 
   Future<List<YtEntry>> ytSearch(String query, {int limit = 20}) async =>
-      _entries(await _getJson("yt search", _endpoint("api/v1/ytdlp/search", {"q": query, "limit": "$limit"})));
+      _entries(await _getJson("yt search", () => _endpoint("api/v1/ytdlp/search", {"q": query, "limit": "$limit"})));
 
   Future<List<YtEntry>> ytTrending({int limit = 30}) async =>
-      _entries(await _getJson("yt trending", _endpoint("api/v1/ytdlp/trending", {"limit": "$limit"})));
+      _entries(await _getJson("yt trending", () => _endpoint("api/v1/ytdlp/trending", {"limit": "$limit"})));
 
-  Future<List<YtEntry>> ytRelated(String videoId, {int limit = 20}) async =>
-      _entries(await _getJson("yt related", _endpoint("api/v1/ytdlp/related", {"id": videoId, "limit": "$limit"})));
+  Future<List<YtEntry>> ytRelated(String videoId, {int limit = 20}) async => _entries(
+    await _getJson("yt related", () => _endpoint("api/v1/ytdlp/related", {"id": videoId, "limit": "$limit"})),
+  );
 
   Uri ytThumbnail(String videoId) => _endpoint("api/v1/ytdlp/thumb/$videoId");
 
   Uri ytStream(String videoId) => _endpoint("api/v1/ytdlp/stream/$videoId");
+
+  /// Asks the uploader for the first byte of a track's stream, so that if it can't serve it, its own explanation is
+  /// raised here rather than the player failing later with a bare "can't connect". The uploader keeps what it
+  /// resolved, so the player's real request right after is quick.
+  Future<void> probeStream(String videoId) async {
+    try {
+      await _call(
+        "stream probe",
+        () => _http.get(ytStream(videoId), headers: {...authHeaders, "Range": "bytes=0-0"}),
+        timeout: const Duration(seconds: 50),
+      );
+    } on UploaderException catch (e) {
+      throw UploaderException(
+        "Your uploader couldn't stream this track: ${e.message}",
+        source: e.source,
+        code: e.code,
+        detail: e.detail,
+        requestId: e.requestId,
+      );
+    }
+  }
 
   Future<UploadResult> ytDownloadToLibrary(
     String videoId, {
@@ -481,7 +587,7 @@ class UploaderClient {
         await Future<void>.delayed(pollInterval);
         final job = await _getJson(
           "yt job",
-          _endpoint("api/v1/ytdlp/jobs/$jobId"),
+          () => _endpoint("api/v1/ytdlp/jobs/$jobId"),
           timeout: const Duration(seconds: 15),
         );
         switch (job["state"]) {

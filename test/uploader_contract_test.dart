@@ -235,7 +235,7 @@ void main() {
     contract('a device gets its own token, which works until it is revoked', () async {
       final client = await connect();
 
-      final token = await client.pair(server!.baseUrl.toString(), 'Test Mac');
+      final token = (await client.pair(server!.baseUrl.toString(), 'Test Mac')).token;
       expect(token, isNot(server!.token));
 
       env.updateSettings((s) => s.uploaderToken = token);

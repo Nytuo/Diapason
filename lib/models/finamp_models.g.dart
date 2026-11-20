@@ -562,13 +562,14 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..analyticsPromptShown = fields[202] == null ? false : fields[202] as bool
       ..autoRadioPreferYouTube = fields[203] == null
           ? true
-          : fields[203] as bool;
+          : fields[203] as bool
+      ..uploaderLocalUrl = fields[204] == null ? '' : fields[204] as String;
   }
 
   @override
   void write(BinaryWriter writer, FinampSettings obj) {
     writer
-      ..writeByte(196)
+      ..writeByte(197)
       ..writeByte(0)
       ..write(obj.isOffline)
       ..writeByte(1)
@@ -960,7 +961,9 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..writeByte(202)
       ..write(obj.analyticsPromptShown)
       ..writeByte(203)
-      ..write(obj.autoRadioPreferYouTube);
+      ..write(obj.autoRadioPreferYouTube)
+      ..writeByte(204)
+      ..write(obj.uploaderLocalUrl);
   }
 
   @override

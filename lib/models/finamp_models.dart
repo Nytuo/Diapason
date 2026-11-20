@@ -143,6 +143,7 @@ class DefaultSettings {
 
   static const uploaderEnabled = false;
   static const uploaderUrl = "";
+  static const uploaderLocalUrl = "";
   static const uploaderToken = "";
   static const uploaderNetworkPolicy = "local";
   static const uploaderYtProxy = true;
@@ -1183,6 +1184,11 @@ class FinampSettings {
 
   @HiveField(203, defaultValue: DefaultSettings.autoRadioPreferYouTube)
   bool autoRadioPreferYouTube = DefaultSettings.autoRadioPreferYouTube;
+
+  /// The uploader's address on the home network (a `.local` name or a LAN IP). [uploaderUrl] is the address that works
+  /// from anywhere; when this one answers, it is used instead, and when it doesn't, [uploaderUrl] is.
+  @HiveField(204, defaultValue: DefaultSettings.uploaderLocalUrl)
+  String uploaderLocalUrl = DefaultSettings.uploaderLocalUrl;
 
   static Future<FinampSettings> create() async {
     final downloadLocation = await DownloadLocation.create(

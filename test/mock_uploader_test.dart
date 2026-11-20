@@ -66,7 +66,7 @@ void main() {
   test('pairing needs the window open, then hands out a token that works', () async {
     await expectLater(client.pair(server.baseUrl.toString(), 'Test phone'), throwsA(isA<UploaderException>()));
     await client.openPairing();
-    expect(await client.pair(server.baseUrl.toString(), 'Test phone'), 'device-token-1');
+    expect((await client.pair(server.baseUrl.toString(), 'Test phone')).token, 'device-token-1');
     env.updateSettings((s) => s.uploaderToken = 'device-token-1');
     expect((await client.capabilities()).state, UploaderState.ok);
   });

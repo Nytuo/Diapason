@@ -94,10 +94,8 @@ class YouTubeBackend implements MediaBackend {
 
   @override
   Future<PlayableSource> resolveStream(BaseItemDto item, {required bool transcode, String? playSessionId}) async {
-    final stream = await _youtube.streamUrl(item);
-    if (stream == null) {
-      throw StateError("Could not resolve a YouTube stream for '${item.name}'.");
-    }
+    // Throws the real reason (e.g. the uploader's own message) so it reaches the user as is.
+    final stream = await _youtube.resolveStream(item);
     return PlayableSource(stream.url, headers: stream.headers, container: stream.container);
   }
 

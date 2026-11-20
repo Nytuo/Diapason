@@ -1699,6 +1699,14 @@ extension FinampSetters on FinampSettingsHelper {
     ).put("FinampSettings", finampSettingsTemp);
   }
 
+  static void setUploaderLocalUrl(String newUploaderLocalUrl) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.uploaderLocalUrl = newUploaderLocalUrl;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
   static void setBufferDuration(Duration newBufferDuration) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
     finampSettingsTemp.bufferDuration = newBufferDuration;
@@ -2262,6 +2270,8 @@ extension FinampSettingsProviderSelectors
       .select((value) => value.requireValue.analyticsPromptShown);
   ProviderListenable<bool> get autoRadioPreferYouTube => finampSettingsProvider
       .select((value) => value.requireValue.autoRadioPreferYouTube);
+  ProviderListenable<String> get uploaderLocalUrl => finampSettingsProvider
+      .select((value) => value.requireValue.uploaderLocalUrl);
   ProviderListenable<DownloadProfile> get downloadTranscodingProfile =>
       finampSettingsProvider.select(
         (value) => value.requireValue.downloadTranscodingProfile,
