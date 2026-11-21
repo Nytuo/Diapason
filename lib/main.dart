@@ -312,6 +312,8 @@ Future<void> _setupMediaSources() async {
   GetIt.instance.registerSingleton(LyricsSources());
   GetIt.instance.registerSingleton(StreamCacheService());
   GetIt.instance.registerSingleton(UploaderClient());
+  // Find out early whether the home address answers, so the first requests don't take the remote one.
+  unawaited(GetIt.instance<UploaderClient>().refreshRoute());
   GetIt.instance.registerSingleton(YouTubeLibraryImport());
   unawaited(GetIt.instance<YouTubeLibraryImport>().start());
   GetIt.instance.registerSingleton(LocalYtDlpService());

@@ -304,6 +304,10 @@ class UploaderClient {
   }) async {
     http.Response response;
     try {
+      // Pick the home address when it answers *before* sending, not only after a failure. Without this the first
+      // requests after launch went through the remote address (tunnel) even at home. Cached for 30 s, and free when
+      // only one address is set.
+      await refreshRoute();
       try {
         response = await send().timeout(timeout);
       } on UploaderException {

@@ -162,7 +162,7 @@ class YouTubeService {
 
   // Queueing a whole list resolves every track at once. The uploader runs yt-dlp for each lookup with only a couple in
   // parallel and gives up after ~45 s, so a burst times out and trips YouTube's rate limiting. Wait here instead.
-  static const _probesPerBurst = 3;
+  static const _probesPerBurst = 1;
   static const _burstGap = Duration(seconds: 3);
   int _burstCount = 0;
   DateTime? _lastLookupAt;
