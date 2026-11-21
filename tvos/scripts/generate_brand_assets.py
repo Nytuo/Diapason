@@ -10,7 +10,7 @@ from PIL import Image
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 CATALOG = os.path.join(ROOT, 'tvos/Runner/Assets.xcassets/AppIcon.brandassets')
-BLUE = (24, 90, 160, 255)
+BLUE = (27, 103, 204, 255)  # matches the app icon background (#1B67CC)
 
 mark = Image.open(os.path.join(ROOT, 'assets/icon/icon_foreground.png')).convert('RGBA')
 mark = mark.crop(mark.getchannel('A').getbbox())

@@ -511,7 +511,10 @@ Future<void> _setupProviders() async {
   unawaited(
     Stream<void>.periodic(Duration(seconds: 1)).forEach((_) {
       if (!SchedulerBinding.instance.framesEnabled) {
-        (providerScopeKey.currentContext as InheritedElement?)?.build();
+        // A hard cast threw here whenever the key's element wasn't an InheritedElement, which killed this loop (and
+        // logged an unhandled exception) the first time the screen went off.
+        final element = providerScopeKey.currentContext;
+        if (element is InheritedElement) element.build();
       }
     }),
   );
