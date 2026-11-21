@@ -560,6 +560,16 @@ class UploaderClient {
     }
   }
 
+  /// Asks the uploader to start downloading a track into its stream cache, so it is ready when the player gets to
+  /// it. Returns at once; failures are ignored (the track is simply fetched when it is played).
+  Future<void> precacheStream(String videoId) async {
+    try {
+      await _http
+          .post(_endpoint("api/v1/ytdlp/precache/$videoId"), headers: authHeaders)
+          .timeout(const Duration(seconds: 10));
+    } catch (_) {}
+  }
+
   Future<UploadResult> ytDownloadToLibrary(
     String videoId, {
     String? artist,

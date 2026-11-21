@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audio_service/audio_service.dart' show AudioProcessingState;
 import 'package:diapason/components/PlayerScreen/player_buttons_loop_mode.dart';
 import 'package:diapason/components/PlayerScreen/player_buttons_playback_order.dart';
 import 'package:diapason/components/Shortcuts/global_shortcut_manager.dart';
@@ -37,6 +38,10 @@ class PlayerButtons extends StatelessWidget {
         final mediaState = snapshot.data!;
         final playbackState = mediaState.playbackState;
         final fadeState = mediaState.fadeState;
+        // A YouTube track is downloaded by the uploader before it can play, which takes a few seconds: show it.
+        final loading =
+            playbackState.processingState == AudioProcessingState.loading ||
+            playbackState.processingState == AudioProcessingState.buffering;
 
         return Row(
           mainAxisSize: MainAxisSize.max,
@@ -89,14 +94,16 @@ class PlayerButtons extends StatelessWidget {
                     Radius.circular(controller.shouldShow(PlayerHideable.bigPlayButton) ? 16 : 12),
                   ),
                   color: IconTheme.of(context).color!.withAlpha(128),
-                  child: Icon(
-                    playbackState.playing
-                        ? fadeState.fadeDirection != FadeDirection.fadeOut
-                              ? TablerIcons.player_pause
-                              : TablerIcons.player_play
-                        : TablerIcons.player_play,
-                    size: 32,
-                  ),
+                  child: loading
+                      ? const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 3))
+                      : Icon(
+                          playbackState.playing
+                              ? fadeState.fadeDirection != FadeDirection.fadeOut
+                                    ? TablerIcons.player_pause
+                                    : TablerIcons.player_play
+                              : TablerIcons.player_play,
+                          size: 32,
+                        ),
                 ),
               ),
             ),

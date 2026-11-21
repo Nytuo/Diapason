@@ -43,6 +43,7 @@ import 'package:diapason/services/connect/connect_remote_controller.dart';
 import 'package:diapason/services/connect/connect_service.dart';
 import 'package:diapason/services/uploader/uploader_client.dart';
 import 'package:diapason/services/log_level.dart';
+import 'package:diapason/services/youtube/youtube_prefetcher.dart';
 import 'package:diapason/services/youtube_service.dart';
 import 'package:diapason/services/youtube/local_ytdlp_service.dart';
 import 'package:diapason/services/youtube/youtube_availability.dart';
@@ -662,6 +663,7 @@ Future<void> _setupPlaybackServices() async {
   GetIt.instance.registerSingleton<MusicPlayerBackgroundTask>(audioHandler);
   var queueService = QueueService();
   GetIt.instance.registerSingleton(queueService);
+  GetIt.instance.registerSingleton(YouTubePrefetcher()..start());
   audioHandler.onQueueServiceAvailable(); // breaking circular dependency
   GetIt.instance.registerSingleton(PlaybackHistoryService());
   GetIt.instance.registerSingleton(AudioServiceHelper());
