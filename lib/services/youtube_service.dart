@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:collection';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/backends/item_mapper.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
@@ -153,6 +155,50 @@ class YouTubeService {
   /// The address to play [item] from. Throws the reason (the uploader's own message when it's the one that can't
   /// serve it) instead of returning null.
   Future<YouTubeStream> resolveStream(BaseItemDto item) {
+    // Decided on arrival, before any waiting, so a burst is counted in the order it was requested.
+    final probe = _shouldProbe();
+    return _limitStreamLookups(() => _resolveStream(item, probe: probe));
+  }
+
+  // Queueing a whole list resolves every track at once. The uploader runs yt-dlp for each lookup with only a couple in
+  // parallel and gives up after ~45 s, so a burst times out and trips YouTube's rate limiting. Wait here instead.
+  static const _probesPerBurst = 3;
+  static const _burstGap = Duration(seconds: 3);
+  int _burstCount = 0;
+  DateTime? _lastLookupAt;
+
+  /// True for the first [_probesPerBurst] lookups of a burst (lookups less than [_burstGap] apart).
+  bool _shouldProbe() {
+    final now = DateTime.now();
+    if (_lastLookupAt == null || now.difference(_lastLookupAt!) > _burstGap) _burstCount = 0;
+    _lastLookupAt = now;
+    return ++_burstCount <= _probesPerBurst;
+  }
+
+  static const _maxParallelLookups = 3;
+  int _lookupsRunning = 0;
+  final Queue<Completer<void>> _lookupWaiters = Queue();
+
+  Future<T> _limitStreamLookups<T>(Future<T> Function() run) async {
+    if (_lookupsRunning >= _maxParallelLookups) {
+      final turn = Completer<void>();
+      _lookupWaiters.add(turn);
+      await turn.future;
+    } else {
+      _lookupsRunning++;
+    }
+    try {
+      return await run();
+    } finally {
+      if (_lookupWaiters.isNotEmpty) {
+        _lookupWaiters.removeFirst().complete(); // hand the slot straight to the next waiter
+      } else {
+        _lookupsRunning--;
+      }
+    }
+  }
+
+  Future<YouTubeStream> _resolveStream(BaseItemDto item, {required bool probe}) {
     final id = item.id.nativeId;
     return _viaSource<YouTubeStream>(
       "stream '${item.name}'",
@@ -161,7 +207,10 @@ class YouTubeService {
         return YouTubeStream(s.url, s.ext);
       },
       uploader: (u) async {
-        await u.probeStream(id);
+        // Building a queue resolves every track in one go. Check only the first few (the ones about to play) so the
+        // uploader isn't flooded and starting playback doesn't wait on the whole list. The rest use their address
+        // as is; the player fetches it when it gets there, and the uploader looks it up then.
+        if (probe) await u.probeStream(id);
         return YouTubeStream(u.ytStream(id), null, headers: u.authHeaders);
       },
     );

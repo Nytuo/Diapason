@@ -1,3 +1,4 @@
+import 'package:diapason/components/launch_animation.dart';
 import 'package:diapason/screens/tv/tv_landing.dart';
 import 'package:diapason/screens/tv/tv_setup_screen.dart';
 import 'package:diapason/services/tv/tv_profile_service.dart';
@@ -24,6 +25,17 @@ class SplashScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final formFactor = DeviceFormFactorDetector.current;
+    final animate =
+        !formFactor.isTv &&
+        !formFactor.isWatch &&
+        !isDesktop &&
+        InterfaceMode.fromName(ref.watch(finampSettingsProvider.interfaceMode)) != InterfaceMode.ipod;
+    // Always wrapped (even when disabled) so the tree shape stays constant and the app below keeps its state.
+    return LaunchAnimationOverlay(enabled: animate, child: _content(context, ref));
+  }
+
+  Widget _content(BuildContext context, WidgetRef ref) {
     final finampUserHelper = GetIt.instance<FinampUserHelper>();
     final user = finampUserHelper.currentUser;
 
