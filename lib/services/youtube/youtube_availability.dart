@@ -63,7 +63,11 @@ class YouTubeAvailability with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _local.status.addListener(refresh);
     _local.config.addListener(refresh);
-    _timer = Timer.periodic(const Duration(minutes: 2), (_) => refresh());
+    // Skip the poll while the app is in the background; resuming already triggers a refresh.
+    _timer = Timer.periodic(const Duration(minutes: 2), (_) {
+      final state = WidgetsBinding.instance.lifecycleState;
+      if (state == null || state == AppLifecycleState.resumed) refresh();
+    });
     await refresh();
   }
 
@@ -118,7 +122,20 @@ class YouTubeAvailability with WidgetsBindingObserver {
         "(local=${next.localReady}, uploader=${caps.state.name}, uploaderYtdlp=${caps.ytdlp})",
       );
     }
-    status.value = next;
+    // A fresh instance always notifies listeners (and rebuilds every watching provider), so only publish real changes.
+    if (previous.source != next.source ||
+        previous.localReady != next.localReady ||
+        previous.uploaderWanted != next.uploaderWanted ||
+        previous.uploader.state != next.uploader.state ||
+        previous.uploader.problem != next.uploader.problem ||
+        previous.uploader.ytdlp != next.uploader.ytdlp ||
+        previous.uploader.ytdlpVersion != next.uploader.ytdlpVersion ||
+        previous.uploader.jsRuntime != next.uploader.jsRuntime ||
+        previous.uploader.tagging != next.uploader.tagging ||
+        previous.uploader.pairing != next.uploader.pairing ||
+        previous.uploader.publicUrl != next.uploader.publicUrl) {
+      status.value = next;
+    }
   }
 
   void dispose() {

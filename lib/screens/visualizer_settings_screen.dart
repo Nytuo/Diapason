@@ -1,3 +1,4 @@
+import 'package:diapason/l10n/app_localizations.dart';
 import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
@@ -23,7 +24,7 @@ class VisualizerSettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Visualizer"),
+        title: Text(AppLocalizations.of(context)!.visualizerTitle),
         leading: FinampAppBarBackButton(),
         actions: [
           FinampSettingsHelper.makeSettingsResetButtonWithDialog(context, FinampSettingsHelper.resetVisualizerSettings),
@@ -37,33 +38,26 @@ class VisualizerSettingsScreen extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: 200.0),
               children: [
                 if (!supported)
-                  const ListTile(
+                  ListTile(
                     leading: Icon(Icons.info_outline),
-                    title: Text("Not available on this platform"),
-                    subtitle: Text(
-                      "The visualizer needs access to the audio being played, which only phones and tablets expose.",
-                    ),
+                    title: Text(AppLocalizations.of(context)!.visualizerUnavailable),
+                    subtitle: Text(AppLocalizations.of(context)!.visualizerUnavailableBody),
                   ),
                 SwitchListTile.adaptive(
-                  title: const Text("Show visualizer"),
-                  subtitle: const Text("Draws a live spectrum curve behind the player screen controls"),
+                  title: Text(AppLocalizations.of(context)!.visualizerShow),
+                  subtitle: Text(AppLocalizations.of(context)!.visualizerShowSubtitle),
                   value: enabled,
                   onChanged: supported ? (value) => _setEnabled(context, value) : null,
                 ),
                 if (Platform.isAndroid)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 12.0),
-                    child: Text(
-                      "Android only lets an app read its own audio through the microphone permission, so turning this on "
-                      "asks for it. Nothing is recorded and nothing leaves the device — the permission is only used to read "
-                      "the levels of the track you are playing.",
-                      style: TextStyle(fontSize: 12.0),
-                    ),
+                    child: Text(AppLocalizations.of(context)!.visualizerAndroidNote, style: TextStyle(fontSize: 12.0)),
                   ),
                 const Divider(),
                 _VisualizerSlider(
-                  title: "Bands",
-                  subtitle: "How many points the curve is built from",
+                  title: AppLocalizations.of(context)!.visualizerBands,
+                  subtitle: AppLocalizations.of(context)!.visualizerBandsSubtitle,
                   enabled: enabled,
                   value: ref.watch(finampSettingsProvider.visualizerBins).toDouble(),
                   min: 16,
@@ -73,19 +67,19 @@ class VisualizerSettingsScreen extends ConsumerWidget {
                   onChanged: (value) => FinampSetters.setVisualizerBins(value.round()),
                 ),
                 _VisualizerSlider(
-                  title: "Frame rate",
-                  subtitle: "Most devices cap the audio capture at 20 fps regardless of what is asked for",
+                  title: AppLocalizations.of(context)!.visualizerFrameRate,
+                  subtitle: AppLocalizations.of(context)!.visualizerFrameRateSubtitle,
                   enabled: enabled,
                   value: ref.watch(finampSettingsProvider.visualizerFps).toDouble(),
                   min: 10,
                   max: 60,
                   divisions: 10,
-                  format: (value) => "${value.round()} fps",
+                  format: (value) => AppLocalizations.of(context)!.visualizerFps(value.round()),
                   onChanged: (value) => FinampSetters.setVisualizerFps(value.round()),
                 ),
                 _VisualizerSlider(
-                  title: "Height",
-                  subtitle: "Share of the screen the curve rises into",
+                  title: AppLocalizations.of(context)!.visualizerHeight,
+                  subtitle: AppLocalizations.of(context)!.visualizerHeightSubtitle,
                   enabled: enabled,
                   value: ref.watch(finampSettingsProvider.visualizerHeightFactor),
                   min: 0.1,
@@ -95,8 +89,8 @@ class VisualizerSettingsScreen extends ConsumerWidget {
                   onChanged: FinampSetters.setVisualizerHeightFactor,
                 ),
                 _VisualizerSlider(
-                  title: "Smoothing",
-                  subtitle: "Higher values make the curve settle more slowly",
+                  title: AppLocalizations.of(context)!.visualizerSmoothing,
+                  subtitle: AppLocalizations.of(context)!.visualizerSmoothingSubtitle,
                   enabled: enabled,
                   value: ref.watch(finampSettingsProvider.visualizerSmoothing),
                   min: 0.0,
@@ -106,8 +100,8 @@ class VisualizerSettingsScreen extends ConsumerWidget {
                   onChanged: FinampSetters.setVisualizerSmoothing,
                 ),
                 _VisualizerSlider(
-                  title: "Scale",
-                  subtitle: "Multiplier applied to the curve's height",
+                  title: AppLocalizations.of(context)!.visualizerScale,
+                  subtitle: AppLocalizations.of(context)!.visualizerScaleSubtitle,
                   enabled: enabled,
                   value: ref.watch(finampSettingsProvider.visualizerScale),
                   min: 0.25,
@@ -117,20 +111,21 @@ class VisualizerSettingsScreen extends ConsumerWidget {
                   onChanged: FinampSetters.setVisualizerScale,
                 ),
                 const Divider(),
-                const Padding(
+                Padding(
                   padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 0.0),
-                  child: Text("Frequencies", style: TextStyle(fontWeight: FontWeight.w600)),
+                  child: Text(
+                    AppLocalizations.of(context)!.visualizerFrequencies,
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
                 SwitchListTile.adaptive(
-                  title: const Text("Logarithmic spacing"),
-                  subtitle: const Text(
-                    "Gives bass and treble equal room. Linear spacing crowds everything to the left",
-                  ),
+                  title: Text(AppLocalizations.of(context)!.visualizerLogSpacing),
+                  subtitle: Text(AppLocalizations.of(context)!.visualizerLogSpacingSubtitle),
                   value: ref.watch(finampSettingsProvider.visualizerLogScale),
                   onChanged: enabled ? FinampSetters.setVisualizerLogScale : null,
                 ),
                 _VisualizerSlider(
-                  title: "Lowest frequency",
+                  title: AppLocalizations.of(context)!.visualizerLowFreq,
                   enabled: enabled,
                   value: ref.watch(finampSettingsProvider.visualizerMinHz),
                   min: 20,
@@ -140,7 +135,7 @@ class VisualizerSettingsScreen extends ConsumerWidget {
                   onChanged: FinampSetters.setVisualizerMinHz,
                 ),
                 _VisualizerSlider(
-                  title: "Highest frequency",
+                  title: AppLocalizations.of(context)!.visualizerHighFreq,
                   enabled: enabled,
                   value: ref.watch(finampSettingsProvider.visualizerMaxHz),
                   min: 2000,
@@ -150,8 +145,8 @@ class VisualizerSettingsScreen extends ConsumerWidget {
                   onChanged: FinampSetters.setVisualizerMaxHz,
                 ),
                 _VisualizerSlider(
-                  title: "Quiet cutoff",
-                  subtitle: "Levels below this map to a flat curve. Raise it if the curve never rests",
+                  title: AppLocalizations.of(context)!.visualizerQuietCutoff,
+                  subtitle: AppLocalizations.of(context)!.visualizerQuietCutoffSubtitle,
                   enabled: enabled,
                   value: ref.watch(finampSettingsProvider.visualizerDbFloor),
                   min: -120,
@@ -161,8 +156,8 @@ class VisualizerSettingsScreen extends ConsumerWidget {
                   onChanged: FinampSetters.setVisualizerDbFloor,
                 ),
                 _VisualizerSlider(
-                  title: "Loud cutoff",
-                  subtitle: "Levels above this max out the curve. Lower it if quiet tracks barely move",
+                  title: AppLocalizations.of(context)!.visualizerLoudCutoff,
+                  subtitle: AppLocalizations.of(context)!.visualizerLoudCutoffSubtitle,
                   enabled: enabled,
                   value: ref.watch(finampSettingsProvider.visualizerDbCeiling),
                   min: -40,
@@ -172,23 +167,26 @@ class VisualizerSettingsScreen extends ConsumerWidget {
                   onChanged: FinampSetters.setVisualizerDbCeiling,
                 ),
                 const Divider(),
-                const Padding(
+                Padding(
                   padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 0.0),
-                  child: Text("Appearance", style: TextStyle(fontWeight: FontWeight.w600)),
+                  child: Text(
+                    AppLocalizations.of(context)!.visualizerAppearance,
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
                 SwitchListTile.adaptive(
-                  title: const Text("Smooth curve"),
-                  subtitle: const Text("Interpolate between bands instead of drawing straight segments"),
+                  title: Text(AppLocalizations.of(context)!.visualizerSmoothCurve),
+                  subtitle: Text(AppLocalizations.of(context)!.visualizerSmoothCurveSubtitle),
                   value: ref.watch(finampSettingsProvider.visualizerUseSplines),
                   onChanged: enabled ? FinampSetters.setVisualizerUseSplines : null,
                 ),
                 SwitchListTile.adaptive(
-                  title: const Text("Fill under the curve"),
+                  title: Text(AppLocalizations.of(context)!.visualizerFill),
                   value: ref.watch(finampSettingsProvider.visualizerFillEnabled),
                   onChanged: enabled ? FinampSetters.setVisualizerFillEnabled : null,
                 ),
                 _VisualizerSlider(
-                  title: "Fill opacity at the bottom",
+                  title: AppLocalizations.of(context)!.visualizerFillBottom,
                   enabled: enabled,
                   value: ref.watch(finampSettingsProvider.visualizerBottomOpacity),
                   min: 0.0,
@@ -198,7 +196,7 @@ class VisualizerSettingsScreen extends ConsumerWidget {
                   onChanged: FinampSetters.setVisualizerBottomOpacity,
                 ),
                 _VisualizerSlider(
-                  title: "Fill opacity at the top",
+                  title: AppLocalizations.of(context)!.visualizerFillTop,
                   enabled: enabled,
                   value: ref.watch(finampSettingsProvider.visualizerTopOpacity),
                   min: 0.0,
@@ -208,8 +206,8 @@ class VisualizerSettingsScreen extends ConsumerWidget {
                   onChanged: FinampSetters.setVisualizerTopOpacity,
                 ),
                 _VisualizerSlider(
-                  title: "Outline width",
-                  subtitle: "Set to zero to hide the outline",
+                  title: AppLocalizations.of(context)!.visualizerOutline,
+                  subtitle: AppLocalizations.of(context)!.visualizerOutlineSubtitle,
                   enabled: enabled,
                   value: ref.watch(finampSettingsProvider.visualizerStrokeWidth),
                   min: 0.0,
@@ -241,8 +239,10 @@ class VisualizerSettingsScreen extends ConsumerWidget {
     if (!status.isGranted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text("The visualizer cannot read the audio without the microphone permission."),
-          action: status.isPermanentlyDenied ? SnackBarAction(label: "Settings", onPressed: openAppSettings) : null,
+          content: Text(AppLocalizations.of(context)!.visualizerMicDenied),
+          action: status.isPermanentlyDenied
+              ? SnackBarAction(label: AppLocalizations.of(context)!.settings, onPressed: openAppSettings)
+              : null,
         ),
       );
       return;
@@ -314,7 +314,9 @@ class _VisualizerPreview extends StatelessWidget {
                             builder: (context, state) {
                               final playing = state.data?.playing ?? false;
                               return IconButton(
-                                tooltip: playing ? "Pause" : "Play",
+                                tooltip: playing
+                                    ? AppLocalizations.of(context)!.visualizerPause
+                                    : AppLocalizations.of(context)!.visualizerPlay,
                                 icon: Icon(playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
                                 onPressed: handler.togglePlayback,
                               );
@@ -329,8 +331,8 @@ class _VisualizerPreview extends StatelessWidget {
                         padding: const EdgeInsets.all(24.0),
                         child: Text(
                           !enabled
-                              ? "Turn the visualizer on to preview it here"
-                              : "Play a track to preview the visualizer",
+                              ? AppLocalizations.of(context)!.visualizerPreviewOff
+                              : AppLocalizations.of(context)!.visualizerPreviewIdle,
                           textAlign: TextAlign.center,
                           style: TextStyle(color: colorScheme.onSurfaceVariant),
                         ),

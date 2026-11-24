@@ -176,12 +176,16 @@ class GlobalSnackbar {
     }
 
     if (suppressError) {
-      _logger.fine("Suppressed error: $event", event);
+      _logger.fine("Suppressed transient network error: $event", event);
       return;
     }
 
     final friendly = FriendlyError.describe(event);
-    _logger.warning("Displaying error [${friendly.source.name}]: ${friendly.technical}", event);
+    _logger.severe(
+      "Error shown to user [${friendly.source.name}]: ${friendly.technical}",
+      event is Error ? event : null,
+      event is Error ? event.stackTrace : null,
+    );
     String errorText;
     if (event is Response) {
       if (event.statusCode == 401) {
@@ -227,9 +231,12 @@ class GlobalSnackbar {
             children: [
               Text(friendly.message),
               const SizedBox(height: 8),
-              Text("Where it went wrong: ${friendly.source.label}", style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                AppLocalizations.of(context)!.errorWhereItWentWrong(friendly.source.label),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
               const SizedBox(height: 16),
-              Text("Technical details (for bug reports)", style: Theme.of(context).textTheme.labelMedium),
+              Text(AppLocalizations.of(context)!.errorTechnicalDetails, style: Theme.of(context).textTheme.labelMedium),
               const SizedBox(height: 4),
               SelectableText(
                 errorText == event.toString() ? friendly.technical : "$errorText\n${friendly.technical}",

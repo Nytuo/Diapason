@@ -1,3 +1,4 @@
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/backends/media_source_service.dart';
 import 'package:diapason/utils/tv_focus.dart';
@@ -6,18 +7,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 
-({IconData icon, String label, String hint}) sourceKindPresentation(MediaSourceKind kind) => switch (kind) {
-  MediaSourceKind.jellyfin => (icon: TablerIcons.server, label: "Jellyfin", hint: "https://jellyfin.example.com"),
-  MediaSourceKind.subsonic => (
-    icon: TablerIcons.broadcast,
-    label: "Subsonic / Navidrome",
-    hint: "https://navidrome.example.com",
-  ),
-  MediaSourceKind.plex => (icon: TablerIcons.player_play, label: "Plex", hint: "http://192.168.1.10:32400"),
-  MediaSourceKind.local => (icon: TablerIcons.folder, label: "Local files", hint: "Choose a music folder"),
-  MediaSourceKind.mpd => (icon: TablerIcons.server_2, label: "MPD", hint: "localhost:6600"),
-  MediaSourceKind.youtube => (icon: TablerIcons.brand_youtube, label: "YouTube", hint: ""),
-};
+({IconData icon, String label, String hint}) sourceKindPresentation(MediaSourceKind kind, [BuildContext? context]) =>
+    switch (kind) {
+      MediaSourceKind.jellyfin => (icon: TablerIcons.server, label: "Jellyfin", hint: "https://jellyfin.example.com"),
+      MediaSourceKind.subsonic => (
+        icon: TablerIcons.broadcast,
+        label: "Subsonic / Navidrome",
+        hint: "https://navidrome.example.com",
+      ),
+      MediaSourceKind.plex => (icon: TablerIcons.player_play, label: "Plex", hint: "http://192.168.1.10:32400"),
+      MediaSourceKind.local => (
+        icon: TablerIcons.folder,
+        label: context == null ? "Local files" : AppLocalizations.of(context)!.sourceKindLocalFiles,
+        hint: context == null ? "Choose a music folder" : AppLocalizations.of(context)!.sourceKindLocalHint,
+      ),
+      MediaSourceKind.mpd => (icon: TablerIcons.server_2, label: "MPD", hint: "localhost:6600"),
+      MediaSourceKind.youtube => (icon: TablerIcons.brand_youtube, label: "YouTube", hint: ""),
+    };
 
 class SourceForm extends StatefulWidget {
   const SourceForm({super.key, required this.kind, required this.onSaved, this.existing, this.saveLabel});
@@ -136,7 +142,7 @@ class _SourceFormState extends State<SourceForm> {
 
   @override
   Widget build(BuildContext context) {
-    final presentation = sourceKindPresentation(widget.kind);
+    final presentation = sourceKindPresentation(widget.kind, context);
 
     return Form(
       key: _formKey,
@@ -146,9 +152,9 @@ class _SourceFormState extends State<SourceForm> {
           TextFormField(
             controller: _name,
             focusNode: _nameFocus,
-            decoration: const InputDecoration(
-              labelText: "Name (optional)",
-              helperText: "How this source is labelled in your library",
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.sourceFormName,
+              helperText: AppLocalizations.of(context)!.sourceFormNameHelper,
             ),
           ),
           const SizedBox(height: 16.0),
@@ -163,7 +169,7 @@ class _SourceFormState extends State<SourceForm> {
             ),
             if (_localPath.isEmpty)
               Text(
-                "Choose a folder to scan",
+                AppLocalizations.of(context)!.sourceFormChooseFolder,
                 style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12.0),
               ),
           ] else ...[
@@ -172,8 +178,13 @@ class _SourceFormState extends State<SourceForm> {
               focusNode: _addressFocus,
               autocorrect: false,
               keyboardType: TextInputType.url,
-              decoration: InputDecoration(labelText: "Server address", hintText: presentation.hint),
-              validator: (v) => (v == null || v.trim().isEmpty) ? "A server address is required" : null,
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.sourceFormServerAddress,
+                hintText: presentation.hint,
+              ),
+              validator: (v) => (v == null || v.trim().isEmpty)
+                  ? AppLocalizations.of(context)!.sourceFormServerAddressRequired
+                  : null,
             ),
             const SizedBox(height: 16.0),
 
@@ -182,17 +193,14 @@ class _SourceFormState extends State<SourceForm> {
                 controller: _password,
                 focusNode: _passwordFocus,
                 obscureText: true,
-                decoration: const InputDecoration(labelText: "Password (optional)"),
+                decoration: InputDecoration(labelText: AppLocalizations.of(context)!.sourceFormPasswordOptional),
               ),
               const SizedBox(height: 16.0),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(TablerIcons.folder),
-                title: Text(_localPath.isEmpty ? "Music directory (recommended)" : _localPath),
-                subtitle: const Text(
-                  "Pick the server's music_directory so playback can read the files. "
-                  "Leave empty to auto-detect (local MPD only; may be blocked by the OS sandbox).",
-                ),
+                title: Text(_localPath.isEmpty ? AppLocalizations.of(context)!.sourceFormMusicDirectory : _localPath),
+                subtitle: Text(AppLocalizations.of(context)!.sourceFormMusicDirectoryHelper),
                 trailing: const Icon(TablerIcons.dots),
                 onTap: _pickFolder,
               ),
@@ -201,8 +209,8 @@ class _SourceFormState extends State<SourceForm> {
             if (!_isMpd)
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
-                title: const Text("Local network address (optional)"),
-                subtitle: const Text("Switch to a faster address automatically when on this network"),
+                title: Text(AppLocalizations.of(context)!.sourceFormLocalAddressOptional),
+                subtitle: Text(AppLocalizations.of(context)!.sourceFormLocalAddressSubtitle),
                 childrenPadding: const EdgeInsets.only(bottom: 8.0),
                 children: [
                   TextFormField(
@@ -210,15 +218,15 @@ class _SourceFormState extends State<SourceForm> {
                     focusNode: _localNetworkAddressFocus,
                     autocorrect: false,
                     keyboardType: TextInputType.url,
-                    decoration: const InputDecoration(
-                      labelText: "Local network address",
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.sourceFormLocalAddress,
                       hintText: "http://192.168.1.10:4533",
                     ),
                   ),
                   CheckboxListTile(
                     contentPadding: EdgeInsets.zero,
                     value: _preferLocalNetwork,
-                    title: const Text("Prefer local network when available"),
+                    title: Text(AppLocalizations.of(context)!.sourceFormPreferLocal),
                     onChanged: (value) => setState(() => _preferLocalNetwork = value ?? false),
                   ),
                 ],
@@ -230,19 +238,21 @@ class _SourceFormState extends State<SourceForm> {
                 controller: _username,
                 focusNode: _usernameFocus,
                 autocorrect: false,
-                decoration: const InputDecoration(labelText: "Username"),
-                validator: (v) => (v == null || v.trim().isEmpty) ? "A username is required" : null,
+                decoration: InputDecoration(labelText: AppLocalizations.of(context)!.sourceFormUsername),
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? AppLocalizations.of(context)!.sourceFormUsernameRequired : null,
               ),
               const SizedBox(height: 16.0),
               TextFormField(
                 controller: _password,
                 focusNode: _passwordFocus,
                 obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: "Password",
-                  helperText: "Subsonic signs every request, so the password is stored on this device",
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.sourceFormPassword,
+                  helperText: AppLocalizations.of(context)!.sourceFormPasswordHelper,
                 ),
-                validator: (v) => (v == null || v.isEmpty) ? "A password is required" : null,
+                validator: (v) =>
+                    (v == null || v.isEmpty) ? AppLocalizations.of(context)!.sourceFormPasswordRequired : null,
               ),
             ],
 
@@ -251,8 +261,12 @@ class _SourceFormState extends State<SourceForm> {
                 controller: _token,
                 focusNode: _tokenFocus,
                 autocorrect: false,
-                decoration: const InputDecoration(labelText: "Plex token", helperText: "X-Plex-Token"),
-                validator: (v) => (v == null || v.trim().isEmpty) ? "A Plex token is required" : null,
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.sourceFormPlexToken,
+                  helperText: "X-Plex-Token",
+                ),
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? AppLocalizations.of(context)!.sourceFormPlexTokenRequired : null,
               ),
           ],
 
@@ -270,7 +284,9 @@ class _SourceFormState extends State<SourceForm> {
                   const SizedBox(width: 8.0),
                   Expanded(
                     child: Text(
-                      _reachable! ? "Connected" : "Couldn't reach this source. Check the address and credentials.",
+                      _reachable!
+                          ? AppLocalizations.of(context)!.sourceFormConnected
+                          : AppLocalizations.of(context)!.sourceFormUnreachable,
                     ),
                   ),
                 ],
@@ -285,14 +301,14 @@ class _SourceFormState extends State<SourceForm> {
                   icon: _testing
                       ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Icon(TablerIcons.plug_connected),
-                  label: const Text("Test"),
+                  label: Text(AppLocalizations.of(context)!.sourceFormTest),
                 ),
               ),
               const SizedBox(width: 12.0),
               Expanded(
                 child: FilledButton(
                   onPressed: (_isLocal && _localPath.isEmpty) ? null : _save,
-                  child: Text(widget.saveLabel ?? "Save"),
+                  child: Text(widget.saveLabel ?? AppLocalizations.of(context)!.sourceFormSave),
                 ),
               ),
             ],

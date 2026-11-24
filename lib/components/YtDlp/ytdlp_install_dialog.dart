@@ -1,3 +1,4 @@
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/services/friendly_error.dart';
 import 'package:diapason/services/youtube/local_ytdlp_service.dart';
 import 'package:diapason/services/youtube/ytdlp_installer.dart';
@@ -80,7 +81,10 @@ class _InstallDialogState extends State<_InstallDialog> {
       if (!mounted) return;
       setState(() {
         _phase = _Phase.done;
-        _summary = "yt-dlp ${s.version ?? ""}${s.jsRuntime != null ? " · ${s.jsRuntime}" : ""}".trim();
+        _summary =
+            (AppLocalizations.of(context)!.ytdlpVersionLine(s.version ?? "") +
+                    (s.jsRuntime != null ? " · ${s.jsRuntime}" : ""))
+                .trim();
       });
     } on InstallCancelled {
       if (mounted) Navigator.of(context).pop(false);
@@ -97,7 +101,7 @@ class _InstallDialogState extends State<_InstallDialog> {
   }
 
   Future<void> _useExisting() async {
-    final picked = await FilePicker.pickFile(dialogTitle: "Choose your yt-dlp executable");
+    final picked = await FilePicker.pickFile(dialogTitle: AppLocalizations.of(context)!.ytdlpPickBinary);
     final path = picked?.path;
     if (path == null) return;
     final cfg = _service.config.value.clone()..customBinaryPath = path;
@@ -108,7 +112,7 @@ class _InstallDialogState extends State<_InstallDialog> {
     } else {
       setState(() {
         _phase = _Phase.failed;
-        _error = _service.status.value.problem ?? "That file doesn't look like a working yt-dlp.";
+        _error = _service.status.value.problem ?? AppLocalizations.of(context)!.ytdlpInstallBadFile;
         _technical = path;
       });
     }
@@ -126,10 +130,13 @@ class _InstallDialogState extends State<_InstallDialog> {
       scrollable: true,
       icon: const Icon(TablerIcons.brand_youtube, size: 32),
       title: Text(switch (_phase) {
-        _Phase.offer => widget.updateOnly ? "Update yt-dlp" : "Set up YouTube on this computer",
-        _Phase.installing => "Installing…",
-        _Phase.done => "All set",
-        _Phase.failed => "Installation didn't finish",
+        _Phase.offer =>
+          widget.updateOnly
+              ? AppLocalizations.of(context)!.ytdlpInstallUpdateTitle
+              : AppLocalizations.of(context)!.ytdlpInstallSetupTitle,
+        _Phase.installing => AppLocalizations.of(context)!.ytdlpInstallInstalling,
+        _Phase.done => AppLocalizations.of(context)!.ytdlpInstallAllSet,
+        _Phase.failed => AppLocalizations.of(context)!.ytdlpInstallFailedTitle,
       }),
       content: SizedBox(width: 460, child: _content(context)),
       actions: _actions(context),
@@ -145,31 +152,24 @@ class _InstallDialogState extends State<_InstallDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              "Diapason uses yt-dlp to search and play YouTube, and it updates far faster than the app can. "
-              "I can download it for you and keep it up to date — it lives in Diapason's own folder and "
-              "nothing else on your computer is touched.",
-            ),
+            Text(AppLocalizations.of(context)!.ytdlpInstallOfferBody),
             const SizedBox(height: 12),
-            _bullet(TablerIcons.download, "yt-dlp (≈ 35 MB) from github.com/yt-dlp/yt-dlp"),
+            _bullet(TablerIcons.download, AppLocalizations.of(context)!.ytdlpInstallYtdlpDownload),
             CheckboxListTile(
               contentPadding: EdgeInsets.zero,
               dense: true,
               controlAffinity: ListTileControlAffinity.leading,
               value: _withJs,
               onChanged: (v) => setState(() => _withJs = v ?? false),
-              title: const Text("Deno (≈ 40 MB) from github.com/denoland/deno"),
+              title: Text(AppLocalizations.of(context)!.ytdlpInstallDenoDownload),
               subtitle: Text(
                 s.jsRuntime != null && !s.jsRuntimeManaged
-                    ? "You already have ${s.jsRuntime} — Diapason can use that instead."
-                    : "A JavaScript runtime yt-dlp needs to read YouTube. Recommended.",
+                    ? AppLocalizations.of(context)!.ytdlpInstallDenoExisting("${s.jsRuntime}")
+                    : AppLocalizations.of(context)!.ytdlpInstallDenoWhy,
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              "Downloads are checked against the SHA-256 published by each project before they're used.",
-              style: theme.textTheme.bodySmall,
-            ),
+            Text(AppLocalizations.of(context)!.ytdlpInstallChecksum, style: theme.textTheme.bodySmall),
           ],
         );
       case _Phase.installing:
@@ -183,13 +183,10 @@ class _InstallDialogState extends State<_InstallDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("YouTube is ready on this computer.\n${_summary ?? ""}"),
+            Text(AppLocalizations.of(context)!.ytdlpInstallReady(_summary ?? "")),
             if (_service.status.value.jsRuntime == null) ...[
               const SizedBox(height: 8),
-              Text(
-                "No JavaScript runtime was found, so some videos may not play. You can install Deno from the yt-dlp settings.",
-                style: theme.textTheme.bodySmall,
-              ),
+              Text(AppLocalizations.of(context)!.ytdlpInstallNoJs, style: theme.textTheme.bodySmall),
             ],
           ],
         );
@@ -198,12 +195,16 @@ class _InstallDialogState extends State<_InstallDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(_error ?? "Something went wrong."),
+            Text(_error ?? AppLocalizations.of(context)!.ytdlpInstallSomethingWrong),
             if (_steps.isNotEmpty) ...[const SizedBox(height: 12), for (final step in _steps) _stepTile(context, step)],
             if (_technical != null) ...[
               TextButton(
                 onPressed: () => setState(() => _showTechnical = !_showTechnical),
-                child: Text(_showTechnical ? "Hide technical details" : "Technical details"),
+                child: Text(
+                  _showTechnical
+                      ? AppLocalizations.of(context)!.ytdlpInstallHideTechnical
+                      : AppLocalizations.of(context)!.ytdlpInstallTechnical,
+                ),
               ),
               if (_showTechnical) SelectableText(_technical!, style: theme.textTheme.bodySmall),
             ],
@@ -272,19 +273,39 @@ class _InstallDialogState extends State<_InstallDialog> {
     switch (_phase) {
       case _Phase.offer:
         return [
-          if (!widget.updateOnly) TextButton(onPressed: _useExisting, child: const Text("I have yt-dlp…")),
-          if (!widget.updateOnly) TextButton(onPressed: _dontAsk, child: const Text("Don't ask again")),
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text("Not now")),
-          FilledButton(onPressed: _install, child: Text(widget.updateOnly ? "Update" : "Install")),
+          if (!widget.updateOnly)
+            TextButton(onPressed: _useExisting, child: Text(AppLocalizations.of(context)!.ytdlpInstallHaveYtdlp)),
+          if (!widget.updateOnly)
+            TextButton(onPressed: _dontAsk, child: Text(AppLocalizations.of(context)!.ytdlpInstallDontAsk)),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(AppLocalizations.of(context)!.ytdlpInstallNotNow),
+          ),
+          FilledButton(
+            onPressed: _install,
+            child: Text(
+              widget.updateOnly
+                  ? AppLocalizations.of(context)!.ytdlpInstallUpdate
+                  : AppLocalizations.of(context)!.ytdlpInstallInstall,
+            ),
+          ),
         ];
       case _Phase.installing:
-        return [TextButton(onPressed: () => _cancel?.cancel(), child: const Text("Cancel"))];
+        return [TextButton(onPressed: () => _cancel?.cancel(), child: Text(AppLocalizations.of(context)!.ytdlpCancel))];
       case _Phase.done:
-        return [FilledButton(onPressed: () => Navigator.of(context).pop(true), child: const Text("Done"))];
+        return [
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(AppLocalizations.of(context)!.ytdlpInstallDone),
+          ),
+        ];
       case _Phase.failed:
         return [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text("Close")),
-          FilledButton(onPressed: _install, child: const Text("Try again")),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(AppLocalizations.of(context)!.ytdlpInstallClose),
+          ),
+          FilledButton(onPressed: _install, child: Text(AppLocalizations.of(context)!.ytdlpInstallTryAgain)),
         ];
     }
   }

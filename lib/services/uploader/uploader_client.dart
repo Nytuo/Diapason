@@ -296,6 +296,23 @@ class UploaderClient {
     return UploaderException(d.message, source: ErrorSource.connection, code: "unreachable", detail: d.technical);
   }
 
+  /// Sends once, and once more if a connection that was kept open between requests turned out to be dead (a proxy or
+  /// tunnel closes idle ones; the server is fine and the second attempt opens a new connection).
+  Future<http.Response> _sendWithRetry(Future<http.Response> Function() send, Duration timeout) async {
+    try {
+      return await send().timeout(timeout);
+    } on TimeoutException {
+      rethrow;
+    } catch (e) {
+      final text = "$e";
+      final transient = e is SocketException || e is http.ClientException || e is HttpException;
+      if (!transient || LocalNameFallbackClient.isLookupFailure(e) || text.contains("refused")) rethrow;
+      _log.info("Request failed on a possibly stale connection ($text); retrying once");
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      return await send().timeout(timeout);
+    }
+  }
+
   Future<http.Response> _call(
     String what,
     Future<http.Response> Function() send, {
@@ -309,7 +326,7 @@ class UploaderClient {
       // only one address is set.
       await refreshRoute();
       try {
-        response = await send().timeout(timeout);
+        response = await _sendWithRetry(send, timeout);
       } on UploaderException {
         rethrow;
       } catch (e) {
@@ -322,7 +339,7 @@ class UploaderClient {
           if (baseUrl == before) rethrow;
         }
         _log.info("$what couldn't reach $before; trying $baseUrl");
-        response = await send().timeout(timeout);
+        response = await _sendWithRetry(send, timeout);
       }
     } on UploaderException {
       rethrow;

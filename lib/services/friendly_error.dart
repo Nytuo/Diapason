@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:chopper/chopper.dart' as chopper;
+import 'package:diapason/components/global_snackbar.dart';
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 
@@ -9,11 +10,11 @@ enum ErrorSource { connection, uploader, ytdlp, device, unknown }
 
 extension ErrorSourceLabel on ErrorSource {
   String get label => switch (this) {
-    ErrorSource.connection => "Connection",
-    ErrorSource.uploader => "Your uploader",
+    ErrorSource.connection => GlobalSnackbar.requireL10n.errorSourceConnection,
+    ErrorSource.uploader => GlobalSnackbar.requireL10n.errorSourceUploader,
     ErrorSource.ytdlp => "yt-dlp",
-    ErrorSource.device => "This device",
-    ErrorSource.unknown => "Unexpected",
+    ErrorSource.device => GlobalSnackbar.requireL10n.errorSourceDevice,
+    ErrorSource.unknown => GlobalSnackbar.requireL10n.errorSourceUnexpected,
   };
 }
 
@@ -51,31 +52,27 @@ class FriendlyError {
     final technical = "${error.runtimeType}: $error";
 
     if (error is TimeoutException) {
-      return (
-        message: "That took too long and was stopped. Check your connection and try again.",
-        source: ErrorSource.connection,
-        technical: technical,
-      );
+      return (message: GlobalSnackbar.requireL10n.errorTimeout, source: ErrorSource.connection, technical: technical);
     }
     if (error is HandshakeException || error is TlsException) {
-      return (
-        message: "A secure connection couldn't be set up. The server's certificate may be invalid or expired.",
-        source: ErrorSource.connection,
-        technical: technical,
-      );
+      return (message: GlobalSnackbar.requireL10n.errorTls, source: ErrorSource.connection, technical: technical);
     }
     if (error is SocketException) {
       final text = error.toString().toLowerCase();
       final message = text.contains("failed host lookup") || text.contains("nodename nor servname")
-          ? "Couldn't find that server. Check the address and your internet connection."
+          ? GlobalSnackbar.requireL10n.errorHostLookup
           : text.contains("connection refused")
-          ? "The server refused the connection — is it running, and is the port right?"
-          : "Couldn't connect to the server. Check your network.";
+          ? GlobalSnackbar.requireL10n.errorConnectionRefused
+          : text.contains("no route to host") || text.contains("network is unreachable") || text.contains("errno = 65")
+          ? GlobalSnackbar.requireL10n.errorNoRoute
+          : GlobalSnackbar.requireL10n.errorCouldntConnect(
+              error.osError?.message.isNotEmpty ?? false ? error.osError!.message : error.message,
+            );
       return (message: message, source: ErrorSource.connection, technical: technical);
     }
     if (error is http.ClientException) {
       return (
-        message: "The connection to the server was interrupted. Check your network and try again.",
+        message: GlobalSnackbar.requireL10n.errorInterrupted,
         source: ErrorSource.connection,
         technical: technical,
       );
@@ -83,41 +80,37 @@ class FriendlyError {
     if (error is chopper.Response) {
       final status = error.statusCode;
       final message = switch (status) {
-        401 || 403 => "The server didn't accept your login. Sign in again or check your permissions.",
-        404 => "The server couldn't find that item. It may have been moved or deleted.",
-        408 || 504 => "The server took too long to answer.",
-        429 => "The server is asking you to slow down. Try again in a moment.",
-        >= 500 => "The server had a problem handling that request.",
-        _ => "The server rejected that request (HTTP $status).",
+        401 || 403 => GlobalSnackbar.requireL10n.errorHttp401,
+        404 => GlobalSnackbar.requireL10n.errorHttp404,
+        408 || 504 => GlobalSnackbar.requireL10n.errorHttp408,
+        429 => GlobalSnackbar.requireL10n.errorHttp429,
+        >= 500 => GlobalSnackbar.requireL10n.errorHttp500,
+        _ => GlobalSnackbar.requireL10n.errorHttpOther(status),
       };
       return (message: message, source: ErrorSource.connection, technical: "HTTP $status ${error.error ?? ""}".trim());
     }
     if (error is FileSystemException) {
       final os = error.osError?.errorCode;
       final message = os == 28 || os == 112
-          ? "There isn't enough free space on this device."
+          ? GlobalSnackbar.requireL10n.errorDiskFull
           : os == 13 || os == 1 || os == 5
-          ? "Diapason doesn't have permission to use that file or folder."
-          : "A file on this device couldn't be read or written.";
+          ? GlobalSnackbar.requireL10n.errorPermission
+          : GlobalSnackbar.requireL10n.errorFile;
       return (message: message, source: ErrorSource.device, technical: technical);
     }
     if (error is FormatException) {
       return (
-        message: "The server sent something unexpected. Is the address pointing at the right service?",
+        message: GlobalSnackbar.requireL10n.errorUnexpectedResponse,
         source: ErrorSource.connection,
         technical: technical,
       );
     }
-    return (
-      message: "Something went wrong. If it keeps happening, check the logs from Settings.",
-      source: ErrorSource.unknown,
-      technical: technical,
-    );
+    return (message: GlobalSnackbar.requireL10n.errorGeneric, source: ErrorSource.unknown, technical: technical);
   }
 
   static String report(Logger logger, String what, Object error, [StackTrace? stack]) {
     final d = describe(error);
-    logger.warning("$what failed [${d.source.name}]: ${d.technical}", error, stack);
+    logger.severe("$what failed [${d.source.name}]: ${d.technical}", error, stack);
     return d.message;
   }
 

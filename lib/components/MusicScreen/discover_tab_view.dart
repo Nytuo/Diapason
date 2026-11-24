@@ -1,3 +1,4 @@
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/components/MusicScreen/similar_artists_section.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
@@ -58,7 +59,9 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
 
       if (!mounted) return;
       if (tracks.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Couldn't find any of those tracks.")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.discoverNoMatch)));
         return;
       }
 
@@ -73,9 +76,9 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
 
       if (mounted) {
         final matched = tracks.length;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Playing $matched of ${recommended.length} tracks")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.discoverPlayingCount(matched, recommended.length))),
+        );
       }
     } finally {
       if (mounted) setState(() => _importing = null);
@@ -94,7 +97,7 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
       if (queue.isEmpty) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text("Couldn't start a discover queue from that playlist.")));
+        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.discoverQueueFailed)));
         return;
       }
 
@@ -104,13 +107,15 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
           type: QueueItemSourceType.unknown,
           name: QueueItemSourceName(
             type: QueueItemSourceNameType.preTranslated,
-            pretranslatedName: "Discover · ${playlist.title}",
+            pretranslatedName: AppLocalizations.of(context)!.discoverQueueName(playlist.title),
           ),
           id: BaseItemId(playlist.id),
         ),
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Discovering ${queue.length} tracks")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.discoverDiscoveringCount(queue.length))));
       }
     } finally {
       if (mounted) setState(() => _discovering = null);
@@ -131,7 +136,7 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
           else if (ref.watch(youTubeAvailableProvider))
             IconButton(
               icon: const Icon(TablerIcons.radio),
-              tooltip: "Continue on YouTube from the end",
+              tooltip: AppLocalizations.of(context)!.discoverContinueYoutube,
               onPressed: busy ? null : () => _discoverFromPlaylist(playlist),
             ),
           if (_importing == playlist.id)
@@ -139,7 +144,7 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
           else
             IconButton(
               icon: const Icon(TablerIcons.player_play),
-              tooltip: "Play all",
+              tooltip: AppLocalizations.of(context)!.discoverPlayAll,
               onPressed: busy ? null : () => _playPlaylist(playlist),
             ),
           const Icon(TablerIcons.chevron_right),
@@ -192,8 +197,8 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
               margin: const EdgeInsets.all(12.0),
               child: ListTile(
                 leading: const Icon(TablerIcons.plug_connected),
-                title: const Text("Connect ListenBrainz"),
-                subtitle: const Text("For playlists made from what you actually listen to"),
+                title: Text(AppLocalizations.of(context)!.discoverConnectLb),
+                subtitle: Text(AppLocalizations.of(context)!.discoverConnectLbSubtitle),
                 trailing: const Icon(TablerIcons.chevron_right),
                 onTap: () => Navigator.of(context).pushNamed(ScrobblingSettingsScreen.routeName),
               ),
@@ -204,16 +209,18 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
               margin: const EdgeInsets.symmetric(horizontal: 12.0),
               child: ListTile(
                 leading: const Icon(TablerIcons.chart_bar),
-                title: const Text("Add a Last.fm API key"),
-                subtitle: const Text("Unlocks charts, genre browsing and similar artists"),
+                title: Text(AppLocalizations.of(context)!.discoverAddLfmKey),
+                subtitle: Text(AppLocalizations.of(context)!.discoverAddLfmKeySubtitle),
                 trailing: const Icon(TablerIcons.chevron_right),
                 onTap: () => Navigator.of(context).pushNamed(ScrobblingSettingsScreen.routeName),
               ),
             ),
 
-          if (_madeForYou != null) _playlistSection("Made for you", _madeForYou!),
+          if (_madeForYou != null)
+            _playlistSection(AppLocalizations.of(context)!.discoverMadeForYouSection, _madeForYou!),
 
-          if (_yourPlaylists != null) _playlistSection("Your playlists", _yourPlaylists!),
+          if (_yourPlaylists != null)
+            _playlistSection(AppLocalizations.of(context)!.discoverYourPlaylists, _yourPlaylists!),
 
           Builder(
             builder: (context) {
@@ -222,7 +229,7 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const _SectionHeader("Charts & genres"),
+                  _SectionHeader(AppLocalizations.of(context)!.discoverChartsGenres),
                   for (final playlist in genres) _playlistTile(playlist),
                 ],
               );
@@ -231,7 +238,7 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
 
           const SimilarToNowPlaying(),
 
-          const _SectionHeader("Fresh releases"),
+          _SectionHeader(AppLocalizations.of(context)!.discoverFreshReleases),
           FutureBuilder<List<FreshRelease>>(
             future: _fresh,
             builder: (context, snapshot) {
@@ -240,9 +247,9 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
               }
               final releases = snapshot.data ?? const [];
               if (releases.isEmpty) {
-                return const Padding(
+                return Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text("Couldn't reach ListenBrainz."),
+                  child: Text(AppLocalizations.of(context)!.discoverLbUnreachable),
                 );
               }
               return SizedBox(

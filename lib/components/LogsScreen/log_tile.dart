@@ -69,7 +69,31 @@ class _LogTileState extends State<LogTile> {
           shape: const Border(),
           childrenPadding: const EdgeInsets.all(8.0),
           children: [
-            Text(AppLocalizations.of(context)!.message, style: Theme.of(context).textTheme.titleLarge),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(AppLocalizations.of(context)!.message, style: Theme.of(context).textTheme.titleLarge),
+                ),
+                IconButton(
+                  tooltip: MaterialLocalizations.of(context).copyButtonLabel,
+                  icon: const Icon(Icons.copy),
+                  onPressed: () async {
+                    final record = widget.logRecord;
+                    final text = [
+                      "[${record.loggerName}/${record.level.name}] ${record.time}",
+                      record.censoredMessage,
+                      if (record.stackTrace != null) record.stackTrace.toString(),
+                    ].join("\n");
+                    try {
+                      await Clipboard.setData(ClipboardData(text: text));
+                      GlobalSnackbar.message((_) => "Copied", isConfirmation: true);
+                    } catch (e) {
+                      GlobalSnackbar.error(e);
+                    }
+                  },
+                ),
+              ],
+            ),
             _LogMessageContent(widget.logRecord.message),
             const SizedBox(height: 16.0),
             if (widget.logRecord.getStack != null)
@@ -162,6 +186,6 @@ class _LogMessageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(content, style: const TextStyle(fontSize: 12.0, fontFamily: "monospace"));
+    return SelectableText(content, style: const TextStyle(fontSize: 12.0, fontFamily: "monospace"));
   }
 }

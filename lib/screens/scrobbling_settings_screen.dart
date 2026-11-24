@@ -1,3 +1,4 @@
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/scrobbling/lastfm_client.dart';
 import 'package:diapason/services/scrobbling/listenbrainz_client.dart';
@@ -38,10 +39,11 @@ class _ScrobblingSettingsScreenState extends ConsumerState<ScrobblingSettingsScr
   }
 
   Future<void> _saveListenBrainz() async {
+    final l10n = AppLocalizations.of(context)!;
     final token = _token.text.trim();
     if (token.isEmpty) {
       FinampSetters.setListenBrainzToken("");
-      _snack("ListenBrainz disconnected");
+      _snack(l10n.scrobbleLbDisconnected);
       return;
     }
 
@@ -51,24 +53,25 @@ class _ScrobblingSettingsScreenState extends ConsumerState<ScrobblingSettingsScr
 
     if (valid) {
       FinampSetters.setListenBrainzToken(token);
-      _snack("ListenBrainz connected");
+      _snack(l10n.scrobbleLbConnected);
     } else {
-      _snack("That token was rejected by ListenBrainz");
+      _snack(l10n.scrobbleLbRejected);
     }
   }
 
   LastFmClient get _lastFm => LastFmClient(apiKey: _apiKey.text.trim(), apiSecret: _apiSecret.text.trim());
 
   Future<void> _startLastFmAuth() async {
+    final l10n = AppLocalizations.of(context)!;
     final client = _lastFm;
     if (!client.isConfigured) {
-      _snack("Enter your Last.fm API key and secret first");
+      _snack(l10n.scrobbleLfmEnterKey);
       return;
     }
 
     final token = await client.requestToken();
     if (token == null) {
-      _snack("Last.fm rejected the API key and secret");
+      _snack(l10n.scrobbleLfmKeyRejected);
       return;
     }
 
@@ -77,12 +80,13 @@ class _ScrobblingSettingsScreenState extends ConsumerState<ScrobblingSettingsScr
   }
 
   Future<void> _finishLastFmAuth() async {
+    final l10n = AppLocalizations.of(context)!;
     final token = _pendingLastFmToken;
     if (token == null) return;
 
     final session = await _lastFm.session(token);
     if (session == null) {
-      _snack("Not authorised yet — approve Diapason in the browser, then try again");
+      _snack(l10n.scrobbleLfmNotAuthorised);
       return;
     }
 
@@ -91,13 +95,13 @@ class _ScrobblingSettingsScreenState extends ConsumerState<ScrobblingSettingsScr
     FinampSetters.setLastFmSessionKey(session.sessionKey);
     FinampSetters.setLastFmUsername(session.username);
     setState(() => _pendingLastFmToken = null);
-    _snack("Connected to Last.fm as ${session.username}");
+    _snack(l10n.scrobbleLfmConnectedAs(session.username));
   }
 
   void _disconnectLastFm() {
     FinampSetters.setLastFmSessionKey("");
     FinampSetters.setLastFmUsername("");
-    _snack("Last.fm disconnected");
+    _snack(AppLocalizations.of(context)!.scrobbleLfmDisconnected);
   }
 
   @override
@@ -106,7 +110,7 @@ class _ScrobblingSettingsScreenState extends ConsumerState<ScrobblingSettingsScr
     final listenBrainzConnected = ref.watch(finampSettingsProvider.listenBrainzToken).isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Scrobbling")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.scrobbleTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
@@ -117,8 +121,8 @@ class _ScrobblingSettingsScreenState extends ConsumerState<ScrobblingSettingsScr
             obscureText: true,
             autocorrect: false,
             decoration: InputDecoration(
-              labelText: "User token",
-              helperText: "Found on your ListenBrainz profile settings page",
+              labelText: AppLocalizations.of(context)!.scrobbleUserToken,
+              helperText: AppLocalizations.of(context)!.scrobbleUserTokenHelper,
               suffixIcon: listenBrainzConnected ? const Icon(TablerIcons.circle_check) : null,
             ),
           ),
@@ -127,7 +131,11 @@ class _ScrobblingSettingsScreenState extends ConsumerState<ScrobblingSettingsScr
             onPressed: _validating ? null : _saveListenBrainz,
             child: _validating
                 ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                : Text(listenBrainzConnected ? "Update" : "Connect"),
+                : Text(
+                    listenBrainzConnected
+                        ? AppLocalizations.of(context)!.scrobbleUpdate
+                        : AppLocalizations.of(context)!.scrobbleConnect,
+                  ),
           ),
 
           const Divider(height: 48.0),
@@ -138,37 +146,40 @@ class _ScrobblingSettingsScreenState extends ConsumerState<ScrobblingSettingsScr
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(TablerIcons.circle_check),
-              title: Text("Connected as $lastFmUser"),
-              trailing: TextButton(onPressed: _disconnectLastFm, child: const Text("Disconnect")),
+              title: Text(AppLocalizations.of(context)!.scrobbleConnectedAs(lastFmUser)),
+              trailing: TextButton(
+                onPressed: _disconnectLastFm,
+                child: Text(AppLocalizations.of(context)!.scrobbleDisconnect),
+              ),
             )
           else ...[
-            const Text(
-              "Last.fm issues an API key per application, so Diapason can't ship one — create your own at "
-              "last.fm/api/account/create and paste it below.",
-            ),
+            Text(AppLocalizations.of(context)!.scrobbleLfmKeyInfo),
             const SizedBox(height: 12.0),
             TextField(
               controller: _apiKey,
               autocorrect: false,
-              decoration: const InputDecoration(labelText: "API key"),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context)!.scrobbleApiKey),
             ),
             const SizedBox(height: 12.0),
             TextField(
               controller: _apiSecret,
               obscureText: true,
               autocorrect: false,
-              decoration: const InputDecoration(labelText: "Shared secret"),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context)!.scrobbleSharedSecret),
             ),
             const SizedBox(height: 12.0),
             if (_pendingLastFmToken == null)
-              FilledButton(onPressed: _startLastFmAuth, child: const Text("Authorise in browser"))
+              FilledButton(onPressed: _startLastFmAuth, child: Text(AppLocalizations.of(context)!.scrobbleAuthorise))
             else
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text("Approve Diapason in the browser, then come back and confirm."),
+                  Text(AppLocalizations.of(context)!.scrobbleApproveHint),
                   const SizedBox(height: 8.0),
-                  FilledButton(onPressed: _finishLastFmAuth, child: const Text("I've approved it")),
+                  FilledButton(
+                    onPressed: _finishLastFmAuth,
+                    child: Text(AppLocalizations.of(context)!.scrobbleApproved),
+                  ),
                 ],
               ),
           ],
@@ -181,9 +192,11 @@ class _ScrobblingSettingsScreenState extends ConsumerState<ScrobblingSettingsScr
               final pending = snapshot.data ?? 0;
               return ListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text("Waiting to be sent"),
+                title: Text(AppLocalizations.of(context)!.scrobbleWaiting),
                 subtitle: Text(
-                  pending == 0 ? "Nothing queued" : "$pending listen(s) couldn't be sent, and will be retried",
+                  pending == 0
+                      ? AppLocalizations.of(context)!.scrobbleNothingQueued
+                      : AppLocalizations.of(context)!.scrobbleQueued(pending),
                 ),
                 trailing: pending == 0
                     ? null
@@ -192,7 +205,7 @@ class _ScrobblingSettingsScreenState extends ConsumerState<ScrobblingSettingsScr
                           await GetIt.instance<ScrobbleService>().retryPending();
                           setState(() {});
                         },
-                        child: const Text("Retry"),
+                        child: Text(AppLocalizations.of(context)!.scrobbleRetry),
                       ),
               );
             },

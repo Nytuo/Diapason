@@ -51,14 +51,17 @@ class _SourcesSettingsScreenState extends State<SourcesSettingsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(16.0),
-              child: Text("Add a source", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500)),
+              child: Text(
+                AppLocalizations.of(context)!.sourcesAddASource,
+                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500),
+              ),
             ),
             for (final kind in offeredKinds)
               ListTile(
-                leading: Icon(sourceKindPresentation(kind).icon),
-                title: Text(sourceKindPresentation(kind).label),
+                leading: Icon(sourceKindPresentation(kind, context).icon),
+                title: Text(sourceKindPresentation(kind, context).label),
                 onTap: () => Navigator.of(context).pop(kind),
               ),
           ],
@@ -107,8 +110,8 @@ class _SourcesSettingsScreenState extends State<SourcesSettingsScreen> {
             ),
             ListTile(
               leading: const Icon(TablerIcons.refresh),
-              title: const Text("Reconnect"),
-              subtitle: const Text("Server discovery, users, Quick Connect"),
+              title: Text(AppLocalizations.of(context)!.sourcesReconnect),
+              subtitle: Text(AppLocalizations.of(context)!.sourcesReconnectSubtitle),
               onTap: () => Navigator.of(context).pop(_JellyfinSourceAction.reconnect),
             ),
             ListTile(
@@ -149,14 +152,17 @@ class _SourcesSettingsScreenState extends State<SourcesSettingsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Remove ${source.name}?"),
-        content: const Text(
-          "Its music will disappear from your library. Anything you downloaded from it stays on this device "
-          "until you delete it.",
-        ),
+        title: Text(AppLocalizations.of(context)!.sourcesRemoveTitle(source.name)),
+        content: Text(AppLocalizations.of(context)!.sourcesRemoveBody),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text("Cancel")),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text("Remove")),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(AppLocalizations.of(context)!.sourcesCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(AppLocalizations.of(context)!.sourcesRemove),
+          ),
         ],
       ),
     );
@@ -175,20 +181,17 @@ class _SourcesSettingsScreenState extends State<SourcesSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Sources")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.sourcesTitle)),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _add,
         icon: const Icon(TablerIcons.plus),
-        label: const Text("Add source"),
+        label: Text(AppLocalizations.of(context)!.sourcesAddSource),
       ),
       body: _sources.isEmpty
-          ? const Center(
+          ? Center(
               child: Padding(
                 padding: EdgeInsets.all(32.0),
-                child: Text(
-                  "No sources yet.\nAdd a Jellyfin, Plex or Subsonic server, or a folder of local files.",
-                  textAlign: TextAlign.center,
-                ),
+                child: Text(AppLocalizations.of(context)!.sourcesEmpty, textAlign: TextAlign.center),
               ),
             )
           : ListView.builder(
@@ -196,7 +199,7 @@ class _SourcesSettingsScreenState extends State<SourcesSettingsScreen> {
               itemCount: _sources.length,
               itemBuilder: (context, index) {
                 final source = _sources[index];
-                final presentation = sourceKindPresentation(source.kind);
+                final presentation = sourceKindPresentation(source.kind, context);
                 final subtitle = source.kind == MediaSourceKind.local ? source.localPath : source.baseUrl;
 
                 return ListTile(
@@ -215,7 +218,7 @@ class _SourcesSettingsScreenState extends State<SourcesSettingsScreen> {
                       IconButton(
                         icon: const Icon(TablerIcons.trash),
                         onPressed: () => _remove(source),
-                        tooltip: "Remove",
+                        tooltip: AppLocalizations.of(context)!.sourcesRemove,
                       ),
                     ],
                   ),
@@ -234,16 +237,22 @@ class EditSourceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final presentation = sourceKindPresentation(kind);
+    final presentation = sourceKindPresentation(kind, context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(existing == null ? "Add ${presentation.label}" : existing!.name)),
+      appBar: AppBar(
+        title: Text(
+          existing == null ? AppLocalizations.of(context)!.sourcesAddKind(presentation.label) : existing!.name,
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: SourceForm(
           kind: kind,
           existing: existing,
-          saveLabel: existing == null ? "Add" : "Save",
+          saveLabel: existing == null
+              ? AppLocalizations.of(context)!.sourcesAdd
+              : AppLocalizations.of(context)!.sourcesSave,
           onSaved: (config) async {
             final service = GetIt.instance<MediaSourceService>();
             if (existing == null) {

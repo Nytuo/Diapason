@@ -11,14 +11,14 @@ class LogsView extends StatelessWidget {
   Widget build(BuildContext context) {
     FinampLogsHelper finampLogsHelper = GetIt.instance<FinampLogsHelper>();
 
+    final logs = finampLogsHelper.logs;
     return ListView.builder(
-      itemCount: finampLogsHelper.logs.length,
+      itemCount: logs.length,
       reverse: true,
       itemBuilder: (context, index) {
-        return LogTile(
-          key: ValueKey(finampLogsHelper.logs.reversed.elementAt(index).sequenceNumber),
-          logRecord: finampLogsHelper.logs.reversed.elementAt(index),
-        );
+        // Newest first; index straight into the list instead of building a reversed view twice per item.
+        final record = logs[logs.length - 1 - index];
+        return LogTile(key: ValueKey(record.sequenceNumber), logRecord: record);
       },
     );
   }

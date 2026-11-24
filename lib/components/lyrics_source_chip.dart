@@ -1,3 +1,4 @@
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/feedback_helper.dart';
 import 'package:diapason/services/lyrics/lrclib_client.dart';
@@ -60,7 +61,7 @@ class LyricsManageButton extends ConsumerWidget {
   /// What is on screen (the user's pick, or [automatic]).
   final LyricsOption? shown;
 
-  /// Label the button "Lyrics options" even without a timing shift to show (used where there is no lyrics view).
+  /// Label the button AppLocalizations.of(context)!.lyricsOptions even without a timing shift to show (used where there is no lyrics view).
   final bool showLabel;
 
   @override
@@ -78,7 +79,7 @@ class LyricsManageButton extends ConsumerWidget {
         label: offset != 0
             ? Text(LyricsOffsetService.format(offset))
             : showLabel
-            ? const Text("Lyrics options")
+            ? Text(AppLocalizations.of(context)!.lyricsOptions)
             : const SizedBox.shrink(),
       );
     }
@@ -205,21 +206,26 @@ class _LyricsManagerSheetState extends ConsumerState<_LyricsManagerSheet> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
-          child: Text("Lyrics", style: Theme.of(context).textTheme.titleLarge),
+          child: Text(AppLocalizations.of(context)!.lyricsTitle, style: Theme.of(context).textTheme.titleLarge),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
-          child: Text("Source", style: Theme.of(context).textTheme.titleSmall),
+          child: Text(AppLocalizations.of(context)!.lyricsSource, style: Theme.of(context).textTheme.titleSmall),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-          child: Text("Your library, then $databases.", style: Theme.of(context).textTheme.bodySmall),
+          child: Text(
+            AppLocalizations.of(context)!.lyricsYourLibraryThen(databases),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         ),
         ListTile(
           leading: const Icon(TablerIcons.wand),
-          title: const Text("Automatic"),
+          title: Text(AppLocalizations.of(context)!.lyricsAutomatic),
           subtitle: Text(
-            widget.automatic == null ? "Best available" : "Best available · now ${widget.automatic!.label}",
+            widget.automatic == null
+                ? AppLocalizations.of(context)!.lyricsBestAvailable
+                : AppLocalizations.of(context)!.lyricsBestAvailableNow(widget.automatic!.label),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -232,7 +238,7 @@ class _LyricsManagerSheetState extends ConsumerState<_LyricsManagerSheet> {
           ListTile(
             leading: const Icon(TablerIcons.hand_click),
             title: Text(chosen.label, maxLines: 1, overflow: TextOverflow.ellipsis),
-            subtitle: Text("Picked manually · ${chosen.lyrics.lyrics?.length ?? 0} lines"),
+            subtitle: Text(AppLocalizations.of(context)!.lyricsPickedManually(chosen.lyrics.lyrics?.length ?? 0)),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -250,13 +256,16 @@ class _LyricsManagerSheetState extends ConsumerState<_LyricsManagerSheet> {
             ),
           ],
           error: (e, _) => [
-            const ListTile(leading: Icon(TablerIcons.alert_triangle), title: Text("Couldn't check the sources")),
+            ListTile(
+              leading: Icon(TablerIcons.alert_triangle),
+              title: Text(AppLocalizations.of(context)!.lyricsCheckFailed),
+            ),
           ],
           data: (list) => list.isEmpty
               ? [
-                  const ListTile(
+                  ListTile(
                     leading: Icon(TablerIcons.microphone_2_off),
-                    title: Text("No source has lyrics for this track"),
+                    title: Text(AppLocalizations.of(context)!.lyricsNoSource),
                   ),
                 ]
               : [
@@ -265,8 +274,12 @@ class _LyricsManagerSheetState extends ConsumerState<_LyricsManagerSheet> {
                       leading: Icon(_iconFor(option.origin)),
                       title: Text(option.label),
                       subtitle: Text(
-                        "${option.origin.isOnlineDatabase ? "Online database" : option.origin.databaseName}"
-                        " · ${option.lyrics.lyrics?.length ?? 0} lines",
+                        AppLocalizations.of(context)!.lyricsSourceLines(
+                          option.origin.isOnlineDatabase
+                              ? AppLocalizations.of(context)!.lyricsOnlineDatabase
+                              : option.origin.databaseName,
+                          option.lyrics.lyrics?.length ?? 0,
+                        ),
                       ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -287,8 +300,8 @@ class _LyricsManagerSheetState extends ConsumerState<_LyricsManagerSheet> {
         ),
         ListTile(
           leading: const Icon(TablerIcons.search),
-          title: const Text("Search manually"),
-          subtitle: const Text("Wrong or missing lyrics? Look them up on LRCLIB."),
+          title: Text(AppLocalizations.of(context)!.lyricsSearchManually),
+          subtitle: Text(AppLocalizations.of(context)!.lyricsSearchManuallySubtitle),
           trailing: const Icon(TablerIcons.chevron_right),
           onTap: () => setState(() => _searching = true),
         ),
@@ -312,7 +325,7 @@ class _LyricsManagerSheetState extends ConsumerState<_LyricsManagerSheet> {
           child: Row(
             children: [
               IconButton(icon: const Icon(TablerIcons.arrow_left), onPressed: () => setState(() => _searching = false)),
-              Text("Search lyrics", style: Theme.of(context).textTheme.titleLarge),
+              Text(AppLocalizations.of(context)!.lyricsSearchTitle, style: Theme.of(context).textTheme.titleLarge),
             ],
           ),
         ),
@@ -324,7 +337,7 @@ class _LyricsManagerSheetState extends ConsumerState<_LyricsManagerSheet> {
             textInputAction: TextInputAction.search,
             onSubmitted: (_) => _search(),
             decoration: InputDecoration(
-              hintText: "Artist and title",
+              hintText: AppLocalizations.of(context)!.lyricsSearchHint,
               border: const OutlineInputBorder(),
               isDense: true,
               suffixIcon: IconButton(icon: const Icon(TablerIcons.search), onPressed: _search),
@@ -337,14 +350,14 @@ class _LyricsManagerSheetState extends ConsumerState<_LyricsManagerSheet> {
             child: Center(child: CircularProgressIndicator()),
           )
         else if (_results == null)
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(24),
-            child: Center(child: Text("Search LRCLIB for lyrics")),
+            child: Center(child: Text(AppLocalizations.of(context)!.lyricsSearchPrompt)),
           )
         else if (_results!.isEmpty)
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(24),
-            child: Center(child: Text("No results")),
+            child: Center(child: Text(AppLocalizations.of(context)!.lyricsNoResults)),
           )
         else
           Flexible(
@@ -406,15 +419,12 @@ class _TimingSection extends StatelessWidget {
             children: [
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text("Timing", style: textTheme.titleSmall),
+                child: Text(AppLocalizations.of(context)!.lyricsTiming, style: textTheme.titleSmall),
               ),
               const SizedBox(height: 4),
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text(
-                  "Lyrics too early? Show them later. Remembered for this track.",
-                  style: textTheme.bodySmall,
-                ),
+                child: Text(AppLocalizations.of(context)!.lyricsTimingHint, style: textTheme.bodySmall),
               ),
               const SizedBox(height: 12),
               Row(
@@ -428,7 +438,7 @@ class _TimingSection extends StatelessWidget {
                             LyricsOffsetService.nudge(trackId, -LyricsOffsetService.step);
                           },
                     icon: const Icon(TablerIcons.chevrons_left),
-                    label: const Text("Earlier"),
+                    label: Text(AppLocalizations.of(context)!.lyricsEarlier),
                   ),
                   SizedBox(
                     width: 96,
@@ -446,13 +456,13 @@ class _TimingSection extends StatelessWidget {
                             LyricsOffsetService.nudge(trackId, LyricsOffsetService.step);
                           },
                     icon: const Icon(TablerIcons.chevrons_right),
-                    label: const Text("Later"),
+                    label: Text(AppLocalizations.of(context)!.lyricsLater),
                   ),
                 ],
               ),
               TextButton(
                 onPressed: offset == 0 ? null : () => LyricsOffsetService.reset(trackId),
-                child: const Text("Reset"),
+                child: Text(AppLocalizations.of(context)!.lyricsReset),
               ),
             ],
           ),

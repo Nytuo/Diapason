@@ -1,5 +1,3 @@
-import 'package:diapason/services/uploader/youtube_library_import.dart';
-import 'package:diapason/services/uploader/uploader_client.dart';
 import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
@@ -287,10 +285,6 @@ class DownloadsService {
                 updateItemState(listener, newState, alwaysPut: event.status == TaskStatus.complete);
               }
 
-              if (event.status == TaskStatus.complete) {
-                final finished = listener;
-                Future.microtask(() => _uploadIfWanted(finished));
-              }
             } else {
               _downloadsLogger.info(
                 "Received status event ${event.status} for finalized download ${listener.name}.  Ignoring.",
@@ -883,31 +877,6 @@ class DownloadsService {
   /// the downloads status stream is updated and any parent items that may have changed
   /// state are recalculated.
   /// This should only be called inside an isar write transaction.
-  Future<void> _uploadIfWanted(DownloadItem item) async {
-    try {
-      final uploader = GetIt.instance<UploaderClient>();
-      if (!uploader.isReady) return;
-      if (item.type != DownloadItemType.track) return;
-      if (!await uploader.automaticTransferAllowed()) return;
-
-      final baseItem = item.baseItem;
-      final file = item.file;
-      if (baseItem == null || file == null) return;
-
-      // A downloaded YouTube track is one the user keeps: put it in the library. If the uploader runs yt-dlp it
-      // fetches the track itself rather than this device sending the bytes back up.
-      if (YouTubeLibraryImport.isYouTube(baseItem)) {
-        final result = await GetIt.instance<YouTubeLibraryImport>().addToLibrary(baseItem, file: file, automatic: true);
-        if (!result.ok) _downloadsLogger.info("Not added to the library: ${baseItem.name}: ${result.message}");
-        return;
-      }
-
-      await uploader.upload(baseItem, file);
-    } catch (e) {
-      _downloadsLogger.fine("Uploading ${item.name} failed: $e");
-    }
-  }
-
   void updateItemState(DownloadItem item, DownloadItemState newState, {bool alwaysPut = false}) {
     if (item.state == newState) {
       if (alwaysPut) {

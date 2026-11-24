@@ -1,3 +1,4 @@
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/components/AlbumScreen/download_button.dart';
 import 'package:diapason/components/album_image.dart';
 import 'package:diapason/components/finamp_app_bar_back_button.dart';
@@ -33,7 +34,7 @@ class _YouTubePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final youtube = GetIt.instance<YouTubeService>();
     return AlertDialog(
-      title: const Text("Pick the right version"),
+      title: Text(AppLocalizations.of(context)!.discoverPickVersion),
       content: SizedBox(
         width: 460,
         child: Column(
@@ -62,7 +63,11 @@ class _YouTubePicker extends StatelessWidget {
                               errorBuilder: (_, _, _) => const Icon(TablerIcons.brand_youtube),
                             ),
                     ),
-                    title: Text(candidate.name ?? "Unknown", maxLines: 2, overflow: TextOverflow.ellipsis),
+                    title: Text(
+                      candidate.name ?? AppLocalizations.of(context)!.discoverUnknownTitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     subtitle: Text(
                       [
                         candidate.albumArtist,
@@ -165,13 +170,11 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
   Future<void> _pickFromYouTube(_Entry entry) async {
     if (entry.searching) return;
     if (!isYouTubeAvailable) {
-      GlobalSnackbar.message(
-        (_) => "YouTube isn't set up. Add a yt-dlp in Settings → YouTube (yt-dlp) or connect an uploader.",
-      );
+      GlobalSnackbar.message((context) => AppLocalizations.of(context)!.discoverYoutubeNotSetUp);
       return;
     }
     if (_youtube.isRateLimited) {
-      GlobalSnackbar.message((_) => "YouTube is rate-limiting us right now — try again in a few minutes.");
+      GlobalSnackbar.message((context) => AppLocalizations.of(context)!.discoverRateLimitedRetry);
       return;
     }
 
@@ -190,7 +193,9 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
     if (candidates.isEmpty) {
       setState(() => entry.missing = true);
       GlobalSnackbar.message(
-        (_) => _youtube.isRateLimited ? "YouTube is rate-limiting us right now." : "No YouTube results for that track.",
+        (context) => _youtube.isRateLimited
+            ? AppLocalizations.of(context)!.discoverRateLimited
+            : AppLocalizations.of(context)!.discoverNoYoutubeResults,
       );
       return;
     }
@@ -220,7 +225,7 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
         .map((l) => l.id)
         .firstOrNull;
     if (location == null) {
-      GlobalSnackbar.message((_) => "Pick a download location in Downloads settings first.");
+      GlobalSnackbar.message((context) => AppLocalizations.of(context)!.discoverPickDownloadLocation);
       return;
     }
 
@@ -242,7 +247,10 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
           viewId: viewId,
         );
       }
-      GlobalSnackbar.message((_) => "Queued ${tracks.length} downloads", isConfirmation: true);
+      GlobalSnackbar.message(
+        (context) => AppLocalizations.of(context)!.discoverQueuedDownloads(tracks.length),
+        isConfirmation: true,
+      );
     } catch (e) {
       GlobalSnackbar.error(e);
     } finally {
@@ -270,9 +278,13 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("Couldn't load this playlist.", textAlign: TextAlign.center),
+              Text(AppLocalizations.of(context)!.discoverLoadFailed, textAlign: TextAlign.center),
               const SizedBox(height: 12),
-              TextButton.icon(onPressed: _load, icon: const Icon(TablerIcons.refresh), label: const Text("Retry")),
+              TextButton.icon(
+                onPressed: _load,
+                icon: Icon(TablerIcons.refresh),
+                label: Text(AppLocalizations.of(context)!.discoverRetry),
+              ),
             ],
           ),
         ),
@@ -281,7 +293,7 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
 
     final entries = _entries;
     if (entries == null) {
-      return const Center(
+      return Center(
         child: Padding(
           padding: EdgeInsets.all(32.0),
           child: Column(
@@ -289,7 +301,7 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
             children: [
               CircularProgressIndicator(),
               SizedBox(height: 16),
-              Text("Matching tracks against your library…", textAlign: TextAlign.center),
+              Text(AppLocalizations.of(context)!.discoverMatching, textAlign: TextAlign.center),
             ],
           ),
         ),
@@ -297,8 +309,8 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
     }
 
     if (entries.isEmpty) {
-      return const Center(
-        child: Padding(padding: EdgeInsets.all(32.0), child: Text("This playlist is empty.")),
+      return Center(
+        child: Padding(padding: EdgeInsets.all(32.0), child: Text(AppLocalizations.of(context)!.discoverEmpty)),
       );
     }
 
@@ -338,9 +350,9 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
       ),
       subtitle: Text(
         switch (entry) {
-          _ when entry.missing => "${entry.requested.artist} · not found",
-          _ when resolved == null => "${entry.requested.artist} · not in your library",
-          _ when entry.fromYouTube => "${entry.requested.artist} · YouTube",
+          _ when entry.missing => AppLocalizations.of(context)!.discoverEntryNotFound(entry.requested.artist),
+          _ when resolved == null => AppLocalizations.of(context)!.discoverEntryNotInLibrary(entry.requested.artist),
+          _ when entry.fromYouTube => AppLocalizations.of(context)!.discoverEntryYoutube(entry.requested.artist),
           _ => entry.requested.artist,
         },
         maxLines: 1,
@@ -353,7 +365,7 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
                 ? null
                 : IconButton(
                     icon: const Icon(TablerIcons.brand_youtube),
-                    tooltip: "Choose a YouTube match",
+                    tooltip: AppLocalizations.of(context)!.discoverPickMatch,
                     onPressed: () => _pickFromYouTube(entry),
                   )
           : DownloadButton(
@@ -375,8 +387,12 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "${playable.length} of ${entries.length} ready"
-            "${missing > 0 ? (isYouTubeAvailable ? " · $missing need a YouTube match" : " · $missing not in your library") : ""}",
+            AppLocalizations.of(context)!.discoverReadyCount(playable.length, entries.length) +
+                (missing > 0
+                    ? (isYouTubeAvailable
+                          ? AppLocalizations.of(context)!.discoverNeedMatch(missing)
+                          : AppLocalizations.of(context)!.discoverNotInLibraryCount(missing))
+                    : ""),
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 10),
@@ -387,26 +403,30 @@ class _DiscoverPlaylistScreenState extends ConsumerState<DiscoverPlaylistScreen>
               FilledButton.icon(
                 onPressed: playable.isEmpty ? null : () => _play(playable),
                 icon: const Icon(TablerIcons.player_play, size: 18),
-                label: const Text("Play all"),
+                label: Text(AppLocalizations.of(context)!.discoverPlayAll),
               ),
               OutlinedButton.icon(
                 onPressed: playable.isEmpty ? null : () => _play(playable, shuffle: true),
                 icon: const Icon(TablerIcons.arrows_shuffle, size: 18),
-                label: const Text("Shuffle"),
+                label: Text(AppLocalizations.of(context)!.discoverShuffle),
               ),
               OutlinedButton.icon(
                 onPressed: (_downloading || playable.isEmpty) ? null : _downloadAll,
                 icon: _downloading
                     ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                     : const Icon(TablerIcons.download, size: 18),
-                label: Text(_downloading ? "Queuing…" : "Download all"),
+                label: Text(
+                  _downloading
+                      ? AppLocalizations.of(context)!.discoverQueuing
+                      : AppLocalizations.of(context)!.discoverDownloadAll,
+                ),
               ),
             ],
           ),
           if (missing > 0 && isYouTubeAvailable) ...[
             const SizedBox(height: 8),
             Text(
-              "Tap a greyed-out track to pick its YouTube match. Only tracks you've matched are played or downloaded.",
+              AppLocalizations.of(context)!.discoverTapGreyed,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).disabledColor),
             ),
           ],

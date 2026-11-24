@@ -1,3 +1,5 @@
+import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/l10n/app_localizations.dart';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
@@ -34,8 +36,8 @@ class WrappedShareCard extends StatelessWidget {
   }
 
   String get _periodLine => switch (data.period) {
-    WrappedPeriod.thisYear => "My year in music",
-    _ => "My month in music",
+    WrappedPeriod.thisYear => GlobalSnackbar.requireL10n.wrappedCardYear,
+    _ => GlobalSnackbar.requireL10n.wrappedCardMonth,
   };
 
   static String _number(int value) => NumberFormat.decimalPattern().format(value);
@@ -93,7 +95,7 @@ class WrappedShareCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "DIAPASON WRAPPED",
+                            AppLocalizations.of(context)!.wrappedCardBrand,
                             style: TextStyle(
                               fontSize: 10.5,
                               letterSpacing: 3,
@@ -138,12 +140,12 @@ class WrappedShareCard extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            "minutes listened",
+                            AppLocalizations.of(context)!.wrappedCardMinutes,
                             style: TextStyle(fontSize: 14, color: soft, fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 16),
                           if (topArtist != null) ...[
-                            _Label("TOP ARTIST", color: faint),
+                            _Label(AppLocalizations.of(context)!.wrappedCardTopArtist, color: faint),
                             const SizedBox(height: 4),
                             Text(
                               topArtist.name,
@@ -151,11 +153,14 @@ class WrappedShareCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w800, letterSpacing: -0.5),
                             ),
-                            Text("${_number(topArtist.plays)} plays", style: TextStyle(fontSize: 12.5, color: soft)),
+                            Text(
+                              AppLocalizations.of(context)!.wrappedCardPlays(_number(topArtist.plays)),
+                              style: TextStyle(fontSize: 12.5, color: soft),
+                            ),
                             const SizedBox(height: 14),
                           ],
                           if (tracks.isNotEmpty) ...[
-                            _Label("TOP TRACKS", color: faint),
+                            _Label(AppLocalizations.of(context)!.wrappedCardTopTracks, color: faint),
                             const SizedBox(height: 6),
                             for (final (index, track) in tracks.indexed)
                               Padding(
@@ -208,10 +213,26 @@ class WrappedShareCard extends StatelessWidget {
                             ),
                             child: Row(
                               children: [
-                                _Stat(value: _number(data.totalPlays), label: "plays", labelColor: soft),
-                                _Stat(value: _number(data.distinctArtists), label: "artists", labelColor: soft),
-                                _Stat(value: _number(data.streakDays), label: "day streak", labelColor: soft),
-                                _Stat(value: data.dominantGenre ?? "—", label: "top genre", labelColor: soft),
+                                _Stat(
+                                  value: _number(data.totalPlays),
+                                  label: AppLocalizations.of(context)!.wrappedCardStatPlays,
+                                  labelColor: soft,
+                                ),
+                                _Stat(
+                                  value: _number(data.distinctArtists),
+                                  label: AppLocalizations.of(context)!.wrappedStatArtists,
+                                  labelColor: soft,
+                                ),
+                                _Stat(
+                                  value: _number(data.streakDays),
+                                  label: AppLocalizations.of(context)!.wrappedStatStreak,
+                                  labelColor: soft,
+                                ),
+                                _Stat(
+                                  value: data.dominantGenre ?? "—",
+                                  label: AppLocalizations.of(context)!.wrappedStatGenre,
+                                  labelColor: soft,
+                                ),
                               ],
                             ),
                           ),
@@ -375,7 +396,9 @@ class _WrappedSharePreviewState extends State<_WrappedSharePreview> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Couldn't share that.")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.wrappedCardShareFailed)));
       }
     } finally {
       if (mounted) setState(() => _sharing = false);
@@ -389,7 +412,7 @@ class _WrappedSharePreviewState extends State<_WrappedSharePreview> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
-        title: const Text("Share your Wrapped"),
+        title: Text(AppLocalizations.of(context)!.wrappedCardShareTitle),
       ),
       body: SafeArea(
         child: Padding(
@@ -411,7 +434,7 @@ class _WrappedSharePreviewState extends State<_WrappedSharePreview> {
         icon: _sharing
             ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
             : const Icon(TablerIcons.share),
-        label: const Text("Share image"),
+        label: Text(AppLocalizations.of(context)!.wrappedCardShareButton),
       ),
     );
   }

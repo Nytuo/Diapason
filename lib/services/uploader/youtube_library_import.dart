@@ -122,7 +122,7 @@ class YouTubeLibraryImport {
 
   /// Tries the imports that are waiting for the uploader again.
   Future<void> retryPending() async {
-    if (_retrying || _pending.isEmpty || !_uploader.isReady) return;
+    if (_retrying || _pending.isEmpty || !_uploader.isConfigured) return;
     _retrying = true;
     try {
       if (!(await _uploader.capabilities()).reachable) return;
@@ -154,7 +154,9 @@ class YouTubeLibraryImport {
 
   static bool isYouTube(BaseItemDto item) => item.id.sourceId == YouTubeService.sourceId;
 
-  bool get available => _uploader.isReady;
+  /// Adding to the library needs only a configured uploader. "Upload downloaded tracks" (the `enabled` switch) is
+  /// about automatically sending downloads, and must not turn this into a plain offline download.
+  bool get available => _uploader.isConfigured;
 
   /// Whether the uploader can download from YouTube itself (checked at most every five minutes).
   Future<bool> serverFetches() async {
@@ -182,7 +184,7 @@ class YouTubeLibraryImport {
   }
 
   Future<UploadResult> _addToLibrary(BaseItemDto track, {File? file, bool automatic = false}) async {
-    if (!_uploader.isReady) {
+    if (!_uploader.isConfigured) {
       return const UploadResult.failed(
         "Set up the uploader to add YouTube tracks to your library.",
         source: ErrorSource.uploader,

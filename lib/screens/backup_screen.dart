@@ -1,3 +1,4 @@
+import 'package:diapason/l10n/app_localizations.dart';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -31,18 +32,19 @@ class _BackupScreenState extends State<BackupScreen> {
   }
 
   Future<void> _export() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _busy = true);
     try {
       final bytes = await _service.export(includeSignIns: _includeSignIns);
       if (_isDesktop) {
         final saved = await FilePicker.saveFile(
-          dialogTitle: "Save Diapason backup",
+          dialogTitle: l10n.backupDialogTitle,
           fileName: BackupService.suggestedFileName(),
           mimeType: "application/json",
           bytes: bytes,
         );
         if (saved == null) return;
-        _toast("Backup saved.");
+        _toast(l10n.backupSaved);
       } else {
         // On phones the share sheet covers Files, Drive, AirDrop, email, …
         final file = await writeBackupToTemp(bytes);
@@ -51,20 +53,21 @@ class _BackupScreenState extends State<BackupScreen> {
         await SharePlus.instance.share(
           ShareParams(
             files: [XFile(file.path, mimeType: "application/json")],
-            subject: "Diapason backup",
+            subject: l10n.backupSubject,
             sharePositionOrigin: box == null ? null : box.localToGlobal(Offset.zero) & box.size,
           ),
         );
       }
     } catch (e) {
-      _toast("Couldn't make the backup: $e");
+      _toast(l10n.backupFailed("$e"));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
   Future<void> _restore() async {
-    final file = await FilePicker.pickFile(dialogTitle: "Choose a Diapason backup");
+    final l10n = AppLocalizations.of(context)!;
+    final file = await FilePicker.pickFile(dialogTitle: l10n.backupPickTitle);
     if (file == null) return;
 
     Uint8List? bytes;
@@ -74,7 +77,7 @@ class _BackupScreenState extends State<BackupScreen> {
       bytes = null;
     }
     if (bytes == null) {
-      _toast("Couldn't read that file.");
+      _toast(l10n.backupUnreadable);
       return;
     }
 
@@ -91,18 +94,24 @@ class _BackupScreenState extends State<BackupScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Restore this backup?"),
+        title: Text(AppLocalizations.of(context)!.backupRestoreTitle),
         content: Text(
           [
-            if (created != null) "Made on ${MaterialLocalizations.of(context).formatMediumDate(created)}.",
-            "Your settings and home layout are replaced; sources, pins and smart playlists are added to what you "
-                "have. Download folders stay as they are on this device.",
-            if (info["includesSignIns"] != true) "This backup has no sign-ins: you'll need to sign in to its sources.",
+            if (created != null)
+              AppLocalizations.of(context)!.backupMadeOn(MaterialLocalizations.of(context).formatMediumDate(created)),
+            AppLocalizations.of(context)!.backupRestoreBody,
+            if (info["includesSignIns"] != true) AppLocalizations.of(context)!.backupNoSignIns,
           ].join("\n\n"),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text("Restore")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(AppLocalizations.of(context)!.backupCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(AppLocalizations.of(context)!.backupRestore),
+          ),
         ],
       ),
     );
@@ -115,18 +124,15 @@ class _BackupScreenState extends State<BackupScreen> {
       await showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text("Backup restored"),
+          title: Text(AppLocalizations.of(context)!.backupRestored),
           content: Text(
             [
-              if (report.summary().isNotEmpty) "Restored ${report.summary()}.",
-              if (report.jellyfinSignedIn) "Signed back in to Jellyfin.",
+              if (report.summary().isNotEmpty) AppLocalizations.of(context)!.backupRestoredSummary(report.summary()),
+              if (report.jellyfinSignedIn) AppLocalizations.of(context)!.backupSignedBackIn,
               if (report.sourcesNeedingSignIn > 0)
-                "${report.sourcesNeedingSignIn} source${report.sourcesNeedingSignIn == 1 ? " needs" : "s need"} "
-                    "you to sign in again (Settings › Sources).",
-              if (report.sourcesSkipped > 0)
-                "${report.sourcesSkipped} source${report.sourcesSkipped == 1 ? " was" : "s were"} skipped: already "
-                    "here, or a folder on the other device.",
-              "Restart Diapason so everything picks the changes up.",
+                AppLocalizations.of(context)!.backupSourcesNeedSignIn(report.sourcesNeedingSignIn),
+              if (report.sourcesSkipped > 0) AppLocalizations.of(context)!.backupSourcesSkipped(report.sourcesSkipped),
+              AppLocalizations.of(context)!.backupRestart,
             ].join("\n\n"),
           ),
           actions: [FilledButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
@@ -135,7 +141,7 @@ class _BackupScreenState extends State<BackupScreen> {
     } on BackupFormatException catch (e) {
       _toast(e.message);
     } catch (e) {
-      _toast("Couldn't restore that backup: $e");
+      if (mounted) _toast(AppLocalizations.of(context)!.backupRestoreFailed("$e"));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -145,18 +151,14 @@ class _BackupScreenState extends State<BackupScreen> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: const Text("Backup & restore")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.backupTitle)),
       body: AbsorbPointer(
         absorbing: _busy,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
           children: [
             if (_busy) const LinearProgressIndicator(),
-            Text(
-              "One file with your settings, home layout, sources, pins, smart playlists, hidden items and lyrics "
-              "timings. Use it on a new device or after reinstalling.",
-              style: textTheme.bodyMedium,
-            ),
+            Text(AppLocalizations.of(context)!.backupIntro, style: textTheme.bodyMedium),
             const SizedBox(height: 16),
             Card(
               child: Column(
@@ -164,18 +166,19 @@ class _BackupScreenState extends State<BackupScreen> {
                   SwitchListTile(
                     value: _includeSignIns,
                     onChanged: (value) => setState(() => _includeSignIns = value),
-                    title: const Text("Include sign-ins"),
+                    title: Text(AppLocalizations.of(context)!.backupIncludeSignIns),
                     subtitle: Text(
                       _includeSignIns
-                          ? "Server and scrobbling sign-ins are in the file. Anyone with it can use your accounts: "
-                                "keep it somewhere private."
-                          : "No passwords or tokens in the file. You'll sign in again after restoring.",
+                          ? AppLocalizations.of(context)!.backupSignInsOn
+                          : AppLocalizations.of(context)!.backupSignInsOff,
                     ),
                     secondary: Icon(_includeSignIns ? TablerIcons.key : TablerIcons.key_off),
                   ),
                   ListTile(
                     leading: const Icon(TablerIcons.download),
-                    title: Text(_isDesktop ? "Save a backup…" : "Back up and share…"),
+                    title: Text(
+                      _isDesktop ? AppLocalizations.of(context)!.backupSave : AppLocalizations.of(context)!.backupShare,
+                    ),
                     onTap: _busy ? null : _export,
                   ),
                 ],
@@ -185,8 +188,8 @@ class _BackupScreenState extends State<BackupScreen> {
             Card(
               child: ListTile(
                 leading: const Icon(TablerIcons.upload),
-                title: const Text("Restore from a backup…"),
-                subtitle: const Text("Pick a diapason-backup file"),
+                title: Text(AppLocalizations.of(context)!.backupRestoreFrom),
+                subtitle: Text(AppLocalizations.of(context)!.backupPickFile),
                 onTap: _busy ? null : _restore,
               ),
             ),

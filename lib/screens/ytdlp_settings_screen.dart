@@ -1,3 +1,4 @@
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/components/YtDlp/ytdlp_install_dialog.dart';
 import 'package:diapason/screens/uploader_settings_screen.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
@@ -92,7 +93,9 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
       await _availability.refresh();
       if (mounted) {
         setState(() => _dirty = false);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("yt-dlp settings saved")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.ytdlpSettingsSaved)));
       }
     } catch (e, stack) {
       _toast(FriendlyError.report(_log, "Saving yt-dlp settings", e, stack));
@@ -112,15 +115,16 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
 
   Future<void> _checkUpdates() async {
     setState(() => _busy = true);
+    final l10n = AppLocalizations.of(context)!;
     try {
       await _service.checkForUpdate();
       final s = _service.status.value;
       _toast(
         s.latestVersion == null
-            ? "Couldn't reach GitHub to check for updates."
+            ? l10n.ytdlpUpdateCheckFailed
             : s.updateAvailable
-            ? "yt-dlp ${s.latestVersion} is available."
-            : "yt-dlp is up to date (${s.version}).",
+            ? l10n.ytdlpUpdateAvailableToast("${s.latestVersion}")
+            : l10n.ytdlpUpToDate("${s.version}"),
       );
     } catch (e, stack) {
       _toast(FriendlyError.report(_log, "Checking for yt-dlp updates", e, stack));
@@ -133,14 +137,17 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Remove the downloaded yt-dlp?"),
-        content: const Text(
-          "This deletes the copy Diapason downloaded (and its Deno). A yt-dlp you installed yourself is left alone. "
-          "YouTube will stop working here until you set it up again.",
-        ),
+        title: Text(AppLocalizations.of(context)!.ytdlpRemoveTitle),
+        content: Text(AppLocalizations.of(context)!.ytdlpRemoveBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text("Remove")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(AppLocalizations.of(context)!.ytdlpCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(AppLocalizations.of(context)!.ytdlpRemove),
+          ),
         ],
       ),
     );
@@ -180,7 +187,7 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
   }
 
   Future<void> _pickBinary() async {
-    final picked = await FilePicker.pickFile(dialogTitle: "Choose your yt-dlp executable");
+    final picked = await FilePicker.pickFile(dialogTitle: AppLocalizations.of(context)!.ytdlpPickBinary);
     final path = picked?.path;
     if (path != null) {
       _custom.text = path;
@@ -189,7 +196,7 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
   }
 
   Future<void> _pickCookies() async {
-    final picked = await FilePicker.pickFile(dialogTitle: "Choose a cookies.txt file");
+    final picked = await FilePicker.pickFile(dialogTitle: AppLocalizations.of(context)!.ytdlpPickCookies);
     final path = picked?.path;
     if (path != null) {
       _cookiesFile.text = path;
@@ -201,15 +208,11 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text("YouTube (yt-dlp)")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.ytdlpTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
-            "Diapason uses yt-dlp for everything YouTube — search, playback and recommendations. It can run on "
-            "this computer or on your diapason-uploader, and unlike a built-in library it updates itself whenever "
-            "YouTube changes.",
-          ),
+          Text(AppLocalizations.of(context)!.ytdlpIntro),
           const SizedBox(height: 16),
           _routeCard(theme),
           const SizedBox(height: 8),
@@ -226,20 +229,19 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
             const SizedBox(height: 16),
             _testSection(theme),
             const SizedBox(height: 24),
-            FilledButton(onPressed: _dirty && !_busy ? _save : null, child: const Text("Save settings")),
+            FilledButton(
+              onPressed: _dirty && !_busy ? _save : null,
+              child: Text(AppLocalizations.of(context)!.ytdlpSaveSettings),
+            ),
             const SizedBox(height: 24),
           ] else ...[
             const SizedBox(height: 16),
-            Text(
-              YtDlpPaths.execBlockedReason ??
-                  "This device can't run yt-dlp itself, so YouTube works through your diapason-uploader. "
-                      "Connect one with its YouTube feature turned on.",
-            ),
+            Text(YtDlpPaths.execBlockedReason ?? AppLocalizations.of(context)!.ytdlpUnsupportedDevice),
             const SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed: () => Navigator.of(context).pushNamed(UploaderSettingsScreen.routeName),
               icon: const Icon(TablerIcons.cloud_upload),
-              label: const Text("Uploader settings"),
+              label: Text(AppLocalizations.of(context)!.ytdlpUploaderSettings),
             ),
           ],
         ],
@@ -252,32 +254,32 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
     final s = FinampSettingsHelper.finampSettings;
     return [
       const SizedBox(height: 8),
-      Text("In the app", style: theme.textTheme.titleMedium),
+      Text(AppLocalizations.of(context)!.ytdlpSectionInApp, style: theme.textTheme.titleMedium),
       const SizedBox(height: 4),
       SwitchListTile(
         contentPadding: EdgeInsets.zero,
-        title: const Text("Search YouTube first"),
-        subtitle: const Text("When you search, start on the YouTube results instead of your library."),
+        title: Text(AppLocalizations.of(context)!.ytdlpSearchFirst),
+        subtitle: Text(AppLocalizations.of(context)!.ytdlpSearchFirstSubtitle),
         value: s.youtubeSearchByDefault,
         onChanged: (v) => setState(() => FinampSetters.setYoutubeSearchByDefault(v)),
       ),
       SwitchListTile(
         contentPadding: EdgeInsets.zero,
-        title: const Text("“Hits on YouTube” shelf"),
-        subtitle: const Text("YouTube's music chart on the YouTube home page."),
+        title: Text(AppLocalizations.of(context)!.ytdlpHitsShelf),
+        subtitle: Text(AppLocalizations.of(context)!.ytdlpHitsShelfSubtitle),
         value: s.youtubeShowHits,
         onChanged: (v) => setState(() => FinampSetters.setYoutubeShowHits(v)),
       ),
       SwitchListTile(
         contentPadding: EdgeInsets.zero,
-        title: const Text("“New this week” shelf"),
-        subtitle: const Text("Fresh uploads on the YouTube home page."),
+        title: Text(AppLocalizations.of(context)!.ytdlpNewShelf),
+        subtitle: Text(AppLocalizations.of(context)!.ytdlpNewShelfSubtitle),
         value: s.youtubeShowNew,
         onChanged: (v) => setState(() => FinampSetters.setYoutubeShowNew(v)),
       ),
       ListTile(
         contentPadding: EdgeInsets.zero,
-        title: Text("Search results: ${s.youtubeResultCount}"),
+        title: Text(AppLocalizations.of(context)!.ytdlpSearchResults(s.youtubeResultCount)),
         subtitle: Slider(
           value: s.youtubeResultCount.toDouble().clamp(10, 50),
           min: 10,
@@ -293,13 +295,19 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
   Widget _routeCard(ThemeData theme) {
     final status = _availability.status.value;
     final (IconData icon, String title, String body) = switch (status.source) {
-      YouTubeSource.local => (TablerIcons.circle_check, "YouTube is on", "Using yt-dlp on this computer."),
+      YouTubeSource.local => (
+        TablerIcons.circle_check,
+        AppLocalizations.of(context)!.ytdlpOn,
+        AppLocalizations.of(context)!.ytdlpUsingLocal,
+      ),
       YouTubeSource.uploader => (
         TablerIcons.circle_check,
-        "YouTube is on",
-        "Using the yt-dlp on your uploader${status.uploader.ytdlpVersion != null ? " (${status.uploader.ytdlpVersion})" : ""}.",
+        AppLocalizations.of(context)!.ytdlpOn,
+        status.uploader.ytdlpVersion != null
+            ? AppLocalizations.of(context)!.ytdlpUsingUploaderVersion(status.uploader.ytdlpVersion!)
+            : AppLocalizations.of(context)!.ytdlpUsingUploader,
       ),
-      YouTubeSource.none => (TablerIcons.circle_x, "YouTube is off", status.problems.join("\n")),
+      YouTubeSource.none => (TablerIcons.circle_x, AppLocalizations.of(context)!.ytdlpOff, status.problems.join("\n")),
     };
     return Card(
       child: ListTile(
@@ -308,7 +316,7 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
         subtitle: Text(body),
         trailing: IconButton(
           icon: const Icon(TablerIcons.refresh),
-          tooltip: "Check again",
+          tooltip: AppLocalizations.of(context)!.ytdlpCheckAgain,
           onPressed: () => _availability.refresh(),
         ),
       ),
@@ -320,26 +328,28 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
     final lines = <String>[];
     switch (s.state) {
       case LocalYtDlpState.checking:
-        lines.add("Checking…");
+        lines.add(AppLocalizations.of(context)!.ytdlpChecking);
       case LocalYtDlpState.notInstalled:
-        lines.add("yt-dlp wasn't found on this computer.");
+        lines.add(AppLocalizations.of(context)!.ytdlpNotFound);
       case LocalYtDlpState.broken:
-        lines.add(s.problem ?? "yt-dlp is installed but won't run.");
+        lines.add(s.problem ?? AppLocalizations.of(context)!.ytdlpBroken);
       case LocalYtDlpState.ready:
-        lines.add("yt-dlp ${s.version}");
+        lines.add(AppLocalizations.of(context)!.ytdlpVersionLine("${s.version}"));
         lines.add(switch (s.origin) {
-          YtDlpOrigin.managed => "Managed by Diapason (updates automatically)",
-          YtDlpOrigin.custom => "Your own copy: ${s.path}",
-          _ => "Found on your system: ${s.path}",
+          YtDlpOrigin.managed => AppLocalizations.of(context)!.ytdlpOriginManaged,
+          YtDlpOrigin.custom => AppLocalizations.of(context)!.ytdlpOriginCustom("${s.path}"),
+          _ => AppLocalizations.of(context)!.ytdlpOriginSystem("${s.path}"),
         });
-        if (s.updateAvailable) lines.add("Update available: ${s.latestVersion}");
+        if (s.updateAvailable) lines.add(AppLocalizations.of(context)!.ytdlpUpdateAvailableLine("${s.latestVersion}"));
       case LocalYtDlpState.unsupported:
         break;
     }
     lines.add(
       s.jsRuntime == null
-          ? "JavaScript runtime: none — some videos may fail. Install Deno below."
-          : "JavaScript runtime: ${s.jsRuntime}${s.jsRuntimeManaged ? " (managed by Diapason)" : " (${s.jsRuntimePath})"}",
+          ? AppLocalizations.of(context)!.ytdlpJsNone
+          : s.jsRuntimeManaged
+          ? AppLocalizations.of(context)!.ytdlpJsManaged("${s.jsRuntime}")
+          : AppLocalizations.of(context)!.ytdlpJsPath("${s.jsRuntime}", "${s.jsRuntimePath}"),
     );
     return Card(
       child: Padding(
@@ -347,7 +357,7 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("On this computer", style: theme.textTheme.titleSmall),
+            Text(AppLocalizations.of(context)!.ytdlpOnThisComputer, style: theme.textTheme.titleSmall),
             const SizedBox(height: 8),
             for (final l in lines) Padding(padding: const EdgeInsets.symmetric(vertical: 2), child: Text(l)),
           ],
@@ -366,30 +376,34 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
           FilledButton.icon(
             onPressed: _busy ? null : () => _install(),
             icon: const Icon(TablerIcons.download),
-            label: const Text("Install yt-dlp"),
+            label: Text(AppLocalizations.of(context)!.ytdlpInstall),
           ),
         if (s.isReady && s.updateAvailable)
           FilledButton.icon(
             onPressed: _busy ? null : () => _install(updateOnly: true),
             icon: const Icon(TablerIcons.arrow_up_circle),
-            label: Text("Update to ${s.latestVersion}"),
+            label: Text(AppLocalizations.of(context)!.ytdlpUpdateTo("${s.latestVersion}")),
           ),
         OutlinedButton.icon(
           onPressed: _busy ? null : _checkUpdates,
           icon: const Icon(TablerIcons.refresh),
-          label: const Text("Check for updates"),
+          label: Text(AppLocalizations.of(context)!.ytdlpCheckUpdates),
         ),
         if (s.jsRuntime == null || !s.jsRuntimeManaged)
           OutlinedButton.icon(
             onPressed: _busy ? null : () => _install(),
             icon: const Icon(TablerIcons.brand_javascript),
-            label: Text(s.jsRuntime == null ? "Install Deno" : "Install managed Deno"),
+            label: Text(
+              s.jsRuntime == null
+                  ? AppLocalizations.of(context)!.ytdlpInstallDeno
+                  : AppLocalizations.of(context)!.ytdlpInstallManagedDeno,
+            ),
           ),
         if (s.origin == YtDlpOrigin.managed || s.jsRuntimeManaged)
           TextButton.icon(
             onPressed: _busy ? null : _remove,
             icon: const Icon(TablerIcons.trash),
-            label: const Text("Remove downloaded copy"),
+            label: Text(AppLocalizations.of(context)!.ytdlpRemoveCopy),
           ),
       ],
     );
@@ -397,41 +411,38 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
 
   List<Widget> _visual(ThemeData theme) {
     return [
-      Text("Behaviour", style: theme.textTheme.titleMedium),
+      Text(AppLocalizations.of(context)!.ytdlpSectionBehaviour, style: theme.textTheme.titleMedium),
       SwitchListTile(
         contentPadding: EdgeInsets.zero,
-        title: const Text("Keep yt-dlp up to date"),
-        subtitle: const Text("Checks once a day and updates the copy Diapason manages."),
+        title: Text(AppLocalizations.of(context)!.ytdlpAutoUpdate),
+        subtitle: Text(AppLocalizations.of(context)!.ytdlpAutoUpdateSubtitle),
         value: _cfg.autoUpdate,
         onChanged: (v) => _change(() => _cfg.autoUpdate = v),
       ),
       SwitchListTile(
         contentPadding: EdgeInsets.zero,
-        title: const Text("Use only my uploader's yt-dlp"),
-        subtitle: const Text(
-          "Search, stream and add to library with the one on your server, even when this computer has its own. "
-          "Otherwise this computer's yt-dlp fetches the track and sends it to your uploader.",
-        ),
+        title: Text(AppLocalizations.of(context)!.ytdlpPreferUploader),
+        subtitle: Text(AppLocalizations.of(context)!.ytdlpPreferUploaderSubtitle),
         value: _cfg.preferUploader,
         onChanged: (v) => _change(() => _cfg.preferUploader = v),
       ),
-      const SizedBox(height: 8),
+      SizedBox(height: 8),
       DropdownButtonFormField<YtAudioPreference>(
         initialValue: _cfg.audio,
-        decoration: const InputDecoration(labelText: "Audio format"),
+        decoration: InputDecoration(labelText: AppLocalizations.of(context)!.ytdlpAudioFormat),
         items: [for (final a in YtAudioPreference.values) DropdownMenuItem(value: a, child: Text(a.label))],
         onChanged: (v) => _change(() => _cfg.audio = v ?? _cfg.audio),
       ),
-      const SizedBox(height: 16),
+      SizedBox(height: 16),
       DropdownButtonFormField<String>(
-        initialValue: const ["auto", "deno", "node", "bun", "none"].contains(_cfg.jsRuntime) ? _cfg.jsRuntime : "auto",
-        decoration: const InputDecoration(labelText: "JavaScript runtime"),
-        items: const [
-          DropdownMenuItem(value: "auto", child: Text("Automatic (Deno, then Node, then Bun)")),
+        initialValue: ["auto", "deno", "node", "bun", "none"].contains(_cfg.jsRuntime) ? _cfg.jsRuntime : "auto",
+        decoration: InputDecoration(labelText: AppLocalizations.of(context)!.ytdlpJsRuntime),
+        items: [
+          DropdownMenuItem(value: "auto", child: Text(AppLocalizations.of(context)!.ytdlpJsAuto)),
           DropdownMenuItem(value: "deno", child: Text("Deno")),
           DropdownMenuItem(value: "node", child: Text("Node.js")),
           DropdownMenuItem(value: "bun", child: Text("Bun")),
-          DropdownMenuItem(value: "none", child: Text("None")),
+          DropdownMenuItem(value: "none", child: Text(AppLocalizations.of(context)!.ytdlpJsNoneOption)),
         ],
         onChanged: (v) => _change(() => _cfg.jsRuntime = v ?? "auto"),
       ),
@@ -440,18 +451,21 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
         controller: _custom,
         onChanged: (_) => _change(() {}),
         decoration: InputDecoration(
-          labelText: "Use this yt-dlp executable (optional)",
-          hintText: "Leave empty to use the managed or system one",
+          labelText: AppLocalizations.of(context)!.ytdlpCustomBinary,
+          hintText: AppLocalizations.of(context)!.ytdlpCustomBinaryHint,
           suffixIcon: IconButton(icon: const Icon(TablerIcons.folder_open), onPressed: _pickBinary),
         ),
       ),
       const SizedBox(height: 24),
-      Text("Network", style: theme.textTheme.titleMedium),
+      Text(AppLocalizations.of(context)!.ytdlpSectionNetwork, style: theme.textTheme.titleMedium),
       const SizedBox(height: 8),
       TextField(
         controller: _proxy,
         onChanged: (_) => _change(() {}),
-        decoration: const InputDecoration(labelText: "Proxy", hintText: "socks5://127.0.0.1:1080"),
+        decoration: InputDecoration(
+          labelText: AppLocalizations.of(context)!.ytdlpProxy,
+          hintText: "socks5://127.0.0.1:1080",
+        ),
       ),
       const SizedBox(height: 16),
       Row(
@@ -460,7 +474,10 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
             child: TextField(
               controller: _rate,
               onChanged: (_) => _change(() {}),
-              decoration: const InputDecoration(labelText: "Speed limit", hintText: "e.g. 2M"),
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.ytdlpSpeedLimit,
+                hintText: AppLocalizations.of(context)!.ytdlpSpeedLimitHint,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -469,7 +486,11 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
               controller: _geo,
               onChanged: (_) => _change(() {}),
               maxLength: 2,
-              decoration: const InputDecoration(labelText: "Pretend to be in…", hintText: "US", counterText: ""),
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.ytdlpGeo,
+                hintText: "US",
+                counterText: "",
+              ),
             ),
           ),
         ],
@@ -479,7 +500,7 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
         children: [
           Expanded(
             child: _stepper(
-              "Timeout (s)",
+              AppLocalizations.of(context)!.ytdlpTimeout,
               _cfg.socketTimeoutSecs,
               5,
               120,
@@ -487,26 +508,37 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          Expanded(child: _stepper("Retries", _cfg.retries, 0, 20, (v) => _change(() => _cfg.retries = v))),
+          Expanded(
+            child: _stepper(
+              AppLocalizations.of(context)!.ytdlpRetries,
+              _cfg.retries,
+              0,
+              20,
+              (v) => _change(() => _cfg.retries = v),
+            ),
+          ),
         ],
       ),
       SwitchListTile(
         contentPadding: EdgeInsets.zero,
-        title: const Text("Force IPv4"),
-        subtitle: const Text("Helps on networks where IPv6 to YouTube is flaky."),
+        title: Text(AppLocalizations.of(context)!.ytdlpForceIpv4),
+        subtitle: Text(AppLocalizations.of(context)!.ytdlpForceIpv4Subtitle),
         value: _cfg.forceIpv4,
         onChanged: (v) => _change(() => _cfg.forceIpv4 = v),
       ),
       const SizedBox(height: 16),
-      Text("Signing in (for blocked or age-restricted videos)", style: theme.textTheme.titleMedium),
+      Text(AppLocalizations.of(context)!.ytdlpSectionSignIn, style: theme.textTheme.titleMedium),
       const SizedBox(height: 8),
       DropdownButtonFormField<String>(
         initialValue: _browsers.contains(_cfg.cookiesFromBrowser) ? _cfg.cookiesFromBrowser : "",
-        decoration: const InputDecoration(
-          labelText: "Borrow cookies from a browser",
-          helperText: "yt-dlp reads your YouTube login from it. Nothing is sent anywhere except to YouTube.",
+        decoration: InputDecoration(
+          labelText: AppLocalizations.of(context)!.ytdlpCookiesBrowser,
+          helperText: AppLocalizations.of(context)!.ytdlpCookiesBrowserHelper,
         ),
-        items: [for (final b in _browsers) DropdownMenuItem(value: b, child: Text(b.isEmpty ? "Don't" : b))],
+        items: [
+          for (final b in _browsers)
+            DropdownMenuItem(value: b, child: Text(b.isEmpty ? AppLocalizations.of(context)!.ytdlpCookiesNone : b)),
+        ],
         onChanged: (v) => _change(() => _cfg.cookiesFromBrowser = v ?? ""),
       ),
       const SizedBox(height: 16),
@@ -514,7 +546,7 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
         controller: _cookiesFile,
         onChanged: (_) => _change(() {}),
         decoration: InputDecoration(
-          labelText: "…or a cookies.txt file",
+          labelText: AppLocalizations.of(context)!.ytdlpCookiesFile,
           suffixIcon: IconButton(icon: const Icon(TablerIcons.folder_open), onPressed: _pickCookies),
         ),
       ),
@@ -550,8 +582,8 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
     return [
       SwitchListTile(
         contentPadding: EdgeInsets.zero,
-        title: Text("Advanced mode", style: theme.textTheme.titleMedium),
-        subtitle: const Text("Write the yt-dlp flags yourself instead of using the controls above."),
+        title: Text(AppLocalizations.of(context)!.ytdlpAdvancedMode, style: theme.textTheme.titleMedium),
+        subtitle: Text(AppLocalizations.of(context)!.ytdlpAdvancedSubtitle),
         value: _cfg.advancedMode,
         onChanged: (v) => _change(() {
           _cfg.advancedMode = v;
@@ -567,10 +599,9 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
           minLines: 3,
           maxLines: 8,
           style: const TextStyle(fontFamily: "monospace"),
-          decoration: const InputDecoration(
-            labelText: "Flags passed to every yt-dlp run",
-            helperText:
-                "Quote values with spaces. Diapason adds the search/stream/URL part and the JavaScript runtime.",
+          decoration: InputDecoration(
+            labelText: AppLocalizations.of(context)!.ytdlpFlags,
+            helperText: AppLocalizations.of(context)!.ytdlpFlagsHelper,
             alignLabelWithHint: true,
             border: OutlineInputBorder(),
           ),
@@ -579,24 +610,30 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
           alignment: Alignment.centerLeft,
           child: TextButton(
             onPressed: () => _change(() => _advanced.text = _cfg.visualAsCommandLine()),
-            child: const Text("Reset from the controls above"),
+            child: Text(AppLocalizations.of(context)!.ytdlpResetFlags),
           ),
         ),
       ] else ...[
         TextField(
           controller: _extractor,
           onChanged: (_) => _change(() {}),
-          decoration: const InputDecoration(labelText: "Extractor arguments", hintText: "youtube:player_client=tv"),
+          decoration: InputDecoration(
+            labelText: AppLocalizations.of(context)!.ytdlpExtractorArgs,
+            hintText: "youtube:player_client=tv",
+          ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: _extra,
           onChanged: (_) => _change(() {}),
-          decoration: const InputDecoration(labelText: "Extra flags", hintText: "--no-check-certificates"),
+          decoration: InputDecoration(
+            labelText: AppLocalizations.of(context)!.ytdlpExtraFlags,
+            hintText: "--no-check-certificates",
+          ),
         ),
       ],
       const SizedBox(height: 12),
-      Text("Command that will run", style: theme.textTheme.titleSmall),
+      Text(AppLocalizations.of(context)!.ytdlpCommandPreview, style: theme.textTheme.titleSmall),
       const SizedBox(height: 4),
       Container(
         width: double.infinity,
@@ -616,7 +653,7 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
             ),
             IconButton(
               visualDensity: VisualDensity.compact,
-              tooltip: "Copy",
+              tooltip: AppLocalizations.of(context)!.ytdlpCopy,
               icon: const Icon(TablerIcons.copy, size: 18),
               onPressed: () => Clipboard.setData(ClipboardData(text: shown)),
             ),
@@ -653,7 +690,7 @@ class _YtDlpSettingsScreenState extends State<YtDlpSettingsScreen> {
           icon: _busy
               ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
               : const Icon(TablerIcons.player_play),
-          label: const Text("Test with a real video"),
+          label: Text(AppLocalizations.of(context)!.ytdlpTestReal),
         ),
         if (_testResult != null)
           Padding(

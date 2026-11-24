@@ -8,6 +8,7 @@ import 'package:diapason/services/youtube_service.dart';
 import 'package:diapason/services/youtube/youtube_availability.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:diapason/components/global_snackbar.dart';
 import 'package:logging/logging.dart';
 
 class DiscoveredTrack {
@@ -65,8 +66,8 @@ class DiscoveryService {
         .cast<Map<String, dynamic>>()
         .map(
           (r) => FreshRelease(
-            title: (r["release_name"] ?? "Unknown") as String,
-            artist: (r["artist_credit_name"] ?? "Unknown") as String,
+            title: (r["release_name"] ?? GlobalSnackbar.requireL10n.discoverUnknown) as String,
+            artist: (r["artist_credit_name"] ?? GlobalSnackbar.requireL10n.discoverUnknown) as String,
             date: r["release_date"] as String?,
             mbid: r["release_group_mbid"] as String?,
           ),
@@ -144,7 +145,10 @@ class DiscoveryService {
         .nonNulls
         .map((p) {
           final identifier = (p["identifier"] ?? "") as String;
-          return (mbid: identifier.split("/").last, title: (p["title"] ?? "Untitled") as String);
+          return (
+            mbid: identifier.split("/").last,
+            title: (p["title"] ?? GlobalSnackbar.requireL10n.discoverUntitled) as String,
+          );
         })
         .where((p) => p.mbid.isNotEmpty)
         .toList();
@@ -178,8 +182,8 @@ class DiscoveryService {
           final identifier = (p["identifier"] ?? "") as String;
           return DiscoverPlaylist(
             id: identifier.split("/").last,
-            title: (p["title"] ?? "Untitled") as String,
-            subtitle: "Made for you by ListenBrainz",
+            title: (p["title"] ?? GlobalSnackbar.requireL10n.discoverUntitled) as String,
+            subtitle: GlobalSnackbar.requireL10n.discoverMadeForYou,
             kind: DiscoverPlaylistKind.listenBrainzPlaylist,
           );
         })
@@ -195,8 +199,8 @@ class DiscoveryService {
             id: p.mbid,
             title: p.title,
             subtitle: isYouTubeAvailable
-                ? "Matched against your library, YouTube for the rest"
-                : "Matched against your library",
+                ? GlobalSnackbar.requireL10n.discoverMatchedYoutube
+                : GlobalSnackbar.requireL10n.discoverMatched,
             kind: DiscoverPlaylistKind.listenBrainzPlaylist,
           ),
         )
@@ -205,30 +209,30 @@ class DiscoveryService {
 
   List<DiscoverPlaylist> lastFmGenrePlaylists() {
     if (_lastFmKey.isEmpty) return const [];
-    const genres = <({String tag, String title})>[
+    final genres = <({String tag, String title})>[
       (tag: "rock", title: "Rock"),
       (tag: "pop", title: "Pop"),
-      (tag: "electronic", title: "Electronic"),
+      (tag: "electronic", title: GlobalSnackbar.requireL10n.discoverGenreElectronic),
       (tag: "hip-hop", title: "Hip-Hop"),
       (tag: "jazz", title: "Jazz"),
       (tag: "metal", title: "Metal"),
       (tag: "indie", title: "Indie"),
-      (tag: "classical", title: "Classical"),
+      (tag: "classical", title: GlobalSnackbar.requireL10n.discoverGenreClassical),
       (tag: "r&b", title: "R&B"),
       (tag: "folk", title: "Folk"),
     ];
     return [
-      const DiscoverPlaylist(
+      DiscoverPlaylist(
         id: "__chart__",
-        title: "Global Top Tracks",
-        subtitle: "Trending on Last.fm",
+        title: GlobalSnackbar.requireL10n.discoverGlobalTop,
+        subtitle: GlobalSnackbar.requireL10n.discoverTrending,
         kind: DiscoverPlaylistKind.lastFmChart,
       ),
       for (final g in genres)
         DiscoverPlaylist(
           id: g.tag,
-          title: "Top ${g.title}",
-          subtitle: "Popular on Last.fm",
+          title: GlobalSnackbar.requireL10n.discoverTopGenre(g.title),
+          subtitle: GlobalSnackbar.requireL10n.discoverPopular,
           kind: DiscoverPlaylistKind.lastFmTag,
         ),
     ];

@@ -1,3 +1,4 @@
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 
 import 'package:diapason/models/finamp_models.dart';
@@ -37,7 +38,7 @@ class _WrappedScreenState extends State<WrappedScreen> {
     if (tracks.isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text("Couldn't find those tracks in your library any more.")));
+      ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.wrappedNoTracks)));
       return;
     }
 
@@ -47,7 +48,7 @@ class _WrappedScreenState extends State<WrappedScreen> {
         type: QueueItemSourceType.unknown,
         name: QueueItemSourceName(
           type: QueueItemSourceNameType.preTranslated,
-          pretranslatedName: "Wrapped — ${_period.displayName}",
+          pretranslatedName: AppLocalizations.of(context)!.wrappedQueueName(_period.displayName),
         ),
         id: const BaseItemId("wrapped"),
       ),
@@ -65,7 +66,7 @@ class _WrappedScreenState extends State<WrappedScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Your Wrapped"),
+        title: Text(AppLocalizations.of(context)!.wrappedTitle),
         actions: [
           FutureBuilder<WrappedData>(
             future: _data,
@@ -75,12 +76,12 @@ class _WrappedScreenState extends State<WrappedScreen> {
               return Row(
                 children: [
                   IconButton(
-                    tooltip: "Play my top tracks",
+                    tooltip: AppLocalizations.of(context)!.wrappedPlayTop,
                     icon: const Icon(TablerIcons.player_play),
                     onPressed: () => _playTopTracks(data),
                   ),
                   IconButton(
-                    tooltip: "Share as an image",
+                    tooltip: AppLocalizations.of(context)!.wrappedShareImage,
                     icon: const Icon(TablerIcons.share),
                     onPressed: () => showWrappedSharePreview(context, data),
                   ),
@@ -112,13 +113,10 @@ class _WrappedScreenState extends State<WrappedScreen> {
                 }
                 final data = snapshot.data;
                 if (data == null || data.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Padding(
                       padding: EdgeInsets.all(32.0),
-                      child: Text(
-                        "Nothing here yet.\n\nPlay some music and your Wrapped will fill in.",
-                        textAlign: TextAlign.center,
-                      ),
+                      child: Text(AppLocalizations.of(context)!.wrappedEmpty, textAlign: TextAlign.center),
                     ),
                   );
                 }
@@ -144,22 +142,25 @@ class _WrappedBody extends StatelessWidget {
       children: [
         Row(
           children: [
-            _Stat(value: "${data.minutesListened}", label: "minutes"),
-            _Stat(value: "${data.totalPlays}", label: "tracks played"),
-            _Stat(value: "${data.distinctArtists}", label: "artists"),
+            _Stat(value: "${data.minutesListened}", label: AppLocalizations.of(context)!.wrappedStatMinutes),
+            _Stat(value: "${data.totalPlays}", label: AppLocalizations.of(context)!.wrappedStatPlays),
+            _Stat(value: "${data.distinctArtists}", label: AppLocalizations.of(context)!.wrappedStatArtists),
           ],
         ),
         const SizedBox(height: 8.0),
         Row(
           children: [
-            _Stat(value: "${data.streakDays}", label: "day streak"),
-            _Stat(value: data.dominantGenre ?? "—", label: "top genre"),
+            _Stat(value: "${data.streakDays}", label: AppLocalizations.of(context)!.wrappedStatStreak),
+            _Stat(value: data.dominantGenre ?? "—", label: AppLocalizations.of(context)!.wrappedStatGenre),
           ],
         ),
 
-        if (data.topTracks.isNotEmpty) _Chart(title: "Top tracks", entries: data.topTracks),
-        if (data.topArtists.isNotEmpty) _Chart(title: "Top artists", entries: data.topArtists),
-        if (data.topAlbums.isNotEmpty) _Chart(title: "Top albums", entries: data.topAlbums),
+        if (data.topTracks.isNotEmpty)
+          _Chart(title: AppLocalizations.of(context)!.wrappedTopTracks, entries: data.topTracks),
+        if (data.topArtists.isNotEmpty)
+          _Chart(title: AppLocalizations.of(context)!.wrappedTopArtists, entries: data.topArtists),
+        if (data.topAlbums.isNotEmpty)
+          _Chart(title: AppLocalizations.of(context)!.wrappedTopAlbums, entries: data.topAlbums),
       ],
     );
   }
@@ -254,8 +255,8 @@ class WrappedTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ListTile(
     leading: const Icon(TablerIcons.chart_bar),
-    title: const Text("Your Wrapped"),
-    subtitle: const Text("What you actually listened to"),
+    title: Text(AppLocalizations.of(context)!.wrappedTitle),
+    subtitle: Text(AppLocalizations.of(context)!.wrappedSubtitle),
     onTap: () => Navigator.of(context).pushNamed(WrappedScreen.routeName),
   );
 }

@@ -1,3 +1,4 @@
+import 'package:diapason/l10n/app_localizations.dart';
 import 'dart:io';
 
 import 'package:diapason/screens/cache_settings_screen.dart';
@@ -70,17 +71,22 @@ class _StorageSettingsScreenState extends ConsumerState<StorageSettingsScreen> {
     return total;
   }
 
-  Future<void> _clear(String what, Future<void> Function() action) async {
+  Future<void> _clear(String what, String label, Future<void> Function() action) async {
     try {
       await action();
       _log.info("Cleared $what");
       if (mounted) {
         setState(() => _generation++);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$what cleared")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.storageCleared(label))));
       }
     } catch (e, stack) {
       final why = FriendlyError.report(_log, "Clearing $what", e, stack);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Couldn't clear $what. $why")));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.storageClearFailed(label, why))));
     }
   }
 
@@ -90,36 +96,41 @@ class _StorageSettingsScreenState extends ConsumerState<StorageSettingsScreen> {
     final detail = LogDetail.fromId(ref.watch(finampSettingsProvider.logLevel));
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Storage & diagnostics")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.storageTitle)),
       body: ListView(
         padding: const EdgeInsets.only(bottom: 120),
         children: [
-          _header(theme, "What the app keeps on this device"),
+          _header(theme, AppLocalizations.of(context)!.storageHeaderKept),
           _SizeTile(
             key: ValueKey("stream$_generation"),
             icon: TablerIcons.music,
-            title: "Streamed tracks",
-            subtitle: "Copies kept while you listen, so replays don't download again.",
+            title: AppLocalizations.of(context)!.storageStreamed,
+            subtitle: AppLocalizations.of(context)!.storageStreamedSubtitle,
             measure: () => GetIt.instance<StreamCacheService>().currentSizeBytes(),
-            onClear: () => _clear("Streamed track cache", () => GetIt.instance<StreamCacheService>().clear()),
+            onClear: () => _clear(
+              "Streamed track cache",
+              AppLocalizations.of(context)!.storageWhatStream,
+              () => GetIt.instance<StreamCacheService>().clear(),
+            ),
             onOpen: () => Navigator.of(context).pushNamed(CacheSettingsScreen.routeName),
           ),
           _SizeTile(
             key: ValueKey("art$_generation"),
             icon: TablerIcons.photo,
-            title: "Cover art",
-            subtitle: "Album and artist pictures. They're fetched again when needed.",
+            title: AppLocalizations.of(context)!.storageCoverArt,
+            subtitle: AppLocalizations.of(context)!.storageCoverArtSubtitle,
             measure: widget.coverArtBytes,
-            onClear: () => _clear("Cover art cache", widget.clearCoverArt),
+            onClear: () =>
+                _clear("Cover art cache", AppLocalizations.of(context)!.storageWhatCoverArt, widget.clearCoverArt),
           ),
           _SizeTile(
             key: ValueKey("logs$_generation"),
             icon: TablerIcons.file_text,
-            title: "Log files",
-            subtitle: "Used for bug reports. Only the older log can be deleted; the current one is in use.",
+            title: AppLocalizations.of(context)!.storageLogs,
+            subtitle: AppLocalizations.of(context)!.storageLogsSubtitle,
             measure: _logBytes,
-            clearLabel: "Delete old",
-            onClear: () => _clear("Old log", () async {
+            clearLabel: AppLocalizations.of(context)!.storageDeleteOld,
+            onClear: () => _clear("Old log", AppLocalizations.of(context)!.storageWhatOldLog, () async {
               final old = await _logFile("diapason-logs-old.txt");
               if (old.existsSync()) await old.delete();
             }),
@@ -129,30 +140,36 @@ class _StorageSettingsScreenState extends ConsumerState<StorageSettingsScreen> {
             _SizeTile(
               key: ValueKey("ytdlp$_generation"),
               icon: TablerIcons.brand_youtube,
-              title: "yt-dlp and Deno",
-              subtitle: "The copies Diapason downloaded for YouTube on this computer.",
+              title: AppLocalizations.of(context)!.storageYtdlp,
+              subtitle: AppLocalizations.of(context)!.storageYtdlpSubtitle,
               measure: () async => _dirBytes(await YtDlpPaths.managedDir()),
               onOpen: () => Navigator.of(context).pushNamed(YtDlpSettingsScreen.routeName),
             ),
           ListTile(
             leading: const Icon(Icons.download),
-            title: const Text("Downloaded music"),
-            subtitle: const Text("Manage locations and what's kept offline"),
+            title: Text(AppLocalizations.of(context)!.storageDownloadedMusic),
+            subtitle: Text(AppLocalizations.of(context)!.storageDownloadedMusicSubtitle),
             trailing: const Icon(TablerIcons.chevron_right),
             onTap: () => Navigator.of(context).pushNamed(DownloadsSettingsScreen.routeName),
           ),
           const Divider(height: 32),
-          _header(theme, "Log detail"),
+          _header(theme, AppLocalizations.of(context)!.storageLogDetail),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: SegmentedButton<LogDetail>(
-              showSelectedIcon: false,
-              segments: [for (final d in LogDetail.values) ButtonSegment(value: d, label: Text(d.label))],
-              selected: {detail},
-              onSelectionChanged: (selection) {
-                FinampSetters.setLogLevel(selection.first.id);
-                applyConfiguredLogLevel();
-              },
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                for (final d in LogDetail.values)
+                  ChoiceChip(
+                    label: Text(d.label),
+                    selected: d == detail,
+                    onSelected: (_) {
+                      FinampSetters.setLogLevel(d.id);
+                      applyConfiguredLogLevel();
+                    },
+                  ),
+              ],
             ),
           ),
           Padding(
@@ -161,7 +178,7 @@ class _StorageSettingsScreenState extends ConsumerState<StorageSettingsScreen> {
           ),
           ListTile(
             leading: const Icon(TablerIcons.bug),
-            title: const Text("View and share logs"),
+            title: Text(AppLocalizations.of(context)!.storageViewLogs),
             trailing: const Icon(TablerIcons.chevron_right),
             onTap: () => Navigator.of(context).pushNamed(LogsScreen.routeName),
           ),
@@ -185,7 +202,7 @@ class _SizeTile extends StatefulWidget {
     required this.measure,
     this.onClear,
     this.onOpen,
-    this.clearLabel = "Clear",
+    this.clearLabel,
   });
 
   final IconData icon;
@@ -194,7 +211,7 @@ class _SizeTile extends StatefulWidget {
   final Future<int> Function() measure;
   final Future<void> Function()? onClear;
   final VoidCallback? onOpen;
-  final String clearLabel;
+  final String? clearLabel;
 
   @override
   State<_SizeTile> createState() => _SizeTileState();
@@ -226,7 +243,10 @@ class _SizeTileState extends State<_SizeTile> {
               ),
               if (widget.onClear != null) ...[
                 const SizedBox(width: 8),
-                TextButton(onPressed: (bytes ?? 0) == 0 ? null : widget.onClear, child: Text(widget.clearLabel)),
+                TextButton(
+                  onPressed: (bytes ?? 0) == 0 ? null : widget.onClear,
+                  child: Text(widget.clearLabel ?? AppLocalizations.of(context)!.storageClear),
+                ),
               ],
             ],
           );

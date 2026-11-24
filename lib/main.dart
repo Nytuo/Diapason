@@ -237,11 +237,15 @@ Future<void> main({bool integrationTesting = false, bool loginTesting = false}) 
     _mainLog.info("Setup audio player");
     await _setupConnect();
     _mainLog.info("Setup Diapason Connect");
-    await GetIt.instance<WidgetSyncService>().start();
+    // Home screen widget sync only matters once playback exists; don't hold the first frame for it.
+    unawaited(
+      GetIt.instance<WidgetSyncService>().start().catchError((Object e) => _mainLog.warning("Widget sync failed: $e")),
+    );
     _mainLog.info("Setup home screen widget");
     await _setupKeepScreenOnHelper();
     _mainLog.info("Setup KeepScreenOnHelper");
-    await _setupDiscordRpc();
+    // Discord RPC is desktop-only and nothing at launch depends on it.
+    unawaited(_setupDiscordRpc());
     _mainLog.info("Setup Discord RPC");
   } catch (error, trace) {
     if (!integrationTesting) {
@@ -275,10 +279,9 @@ Future<void> main({bool integrationTesting = false, bool loginTesting = false}) 
     };
   }
 
-  await findSystemLocale();
-  await initializeDateFormatting();
   unawaited(fetchSystemPalette());
-  await initDBus();
+  // Independent of each other, so run them side by side instead of back to back.
+  await Future.wait([findSystemLocale(), initializeDateFormatting(), initDBus()]);
 
   AnalyticsService.trackEvent("app_started");
   _mainLog.info("Launching main app");

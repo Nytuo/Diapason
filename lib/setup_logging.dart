@@ -12,7 +12,8 @@ Future<void> setupLogging() async {
   final finampLogsHelper = GetIt.instance<FinampLogsHelper>();
   await finampLogsHelper.openLog();
 
-  Logger.root.level = Level.ALL;
+  // Until the saved setting is read: everything in debug, only errors in release (applyConfiguredLogLevel adjusts it).
+  Logger.root.level = kDebugMode ? Level.ALL : Level.SEVERE;
   Logger.root.onRecord.listen((event) {
     // We don't want to print log messages from the Flutter logger since Flutter prints logs by itself
     if (kDebugMode && event.loggerName != "Flutter") {

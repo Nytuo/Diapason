@@ -154,7 +154,7 @@ class DefaultSettings {
   static const youtubeShowHits = true;
   static const youtubeShowNew = true;
   static const youtubeSearchByDefault = false;
-  static const logLevel = "all";
+  static const logLevel = "auto";
   static const automixEnabled = false;
   static const wordSyncedLyricsEnabled = true;
   static const neteaseLyricsEnabled = false;

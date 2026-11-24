@@ -1,3 +1,4 @@
+import 'package:diapason/l10n/app_localizations.dart';
 import 'dart:io';
 
 import 'package:diapason/services/finamp_settings_helper.dart';
@@ -71,9 +72,11 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
       _testResult =
           problem ??
           (caps.ytdlp
-              ? "Connected. YouTube via yt-dlp is available (${caps.ytdlpVersion ?? "unknown version"})."
-                    "${caps.jsRuntime == null ? " Note: the server has no JavaScript runtime, so some videos may fail." : ""}"
-              : "Connected. (The server's YouTube feature is off.)");
+              ? AppLocalizations.of(context)!.uploaderConnectedYtdlp(
+                      caps.ytdlpVersion ?? AppLocalizations.of(context)!.uploaderUnknownVersion,
+                    ) +
+                    (caps.jsRuntime == null ? AppLocalizations.of(context)!.uploaderNoJsRuntime : "")
+              : AppLocalizations.of(context)!.uploaderConnectedYtdlpOff);
     });
     await GetIt.instance<YouTubeAvailability>().refresh();
   }
@@ -81,13 +84,19 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
   Future<void> _pickAndUpload() async {
     _save(quiet: true);
     if (!_client.isConfigured) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Set a usable uploader address first.")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.uploaderSetAddress)));
       return;
     }
     final summary = await LocalFileUpload.pickAndUpload(
       onProgress: (done, total, name) {
         if (!mounted) return;
-        setState(() => _uploadStatus = done >= total ? null : "Uploading ${done + 1} of $total — $name");
+        setState(
+          () => _uploadStatus = done >= total
+              ? null
+              : AppLocalizations.of(context)!.uploaderUploadingProgress(done + 1, total, name),
+        );
       },
     );
     if (!mounted) return;
@@ -127,7 +136,7 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
     FinampSetters.setUploaderLocalUrl(_localUrl.text);
     FinampSetters.setUploaderToken(_token.text.trim());
     if (!quiet) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Uploader saved")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.uploaderSaved)));
       _refreshCapabilities();
     }
     setState(() {});
@@ -143,7 +152,7 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
 
     if (!device.canPair) {
       _save();
-      messenger.showSnackBar(SnackBar(content: Text("Using ${device.name} — paste its token below, then Save")));
+      messenger.showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.uploaderUsing(device.name))));
       return;
     }
 
@@ -155,11 +164,13 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
       if (!mounted) return;
       _save(quiet: true);
       _refreshCapabilities();
-      messenger.showSnackBar(SnackBar(content: Text("Paired with ${device.name}")));
+      messenger.showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.uploaderPaired(device.name))));
     } on UploaderException catch (e) {
       if (!mounted) return;
       _save(quiet: true);
-      messenger.showSnackBar(SnackBar(content: Text("${e.message} You can paste its token below instead.")));
+      messenger.showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.uploaderPasteTokenInstead(e.message))),
+      );
     }
   }
 
@@ -173,11 +184,10 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
 
   Future<void> _allowAnotherDevice() async {
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context)!;
     try {
       await _client.openPairing();
-      messenger.showSnackBar(
-        const SnackBar(content: Text("Pairing is open for a few minutes — tap “Pair” in the other device's app.")),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(l10n.uploaderPairingOpen)));
     } on UploaderException catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(e.message)));
     }
@@ -185,7 +195,6 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final enabled = ref.watch(finampSettingsProvider.uploaderEnabled);
     final policy = UploaderNetworkPolicy.fromName(ref.watch(finampSettingsProvider.uploaderNetworkPolicy));
 
     final proxy = ref.watch(finampSettingsProvider.uploaderYtProxy);
@@ -207,27 +216,15 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
     final offerInsecure = url.startsWith("http://") && host.isNotEmpty && !UploaderClient.isPrivateHost(host);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Uploader")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.uploaderTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          const Text(
-            "Navidrome and Plex can't be written to directly. A diapason-uploader sidecar adds tracks into "
-            "your library — files from this device, tracks you download, or songs it fetches from YouTube "
-            "for you.",
-          ),
+          Text(AppLocalizations.of(context)!.uploaderIntro),
           const SizedBox(height: 16.0),
 
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text("Upload downloaded tracks"),
-            value: enabled,
-            onChanged: (value) => FinampSetters.setUploaderEnabled(value),
-          ),
-          const SizedBox(height: 8.0),
-
           if (_discovery.devices.value.isNotEmpty) ...[
-            Text("Found on your network", style: Theme.of(context).textTheme.titleSmall),
+            Text(AppLocalizations.of(context)!.uploaderFoundOnNetwork, style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 4.0),
             for (final device in _discovery.devices.value)
               Card(
@@ -235,10 +232,16 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
                 child: ListTile(
                   leading: Icon(device.canPair ? TablerIcons.link : TablerIcons.server),
                   title: Text(device.name),
-                  subtitle: Text(device.canPair ? "${device.baseUrl} • one tap to pair" : device.baseUrl),
+                  subtitle: Text(
+                    device.canPair ? AppLocalizations.of(context)!.uploaderOneTapPair(device.baseUrl) : device.baseUrl,
+                  ),
                   trailing: FilledButton.tonal(
                     onPressed: () => _useDiscovered(device),
-                    child: Text(device.canPair ? "Pair" : "Use"),
+                    child: Text(
+                      device.canPair
+                          ? AppLocalizations.of(context)!.uploaderPair
+                          : AppLocalizations.of(context)!.uploaderUse,
+                    ),
                   ),
                 ),
               ),
@@ -250,7 +253,7 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
                 children: [
                   const SizedBox(width: 16.0, height: 16.0, child: CircularProgressIndicator(strokeWidth: 2.0)),
                   const SizedBox(width: 12.0),
-                  Text("Looking for uploaders on your network…", style: Theme.of(context).textTheme.bodySmall),
+                  Text(AppLocalizations.of(context)!.uploaderLooking, style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),
             ),
@@ -260,10 +263,10 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
             autocorrect: false,
             keyboardType: TextInputType.url,
             onChanged: (_) => setState(() {}),
-            decoration: const InputDecoration(
-              labelText: "Remote address (works anywhere)",
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.uploaderRemoteAddress,
               hintText: "https://music.example.com",
-              helperText: "Used when you're away from home. Your server can fill this in itself (DIAPASON_PUBLIC_URL).",
+              helperText: AppLocalizations.of(context)!.uploaderRemoteHelper,
               helperMaxLines: 2,
             ),
           ),
@@ -273,10 +276,10 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
             autocorrect: false,
             keyboardType: TextInputType.url,
             onChanged: (_) => setState(() {}),
-            decoration: const InputDecoration(
-              labelText: "Home network address",
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.uploaderLocalAddress,
               hintText: "http://music.local:8688",
-              helperText: "Tried first; if it doesn't answer, the remote address is used. Filled in when you pair.",
+              helperText: AppLocalizations.of(context)!.uploaderLocalHelper,
               helperMaxLines: 2,
             ),
           ),
@@ -287,7 +290,7 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
             autocorrect: false,
             enableSuggestions: false,
             decoration: InputDecoration(
-              labelText: "Token",
+              labelText: AppLocalizations.of(context)!.uploaderToken,
               suffixIcon: IconButton(
                 icon: Icon(_showToken ? TablerIcons.eye_off : TablerIcons.eye),
                 onPressed: () => setState(() => _showToken = !_showToken),
@@ -296,23 +299,21 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
           ),
           const SizedBox(height: 24.0),
 
-          Text("Where it may upload", style: Theme.of(context).textTheme.titleSmall),
+          Text(AppLocalizations.of(context)!.uploaderWhereMayUpload, style: Theme.of(context).textTheme.titleSmall),
           RadioListTile<UploaderNetworkPolicy>(
             contentPadding: EdgeInsets.zero,
             value: UploaderNetworkPolicy.local,
             groupValue: policy,
-            title: const Text("Local network only"),
-            subtitle: const Text("Private addresses and .local names. The safe default."),
+            title: Text(AppLocalizations.of(context)!.uploaderLocalOnly),
+            subtitle: Text(AppLocalizations.of(context)!.uploaderLocalOnlySubtitle),
             onChanged: (value) => FinampSetters.setUploaderNetworkPolicy(value!.name),
           ),
           RadioListTile<UploaderNetworkPolicy>(
             contentPadding: EdgeInsets.zero,
             value: UploaderNetworkPolicy.internet,
             groupValue: policy,
-            title: const Text("Anywhere"),
-            subtitle: const Text(
-              "Allows uploading over the internet. Requires https:// for anything outside your network.",
-            ),
+            title: Text(AppLocalizations.of(context)!.uploaderAnywhere),
+            subtitle: Text(AppLocalizations.of(context)!.uploaderAnywhereSubtitle),
             onChanged: (value) => FinampSetters.setUploaderNetworkPolicy(value!.name),
           ),
 
@@ -321,24 +322,20 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
           else if (partialBlock != null)
             _notice(
               TablerIcons.alert_triangle,
-              "One address is blocked, so it will be skipped: $partialBlock",
+              AppLocalizations.of(context)!.uploaderPartialBlock(partialBlock),
               Theme.of(context).colorScheme.tertiary,
             )
           else if (cleartext)
             _notice(
               TablerIcons.lock_open,
-              "This connection isn't encrypted by the app. That's fine on your home network or inside a VPN/tunnel "
-              "you trust; otherwise serve the uploader over https.",
+              AppLocalizations.of(context)!.uploaderCleartext,
               Theme.of(context).colorScheme.tertiary,
             ),
           if (offerInsecure)
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text("My connection is already secure"),
-              subtitle: const Text(
-                "I reach this server through a VPN or encrypted tunnel (WireGuard, Tailscale, SSH…), so plain "
-                "http:// is fine.",
-              ),
+              title: Text(AppLocalizations.of(context)!.uploaderAlreadySecure),
+              subtitle: Text(AppLocalizations.of(context)!.uploaderAlreadySecureSubtitle),
               value: allowInsecure,
               onChanged: (value) => FinampSetters.setUploaderAllowInsecure(value),
             ),
@@ -347,7 +344,7 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
           Row(
             children: [
               Expanded(
-                child: FilledButton(onPressed: _save, child: const Text("Save")),
+                child: FilledButton(onPressed: _save, child: Text(AppLocalizations.of(context)!.uploaderSave)),
               ),
               const SizedBox(width: 12.0),
               Expanded(
@@ -355,7 +352,7 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
                   onPressed: _testing ? null : _testConnection,
                   child: _testing
                       ? const SizedBox(width: 16.0, height: 16.0, child: CircularProgressIndicator(strokeWidth: 2.0))
-                      : const Text("Test connection"),
+                      : Text(AppLocalizations.of(context)!.uploaderTestConnection),
                 ),
               ),
             ],
@@ -372,49 +369,53 @@ class _UploaderSettingsScreenState extends ConsumerState<UploaderSettingsScreen>
             TextButton.icon(
               onPressed: _allowAnotherDevice,
               icon: const Icon(TablerIcons.device_mobile_plus),
-              label: const Text("Allow another device to pair"),
+              label: Text(AppLocalizations.of(context)!.uploaderAllowPairing),
             ),
           ],
 
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text("Upload automatically only on Wi-Fi"),
-            subtitle: const Text(
-              "Downloaded tracks wait instead of using mobile data. Manual uploads always go through.",
-            ),
+            title: Text(AppLocalizations.of(context)!.uploaderWifiOnly),
+            subtitle: Text(AppLocalizations.of(context)!.uploaderWifiOnlySubtitle),
             value: ref.watch(finampSettingsProvider.uploaderWifiOnly),
             onChanged: (value) => FinampSetters.setUploaderWifiOnly(value),
           ),
 
           const SizedBox(height: 32.0),
-          Text("Upload from this device", style: Theme.of(context).textTheme.titleSmall),
+          Text(AppLocalizations.of(context)!.uploaderFromDevice, style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 4.0),
-          const Text("Pick audio files from your storage and send them to your server's library."),
+          Text(AppLocalizations.of(context)!.uploaderFromDeviceBody),
           const SizedBox(height: 8.0),
           OutlinedButton.icon(
             onPressed: _uploadStatus != null || blockReason != null || !hasAddress ? null : _pickAndUpload,
             icon: const Icon(TablerIcons.upload),
-            label: const Text("Choose files…"),
+            label: Text(AppLocalizations.of(context)!.uploaderChooseFiles),
           ),
           if (_uploadStatus != null) ...[
             const SizedBox(height: 8.0),
             const LinearProgressIndicator(),
             const SizedBox(height: 4.0),
-            Text(_uploadStatus!, style: Theme.of(context).textTheme.bodySmall),
+            Text(
+              _uploadStatus!,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ],
 
           const SizedBox(height: 32.0),
-          Text("YouTube through your server", style: Theme.of(context).textTheme.titleSmall),
+          Text(AppLocalizations.of(context)!.uploaderYoutubeSection, style: Theme.of(context).textTheme.titleSmall),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text("Use the uploader for YouTube"),
+            title: Text(AppLocalizations.of(context)!.uploaderYoutubeSwitch),
             subtitle: Text(
               _caps == null || (_caps!.reachable && _caps!.ytdlp)
-                  ? "Search, play and download YouTube via yt-dlp running on your server. It updates itself, so "
-                        "YouTube changes don't break the app, and your phone never talks to YouTube directly."
+                  ? AppLocalizations.of(context)!.uploaderYoutubeOk
                   : !_caps!.reachable
-                  ? "Can't use it right now: ${_caps!.problem ?? "the uploader can't be reached."}"
-                  : "Your uploader is connected but its YouTube feature is off (set DIAPASON_YTDLP_ENABLED=true on it).",
+                  ? AppLocalizations.of(
+                      context,
+                    )!.uploaderYoutubeUnavailable(_caps!.problem ?? AppLocalizations.of(context)!.uploaderUnreachable)
+                  : AppLocalizations.of(context)!.uploaderYoutubeOff,
             ),
             value: proxy,
             onChanged: blockReason == null && hasAddress

@@ -1,3 +1,4 @@
+import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/models/playback_event.dart';
 import 'package:diapason/services/scrobbling/scrobble_service.dart';
@@ -12,9 +13,9 @@ enum WrappedPeriod {
   thisYear;
 
   String get displayName => switch (this) {
-    WrappedPeriod.thisMonth => "This month",
-    WrappedPeriod.lastMonth => "Last month",
-    WrappedPeriod.thisYear => "This year",
+    WrappedPeriod.thisMonth => GlobalSnackbar.requireL10n.wrappedPeriodThisMonth,
+    WrappedPeriod.lastMonth => GlobalSnackbar.requireL10n.wrappedPeriodLastMonth,
+    WrappedPeriod.thisYear => GlobalSnackbar.requireL10n.wrappedPeriodThisYear,
   };
 
   ({DateTime start, DateTime end}) range([DateTime? now]) {

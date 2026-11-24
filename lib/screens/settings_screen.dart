@@ -108,25 +108,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final clientCertInstalled = ref.watch(finampSettingsProvider.clientCertificate) != null;
 
     return [
-      _Section("Library & sources", TablerIcons.library, [
+      _Section(l10n.settingsSectionLibrary, TablerIcons.library, [
         _Entry(
           icon: TablerIcons.library,
-          title: "Sources",
-          subtitle: "Jellyfin, Plex, Subsonic and local files",
+          title: l10n.settingsSources,
+          subtitle: l10n.settingsSourcesSubtitle,
           onTap: _go(SourcesSettingsScreen.routeName),
           keywords: ["server", "jellyfin", "plex", "subsonic", "navidrome", "login", "account"],
         ),
         _Entry(
           icon: TablerIcons.file_import,
-          title: "Import music",
-          subtitle: "From this device, or the desktop app",
+          title: l10n.settingsImportMusic,
+          subtitle: l10n.settingsImportMusicSubtitle,
           onTap: _go(ImportScreen.routeName),
           keywords: ["files", "folder", "add"],
         ),
         _Entry(
           icon: Icons.download,
           title: l10n.downloadSettings,
-          subtitle: "Offline copies and where they're kept",
+          subtitle: l10n.settingsDownloadsSubtitle,
           onTap: _go(DownloadsSettingsScreen.routeName),
           keywords: ["offline", "storage", "location"],
         ),
@@ -134,15 +134,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _Entry(
             icon: Icons.library_music,
             title: l10n.selectMusicLibraries,
-            subtitle: offline ? l10n.notAvailableInOfflineMode : "Which Jellyfin libraries to show",
+            subtitle: offline ? l10n.notAvailableInOfflineMode : l10n.settingsJellyfinLibrariesSubtitle,
             enabled: !offline,
             onTap: _go(ViewSelector.routeName),
             keywords: ["jellyfin", "views"],
           ),
           _Entry(
             icon: TablerIcons.radio,
-            title: "Radio",
-            subtitle: "Internet stations from your server",
+            title: l10n.settingsRadio,
+            subtitle: l10n.settingsRadioSubtitle,
             onTap: _go(RadioScreen.routeName),
             keywords: ["stations", "jellyfin"],
           ),
@@ -156,48 +156,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
         ],
       ]),
-      _Section("Online music", TablerIcons.world, [
+      _Section(l10n.settingsSectionOnline, TablerIcons.world, [
         _Entry(
           icon: TablerIcons.brand_youtube,
-          title: "YouTube (yt-dlp)",
-          subtitle: "Search, playback and yt-dlp setup",
+          title: l10n.settingsYoutube,
+          subtitle: l10n.settingsYoutubeSubtitle,
           onTap: _go(YtDlpSettingsScreen.routeName),
           keywords: ["youtube", "yt-dlp", "ytdlp", "deno", "cookies", "proxy", "shelf", "hits", "results"],
         ),
         _Entry(
           icon: TablerIcons.cloud_upload,
-          title: "Uploader",
-          subtitle: "Send tracks to your server's library",
+          title: l10n.settingsUploader,
+          subtitle: l10n.settingsUploaderSubtitle,
           onTap: _go(UploaderSettingsScreen.routeName),
           keywords: ["server", "upload", "token", "pair", "wifi", "https", "tunnel"],
         ),
         _Entry(
           icon: TablerIcons.broadcast,
-          title: "Scrobbling",
-          subtitle: "Last.fm and ListenBrainz",
+          title: l10n.settingsScrobbling,
+          subtitle: l10n.settingsScrobblingSubtitle,
           onTap: _go(ScrobblingSettingsScreen.routeName),
           keywords: ["lastfm", "listenbrainz", "history", "discover"],
         ),
       ]),
-      _Section("Playback", TablerIcons.player_play, [
+      _Section(l10n.settingsSectionPlayback, TablerIcons.player_play, [
         _Entry(
           icon: Icons.music_note,
           title: l10n.audioService,
-          subtitle: "Buffering, background behaviour",
+          subtitle: l10n.settingsAudioSubtitle,
           onTap: _go(AudioServiceSettingsScreen.routeName),
           keywords: ["buffer", "background", "notification", "crossfade"],
         ),
         _Entry(
           icon: Icons.equalizer_rounded,
           title: l10n.volumeNormalizationSettingsTitle,
-          subtitle: "Even out loudness between tracks",
+          subtitle: l10n.settingsNormalizationSubtitle,
           onTap: _go(VolumeNormalizationSettingsScreen.routeName),
           keywords: ["replaygain", "loudness", "gain"],
         ),
         _Entry(
           icon: Icons.graphic_eq,
-          title: "Equalizer",
-          subtitle: "Per-band gain and presets",
+          title: l10n.settingsEqualizer,
+          subtitle: l10n.settingsEqualizerSubtitle,
           onTap: _go(EqualizerSettingsScreen.routeName),
           keywords: ["eq", "bass", "treble"],
         ),
@@ -205,7 +205,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _Entry(
             icon: Icons.compress,
             title: l10n.transcoding,
-            subtitle: "Bitrate and codec when streaming or downloading",
+            subtitle: l10n.settingsTranscodingSubtitle,
             onTap: _go(TranscodingSettingsScreen.routeName),
             keywords: ["bitrate", "codec", "quality", "mp3", "opus"],
           ),
@@ -213,72 +213,72 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _Entry(
             icon: TablerIcons.cast,
             title: l10n.playbackReportingSettingsTitle,
-            subtitle: "Tell Jellyfin what you play",
+            subtitle: l10n.settingsPlaybackReportingSubtitle,
             onTap: _go(PlaybackReportingSettingsScreen.routeName),
             keywords: ["jellyfin", "history", "progress"],
           ),
         if (!isDesktop)
           _Entry(
             icon: TablerIcons.cast,
-            title: "Cast",
-            subtitle: "Send playback to a Chromecast",
+            title: l10n.settingsCast,
+            subtitle: l10n.settingsCastSubtitle,
             onTap: _go(CastScreen.routeName),
             keywords: ["chromecast", "tv"],
           ),
         if (isDesktop) ...[
           _Entry(
-            title: "Discord Rich Presence",
+            title: l10n.settingsDiscordRpc,
             keywords: ["discord", "rpc", "presence", "activity", "status"],
             custom: (_) => const EnabledDiscordRpc(),
           ),
           _Entry(
-            title: "Rich Presence icon",
+            title: l10n.settingsDiscordIcon,
             keywords: ["discord", "rpc", "presence", "icon"],
             custom: (_) => const DiscordRpcIconSelector(),
           ),
         ],
         _Entry(
           icon: TablerIcons.device_speaker,
-          title: "Diapason Connect",
-          subtitle: "Control another Diapason device",
+          title: l10n.settingsConnect,
+          subtitle: l10n.settingsConnectSubtitle,
           onTap: _go(ConnectScreen.routeName),
           keywords: ["remote", "devices", "transfer"],
         ),
       ]),
-      _Section("Appearance & home", TablerIcons.palette, [
+      _Section(l10n.settingsSectionAppearance, TablerIcons.palette, [
         _Entry(
           icon: Icons.widgets,
           title: l10n.layoutAndTheme,
-          subtitle: "Theme, player, lists and tabs",
+          subtitle: l10n.settingsLayoutSubtitle,
           onTap: _go(LayoutSettingsScreen.routeName),
           keywords: ["dark", "amoled", "colour", "color", "grid", "album", "artist", "lyrics", "tabs"],
         ),
         _Entry(
           icon: TablerIcons.home,
           title: l10n.homeScreenSettingsTitle,
-          subtitle: "Sections on the home screen",
+          subtitle: l10n.settingsHomeSubtitle,
           onTap: _go(HomeScreenSettingsScreen.routeName),
         ),
         _Entry(
           icon: TablerIcons.pin,
-          title: "Pins & searches",
-          subtitle: "What's on your home screen and widget",
+          title: l10n.settingsPins,
+          subtitle: l10n.settingsPinsSubtitle,
           onTap: _go(ShortcutsScreen.routeName),
           keywords: ["shortcuts", "widget"],
         ),
         _Entry(
           icon: TablerIcons.wave_sine,
-          title: "Visualizer",
-          subtitle: "Spectrum curve behind the player screen",
+          title: l10n.settingsVisualizer,
+          subtitle: l10n.settingsVisualizerSubtitle,
           onTap: _go(VisualizerSettingsScreen.routeName),
           keywords: ["spectrum", "fft", "animation"],
         ),
-        _Entry(custom: (_) => const WrappedTile(), title: "Wrapped", keywords: ["year", "stats", "recap"]),
+        _Entry(custom: (_) => const WrappedTile(), title: l10n.settingsWrapped, keywords: ["year", "stats", "recap"]),
         if (!isDesktop)
           _Entry(
             icon: TablerIcons.player_play,
-            title: "iPod Classic mode",
-            subtitle: "Replaces the app with a click-wheel iPod",
+            title: l10n.settingsIpod,
+            subtitle: l10n.settingsIpodSubtitle,
             onTap: () {
               FinampSetters.setInterfaceMode(InterfaceMode.ipod.name);
               Navigator.of(context).pushNamed(IpodShell.routeName);
@@ -286,25 +286,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             keywords: ["click wheel", "retro"],
           ),
       ]),
-      _Section("Behaviour", TablerIcons.adjustments, [
+      _Section(l10n.settingsSectionBehaviour, TablerIcons.adjustments, [
         _Entry(
           icon: Icons.gesture,
           title: l10n.interactions,
-          subtitle: "Swipes, haptics and screen behaviour",
+          subtitle: l10n.settingsInteractionsSubtitle,
           onTap: _go(InteractionSettingsScreen.routeName),
           keywords: ["swipe", "gesture", "vibration", "screen on"],
         ),
         _Entry(
           icon: Icons.wifi,
           title: l10n.networkSettingsTitle,
-          subtitle: "Offline mode and automatic switching",
+          subtitle: l10n.settingsNetworkSubtitle,
           onTap: _go(NetworkSettingsScreen.routeName),
           keywords: ["offline", "wifi", "mobile data", "local address"],
         ),
         _Entry(
           icon: TablerIcons.accessible,
           title: l10n.accessibility,
-          subtitle: "Reduce motion, larger controls",
+          subtitle: l10n.settingsAccessibilitySubtitle,
           onTap: _go(AccessibilitySettingsScreen.routeName),
         ),
         _Entry(
@@ -315,48 +315,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           keywords: ["locale", "translation"],
         ),
       ]),
-      _Section("Storage & diagnostics", TablerIcons.database, [
+      _Section(l10n.settingsSectionStorage, TablerIcons.database, [
         if (!AppleTvAudioChannel.isSupported)
           _Entry(
             icon: TablerIcons.file_export,
-            title: "Backup & restore",
-            subtitle: "Settings, sources and layout in one file",
+            title: l10n.settingsBackup,
+            subtitle: l10n.settingsBackupSubtitle,
             onTap: _go(BackupScreen.routeName),
             keywords: ["export", "import", "transfer", "new phone", "reinstall", "migrate"],
           ),
         _Entry(
           icon: TablerIcons.database,
-          title: "Storage & logs",
-          subtitle: "Cache sizes, clean-up and log detail",
+          title: l10n.settingsStorage,
+          subtitle: l10n.settingsStorageSubtitle,
           onTap: _go(StorageSettingsScreen.routeName),
           keywords: ["cache", "clear", "disk", "space", "logs", "debug", "bug", "verbose"],
         ),
         _Entry(
           icon: TablerIcons.chart_bar,
-          title: "Analytics & bug reports",
-          subtitle: "Optional, anonymous, off by default",
+          title: l10n.settingsAnalytics,
+          subtitle: l10n.settingsAnalyticsSubtitle,
           onTap: _go(AnalyticsSettingsScreen.routeName),
           keywords: ["privacy", "telemetry", "aptabase", "crash", "usage", "statistics"],
         ),
         _Entry(
           icon: TablerIcons.player_track_next,
-          title: "Stream cache",
-          subtitle: "Keep streamed tracks on disk",
+          title: l10n.settingsStreamCache,
+          subtitle: l10n.settingsStreamCacheSubtitle,
           onTap: _go(CacheSettingsScreen.routeName),
           keywords: ["cache", "size", "limit"],
         ),
       ]),
       if (_hasUpdater)
-        _Section("App updates", TablerIcons.refresh, [
+        _Section(l10n.settingsSectionUpdates, TablerIcons.refresh, [
           // Android and desktop aren't distributed through the stores, so offer
           // in-app updates straight from GitHub releases.
           _Entry(
-            title: "Check for updates automatically",
+            title: l10n.settingsAutoUpdate,
             keywords: ["update", "github", "release", "version"],
             custom: (_) => SwitchListTile(
               secondary: const Icon(TablerIcons.refresh),
-              title: const Text("Check for updates automatically"),
-              subtitle: const Text("Look for a newer version on GitHub when the app starts"),
+              title: Text(l10n.settingsAutoUpdate),
+              subtitle: Text(l10n.settingsAutoUpdateSubtitle),
               value: _autoUpdateEnabled ?? true,
               onChanged: _autoUpdateEnabled == null
                   ? null
@@ -368,19 +368,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           _Entry(
             icon: TablerIcons.download,
-            title: "Check for updates now",
-            subtitle: Platform.isAndroid
-                ? "Download and install the latest release\nLong-press to reinstall the current version"
-                : "Download the latest release from GitHub\nLong-press to reinstall the current version",
+            title: l10n.settingsUpdateNow,
+            subtitle: Platform.isAndroid ? l10n.settingsUpdateNowAndroid : l10n.settingsUpdateNowDesktop,
             keywords: ["update", "github", "reinstall"],
             custom: (_) => ListTile(
               leading: const Icon(TablerIcons.download),
-              title: const Text("Check for updates now"),
-              subtitle: Text(
-                Platform.isAndroid
-                    ? "Download and install the latest release\nLong-press to reinstall the current version"
-                    : "Download the latest release from GitHub\nLong-press to reinstall the current version",
-              ),
+              title: Text(l10n.settingsUpdateNow),
+              subtitle: Text(Platform.isAndroid ? l10n.settingsUpdateNowAndroid : l10n.settingsUpdateNowDesktop),
               isThreeLine: true,
               onTap: () => checkForUpdatesInteractive(context, silentIfUpToDate: false),
               onLongPress: () => checkForUpdatesInteractive(context, silentIfUpToDate: false, reinstall: true),
@@ -397,13 +391,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       onChanged: (value) => setState(() => _query = value),
       textInputAction: TextInputAction.search,
       decoration: InputDecoration(
-        hintText: "Search settings",
+        hintText: AppLocalizations.of(context)!.settingsSearchHint,
         prefixIcon: const Icon(TablerIcons.search),
         suffixIcon: _query.isEmpty
             ? null
             : IconButton(
                 icon: const Icon(TablerIcons.x),
-                tooltip: "Clear",
+                tooltip: AppLocalizations.of(context)!.settingsClearSearch,
                 onPressed: () {
                   _searchController.clear();
                   setState(() => _query = "");
@@ -523,22 +517,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               },
                           ),
                           const TextSpan(text: '\n\n\n'),
-                          const TextSpan(
-                            text: "About this project",
+                          TextSpan(
+                            text: AppLocalizations.of(context)!.settingsAboutProjectTitle,
                             style: TextStyle(fontWeight: FontWeight.w700),
                           ),
                           const TextSpan(text: '\n'),
-                          const TextSpan(
-                            text:
-                                "Diapason started as a fork of Finamp, the open-source Jellyfin music player, "
-                                "but it has since diverged and is now an independent project with its own "
-                                "roadmap and architecture: several music sources (Jellyfin, Plex, Subsonic, local "
-                                "files), YouTube through yt-dlp, an uploader for your server's library, and "
-                                "desktop apps.\n\n"
-                                "It is not affiliated with, endorsed by or supported by the Finamp project, so "
-                                "please report issues to Diapason rather than to Finamp. Thanks to Finamp's "
-                                "contributors for the foundation it was built on.",
-                          ),
+                          TextSpan(text: AppLocalizations.of(context)!.settingsAboutProjectBody),
                           const TextSpan(text: '\n\n\n'),
                           TextSpan(
                             text: localizations.aboutThanks,
@@ -573,7 +557,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Padding(
                   padding: const EdgeInsets.all(48),
                   child: Text(
-                    "No settings match “$_query”.",
+                    AppLocalizations.of(context)!.settingsNoMatch(_query),
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),

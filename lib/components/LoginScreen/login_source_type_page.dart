@@ -30,8 +30,8 @@ class LoginSourceTypePage extends StatelessWidget {
             Card(
               margin: const EdgeInsets.only(bottom: 12.0),
               child: ListTile(
-                leading: Icon(sourceKindPresentation(kind).icon, size: 32.0),
-                title: Text(sourceKindPresentation(kind).label),
+                leading: Icon(sourceKindPresentation(kind, context).icon, size: 32.0),
+                title: Text(sourceKindPresentation(kind, context).label),
                 subtitle: Text(_describe(kind)),
                 trailing: const Icon(TablerIcons.chevron_right),
                 onTap: () => onKindSelected(kind),
@@ -73,7 +73,7 @@ class LoginSourceFormPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            sourceKindPresentation(kind).label,
+            sourceKindPresentation(kind, context).label,
             style: Theme.of(context).textTheme.headlineMedium,
             textAlign: TextAlign.center,
           ),

@@ -3615,5 +3615,2326 @@
     "clientCertificateRequired": "Client certificate required",
     "@clientCertificateRequired": {
         "description": "Message shown on the server selection screen when the server requires a client certificate to be provided."
+    },
+    "settingsSectionLibrary": "Library & sources",
+    "@settingsSectionLibrary": {
+        "description": "Section heading on the settings home screen"
+    },
+    "settingsSectionOnline": "Online music",
+    "@settingsSectionOnline": {
+        "description": "Section heading on the settings home screen"
+    },
+    "settingsSectionPlayback": "Playback",
+    "@settingsSectionPlayback": {
+        "description": "Section heading on the settings home screen"
+    },
+    "settingsSectionAppearance": "Appearance & home",
+    "@settingsSectionAppearance": {
+        "description": "Section heading on the settings home screen"
+    },
+    "settingsSectionBehaviour": "Behaviour",
+    "@settingsSectionBehaviour": {
+        "description": "Section heading on the settings home screen"
+    },
+    "settingsSectionStorage": "Storage & diagnostics",
+    "@settingsSectionStorage": {
+        "description": "Section heading on the settings home screen"
+    },
+    "settingsSectionUpdates": "App updates",
+    "@settingsSectionUpdates": {
+        "description": "Section heading on the settings home screen"
+    },
+    "settingsSources": "Sources",
+    "@settingsSources": {
+        "description": "Settings home screen text"
+    },
+    "settingsSourcesSubtitle": "Jellyfin, Plex, Subsonic and local files",
+    "@settingsSourcesSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsImportMusic": "Import music",
+    "@settingsImportMusic": {
+        "description": "Settings home screen text"
+    },
+    "settingsImportMusicSubtitle": "From this device, or the desktop app",
+    "@settingsImportMusicSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsDownloadsSubtitle": "Offline copies and where they're kept",
+    "@settingsDownloadsSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsJellyfinLibrariesSubtitle": "Which Jellyfin libraries to show",
+    "@settingsJellyfinLibrariesSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsRadio": "Radio",
+    "@settingsRadio": {
+        "description": "Settings home screen text"
+    },
+    "settingsRadioSubtitle": "Internet stations from your server",
+    "@settingsRadioSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsYoutube": "YouTube (yt-dlp)",
+    "@settingsYoutube": {
+        "description": "Settings home screen text"
+    },
+    "settingsYoutubeSubtitle": "Search, playback and yt-dlp setup",
+    "@settingsYoutubeSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsUploader": "Uploader",
+    "@settingsUploader": {
+        "description": "Settings home screen text"
+    },
+    "settingsUploaderSubtitle": "Send tracks to your server's library",
+    "@settingsUploaderSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsScrobbling": "Scrobbling",
+    "@settingsScrobbling": {
+        "description": "Settings home screen text"
+    },
+    "settingsScrobblingSubtitle": "Last.fm and ListenBrainz",
+    "@settingsScrobblingSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsAudioSubtitle": "Buffering, background behaviour",
+    "@settingsAudioSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsNormalizationSubtitle": "Even out loudness between tracks",
+    "@settingsNormalizationSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsEqualizer": "Equalizer",
+    "@settingsEqualizer": {
+        "description": "Settings home screen text"
+    },
+    "settingsEqualizerSubtitle": "Per-band gain and presets",
+    "@settingsEqualizerSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsTranscodingSubtitle": "Bitrate and codec when streaming or downloading",
+    "@settingsTranscodingSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsPlaybackReportingSubtitle": "Tell Jellyfin what you play",
+    "@settingsPlaybackReportingSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsCast": "Cast",
+    "@settingsCast": {
+        "description": "Settings home screen text"
+    },
+    "settingsCastSubtitle": "Send playback to a Chromecast",
+    "@settingsCastSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsDiscordRpc": "Discord Rich Presence",
+    "@settingsDiscordRpc": {
+        "description": "Settings home screen text"
+    },
+    "settingsDiscordIcon": "Rich Presence icon",
+    "@settingsDiscordIcon": {
+        "description": "Settings home screen text"
+    },
+    "settingsConnect": "Diapason Connect",
+    "@settingsConnect": {
+        "description": "Settings home screen text"
+    },
+    "settingsConnectSubtitle": "Control another Diapason device",
+    "@settingsConnectSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsLayoutSubtitle": "Theme, player, lists and tabs",
+    "@settingsLayoutSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsHomeSubtitle": "Sections on the home screen",
+    "@settingsHomeSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsPins": "Pins & searches",
+    "@settingsPins": {
+        "description": "Settings home screen text"
+    },
+    "settingsPinsSubtitle": "What's on your home screen and widget",
+    "@settingsPinsSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsVisualizer": "Visualizer",
+    "@settingsVisualizer": {
+        "description": "Settings home screen text"
+    },
+    "settingsVisualizerSubtitle": "Spectrum curve behind the player screen",
+    "@settingsVisualizerSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsWrapped": "Wrapped",
+    "@settingsWrapped": {
+        "description": "Settings home screen text"
+    },
+    "settingsIpod": "iPod Classic mode",
+    "@settingsIpod": {
+        "description": "Settings home screen text"
+    },
+    "settingsIpodSubtitle": "Replaces the app with a click-wheel iPod",
+    "@settingsIpodSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsInteractionsSubtitle": "Swipes, haptics and screen behaviour",
+    "@settingsInteractionsSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsNetworkSubtitle": "Offline mode and automatic switching",
+    "@settingsNetworkSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsAccessibilitySubtitle": "Reduce motion, larger controls",
+    "@settingsAccessibilitySubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsBackup": "Backup & restore",
+    "@settingsBackup": {
+        "description": "Settings home screen text"
+    },
+    "settingsBackupSubtitle": "Settings, sources and layout in one file",
+    "@settingsBackupSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsStorage": "Storage & logs",
+    "@settingsStorage": {
+        "description": "Settings home screen text"
+    },
+    "settingsStorageSubtitle": "Cache sizes, clean-up and log detail",
+    "@settingsStorageSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsAnalytics": "Analytics & bug reports",
+    "@settingsAnalytics": {
+        "description": "Settings home screen text"
+    },
+    "settingsAnalyticsSubtitle": "Optional, anonymous, off by default",
+    "@settingsAnalyticsSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsStreamCache": "Stream cache",
+    "@settingsStreamCache": {
+        "description": "Settings home screen text"
+    },
+    "settingsStreamCacheSubtitle": "Keep streamed tracks on disk",
+    "@settingsStreamCacheSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsAutoUpdate": "Check for updates automatically",
+    "@settingsAutoUpdate": {
+        "description": "Settings home screen text"
+    },
+    "settingsAutoUpdateSubtitle": "Look for a newer version on GitHub when the app starts",
+    "@settingsAutoUpdateSubtitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsUpdateNow": "Check for updates now",
+    "@settingsUpdateNow": {
+        "description": "Settings home screen text"
+    },
+    "settingsUpdateNowAndroid": "Download and install the latest release\nLong-press to reinstall the current version",
+    "@settingsUpdateNowAndroid": {
+        "description": "Settings home screen text"
+    },
+    "settingsUpdateNowDesktop": "Download the latest release from GitHub\nLong-press to reinstall the current version",
+    "@settingsUpdateNowDesktop": {
+        "description": "Settings home screen text"
+    },
+    "settingsSearchHint": "Search settings",
+    "@settingsSearchHint": {
+        "description": "Settings home screen text"
+    },
+    "settingsClearSearch": "Clear",
+    "@settingsClearSearch": {
+        "description": "Settings home screen text"
+    },
+    "settingsAboutProjectTitle": "About this project",
+    "@settingsAboutProjectTitle": {
+        "description": "Settings home screen text"
+    },
+    "settingsNoMatch": "No settings match “{query}”.",
+    "@settingsNoMatch": {
+        "description": "Shown when the settings search has no result",
+        "placeholders": {
+            "query": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsAboutProjectBody": "Diapason started as a fork of Finamp, the open-source Jellyfin music player, but it has since diverged and is now an independent project with its own roadmap and architecture: several music sources (Jellyfin, Plex, Subsonic, local files), YouTube through yt-dlp, an uploader for your server's library, and desktop apps.\n\nIt is not affiliated with, endorsed by or supported by the Finamp project, so please report issues to Diapason rather than to Finamp. Thanks to Finamp's contributors for the foundation it was built on.",
+    "@settingsAboutProjectBody": {
+        "description": "Body of the 'About this project' paragraph in the about dialog"
+    },
+    "ytdlpSettingsSaved": "yt-dlp settings saved",
+    "@ytdlpSettingsSaved": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpUpdateCheckFailed": "Couldn't reach GitHub to check for updates.",
+    "@ytdlpUpdateCheckFailed": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpUpdateAvailableToast": "yt-dlp {version} is available.",
+    "@ytdlpUpdateAvailableToast": {
+        "description": "yt-dlp (YouTube) settings screen",
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
+    },
+    "ytdlpUpToDate": "yt-dlp is up to date ({version}).",
+    "@ytdlpUpToDate": {
+        "description": "yt-dlp (YouTube) settings screen",
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
+    },
+    "ytdlpRemoveTitle": "Remove the downloaded yt-dlp?",
+    "@ytdlpRemoveTitle": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpRemoveBody": "This deletes the copy Diapason downloaded (and its Deno). A yt-dlp you installed yourself is left alone. YouTube will stop working here until you set it up again.",
+    "@ytdlpRemoveBody": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpCancel": "Cancel",
+    "@ytdlpCancel": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpRemove": "Remove",
+    "@ytdlpRemove": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpPickBinary": "Choose your yt-dlp executable",
+    "@ytdlpPickBinary": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpPickCookies": "Choose a cookies.txt file",
+    "@ytdlpPickCookies": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpTitle": "YouTube (yt-dlp)",
+    "@ytdlpTitle": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpIntro": "Diapason uses yt-dlp for everything YouTube — search, playback and recommendations. It can run on this computer or on your diapason-uploader, and unlike a built-in library it updates itself whenever YouTube changes.",
+    "@ytdlpIntro": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpSaveSettings": "Save settings",
+    "@ytdlpSaveSettings": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpUnsupportedDevice": "This device can't run yt-dlp itself, so YouTube works through your diapason-uploader. Connect one with its YouTube feature turned on.",
+    "@ytdlpUnsupportedDevice": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpUploaderSettings": "Uploader settings",
+    "@ytdlpUploaderSettings": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpSectionInApp": "In the app",
+    "@ytdlpSectionInApp": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpSearchFirst": "Search YouTube first",
+    "@ytdlpSearchFirst": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpSearchFirstSubtitle": "When you search, start on the YouTube results instead of your library.",
+    "@ytdlpSearchFirstSubtitle": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpHitsShelf": "“Hits on YouTube” shelf",
+    "@ytdlpHitsShelf": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpHitsShelfSubtitle": "YouTube's music chart on the YouTube home page.",
+    "@ytdlpHitsShelfSubtitle": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpNewShelf": "“New this week” shelf",
+    "@ytdlpNewShelf": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpNewShelfSubtitle": "Fresh uploads on the YouTube home page.",
+    "@ytdlpNewShelfSubtitle": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpSearchResults": "Search results: {count}",
+    "@ytdlpSearchResults": {
+        "description": "yt-dlp (YouTube) settings screen",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "ytdlpOn": "YouTube is on",
+    "@ytdlpOn": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpOff": "YouTube is off",
+    "@ytdlpOff": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpUsingLocal": "Using yt-dlp on this computer.",
+    "@ytdlpUsingLocal": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpUsingUploader": "Using the yt-dlp on your uploader.",
+    "@ytdlpUsingUploader": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpUsingUploaderVersion": "Using the yt-dlp on your uploader ({version}).",
+    "@ytdlpUsingUploaderVersion": {
+        "description": "yt-dlp (YouTube) settings screen",
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
+    },
+    "ytdlpCheckAgain": "Check again",
+    "@ytdlpCheckAgain": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpChecking": "Checking…",
+    "@ytdlpChecking": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpNotFound": "yt-dlp wasn't found on this computer.",
+    "@ytdlpNotFound": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpBroken": "yt-dlp is installed but won't run.",
+    "@ytdlpBroken": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpVersionLine": "yt-dlp {version}",
+    "@ytdlpVersionLine": {
+        "description": "yt-dlp (YouTube) settings screen",
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
+    },
+    "ytdlpOriginManaged": "Managed by Diapason (updates automatically)",
+    "@ytdlpOriginManaged": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpOriginCustom": "Your own copy: {path}",
+    "@ytdlpOriginCustom": {
+        "description": "yt-dlp (YouTube) settings screen",
+        "placeholders": {
+            "path": {
+                "type": "String"
+            }
+        }
+    },
+    "ytdlpOriginSystem": "Found on your system: {path}",
+    "@ytdlpOriginSystem": {
+        "description": "yt-dlp (YouTube) settings screen",
+        "placeholders": {
+            "path": {
+                "type": "String"
+            }
+        }
+    },
+    "ytdlpUpdateAvailableLine": "Update available: {version}",
+    "@ytdlpUpdateAvailableLine": {
+        "description": "yt-dlp (YouTube) settings screen",
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
+    },
+    "ytdlpJsNone": "JavaScript runtime: none — some videos may fail. Install Deno below.",
+    "@ytdlpJsNone": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpJsManaged": "JavaScript runtime: {runtime} (managed by Diapason)",
+    "@ytdlpJsManaged": {
+        "description": "yt-dlp (YouTube) settings screen",
+        "placeholders": {
+            "runtime": {
+                "type": "String"
+            }
+        }
+    },
+    "ytdlpJsPath": "JavaScript runtime: {runtime} ({path})",
+    "@ytdlpJsPath": {
+        "description": "yt-dlp (YouTube) settings screen",
+        "placeholders": {
+            "runtime": {
+                "type": "String"
+            },
+            "path": {
+                "type": "String"
+            }
+        }
+    },
+    "ytdlpOnThisComputer": "On this computer",
+    "@ytdlpOnThisComputer": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpInstall": "Install yt-dlp",
+    "@ytdlpInstall": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpUpdateTo": "Update to {version}",
+    "@ytdlpUpdateTo": {
+        "description": "yt-dlp (YouTube) settings screen",
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
+    },
+    "ytdlpCheckUpdates": "Check for updates",
+    "@ytdlpCheckUpdates": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpInstallDeno": "Install Deno",
+    "@ytdlpInstallDeno": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpInstallManagedDeno": "Install managed Deno",
+    "@ytdlpInstallManagedDeno": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpRemoveCopy": "Remove downloaded copy",
+    "@ytdlpRemoveCopy": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpSectionBehaviour": "Behaviour",
+    "@ytdlpSectionBehaviour": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpAutoUpdate": "Keep yt-dlp up to date",
+    "@ytdlpAutoUpdate": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpAutoUpdateSubtitle": "Checks once a day and updates the copy Diapason manages.",
+    "@ytdlpAutoUpdateSubtitle": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpPreferUploader": "Use only my uploader's yt-dlp",
+    "@ytdlpPreferUploader": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpPreferUploaderSubtitle": "Search, stream and add to library with the one on your server, even when this computer has its own. Otherwise this computer's yt-dlp fetches the track and sends it to your uploader.",
+    "@ytdlpPreferUploaderSubtitle": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpAudioFormat": "Audio format",
+    "@ytdlpAudioFormat": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpJsRuntime": "JavaScript runtime",
+    "@ytdlpJsRuntime": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpJsAuto": "Automatic (Deno, then Node, then Bun)",
+    "@ytdlpJsAuto": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpJsNoneOption": "None",
+    "@ytdlpJsNoneOption": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpCustomBinary": "Use this yt-dlp executable (optional)",
+    "@ytdlpCustomBinary": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpCustomBinaryHint": "Leave empty to use the managed or system one",
+    "@ytdlpCustomBinaryHint": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpSectionNetwork": "Network",
+    "@ytdlpSectionNetwork": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpProxy": "Proxy",
+    "@ytdlpProxy": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpSpeedLimit": "Speed limit",
+    "@ytdlpSpeedLimit": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpSpeedLimitHint": "e.g. 2M",
+    "@ytdlpSpeedLimitHint": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpGeo": "Pretend to be in…",
+    "@ytdlpGeo": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpTimeout": "Timeout (s)",
+    "@ytdlpTimeout": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpRetries": "Retries",
+    "@ytdlpRetries": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpForceIpv4": "Force IPv4",
+    "@ytdlpForceIpv4": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpForceIpv4Subtitle": "Helps on networks where IPv6 to YouTube is flaky.",
+    "@ytdlpForceIpv4Subtitle": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpSectionSignIn": "Signing in (for blocked or age-restricted videos)",
+    "@ytdlpSectionSignIn": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpCookiesBrowser": "Borrow cookies from a browser",
+    "@ytdlpCookiesBrowser": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpCookiesBrowserHelper": "yt-dlp reads your YouTube login from it. Nothing is sent anywhere except to YouTube.",
+    "@ytdlpCookiesBrowserHelper": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpCookiesNone": "Don't",
+    "@ytdlpCookiesNone": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpCookiesFile": "…or a cookies.txt file",
+    "@ytdlpCookiesFile": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpAdvancedMode": "Advanced mode",
+    "@ytdlpAdvancedMode": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpAdvancedSubtitle": "Write the yt-dlp flags yourself instead of using the controls above.",
+    "@ytdlpAdvancedSubtitle": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpFlags": "Flags passed to every yt-dlp run",
+    "@ytdlpFlags": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpFlagsHelper": "Quote values with spaces. Diapason adds the search/stream/URL part and the JavaScript runtime.",
+    "@ytdlpFlagsHelper": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpResetFlags": "Reset from the controls above",
+    "@ytdlpResetFlags": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpExtractorArgs": "Extractor arguments",
+    "@ytdlpExtractorArgs": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpExtraFlags": "Extra flags",
+    "@ytdlpExtraFlags": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpCommandPreview": "Command that will run",
+    "@ytdlpCommandPreview": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpCopy": "Copy",
+    "@ytdlpCopy": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "ytdlpTestReal": "Test with a real video",
+    "@ytdlpTestReal": {
+        "description": "yt-dlp (YouTube) settings screen"
+    },
+    "visualizerTitle": "Visualizer",
+    "@visualizerTitle": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerUnavailable": "Not available on this platform",
+    "@visualizerUnavailable": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerUnavailableBody": "The visualizer needs access to the audio being played, which only phones and tablets expose.",
+    "@visualizerUnavailableBody": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerShow": "Show visualizer",
+    "@visualizerShow": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerShowSubtitle": "Draws a live spectrum curve behind the player screen controls",
+    "@visualizerShowSubtitle": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerAndroidNote": "Android only lets an app read its own audio through the microphone permission, so turning this on asks for it. Nothing is recorded and nothing leaves the device — the permission is only used to read the levels of the track you are playing.",
+    "@visualizerAndroidNote": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerBands": "Bands",
+    "@visualizerBands": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerBandsSubtitle": "How many points the curve is built from",
+    "@visualizerBandsSubtitle": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerFrameRate": "Frame rate",
+    "@visualizerFrameRate": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerFrameRateSubtitle": "Most devices cap the audio capture at 20 fps regardless of what is asked for",
+    "@visualizerFrameRateSubtitle": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerFps": "{value} fps",
+    "@visualizerFps": {
+        "description": "Visualizer settings screen",
+        "placeholders": {
+            "value": {
+                "type": "int"
+            }
+        }
+    },
+    "visualizerHeight": "Height",
+    "@visualizerHeight": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerHeightSubtitle": "Share of the screen the curve rises into",
+    "@visualizerHeightSubtitle": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerSmoothing": "Smoothing",
+    "@visualizerSmoothing": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerSmoothingSubtitle": "Higher values make the curve settle more slowly",
+    "@visualizerSmoothingSubtitle": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerScale": "Scale",
+    "@visualizerScale": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerScaleSubtitle": "Multiplier applied to the curve's height",
+    "@visualizerScaleSubtitle": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerFrequencies": "Frequencies",
+    "@visualizerFrequencies": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerLogSpacing": "Logarithmic spacing",
+    "@visualizerLogSpacing": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerLogSpacingSubtitle": "Gives bass and treble equal room. Linear spacing crowds everything to the left",
+    "@visualizerLogSpacingSubtitle": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerLowFreq": "Lowest frequency",
+    "@visualizerLowFreq": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerHighFreq": "Highest frequency",
+    "@visualizerHighFreq": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerQuietCutoff": "Quiet cutoff",
+    "@visualizerQuietCutoff": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerQuietCutoffSubtitle": "Levels below this map to a flat curve. Raise it if the curve never rests",
+    "@visualizerQuietCutoffSubtitle": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerLoudCutoff": "Loud cutoff",
+    "@visualizerLoudCutoff": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerLoudCutoffSubtitle": "Levels above this max out the curve. Lower it if quiet tracks barely move",
+    "@visualizerLoudCutoffSubtitle": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerAppearance": "Appearance",
+    "@visualizerAppearance": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerSmoothCurve": "Smooth curve",
+    "@visualizerSmoothCurve": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerSmoothCurveSubtitle": "Interpolate between bands instead of drawing straight segments",
+    "@visualizerSmoothCurveSubtitle": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerFill": "Fill under the curve",
+    "@visualizerFill": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerFillBottom": "Fill opacity at the bottom",
+    "@visualizerFillBottom": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerFillTop": "Fill opacity at the top",
+    "@visualizerFillTop": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerOutline": "Outline width",
+    "@visualizerOutline": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerOutlineSubtitle": "Set to zero to hide the outline",
+    "@visualizerOutlineSubtitle": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerMicDenied": "The visualizer cannot read the audio without the microphone permission.",
+    "@visualizerMicDenied": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerSettingsAction": "Settings",
+    "@visualizerSettingsAction": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerPause": "Pause",
+    "@visualizerPause": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerPlay": "Play",
+    "@visualizerPlay": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerPreviewOff": "Turn the visualizer on to preview it here",
+    "@visualizerPreviewOff": {
+        "description": "Visualizer settings screen"
+    },
+    "visualizerPreviewIdle": "Play a track to preview the visualizer",
+    "@visualizerPreviewIdle": {
+        "description": "Visualizer settings screen"
+    },
+    "uploaderConnectedYtdlp": "Connected. YouTube is available (yt-dlp {version}).",
+    "@uploaderConnectedYtdlp": {
+        "description": "Uploader settings screen",
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
+    },
+    "uploaderUnknownVersion": "version unknown",
+    "@uploaderUnknownVersion": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderNoJsRuntime": " The server has no JavaScript runtime, so some videos may fail.",
+    "@uploaderNoJsRuntime": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderConnectedYtdlpOff": "Connected. YouTube is turned off on the server.",
+    "@uploaderConnectedYtdlpOff": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderSetAddress": "Enter an uploader address first.",
+    "@uploaderSetAddress": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderUploadingProgress": "Uploading {current} of {total} — {name}",
+    "@uploaderUploadingProgress": {
+        "description": "Uploader settings screen",
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            },
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "uploaderSaved": "Saved",
+    "@uploaderSaved": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderUsing": "Using {name}. Paste its token below, then tap Save.",
+    "@uploaderUsing": {
+        "description": "Uploader settings screen",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "uploaderPaired": "Paired with {name}",
+    "@uploaderPaired": {
+        "description": "Uploader settings screen",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "uploaderPasteTokenInstead": "{message} You can paste its token below instead.",
+    "@uploaderPasteTokenInstead": {
+        "description": "Uploader settings screen",
+        "placeholders": {
+            "message": {
+                "type": "String"
+            }
+        }
+    },
+    "uploaderPairingOpen": "Pairing is open for a few minutes. Tap “Pair” in the other device's app.",
+    "@uploaderPairingOpen": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderTitle": "Uploader",
+    "@uploaderTitle": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderIntro": "Navidrome and Plex can't be added to from the app. The diapason-uploader on your server can. It puts tracks into your library: files from this device, tracks you download, or songs from YouTube.",
+    "@uploaderIntro": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderUploadDownloaded": "Upload downloaded tracks",
+    "@uploaderUploadDownloaded": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderFoundOnNetwork": "Found on your network",
+    "@uploaderFoundOnNetwork": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderOneTapPair": "{url} • one tap to pair",
+    "@uploaderOneTapPair": {
+        "description": "Uploader settings screen",
+        "placeholders": {
+            "url": {
+                "type": "String"
+            }
+        }
+    },
+    "uploaderPair": "Pair",
+    "@uploaderPair": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderUse": "Use",
+    "@uploaderUse": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderLooking": "Looking for uploaders on your network…",
+    "@uploaderLooking": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderRemoteAddress": "Remote address",
+    "@uploaderRemoteAddress": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderRemoteHelper": "For when you're away from home. Your server can fill this in (DIAPASON_PUBLIC_URL).",
+    "@uploaderRemoteHelper": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderLocalAddress": "Home network address",
+    "@uploaderLocalAddress": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderLocalHelper": "Tried first. If it doesn't answer, the remote address is used. Filled in when you pair.",
+    "@uploaderLocalHelper": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderToken": "Access token",
+    "@uploaderToken": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderWhereMayUpload": "Allowed networks",
+    "@uploaderWhereMayUpload": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderLocalOnly": "Local network only",
+    "@uploaderLocalOnly": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderLocalOnlySubtitle": "Only private addresses and .local names. Safest.",
+    "@uploaderLocalOnlySubtitle": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderAnywhere": "Anywhere",
+    "@uploaderAnywhere": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderAnywhereSubtitle": "Also allows the internet. Addresses outside your network must use https://.",
+    "@uploaderAnywhereSubtitle": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderPartialBlock": "One address is blocked, so it will be skipped: {reason}",
+    "@uploaderPartialBlock": {
+        "description": "Uploader settings screen",
+        "placeholders": {
+            "reason": {
+                "type": "String"
+            }
+        }
+    },
+    "uploaderCleartext": "This connection isn't encrypted. That's fine at home or inside a VPN you trust. Otherwise, use https.",
+    "@uploaderCleartext": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderAlreadySecure": "My connection is already secure",
+    "@uploaderAlreadySecure": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderAlreadySecureSubtitle": "I reach this server through a VPN or encrypted tunnel (WireGuard, Tailscale, SSH), so plain http:// is fine.",
+    "@uploaderAlreadySecureSubtitle": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderSave": "Save",
+    "@uploaderSave": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderTestConnection": "Test connection",
+    "@uploaderTestConnection": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderAllowPairing": "Allow another device to pair",
+    "@uploaderAllowPairing": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderWifiOnly": "Upload automatically only on Wi-Fi",
+    "@uploaderWifiOnly": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderWifiOnlySubtitle": "Downloaded tracks wait instead of using mobile data. Uploads you start yourself always go through.",
+    "@uploaderWifiOnlySubtitle": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderFromDevice": "Upload files",
+    "@uploaderFromDevice": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderFromDeviceBody": "Pick audio files on this device and send them to your server's library.",
+    "@uploaderFromDeviceBody": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderChooseFiles": "Choose files",
+    "@uploaderChooseFiles": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderYoutubeSection": "YouTube",
+    "@uploaderYoutubeSection": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderYoutubeSwitch": "Use your server for YouTube",
+    "@uploaderYoutubeSwitch": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderYoutubeOk": "Search, play and download YouTube through your server. It keeps itself up to date, and this device never contacts YouTube directly.",
+    "@uploaderYoutubeOk": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderYoutubeUnavailable": "Not available right now: {problem}",
+    "@uploaderYoutubeUnavailable": {
+        "description": "Uploader settings screen",
+        "placeholders": {
+            "problem": {
+                "type": "String"
+            }
+        }
+    },
+    "uploaderUnreachable": "the uploader can't be reached.",
+    "@uploaderUnreachable": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderYoutubeOff": "YouTube is turned off on your uploader. Set DIAPASON_YTDLP_ENABLED=true on the server to enable it.",
+    "@uploaderYoutubeOff": {
+        "description": "Uploader settings screen"
+    },
+    "uploaderUploadDownloadedSubtitle": "Send tracks you download here to your server's library.",
+    "@uploaderUploadDownloadedSubtitle": {
+        "description": "Uploader settings screen"
+    },
+    "lyricsOptions": "Lyrics options",
+    "@lyricsOptions": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsTitle": "Lyrics",
+    "@lyricsTitle": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsSource": "Source",
+    "@lyricsSource": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsYourLibraryThen": "Your library, then {databases}.",
+    "@lyricsYourLibraryThen": {
+        "description": "Lyrics source picker sheet",
+        "placeholders": {
+            "databases": {
+                "type": "String"
+            }
+        }
+    },
+    "lyricsAutomatic": "Automatic",
+    "@lyricsAutomatic": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsBestAvailable": "Best available",
+    "@lyricsBestAvailable": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsBestAvailableNow": "Best available · now {source}",
+    "@lyricsBestAvailableNow": {
+        "description": "Lyrics source picker sheet",
+        "placeholders": {
+            "source": {
+                "type": "String"
+            }
+        }
+    },
+    "lyricsPickedManually": "Picked manually · {count} lines",
+    "@lyricsPickedManually": {
+        "description": "Lyrics source picker sheet",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "lyricsCheckFailed": "Couldn't check the sources",
+    "@lyricsCheckFailed": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsNoSource": "No source has lyrics for this track",
+    "@lyricsNoSource": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsOnlineDatabase": "Online database",
+    "@lyricsOnlineDatabase": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsSourceLines": "{source} · {count} lines",
+    "@lyricsSourceLines": {
+        "description": "Lyrics source picker sheet",
+        "placeholders": {
+            "source": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "lyricsSearchManually": "Search manually",
+    "@lyricsSearchManually": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsSearchManuallySubtitle": "Wrong or missing lyrics? Look them up on LRCLIB.",
+    "@lyricsSearchManuallySubtitle": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsSearchTitle": "Search lyrics",
+    "@lyricsSearchTitle": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsSearchHint": "Artist and title",
+    "@lyricsSearchHint": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsSearchPrompt": "Search LRCLIB for lyrics",
+    "@lyricsSearchPrompt": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsNoResults": "No results",
+    "@lyricsNoResults": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsTiming": "Timing",
+    "@lyricsTiming": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsTimingHint": "Lyrics too early? Show them later. Remembered for this track.",
+    "@lyricsTimingHint": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsEarlier": "Earlier",
+    "@lyricsEarlier": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsLater": "Later",
+    "@lyricsLater": {
+        "description": "Lyrics source picker sheet"
+    },
+    "lyricsReset": "Reset",
+    "@lyricsReset": {
+        "description": "Lyrics source picker sheet"
+    },
+    "ytdlpInstallSummary": "yt-dlp {version}",
+    "@ytdlpInstallSummary": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallBadFile": "That file doesn't look like a working yt-dlp.",
+    "@ytdlpInstallBadFile": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallUpdateTitle": "Update yt-dlp",
+    "@ytdlpInstallUpdateTitle": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallSetupTitle": "Set up YouTube on this computer",
+    "@ytdlpInstallSetupTitle": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallInstalling": "Installing…",
+    "@ytdlpInstallInstalling": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallAllSet": "All set",
+    "@ytdlpInstallAllSet": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallFailedTitle": "Installation didn't finish",
+    "@ytdlpInstallFailedTitle": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallOfferBody": "Diapason uses yt-dlp to search and play YouTube, and it updates far faster than the app can. I can download it for you and keep it up to date — it lives in Diapason's own folder and nothing else on your computer is touched.",
+    "@ytdlpInstallOfferBody": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallYtdlpDownload": "yt-dlp (≈ 35 MB) from github.com/yt-dlp/yt-dlp",
+    "@ytdlpInstallYtdlpDownload": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallDenoDownload": "Deno (≈ 40 MB) from github.com/denoland/deno",
+    "@ytdlpInstallDenoDownload": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallDenoExisting": "You already have {runtime} — Diapason can use that instead.",
+    "@ytdlpInstallDenoExisting": {
+        "description": "yt-dlp install dialog",
+        "placeholders": {
+            "runtime": {
+                "type": "String"
+            }
+        }
+    },
+    "ytdlpInstallDenoWhy": "A JavaScript runtime yt-dlp needs to read YouTube. Recommended.",
+    "@ytdlpInstallDenoWhy": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallChecksum": "Downloads are checked against the SHA-256 published by each project before they're used.",
+    "@ytdlpInstallChecksum": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallReady": "YouTube is ready on this computer.\n{summary}",
+    "@ytdlpInstallReady": {
+        "description": "yt-dlp install dialog",
+        "placeholders": {
+            "summary": {
+                "type": "String"
+            }
+        }
+    },
+    "ytdlpInstallNoJs": "No JavaScript runtime was found, so some videos may not play. You can install Deno from the yt-dlp settings.",
+    "@ytdlpInstallNoJs": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallSomethingWrong": "Something went wrong.",
+    "@ytdlpInstallSomethingWrong": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallHideTechnical": "Hide technical details",
+    "@ytdlpInstallHideTechnical": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallTechnical": "Technical details",
+    "@ytdlpInstallTechnical": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallHaveYtdlp": "I have yt-dlp…",
+    "@ytdlpInstallHaveYtdlp": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallDontAsk": "Don't ask again",
+    "@ytdlpInstallDontAsk": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallNotNow": "Not now",
+    "@ytdlpInstallNotNow": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallUpdate": "Update",
+    "@ytdlpInstallUpdate": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallInstall": "Install",
+    "@ytdlpInstallInstall": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallDone": "Done",
+    "@ytdlpInstallDone": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallClose": "Close",
+    "@ytdlpInstallClose": {
+        "description": "yt-dlp install dialog"
+    },
+    "ytdlpInstallTryAgain": "Try again",
+    "@ytdlpInstallTryAgain": {
+        "description": "yt-dlp install dialog"
+    },
+    "storageCleared": "{what} cleared",
+    "@storageCleared": {
+        "description": "Storage & diagnostics settings screen",
+        "placeholders": {
+            "what": {
+                "type": "String"
+            }
+        }
+    },
+    "storageClearFailed": "Couldn't clear {what}. {reason}",
+    "@storageClearFailed": {
+        "description": "Storage & diagnostics settings screen",
+        "placeholders": {
+            "what": {
+                "type": "String"
+            },
+            "reason": {
+                "type": "String"
+            }
+        }
+    },
+    "storageTitle": "Storage & diagnostics",
+    "@storageTitle": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageHeaderKept": "What the app keeps on this device",
+    "@storageHeaderKept": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageStreamed": "Streamed tracks",
+    "@storageStreamed": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageStreamedSubtitle": "Copies kept while you listen, so replays don't download again.",
+    "@storageStreamedSubtitle": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageWhatStream": "Streamed track cache",
+    "@storageWhatStream": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageCoverArt": "Cover art",
+    "@storageCoverArt": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageCoverArtSubtitle": "Album and artist pictures. They're fetched again when needed.",
+    "@storageCoverArtSubtitle": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageWhatCoverArt": "Cover art cache",
+    "@storageWhatCoverArt": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageLogs": "Log files",
+    "@storageLogs": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageLogsSubtitle": "Used for bug reports. Only the old log can be deleted; the current one is in use.",
+    "@storageLogsSubtitle": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageDeleteOld": "Delete old",
+    "@storageDeleteOld": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageWhatOldLog": "Old log",
+    "@storageWhatOldLog": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageYtdlp": "yt-dlp and Deno",
+    "@storageYtdlp": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageYtdlpSubtitle": "The YouTube tools Diapason downloaded to this computer.",
+    "@storageYtdlpSubtitle": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageDownloadedMusic": "Downloaded music",
+    "@storageDownloadedMusic": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageDownloadedMusicSubtitle": "Locations and what's kept offline",
+    "@storageDownloadedMusicSubtitle": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageLogDetail": "Log detail",
+    "@storageLogDetail": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageViewLogs": "View and share logs",
+    "@storageViewLogs": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "storageClear": "Clear",
+    "@storageClear": {
+        "description": "Storage & diagnostics settings screen"
+    },
+    "sourcesAddASource": "Add a source",
+    "@sourcesAddASource": {
+        "description": "Sources settings screen"
+    },
+    "sourcesReconnect": "Reconnect",
+    "@sourcesReconnect": {
+        "description": "Sources settings screen"
+    },
+    "sourcesReconnectSubtitle": "Server discovery, users, Quick Connect",
+    "@sourcesReconnectSubtitle": {
+        "description": "Sources settings screen"
+    },
+    "sourcesRemoveTitle": "Remove {name}?",
+    "@sourcesRemoveTitle": {
+        "description": "Sources settings screen",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "sourcesRemoveBody": "Its music will disappear from your library. Anything you downloaded from it stays on this device until you delete it.",
+    "@sourcesRemoveBody": {
+        "description": "Sources settings screen"
+    },
+    "sourcesCancel": "Cancel",
+    "@sourcesCancel": {
+        "description": "Sources settings screen"
+    },
+    "sourcesRemove": "Remove",
+    "@sourcesRemove": {
+        "description": "Sources settings screen"
+    },
+    "sourcesTitle": "Sources",
+    "@sourcesTitle": {
+        "description": "Sources settings screen"
+    },
+    "sourcesAddSource": "Add source",
+    "@sourcesAddSource": {
+        "description": "Sources settings screen"
+    },
+    "sourcesEmpty": "No sources yet.\nAdd a Jellyfin, Plex or Subsonic server, or a folder of local files.",
+    "@sourcesEmpty": {
+        "description": "Sources settings screen"
+    },
+    "sourcesAddKind": "Add {kind}",
+    "@sourcesAddKind": {
+        "description": "Sources settings screen",
+        "placeholders": {
+            "kind": {
+                "type": "String"
+            }
+        }
+    },
+    "sourcesAdd": "Add",
+    "@sourcesAdd": {
+        "description": "Sources settings screen"
+    },
+    "sourcesSave": "Save",
+    "@sourcesSave": {
+        "description": "Sources settings screen"
+    },
+    "sourceKindLocalFiles": "Local files",
+    "@sourceKindLocalFiles": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceKindLocalHint": "Choose a music folder",
+    "@sourceKindLocalHint": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormName": "Name (optional)",
+    "@sourceFormName": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormNameHelper": "How this source is labelled in your library",
+    "@sourceFormNameHelper": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormChooseFolder": "Choose a folder to scan",
+    "@sourceFormChooseFolder": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormServerAddress": "Server address",
+    "@sourceFormServerAddress": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormServerAddressRequired": "A server address is required",
+    "@sourceFormServerAddressRequired": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormPasswordOptional": "Password (optional)",
+    "@sourceFormPasswordOptional": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormMusicDirectory": "Music directory (recommended)",
+    "@sourceFormMusicDirectory": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormMusicDirectoryHelper": "Pick the server's music_directory so playback can read the files. Leave empty to auto-detect (local MPD only; may be blocked by the OS sandbox).",
+    "@sourceFormMusicDirectoryHelper": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormLocalAddressOptional": "Local network address (optional)",
+    "@sourceFormLocalAddressOptional": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormLocalAddressSubtitle": "Switch to a faster address automatically when on this network",
+    "@sourceFormLocalAddressSubtitle": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormLocalAddress": "Local network address",
+    "@sourceFormLocalAddress": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormPreferLocal": "Prefer local network when available",
+    "@sourceFormPreferLocal": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormUsername": "Username",
+    "@sourceFormUsername": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormUsernameRequired": "A username is required",
+    "@sourceFormUsernameRequired": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormPassword": "Password",
+    "@sourceFormPassword": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormPasswordHelper": "Subsonic signs every request, so the password is stored on this device",
+    "@sourceFormPasswordHelper": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormPasswordRequired": "A password is required",
+    "@sourceFormPasswordRequired": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormPlexToken": "Plex token",
+    "@sourceFormPlexToken": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormPlexTokenRequired": "A Plex token is required",
+    "@sourceFormPlexTokenRequired": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormConnected": "Connected",
+    "@sourceFormConnected": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormUnreachable": "Couldn't reach this source. Check the address and credentials.",
+    "@sourceFormUnreachable": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormTest": "Test",
+    "@sourceFormTest": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "sourceFormSave": "Save",
+    "@sourceFormSave": {
+        "description": "Source form (add/edit a music source)"
+    },
+    "errorSourceConnection": "Connection",
+    "@errorSourceConnection": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorSourceUploader": "Your uploader",
+    "@errorSourceUploader": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorSourceDevice": "This device",
+    "@errorSourceDevice": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorSourceUnexpected": "Unexpected",
+    "@errorSourceUnexpected": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorTimeout": "That took too long and was stopped. Check your connection and try again.",
+    "@errorTimeout": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorTls": "A secure connection couldn't be set up. The server's certificate may be invalid or expired.",
+    "@errorTls": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorHostLookup": "Couldn't find that server. Check the address and your internet connection.",
+    "@errorHostLookup": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorConnectionRefused": "The server refused the connection. Check that it's running and the port is right.",
+    "@errorConnectionRefused": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorNoRoute": "No route to the server from this device. If it's on your local network, allow Diapason's Local Network access in the system settings.",
+    "@errorNoRoute": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorCouldntConnect": "Couldn't connect to the server ({reason}).",
+    "@errorCouldntConnect": {
+        "description": "Friendly error message shown to the user",
+        "placeholders": {
+            "reason": {
+                "type": "String"
+            }
+        }
+    },
+    "errorInterrupted": "The connection to the server was interrupted. Check your network and try again.",
+    "@errorInterrupted": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorHttp401": "The server didn't accept your login. Sign in again or check your permissions.",
+    "@errorHttp401": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorHttp404": "The server couldn't find that item. It may have been moved or deleted.",
+    "@errorHttp404": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorHttp408": "The server took too long to answer.",
+    "@errorHttp408": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorHttp429": "The server is asking you to slow down. Try again in a moment.",
+    "@errorHttp429": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorHttp500": "The server had a problem handling that request.",
+    "@errorHttp500": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorHttpOther": "The server rejected that request (HTTP {status}).",
+    "@errorHttpOther": {
+        "description": "Friendly error message shown to the user",
+        "placeholders": {
+            "status": {
+                "type": "int"
+            }
+        }
+    },
+    "errorDiskFull": "There isn't enough free space on this device.",
+    "@errorDiskFull": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorPermission": "Diapason doesn't have permission to use that file or folder.",
+    "@errorPermission": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorFile": "A file on this device couldn't be read or written.",
+    "@errorFile": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorUnexpectedResponse": "The server sent something unexpected. Is the address pointing at the right service?",
+    "@errorUnexpectedResponse": {
+        "description": "Friendly error message shown to the user"
+    },
+    "errorGeneric": "Something went wrong. If it keeps happening, check the logs in Settings > Storage & diagnostics.",
+    "@errorGeneric": {
+        "description": "Friendly error message shown to the user"
+    },
+    "discoverUnknown": "Unknown",
+    "@discoverUnknown": {
+        "description": "Discover section text (playlists suggested from ListenBrainz and Last.fm)"
+    },
+    "discoverUntitled": "Untitled",
+    "@discoverUntitled": {
+        "description": "Discover section text (playlists suggested from ListenBrainz and Last.fm)"
+    },
+    "discoverMadeForYou": "Made for you by ListenBrainz",
+    "@discoverMadeForYou": {
+        "description": "Discover section text (playlists suggested from ListenBrainz and Last.fm)"
+    },
+    "discoverMatchedYoutube": "Matched against your library, YouTube for the rest",
+    "@discoverMatchedYoutube": {
+        "description": "Discover section text (playlists suggested from ListenBrainz and Last.fm)"
+    },
+    "discoverMatched": "Matched against your library",
+    "@discoverMatched": {
+        "description": "Discover section text (playlists suggested from ListenBrainz and Last.fm)"
+    },
+    "discoverGlobalTop": "Global Top Tracks",
+    "@discoverGlobalTop": {
+        "description": "Discover section text (playlists suggested from ListenBrainz and Last.fm)"
+    },
+    "discoverTrending": "Trending on Last.fm",
+    "@discoverTrending": {
+        "description": "Discover section text (playlists suggested from ListenBrainz and Last.fm)"
+    },
+    "discoverTopGenre": "Top {genre}",
+    "@discoverTopGenre": {
+        "description": "Discover section text (playlists suggested from ListenBrainz and Last.fm)",
+        "placeholders": {
+            "genre": {
+                "type": "String"
+            }
+        }
+    },
+    "discoverPopular": "Popular on Last.fm",
+    "@discoverPopular": {
+        "description": "Discover section text (playlists suggested from ListenBrainz and Last.fm)"
+    },
+    "discoverGenreElectronic": "Electronic",
+    "@discoverGenreElectronic": {
+        "description": "Discover section text (playlists suggested from ListenBrainz and Last.fm)"
+    },
+    "discoverGenreClassical": "Classical",
+    "@discoverGenreClassical": {
+        "description": "Discover section text (playlists suggested from ListenBrainz and Last.fm)"
+    },
+    "errorWhereItWentWrong": "Where it went wrong: {source}",
+    "@errorWhereItWentWrong": {
+        "description": "Error details dialog",
+        "placeholders": {
+            "source": {
+                "type": "String"
+            }
+        }
+    },
+    "errorTechnicalDetails": "Technical details (for bug reports)",
+    "@errorTechnicalDetails": {
+        "description": "Error details dialog"
+    },
+    "scrobbleLbDisconnected": "ListenBrainz disconnected",
+    "@scrobbleLbDisconnected": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleLbConnected": "ListenBrainz connected",
+    "@scrobbleLbConnected": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleLbRejected": "That token was rejected by ListenBrainz",
+    "@scrobbleLbRejected": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleLfmEnterKey": "Enter your Last.fm API key and secret first",
+    "@scrobbleLfmEnterKey": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleLfmKeyRejected": "Last.fm rejected the API key and secret",
+    "@scrobbleLfmKeyRejected": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleLfmNotAuthorised": "Not authorised yet — approve Diapason in the browser, then try again",
+    "@scrobbleLfmNotAuthorised": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleLfmConnectedAs": "Connected to Last.fm as {username}",
+    "@scrobbleLfmConnectedAs": {
+        "description": "Scrobbling settings screen",
+        "placeholders": {
+            "username": {
+                "type": "String"
+            }
+        }
+    },
+    "scrobbleLfmDisconnected": "Last.fm disconnected",
+    "@scrobbleLfmDisconnected": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleTitle": "Scrobbling",
+    "@scrobbleTitle": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleUserToken": "User token",
+    "@scrobbleUserToken": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleUserTokenHelper": "Found on your ListenBrainz profile settings page",
+    "@scrobbleUserTokenHelper": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleUpdate": "Update",
+    "@scrobbleUpdate": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleConnect": "Connect",
+    "@scrobbleConnect": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleConnectedAs": "Connected as {username}",
+    "@scrobbleConnectedAs": {
+        "description": "Scrobbling settings screen",
+        "placeholders": {
+            "username": {
+                "type": "String"
+            }
+        }
+    },
+    "scrobbleDisconnect": "Disconnect",
+    "@scrobbleDisconnect": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleLfmKeyInfo": "Last.fm issues an API key per application, so Diapason can't ship one — create your own at last.fm/api/account/create and paste it below.",
+    "@scrobbleLfmKeyInfo": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleApiKey": "API key",
+    "@scrobbleApiKey": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleSharedSecret": "Shared secret",
+    "@scrobbleSharedSecret": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleAuthorise": "Authorise in browser",
+    "@scrobbleAuthorise": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleApproveHint": "Approve Diapason in the browser, then come back and confirm.",
+    "@scrobbleApproveHint": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleApproved": "I've approved it",
+    "@scrobbleApproved": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleWaiting": "Waiting to be sent",
+    "@scrobbleWaiting": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleNothingQueued": "Nothing queued",
+    "@scrobbleNothingQueued": {
+        "description": "Scrobbling settings screen"
+    },
+    "scrobbleQueued": "{count, plural, =1{1 listen couldn't be sent, and will be retried} other{{count} listens couldn't be sent, and will be retried}}",
+    "@scrobbleQueued": {
+        "description": "Scrobbling settings screen",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "scrobbleRetry": "Retry",
+    "@scrobbleRetry": {
+        "description": "Scrobbling settings screen"
+    },
+    "backupDialogTitle": "Save Diapason backup",
+    "@backupDialogTitle": {
+        "description": "Backup & restore screen"
+    },
+    "backupSubject": "Diapason backup",
+    "@backupSubject": {
+        "description": "Backup & restore screen"
+    },
+    "backupSaved": "Backup saved.",
+    "@backupSaved": {
+        "description": "Backup & restore screen"
+    },
+    "backupFailed": "Couldn't make the backup: {error}",
+    "@backupFailed": {
+        "description": "Backup & restore screen",
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "backupPickTitle": "Choose a Diapason backup",
+    "@backupPickTitle": {
+        "description": "Backup & restore screen"
+    },
+    "backupUnreadable": "Couldn't read that file.",
+    "@backupUnreadable": {
+        "description": "Backup & restore screen"
+    },
+    "backupRestoreTitle": "Restore this backup?",
+    "@backupRestoreTitle": {
+        "description": "Backup & restore screen"
+    },
+    "backupMadeOn": "Made on {date}.",
+    "@backupMadeOn": {
+        "description": "Backup & restore screen",
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "backupRestoreBody": "Your settings and home layout are replaced; sources, pins and smart playlists are added to what you have. Download folders stay as they are on this device.",
+    "@backupRestoreBody": {
+        "description": "Backup & restore screen"
+    },
+    "backupNoSignIns": "This backup has no sign-ins: you'll need to sign in to its sources.",
+    "@backupNoSignIns": {
+        "description": "Backup & restore screen"
+    },
+    "backupCancel": "Cancel",
+    "@backupCancel": {
+        "description": "Backup & restore screen"
+    },
+    "backupRestore": "Restore",
+    "@backupRestore": {
+        "description": "Backup & restore screen"
+    },
+    "backupRestored": "Backup restored",
+    "@backupRestored": {
+        "description": "Backup & restore screen"
+    },
+    "backupRestoredSummary": "Restored {summary}.",
+    "@backupRestoredSummary": {
+        "description": "Backup & restore screen",
+        "placeholders": {
+            "summary": {
+                "type": "String"
+            }
+        }
+    },
+    "backupSignedBackIn": "Signed back in to Jellyfin.",
+    "@backupSignedBackIn": {
+        "description": "Backup & restore screen"
+    },
+    "backupSourcesNeedSignIn": "{count, plural, =1{1 source needs you to sign in again (Settings › Sources).} other{{count} sources need you to sign in again (Settings › Sources).}}",
+    "@backupSourcesNeedSignIn": {
+        "description": "Backup & restore screen",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "backupSourcesSkipped": "{count, plural, =1{1 source was skipped: already here, or a folder on the other device.} other{{count} sources were skipped: already here, or a folder on the other device.}}",
+    "@backupSourcesSkipped": {
+        "description": "Backup & restore screen",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "backupRestart": "Restart Diapason so everything picks the changes up.",
+    "@backupRestart": {
+        "description": "Backup & restore screen"
+    },
+    "backupRestoreFailed": "Couldn't restore that backup: {error}",
+    "@backupRestoreFailed": {
+        "description": "Backup & restore screen",
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "backupTitle": "Backup & restore",
+    "@backupTitle": {
+        "description": "Backup & restore screen"
+    },
+    "backupIntro": "One file with your settings, home layout, sources, pins, smart playlists, hidden items and lyrics timings. Use it on a new device or after reinstalling.",
+    "@backupIntro": {
+        "description": "Backup & restore screen"
+    },
+    "backupIncludeSignIns": "Include sign-ins",
+    "@backupIncludeSignIns": {
+        "description": "Backup & restore screen"
+    },
+    "backupSignInsOn": "Server and scrobbling sign-ins are in the file. Anyone with it can use your accounts: keep it somewhere private.",
+    "@backupSignInsOn": {
+        "description": "Backup & restore screen"
+    },
+    "backupSignInsOff": "No passwords or tokens in the file. You'll sign in again after restoring.",
+    "@backupSignInsOff": {
+        "description": "Backup & restore screen"
+    },
+    "backupSave": "Save a backup…",
+    "@backupSave": {
+        "description": "Backup & restore screen"
+    },
+    "backupShare": "Back up and share…",
+    "@backupShare": {
+        "description": "Backup & restore screen"
+    },
+    "backupRestoreFrom": "Restore from a backup…",
+    "@backupRestoreFrom": {
+        "description": "Backup & restore screen"
+    },
+    "backupPickFile": "Pick a diapason-backup file",
+    "@backupPickFile": {
+        "description": "Backup & restore screen"
+    },
+    "cacheTitle": "Cache",
+    "@cacheTitle": {
+        "description": "Stream cache settings screen"
+    },
+    "cacheStreamed": "Cache streamed tracks",
+    "@cacheStreamed": {
+        "description": "Stream cache settings screen"
+    },
+    "cacheStreamedSubtitle": "Keep a copy of tracks as they play, so replaying one doesn't download it again",
+    "@cacheStreamedSubtitle": {
+        "description": "Stream cache settings screen"
+    },
+    "cacheMaxSize": "Maximum size",
+    "@cacheMaxSize": {
+        "description": "Stream cache settings screen"
+    },
+    "cacheMaxSizeSubtitle": "The oldest tracks are removed once the cache is full",
+    "@cacheMaxSizeSubtitle": {
+        "description": "Stream cache settings screen"
+    },
+    "cacheCurrentlyCached": "Currently cached",
+    "@cacheCurrentlyCached": {
+        "description": "Stream cache settings screen"
+    },
+    "cacheCalculating": "Calculating…",
+    "@cacheCalculating": {
+        "description": "Stream cache settings screen"
+    },
+    "cacheClear": "Clear",
+    "@cacheClear": {
+        "description": "Stream cache settings screen"
+    },
+    "discoverNoMatch": "Couldn't find any of those tracks.",
+    "@discoverNoMatch": {
+        "description": "Discover tab"
+    },
+    "discoverPlayingCount": "Playing {matched} of {total} tracks",
+    "@discoverPlayingCount": {
+        "description": "Discover tab",
+        "placeholders": {
+            "matched": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "discoverQueueFailed": "Couldn't start a discover queue from that playlist.",
+    "@discoverQueueFailed": {
+        "description": "Discover tab"
+    },
+    "discoverQueueName": "Discover · {name}",
+    "@discoverQueueName": {
+        "description": "Discover tab",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "discoverDiscoveringCount": "Discovering {count} tracks",
+    "@discoverDiscoveringCount": {
+        "description": "Discover tab",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "discoverContinueYoutube": "Continue on YouTube from the end",
+    "@discoverContinueYoutube": {
+        "description": "Discover tab"
+    },
+    "discoverPlayAll": "Play all",
+    "@discoverPlayAll": {
+        "description": "Discover tab"
+    },
+    "discoverConnectLb": "Connect ListenBrainz",
+    "@discoverConnectLb": {
+        "description": "Discover tab"
+    },
+    "discoverConnectLbSubtitle": "For playlists made from what you actually listen to",
+    "@discoverConnectLbSubtitle": {
+        "description": "Discover tab"
+    },
+    "discoverAddLfmKey": "Add a Last.fm API key",
+    "@discoverAddLfmKey": {
+        "description": "Discover tab"
+    },
+    "discoverAddLfmKeySubtitle": "Unlocks charts, genre browsing and similar artists",
+    "@discoverAddLfmKeySubtitle": {
+        "description": "Discover tab"
+    },
+    "discoverMadeForYouSection": "Made for you",
+    "@discoverMadeForYouSection": {
+        "description": "Discover tab"
+    },
+    "discoverYourPlaylists": "Your playlists",
+    "@discoverYourPlaylists": {
+        "description": "Discover tab"
+    },
+    "discoverChartsGenres": "Charts & genres",
+    "@discoverChartsGenres": {
+        "description": "Discover tab"
+    },
+    "discoverFreshReleases": "Fresh releases",
+    "@discoverFreshReleases": {
+        "description": "Discover tab"
+    },
+    "discoverLbUnreachable": "Couldn't reach ListenBrainz.",
+    "@discoverLbUnreachable": {
+        "description": "Discover tab"
+    },
+    "discoverPickVersion": "Pick the right version",
+    "@discoverPickVersion": {
+        "description": "Discover playlist screen"
+    },
+    "discoverUnknownTitle": "Unknown",
+    "@discoverUnknownTitle": {
+        "description": "Discover playlist screen"
+    },
+    "discoverYoutubeNotSetUp": "YouTube isn't set up. Add a yt-dlp in Settings → YouTube (yt-dlp) or connect an uploader.",
+    "@discoverYoutubeNotSetUp": {
+        "description": "Discover playlist screen"
+    },
+    "discoverRateLimitedRetry": "YouTube is rate-limiting us right now — try again in a few minutes.",
+    "@discoverRateLimitedRetry": {
+        "description": "Discover playlist screen"
+    },
+    "discoverRateLimited": "YouTube is rate-limiting us right now.",
+    "@discoverRateLimited": {
+        "description": "Discover playlist screen"
+    },
+    "discoverNoYoutubeResults": "No YouTube results for that track.",
+    "@discoverNoYoutubeResults": {
+        "description": "Discover playlist screen"
+    },
+    "discoverPickDownloadLocation": "Pick a download location in Downloads settings first.",
+    "@discoverPickDownloadLocation": {
+        "description": "Discover playlist screen"
+    },
+    "discoverQueuedDownloads": "Queued {count} downloads",
+    "@discoverQueuedDownloads": {
+        "description": "Discover playlist screen",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "discoverLoadFailed": "Couldn't load this playlist.",
+    "@discoverLoadFailed": {
+        "description": "Discover playlist screen"
+    },
+    "discoverRetry": "Retry",
+    "@discoverRetry": {
+        "description": "Discover playlist screen"
+    },
+    "discoverMatching": "Matching tracks against your library…",
+    "@discoverMatching": {
+        "description": "Discover playlist screen"
+    },
+    "discoverEmpty": "This playlist is empty.",
+    "@discoverEmpty": {
+        "description": "Discover playlist screen"
+    },
+    "discoverEntryNotFound": "{artist} · not found",
+    "@discoverEntryNotFound": {
+        "description": "Discover playlist screen",
+        "placeholders": {
+            "artist": {
+                "type": "String"
+            }
+        }
+    },
+    "discoverEntryNotInLibrary": "{artist} · not in your library",
+    "@discoverEntryNotInLibrary": {
+        "description": "Discover playlist screen",
+        "placeholders": {
+            "artist": {
+                "type": "String"
+            }
+        }
+    },
+    "discoverEntryYoutube": "{artist} · YouTube",
+    "@discoverEntryYoutube": {
+        "description": "Discover playlist screen",
+        "placeholders": {
+            "artist": {
+                "type": "String"
+            }
+        }
+    },
+    "discoverPickMatch": "Choose a YouTube match",
+    "@discoverPickMatch": {
+        "description": "Discover playlist screen"
+    },
+    "discoverReadyCount": "{ready} of {total} ready",
+    "@discoverReadyCount": {
+        "description": "Discover playlist screen",
+        "placeholders": {
+            "ready": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "discoverNeedMatch": " · {count} need a YouTube match",
+    "@discoverNeedMatch": {
+        "description": "Discover playlist screen",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "discoverNotInLibraryCount": " · {count} not in your library",
+    "@discoverNotInLibraryCount": {
+        "description": "Discover playlist screen",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "discoverShuffle": "Shuffle",
+    "@discoverShuffle": {
+        "description": "Discover playlist screen"
+    },
+    "discoverQueuing": "Queuing…",
+    "@discoverQueuing": {
+        "description": "Discover playlist screen"
+    },
+    "discoverDownloadAll": "Download all",
+    "@discoverDownloadAll": {
+        "description": "Discover playlist screen"
+    },
+    "discoverTapGreyed": "Tap a greyed-out track to pick its YouTube match. Only tracks you've matched are played or downloaded.",
+    "@discoverTapGreyed": {
+        "description": "Discover playlist screen"
+    },
+    "wrappedNoTracks": "Couldn't find those tracks in your library any more.",
+    "@wrappedNoTracks": {
+        "description": "Wrapped (listening recap) screen"
+    },
+    "wrappedQueueName": "Wrapped — {period}",
+    "@wrappedQueueName": {
+        "description": "Wrapped (listening recap) screen",
+        "placeholders": {
+            "period": {
+                "type": "String"
+            }
+        }
+    },
+    "wrappedTitle": "Your Wrapped",
+    "@wrappedTitle": {
+        "description": "Wrapped (listening recap) screen"
+    },
+    "wrappedPlayTop": "Play my top tracks",
+    "@wrappedPlayTop": {
+        "description": "Wrapped (listening recap) screen"
+    },
+    "wrappedShareImage": "Share as an image",
+    "@wrappedShareImage": {
+        "description": "Wrapped (listening recap) screen"
+    },
+    "wrappedEmpty": "Nothing here yet.\n\nPlay some music and your Wrapped will fill in.",
+    "@wrappedEmpty": {
+        "description": "Wrapped (listening recap) screen"
+    },
+    "wrappedStatMinutes": "minutes",
+    "@wrappedStatMinutes": {
+        "description": "Wrapped (listening recap) screen"
+    },
+    "wrappedStatPlays": "tracks played",
+    "@wrappedStatPlays": {
+        "description": "Wrapped (listening recap) screen"
+    },
+    "wrappedStatArtists": "artists",
+    "@wrappedStatArtists": {
+        "description": "Wrapped (listening recap) screen"
+    },
+    "wrappedStatStreak": "day streak",
+    "@wrappedStatStreak": {
+        "description": "Wrapped (listening recap) screen"
+    },
+    "wrappedStatGenre": "top genre",
+    "@wrappedStatGenre": {
+        "description": "Wrapped (listening recap) screen"
+    },
+    "wrappedTopTracks": "Top tracks",
+    "@wrappedTopTracks": {
+        "description": "Wrapped (listening recap) screen"
+    },
+    "wrappedTopArtists": "Top artists",
+    "@wrappedTopArtists": {
+        "description": "Wrapped (listening recap) screen"
+    },
+    "wrappedTopAlbums": "Top albums",
+    "@wrappedTopAlbums": {
+        "description": "Wrapped (listening recap) screen"
+    },
+    "wrappedSubtitle": "What you actually listened to",
+    "@wrappedSubtitle": {
+        "description": "Wrapped (listening recap) screen"
+    },
+    "wrappedCardYear": "My year in music",
+    "@wrappedCardYear": {
+        "description": "Wrapped share card (image)"
+    },
+    "wrappedCardMonth": "My month in music",
+    "@wrappedCardMonth": {
+        "description": "Wrapped share card (image)"
+    },
+    "wrappedCardBrand": "DIAPASON WRAPPED",
+    "@wrappedCardBrand": {
+        "description": "Wrapped share card (image)"
+    },
+    "wrappedCardMinutes": "minutes listened",
+    "@wrappedCardMinutes": {
+        "description": "Wrapped share card (image)"
+    },
+    "wrappedCardTopArtist": "TOP ARTIST",
+    "@wrappedCardTopArtist": {
+        "description": "Wrapped share card (image)"
+    },
+    "wrappedCardPlays": "{count} plays",
+    "@wrappedCardPlays": {
+        "description": "Wrapped share card (image)",
+        "placeholders": {
+            "count": {
+                "type": "String"
+            }
+        }
+    },
+    "wrappedCardTopTracks": "TOP TRACKS",
+    "@wrappedCardTopTracks": {
+        "description": "Wrapped share card (image)"
+    },
+    "wrappedCardStatPlays": "plays",
+    "@wrappedCardStatPlays": {
+        "description": "Wrapped share card (image)"
+    },
+    "wrappedCardShareFailed": "Couldn't share that.",
+    "@wrappedCardShareFailed": {
+        "description": "Wrapped share card (image)"
+    },
+    "wrappedCardShareTitle": "Share your Wrapped",
+    "@wrappedCardShareTitle": {
+        "description": "Wrapped share card (image)"
+    },
+    "wrappedCardShareButton": "Share image",
+    "@wrappedCardShareButton": {
+        "description": "Wrapped share card (image)"
+    },
+    "wrappedPeriodThisMonth": "This month",
+    "@wrappedPeriodThisMonth": {
+        "description": "Wrapped period name"
+    },
+    "wrappedPeriodLastMonth": "Last month",
+    "@wrappedPeriodLastMonth": {
+        "description": "Wrapped period name"
+    },
+    "wrappedPeriodThisYear": "This year",
+    "@wrappedPeriodThisYear": {
+        "description": "Wrapped period name"
     }
 }
