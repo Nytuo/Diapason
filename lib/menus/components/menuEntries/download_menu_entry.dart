@@ -1,3 +1,4 @@
+import 'package:diapason/utils/isar_availability.dart';
 import 'package:diapason/components/AlbumScreen/download_dialog.dart';
 import 'package:diapason/components/MusicScreen/youtube_upload_button.dart';
 import 'package:diapason/l10n/app_localizations.dart';
@@ -27,7 +28,7 @@ class DownloadMenuEntry extends ConsumerWidget implements HideableMenuEntry {
     final toLibrary = downloadStub.type == DownloadItemType.track && YouTubeUploadButton.handles(downloadStub.baseItem);
 
     return Visibility(
-      visible: !ref.watch(finampSettingsProvider.isOffline) && downloadStatus == DownloadItemStatus.notNeeded,
+      visible: isarAvailable && !ref.watch(finampSettingsProvider.isOffline) && downloadStatus == DownloadItemStatus.notNeeded,
       child: MenuEntry(
         icon: toLibrary ? TablerIcons.cloud_upload : TablerIcons.download,
         title: toLibrary ? "Add to your library" : AppLocalizations.of(context)!.downloadItem,
@@ -61,6 +62,7 @@ class DownloadMenuEntry extends ConsumerWidget implements HideableMenuEntry {
 
   @override
   bool get isVisible =>
+      isarAvailable &&
       GetIt.instance<DownloadsService>().getStatus(downloadStub, null) == DownloadItemStatus.notNeeded &&
       !FinampSettingsHelper.finampSettings.isOffline;
 }

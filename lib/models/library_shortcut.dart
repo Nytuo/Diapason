@@ -1,4 +1,5 @@
 import 'package:isar_community/isar.dart';
+import 'package:diapason/utils/isar_fast_hash.dart';
 
 part 'library_shortcut.g.dart';
 
@@ -26,17 +27,7 @@ class PinnedItem {
   DateTime pinnedAt;
   int sortIndex;
 
-  static int fastHash(String string) {
-    var hash = 0xcbf29ce484222325;
-    for (var i = 0; i < string.length; i++) {
-      final codeUnit = string.codeUnitAt(i);
-      hash ^= codeUnit >> 8;
-      hash *= 0x100000001b3;
-      hash ^= codeUnit & 0xFF;
-      hash *= 0x100000001b3;
-    }
-    return hash;
-  }
+  static int fastHash(String string) => isarFastHash(string);
 }
 
 @collection

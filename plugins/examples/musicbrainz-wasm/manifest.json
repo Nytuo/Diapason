@@ -1,0 +1,20 @@
+{
+  "manifestVersion": 1,
+  "id": "org.diapason.example.musicbrainz",
+  "name": "MusicBrainz lookup",
+  "version": "1.0.0",
+  "author": "Diapason",
+  "description": "Example WASM plugin: opens a MusicBrainz search for a track, album or artist, and counts MusicBrainz matches.",
+  "homepage": "https://github.com/Nytuo/Diapason",
+  "minAppVersion": "0.11.0",
+  "runtime": "wasm",
+  "entry": "plugin.wasm",
+  "permissions": [
+    { "type": "network", "hosts": ["musicbrainz.org"] },
+    { "type": "storage" }
+  ],
+  "extensions": [
+    { "point": "command", "id": "open", "title": "Open in MusicBrainz", "targets": ["track", "album", "artist"] },
+    { "point": "command", "id": "count", "title": "Count MusicBrainz matches", "targets": ["album", "artist"] }
+  ]
+}

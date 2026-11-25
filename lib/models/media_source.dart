@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:isar_community/isar.dart';
 
 import 'finamp_models.dart';
+import 'package:diapason/utils/isar_fast_hash.dart';
 
 part 'media_source.g.dart';
 
@@ -14,7 +16,12 @@ enum MediaSourceKind {
   local,
   mpd,
 
-  youtube;
+  youtube,
+
+  /// A UPnP AV / DLNA media server. Appended after youtube: Isar may store kinds by position.
+  dlna,
+  /// Built-in internet radio (Radio Browser directory and the user's own stations).
+  radio;
 
   String get idPrefix => switch (this) {
     MediaSourceKind.jellyfin => "jf",
@@ -23,9 +30,15 @@ enum MediaSourceKind {
     MediaSourceKind.local => "loc",
     MediaSourceKind.mpd => "mpd",
     MediaSourceKind.youtube => "yt",
+    MediaSourceKind.dlna => "dlna",
+    MediaSourceKind.radio => "radio",
   };
 
-  bool get isConfigurable => this != MediaSourceKind.youtube;
+  bool get isConfigurable => this != MediaSourceKind.youtube && this != MediaSourceKind.radio;
+
+  /// Whether this kind of source can be added on the running platform. A browser can't read local folders or
+  /// open the raw TCP socket MPD speaks, so the web build only offers the HTTP servers.
+  bool get isAvailableHere => !kIsWeb || this == jellyfin || this == subsonic || this == plex;
 }
 
 class BackendCapabilities {
@@ -125,17 +138,7 @@ class MediaSourceConfig {
     }
   }
 
-  static int fastHash(String string) {
-    var hash = 0xcbf29ce484222325;
-    for (var i = 0; i < string.length; i++) {
-      final codeUnit = string.codeUnitAt(i);
-      hash ^= codeUnit >> 8;
-      hash *= 0x100000001b3;
-      hash ^= codeUnit & 0xFF;
-      hash *= 0x100000001b3;
-    }
-    return hash;
-  }
+  static int fastHash(String string) => isarFastHash(string);
 
   @override
   String toString() => "MediaSourceConfig($sourceId, ${kind.name}, $name)";

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root xmlns="urn:schemas-upnp-org:device-1-0" xmlns:dlna="urn:schemas-dlna-org:device-1-0">
+  <specVersion><major>1</major><minor>0</minor></specVersion>
+  <URLBase>http://192.168.1.20:8895/</URLBase>
+  <device>
+    <deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>
+    <friendlyName>Serviio (homeserver)</friendlyName>
+    <manufacturer>Petr Nejedly</manufacturer>
+    <modelName>Serviio</modelName>
+    <modelNumber>2.4</modelNumber>
+    <UDN>uuid:5dd6d76c-2f5d-4a16-a5f9-0e5f1b2c3d4e</UDN>
+    <serviceList>
+      <service>
+        <serviceType>urn:schemas-upnp-org:service:ContentDirectory:1</serviceType>
+        <serviceId>urn:upnp-org:serviceId:ContentDirectory</serviceId>
+        <controlURL>serviceControl</controlURL>
+        <eventSubURL>serviceEvent</eventSubURL>
+        <SCPDURL>contentDirectory.xml</SCPDURL>
+      </service>
+    </serviceList>
+  </device>
+</root>

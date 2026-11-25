@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 
 import 'package:flutter/material.dart';
 import 'package:diapason/components/finamp_app_bar_back_button.dart';

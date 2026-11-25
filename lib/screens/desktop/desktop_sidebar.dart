@@ -1,13 +1,17 @@
+import 'dart:async';
+
 import 'package:diapason/components/AddToPlaylistScreen/new_playlist_dialog.dart';
 import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/screens/desktop/desktop_app_menu.dart';
+import 'package:diapason/screens/desktop/desktop_big_cover.dart';
+import 'package:diapason/screens/desktop/desktop_kit.dart';
 import 'package:diapason/screens/desktop/desktop_nav.dart';
 import 'package:diapason/screens/desktop/desktop_theme.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/queue_service.dart';
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/services/youtube/youtube_availability.dart';
 import 'package:flutter/material.dart';
@@ -29,31 +33,61 @@ class DesktopSidebar extends ConsumerStatefulWidget {
     super.key,
     required this.current,
     required this.onSelect,
-    required this.onToggleTheme,
-    required this.brightness,
     required this.onOpenPlaylist,
     this.openPlaylistId,
+    this.onOpenNowPlaying,
   });
 
   final DesktopNav current;
   final ValueChanged<DesktopNav> onSelect;
-  final VoidCallback onToggleTheme;
-  final Brightness brightness;
 
   final ValueChanged<BaseItemDto> onOpenPlaylist;
 
   final BaseItemId? openPlaylistId;
 
+  /// Opens the now playing view from the big cover art; null hides the cover.
+  final VoidCallback? onOpenNowPlaying;
+
   @override
   ConsumerState<DesktopSidebar> createState() => _DesktopSidebarState();
 }
 
-class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
+class _DesktopSidebarState extends ConsumerState<DesktopSidebar> with WindowListener {
   static const _top = [DesktopNav.home, DesktopNav.albums, DesktopNav.artists, DesktopNav.songs, DesktopNav.genres];
-  static const _bottom = [DesktopNav.smart, DesktopNav.discover, DesktopNav.youtube, DesktopNav.folders];
+  static const _bottom = [
+    DesktopNav.smart,
+    DesktopNav.discover,
+    DesktopNav.youtube,
+    DesktopNav.radio,
+    DesktopNav.folders,
+  ];
 
   bool _playlistsExpanded = true;
   bool _creating = false;
+
+  /// macOS hides the traffic lights in fullscreen, so the header doesn't need to clear them then.
+  bool _fullscreen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (Platform.isMacOS) {
+      windowManager.addListener(this);
+      unawaited(windowManager.isFullScreen().then((v) => mounted ? setState(() => _fullscreen = v) : null));
+    }
+  }
+
+  @override
+  void dispose() {
+    if (Platform.isMacOS) windowManager.removeListener(this);
+    super.dispose();
+  }
+
+  @override
+  void onWindowEnterFullScreen() => setState(() => _fullscreen = true);
+
+  @override
+  void onWindowLeaveFullScreen() => setState(() => _fullscreen = false);
 
   Future<void> _createPlaylist() async {
     if (_creating) return;
@@ -77,19 +111,16 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
   @override
   Widget build(BuildContext context) {
     final p = DesktopThemeScope.of(context);
-    return Container(
-      width: 240,
-      decoration: BoxDecoration(
-        color: p.sidebar,
-        border: Border(right: BorderSide(color: p.borderSubtle)),
-      ),
+    return DesktopPanel(
+      chrome: true,
+      width: DesktopMetrics.sidebarWidth,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _header(context, p),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
               children: [
                 for (final nav in _top) _navButton(context, p, nav),
                 _playlistsSection(context, p),
@@ -98,6 +129,7 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
               ],
             ),
           ),
+          const DesktopBigCover(),
           Padding(padding: const EdgeInsets.all(12), child: _queueButton(context, p)),
         ],
       ),
@@ -105,36 +137,29 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
   }
 
   Widget _header(BuildContext context, DesktopPalette p) {
-    final topInset = Platform.isMacOS ? 28.0 : 18.0;
-    final header = Container(
-      padding: EdgeInsets.fromLTRB(20, topInset, 12, 18),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: p.borderSubtle)),
-      ),
+    // Clears the macOS traffic lights, which sit over the panel's top-left corner.
+    final topInset = Platform.isMacOS && !_fullscreen ? 38.0 : 14.0;
+    final header = Padding(
+      padding: EdgeInsets.fromLTRB(20, topInset, 10, 4),
       child: Row(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Diapason",
-                  style: TextStyle(
-                    color: p.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-              ],
+          ClipRRect(
+            borderRadius: BorderRadius.circular(7),
+            child: Image.asset(
+              "assets/icon/icon_combined.png",
+              width: 28,
+              height: 28,
+              filterQuality: FilterQuality.medium,
             ),
           ),
-          IconButton(
-            onPressed: widget.onToggleTheme,
-            tooltip: "Toggle theme",
-            iconSize: 18,
-            color: p.textTertiary,
-            icon: Icon(widget.brightness == Brightness.dark ? TablerIcons.sun : TablerIcons.moon),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              "Diapason",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: p.title.copyWith(fontSize: 17, fontWeight: FontWeight.w800, letterSpacing: -0.4),
+            ),
           ),
           const DesktopAppMenu(),
         ],
@@ -149,10 +174,10 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
       padding: const EdgeInsets.only(bottom: 2),
       child: Material(
         color: active ? p.accentMuted : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(DesktopMetrics.radiusItem),
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          hoverColor: p.surface,
+          borderRadius: BorderRadius.circular(DesktopMetrics.radiusItem),
+          hoverColor: p.surfaceHover,
           onTap: () => widget.onSelect(nav),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
@@ -186,10 +211,10 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
           padding: const EdgeInsets.only(bottom: 2),
           child: Material(
             color: active ? p.accentMuted : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(DesktopMetrics.radiusItem),
             child: InkWell(
-              borderRadius: BorderRadius.circular(8),
-              hoverColor: p.surface,
+              borderRadius: BorderRadius.circular(DesktopMetrics.radiusItem),
+              hoverColor: p.surfaceHover,
               onTap: () => widget.onSelect(DesktopNav.playlists),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(12, 9, 6, 9),
@@ -270,10 +295,10 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
       padding: const EdgeInsets.only(bottom: 2),
       child: Material(
         color: active ? p.accentMuted : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(DesktopMetrics.radiusItem),
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          hoverColor: p.surface,
+          borderRadius: BorderRadius.circular(DesktopMetrics.radiusItem),
+          hoverColor: p.surfaceHover,
           onTap: () => widget.onOpenPlaylist(pl),
           child: Padding(
             padding: const EdgeInsets.only(left: 34, top: 7, right: 12, bottom: 7),
@@ -306,9 +331,9 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
     final queueService = GetIt.instance<QueueService>();
     return Material(
       color: active ? p.accent : p.surface,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(DesktopMetrics.radiusControl),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(DesktopMetrics.radiusControl),
         onTap: () => widget.onSelect(DesktopNav.queue),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
@@ -333,7 +358,7 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: active ? Colors.white24 : p.bg,
+                      color: active ? Colors.white24 : p.surfaceHover,
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(

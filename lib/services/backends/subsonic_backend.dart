@@ -1,3 +1,4 @@
+import 'package:diapason/services/radio/radio_playlist.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -413,6 +414,7 @@ class SubsonicBackend implements MediaBackend {
             artist: "Internet Radio",
           );
           item.path = station["streamUrl"] as String?;
+          item.isLive = true;
           return item;
         })
         .where((item) => (item.path ?? "").isNotEmpty)
@@ -449,7 +451,11 @@ class SubsonicBackend implements MediaBackend {
   @override
   Future<PlayableSource> resolveStream(BaseItemDto item, {required bool transcode, String? playSessionId}) async {
     if (item.path case final stationUrl? when stationUrl.startsWith("http")) {
-      return PlayableSource(Uri.parse(stationUrl));
+      // Internet radio station: servers often store the .pls/.m3u, not the stream.
+      final url = Uri.parse(stationUrl);
+      if (!RadioPlaylist.looksLikePlaylistUrl(url)) return PlayableSource(url);
+      final resolved = await RadioPlaylist.resolve(url);
+      return PlayableSource(resolved.uri, container: resolved.isHls ? "hls" : null);
     }
 
     if (!transcode) {

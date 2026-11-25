@@ -1,9 +1,14 @@
 import 'package:diapason/l10n/app_localizations.dart';
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:diapason/components/PlayerScreen/spectrum_visualizer.dart';
 import 'package:diapason/components/finamp_app_bar_back_button.dart';
+import 'package:diapason/components/PlayerScreen/visualizer_style_tune.dart';
+import 'package:diapason/components/visuals/milkdrop_tuning_sliders.dart';
+import 'package:diapason/components/visuals/milkdrop_view.dart';
+import 'package:diapason/models/finamp_models.dart';
+import 'package:diapason/services/waveform_service.dart';
 import 'package:diapason/services/music_player_background_task.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/spectrum_source.dart';
@@ -54,168 +59,94 @@ class VisualizerSettingsScreen extends ConsumerWidget {
                     padding: EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 12.0),
                     child: Text(AppLocalizations.of(context)!.visualizerAndroidNote, style: TextStyle(fontSize: 12.0)),
                   ),
+                _StylePicker(enabled: enabled),
+                _StyleEditor(enabled: enabled),
                 const Divider(),
-                _VisualizerSlider(
-                  title: AppLocalizations.of(context)!.visualizerBands,
-                  subtitle: AppLocalizations.of(context)!.visualizerBandsSubtitle,
-                  enabled: enabled,
-                  value: ref.watch(finampSettingsProvider.visualizerBins).toDouble(),
-                  min: 16,
-                  max: 192,
-                  divisions: 11,
-                  format: (value) => value.round().toString(),
-                  onChanged: (value) => FinampSetters.setVisualizerBins(value.round()),
-                ),
-                _VisualizerSlider(
-                  title: AppLocalizations.of(context)!.visualizerFrameRate,
-                  subtitle: AppLocalizations.of(context)!.visualizerFrameRateSubtitle,
-                  enabled: enabled,
-                  value: ref.watch(finampSettingsProvider.visualizerFps).toDouble(),
-                  min: 10,
-                  max: 60,
-                  divisions: 10,
-                  format: (value) => AppLocalizations.of(context)!.visualizerFps(value.round()),
-                  onChanged: (value) => FinampSetters.setVisualizerFps(value.round()),
-                ),
-                _VisualizerSlider(
-                  title: AppLocalizations.of(context)!.visualizerHeight,
-                  subtitle: AppLocalizations.of(context)!.visualizerHeightSubtitle,
-                  enabled: enabled,
-                  value: ref.watch(finampSettingsProvider.visualizerHeightFactor),
-                  min: 0.1,
-                  max: 1.0,
-                  divisions: 18,
-                  format: _asPercent,
-                  onChanged: FinampSetters.setVisualizerHeightFactor,
-                ),
-                _VisualizerSlider(
-                  title: AppLocalizations.of(context)!.visualizerSmoothing,
-                  subtitle: AppLocalizations.of(context)!.visualizerSmoothingSubtitle,
-                  enabled: enabled,
-                  value: ref.watch(finampSettingsProvider.visualizerSmoothing),
-                  min: 0.0,
-                  max: 0.95,
-                  divisions: 19,
-                  format: _asPercent,
-                  onChanged: FinampSetters.setVisualizerSmoothing,
-                ),
-                _VisualizerSlider(
-                  title: AppLocalizations.of(context)!.visualizerScale,
-                  subtitle: AppLocalizations.of(context)!.visualizerScaleSubtitle,
-                  enabled: enabled,
-                  value: ref.watch(finampSettingsProvider.visualizerScale),
-                  min: 0.25,
-                  max: 2.0,
-                  divisions: 7,
-                  format: (value) => "${value.toStringAsFixed(2)}x",
-                  onChanged: FinampSetters.setVisualizerScale,
+                ExpansionTile(
+                  title: Text(AppLocalizations.of(context)!.visualizerFrequencies),
+                  subtitle: const Text("Bands, frame rate and frequency range, for every style"),
+                  children: [
+                    _VisualizerSlider(
+                      title: AppLocalizations.of(context)!.visualizerBands,
+                      subtitle: AppLocalizations.of(context)!.visualizerBandsSubtitle,
+                      enabled: enabled,
+                      value: ref.watch(finampSettingsProvider.visualizerBins).toDouble(),
+                      min: 16,
+                      max: 192,
+                      divisions: 11,
+                      format: (value) => value.round().toString(),
+                      onChanged: (value) => FinampSetters.setVisualizerBins(value.round()),
+                    ),
+                    _VisualizerSlider(
+                      title: AppLocalizations.of(context)!.visualizerFrameRate,
+                      subtitle: AppLocalizations.of(context)!.visualizerFrameRateSubtitle,
+                      enabled: enabled,
+                      value: ref.watch(finampSettingsProvider.visualizerFps).toDouble(),
+                      min: 10,
+                      max: 60,
+                      divisions: 10,
+                      format: (value) => AppLocalizations.of(context)!.visualizerFps(value.round()),
+                      onChanged: (value) => FinampSetters.setVisualizerFps(value.round()),
+                    ),
+                    SwitchListTile.adaptive(
+                      title: Text(AppLocalizations.of(context)!.visualizerLogSpacing),
+                      subtitle: Text(AppLocalizations.of(context)!.visualizerLogSpacingSubtitle),
+                      value: ref.watch(finampSettingsProvider.visualizerLogScale),
+                      onChanged: enabled ? FinampSetters.setVisualizerLogScale : null,
+                    ),
+                    _VisualizerSlider(
+                      title: AppLocalizations.of(context)!.visualizerLowFreq,
+                      enabled: enabled,
+                      value: ref.watch(finampSettingsProvider.visualizerMinHz),
+                      min: 20,
+                      max: 500,
+                      divisions: 24,
+                      format: (value) => "${value.round()} Hz",
+                      onChanged: FinampSetters.setVisualizerMinHz,
+                    ),
+                    _VisualizerSlider(
+                      title: AppLocalizations.of(context)!.visualizerHighFreq,
+                      enabled: enabled,
+                      value: ref.watch(finampSettingsProvider.visualizerMaxHz),
+                      min: 2000,
+                      max: 20000,
+                      divisions: 18,
+                      format: (value) => "${(value / 1000).toStringAsFixed(1)} kHz",
+                      onChanged: FinampSetters.setVisualizerMaxHz,
+                    ),
+                    _VisualizerSlider(
+                      title: AppLocalizations.of(context)!.visualizerQuietCutoff,
+                      subtitle: AppLocalizations.of(context)!.visualizerQuietCutoffSubtitle,
+                      enabled: enabled,
+                      value: ref.watch(finampSettingsProvider.visualizerDbFloor),
+                      min: -120,
+                      max: -40,
+                      divisions: 16,
+                      format: (value) => "${value.round()} dB",
+                      onChanged: FinampSetters.setVisualizerDbFloor,
+                    ),
+                    _VisualizerSlider(
+                      title: AppLocalizations.of(context)!.visualizerLoudCutoff,
+                      subtitle: AppLocalizations.of(context)!.visualizerLoudCutoffSubtitle,
+                      enabled: enabled,
+                      value: ref.watch(finampSettingsProvider.visualizerDbCeiling),
+                      min: -40,
+                      max: 0,
+                      divisions: 8,
+                      format: (value) => "${value.round()} dB",
+                      onChanged: FinampSetters.setVisualizerDbCeiling,
+                    ),
+                  ],
                 ),
                 const Divider(),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 0.0),
-                  child: Text(
-                    AppLocalizations.of(context)!.visualizerFrequencies,
-                    style: TextStyle(fontWeight: FontWeight.w600),
+                if (WaveformService.supported)
+                  SwitchListTile.adaptive(
+                    title: Text(AppLocalizations.of(context)!.visualWaveformSeekBar),
+                    subtitle: Text(AppLocalizations.of(context)!.visualWaveformSeekBarSubtitle),
+                    value: ref.watch(finampSettingsProvider.waveformSeekBar),
+                    onChanged: FinampSetters.setWaveformSeekBar,
                   ),
-                ),
-                SwitchListTile.adaptive(
-                  title: Text(AppLocalizations.of(context)!.visualizerLogSpacing),
-                  subtitle: Text(AppLocalizations.of(context)!.visualizerLogSpacingSubtitle),
-                  value: ref.watch(finampSettingsProvider.visualizerLogScale),
-                  onChanged: enabled ? FinampSetters.setVisualizerLogScale : null,
-                ),
-                _VisualizerSlider(
-                  title: AppLocalizations.of(context)!.visualizerLowFreq,
-                  enabled: enabled,
-                  value: ref.watch(finampSettingsProvider.visualizerMinHz),
-                  min: 20,
-                  max: 500,
-                  divisions: 24,
-                  format: (value) => "${value.round()} Hz",
-                  onChanged: FinampSetters.setVisualizerMinHz,
-                ),
-                _VisualizerSlider(
-                  title: AppLocalizations.of(context)!.visualizerHighFreq,
-                  enabled: enabled,
-                  value: ref.watch(finampSettingsProvider.visualizerMaxHz),
-                  min: 2000,
-                  max: 20000,
-                  divisions: 18,
-                  format: (value) => "${(value / 1000).toStringAsFixed(1)} kHz",
-                  onChanged: FinampSetters.setVisualizerMaxHz,
-                ),
-                _VisualizerSlider(
-                  title: AppLocalizations.of(context)!.visualizerQuietCutoff,
-                  subtitle: AppLocalizations.of(context)!.visualizerQuietCutoffSubtitle,
-                  enabled: enabled,
-                  value: ref.watch(finampSettingsProvider.visualizerDbFloor),
-                  min: -120,
-                  max: -40,
-                  divisions: 16,
-                  format: (value) => "${value.round()} dB",
-                  onChanged: FinampSetters.setVisualizerDbFloor,
-                ),
-                _VisualizerSlider(
-                  title: AppLocalizations.of(context)!.visualizerLoudCutoff,
-                  subtitle: AppLocalizations.of(context)!.visualizerLoudCutoffSubtitle,
-                  enabled: enabled,
-                  value: ref.watch(finampSettingsProvider.visualizerDbCeiling),
-                  min: -40,
-                  max: 0,
-                  divisions: 8,
-                  format: (value) => "${value.round()} dB",
-                  onChanged: FinampSetters.setVisualizerDbCeiling,
-                ),
-                const Divider(),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 0.0),
-                  child: Text(
-                    AppLocalizations.of(context)!.visualizerAppearance,
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ),
-                SwitchListTile.adaptive(
-                  title: Text(AppLocalizations.of(context)!.visualizerSmoothCurve),
-                  subtitle: Text(AppLocalizations.of(context)!.visualizerSmoothCurveSubtitle),
-                  value: ref.watch(finampSettingsProvider.visualizerUseSplines),
-                  onChanged: enabled ? FinampSetters.setVisualizerUseSplines : null,
-                ),
-                SwitchListTile.adaptive(
-                  title: Text(AppLocalizations.of(context)!.visualizerFill),
-                  value: ref.watch(finampSettingsProvider.visualizerFillEnabled),
-                  onChanged: enabled ? FinampSetters.setVisualizerFillEnabled : null,
-                ),
-                _VisualizerSlider(
-                  title: AppLocalizations.of(context)!.visualizerFillBottom,
-                  enabled: enabled,
-                  value: ref.watch(finampSettingsProvider.visualizerBottomOpacity),
-                  min: 0.0,
-                  max: 1.0,
-                  divisions: 20,
-                  format: _asPercent,
-                  onChanged: FinampSetters.setVisualizerBottomOpacity,
-                ),
-                _VisualizerSlider(
-                  title: AppLocalizations.of(context)!.visualizerFillTop,
-                  enabled: enabled,
-                  value: ref.watch(finampSettingsProvider.visualizerTopOpacity),
-                  min: 0.0,
-                  max: 1.0,
-                  divisions: 20,
-                  format: _asPercent,
-                  onChanged: FinampSetters.setVisualizerTopOpacity,
-                ),
-                _VisualizerSlider(
-                  title: AppLocalizations.of(context)!.visualizerOutline,
-                  subtitle: AppLocalizations.of(context)!.visualizerOutlineSubtitle,
-                  enabled: enabled,
-                  value: ref.watch(finampSettingsProvider.visualizerStrokeWidth),
-                  min: 0.0,
-                  max: 5.0,
-                  divisions: 10,
-                  format: (value) => value.toStringAsFixed(1),
-                  onChanged: FinampSetters.setVisualizerStrokeWidth,
-                ),
+                if (MilkdropShader.platformSupported) ...[const Divider(), const _AnimatedVisualSection()],
               ],
             ),
           ),
@@ -280,7 +211,7 @@ class _VisualizerPreview extends StatelessWidget {
               final item = snapshot.data;
               return Stack(
                 children: [
-                  if (enabled) const Positioned.fill(child: SpectrumVisualizer()),
+                  if (enabled) const Positioned.fill(child: SpectrumVisualizer(placement: SpectrumPlacement.preview)),
                   if (item != null)
                     Positioned(
                       left: 16.0,
@@ -392,6 +323,360 @@ class _VisualizerSlider extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+extension VisualizerStyleLabel on VisualizerStyle {
+  String label(AppLocalizations l10n) => switch (this) {
+    VisualizerStyle.curve => l10n.visualStyleCurve,
+    VisualizerStyle.bars => l10n.visualStyleBars,
+    VisualizerStyle.mirroredBars => l10n.visualStyleMirroredBars,
+    VisualizerStyle.radial => l10n.visualStyleRadial,
+    VisualizerStyle.wave => l10n.visualStyleWave,
+    VisualizerStyle.particles => l10n.visualStyleParticles,
+    VisualizerStyle.blob => l10n.visualStyleBlob,
+  };
+}
+
+/// Which style is drawn: one tap on a chip, and the editor below customises exactly that style.
+class _StylePicker extends ConsumerWidget {
+  const _StylePicker({required this.enabled});
+
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final current = ref.watch(finampSettingsProvider.visualizerStyle);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 4,
+        children: [
+          for (final style in VisualizerStyle.values)
+            ChoiceChip(
+              label: Text(style.label(l10n)),
+              selected: style == current,
+              onSelected: enabled ? (_) => FinampSetters.setVisualizerStyle(style) : null,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Everything that shapes the selected style, in four short groups. Values are kept per style (untouched ones follow
+/// the global defaults), so each style can have its own look.
+class _StyleEditor extends ConsumerWidget {
+  const _StyleEditor({required this.enabled});
+
+  final bool enabled;
+
+  static const _swatches = [
+    Color(0xFFFF5252),
+    Color(0xFFFF9800),
+    Color(0xFFFFD740),
+    Color(0xFF69F0AE),
+    Color(0xFF18FFFF),
+    Color(0xFF448AFF),
+    Color(0xFFB388FF),
+    Color(0xFFFF80AB),
+    Color(0xFFFFFFFF),
+  ];
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final g = ref.watch(finampSettingsProvider).value;
+    if (g == null) return const SizedBox.shrink();
+    final style = g.visualizerStyle;
+    final raw = ref.watch(finampSettingsProvider.visualizerStyleTuning);
+    final tune = VisualizerStyleTune.of(raw, style);
+
+    void save(VisualizerStyleTune value) => FinampSetters.setVisualizerStyleTuning(
+      VisualizerStyleTune.update(FinampSettingsHelper.finampSettings.visualizerStyleTuning, style, value),
+    );
+
+    Widget slider(String title, String key, double value, double min, double max, {String Function(double)? format}) {
+      return _VisualizerSlider(
+        title: title,
+        enabled: enabled,
+        value: value,
+        min: min,
+        max: max,
+        divisions: 20,
+        format: format ?? (v) => v.toStringAsFixed(2),
+        onChanged: (v) => save(tune.set(key, v)),
+      );
+    }
+
+    Widget group(String title, List<Widget> children) => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+        ),
+        ...children,
+      ],
+    );
+
+    final bars = style == VisualizerStyle.bars || style == VisualizerStyle.mirroredBars;
+    final filled = style == VisualizerStyle.curve || bars;
+    final fill = tune.fillEnabled ?? g.visualizerFillEnabled;
+    final heightApplies = style != VisualizerStyle.radial;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        group("Colour", [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: SegmentedButton<VisualizerColorMode>(
+              showSelectedIcon: false,
+              segments: const [
+                ButtonSegment(value: VisualizerColorMode.theme, label: Text("Theme")),
+                ButtonSegment(value: VisualizerColorMode.custom, label: Text("Custom")),
+                ButtonSegment(value: VisualizerColorMode.rainbow, label: Text("Rainbow")),
+              ],
+              selected: {tune.colorMode},
+              onSelectionChanged: enabled ? (v) => save(tune.set("colorMode", v.first.index)) : null,
+            ),
+          ),
+          if (tune.colorMode == VisualizerColorMode.custom)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  for (final color in _swatches)
+                    GestureDetector(
+                      onTap: enabled ? () => save(tune.set("color", color.toARGB32())) : null,
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            width: tune.customColor?.toARGB32() == color.toARGB32() ? 3 : 1,
+                            color: tune.customColor?.toARGB32() == color.toARGB32()
+                                ? Theme.of(context).colorScheme.primary
+                                : Colors.white24,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+        ]),
+        group("Reactivity", [
+          slider(
+            "Attack",
+            "attack",
+            tune.attack ?? (1 - (tune.smoothing ?? g.visualizerSmoothing)),
+            0.05,
+            1,
+            format: _asPercent,
+          ),
+          slider(
+            "Release",
+            "release",
+            tune.release ?? ((tune.smoothing ?? g.visualizerSmoothing) * 0.25),
+            0.02,
+            1,
+            format: _asPercent,
+          ),
+          slider(
+            "Treble boost",
+            "tilt",
+            tune.tilt,
+            -1,
+            1,
+            format: (v) => v == 0 ? "flat" : (v > 0 ? "+${v.toStringAsFixed(1)}" : v.toStringAsFixed(1)),
+          ),
+          slider("Contrast", "contrast", tune.contrast, 0.5, 2.5, format: (v) => v.toStringAsFixed(2)),
+          SwitchListTile.adaptive(
+            title: const Text("Auto gain"),
+            subtitle: const Text("Quiet tracks move as much as loud ones"),
+            value: tune.autoGain,
+            onChanged: enabled ? (v) => save(tune.set("autoGain", v)) : null,
+          ),
+        ]),
+        group("Size and motion", [
+          if (heightApplies)
+            slider(
+              l10n.visualizerHeight,
+              "heightFactor",
+              tune.heightFactor ?? g.visualizerHeightFactor,
+              0.1,
+              1,
+              format: _asPercent,
+            ),
+          slider(
+            l10n.visualizerScale,
+            "scale",
+            tune.scale ?? g.visualizerScale,
+            0.25,
+            2,
+            format: (v) => "${v.toStringAsFixed(2)}x",
+          ),
+          slider(
+            l10n.visualizerSmoothing,
+            "smoothing",
+            tune.smoothing ?? g.visualizerSmoothing,
+            0,
+            0.95,
+            format: _asPercent,
+          ),
+        ]),
+        group("Shape", [
+          if (style == VisualizerStyle.curve)
+            SwitchListTile.adaptive(
+              title: Text(l10n.visualizerSmoothCurve),
+              value: tune.useSplines ?? g.visualizerUseSplines,
+              onChanged: enabled ? (v) => save(tune.set("useSplines", v)) : null,
+            ),
+          if (bars) ...[
+            slider("Bar width", "barWidth", tune.barWidth, 0.2, 1, format: _asPercent),
+            slider("Roundness", "cornerRadius", tune.cornerRadius, 0, 1, format: _asPercent),
+          ],
+          if (style == VisualizerStyle.radial) ...[
+            slider("Ring size", "innerRadius", tune.innerRadius ?? 0.45, 0.2, 0.8, format: _asPercent),
+            slider(
+              "Spin",
+              "rotation",
+              tune.rotation,
+              0,
+              1.5,
+              format: (v) => v == 0 ? "off" : "${v.toStringAsFixed(1)}x",
+            ),
+          ],
+          if (style == VisualizerStyle.particles)
+            slider(
+              "Particle size",
+              "particleSize",
+              tune.particleSize,
+              0.4,
+              3,
+              format: (v) => "${v.toStringAsFixed(1)}x",
+            ),
+          if (filled || style == VisualizerStyle.wave)
+            slider(
+              l10n.visualizerOutline,
+              "strokeWidth",
+              tune.strokeWidth ?? g.visualizerStrokeWidth,
+              0,
+              5,
+              format: (v) => v.toStringAsFixed(1),
+            ),
+          if (filled)
+            SwitchListTile.adaptive(
+              title: Text(l10n.visualizerFill),
+              value: fill,
+              onChanged: enabled ? (v) => save(tune.set("fillEnabled", v)) : null,
+            ),
+          if (filled && fill) ...[
+            slider(
+              l10n.visualizerFillBottom,
+              "bottomOpacity",
+              tune.bottomOpacity ?? g.visualizerBottomOpacity,
+              0,
+              1,
+              format: _asPercent,
+            ),
+            slider(
+              l10n.visualizerFillTop,
+              "topOpacity",
+              tune.topOpacity ?? g.visualizerTopOpacity,
+              0,
+              1,
+              format: _asPercent,
+            ),
+          ],
+          if (style != VisualizerStyle.particles && style != VisualizerStyle.blob)
+            slider("Glow", "glow", tune.glow, 0, 1, format: (v) => v == 0 ? "off" : _asPercent(v)),
+        ]),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: TextButton(
+              onPressed: tune.isEmpty ? null : () => save(VisualizerStyleTune.none),
+              child: Text(l10n.resetToDefaults),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The animated visual: pick a preset (or let them cycle), and its own sliders appear below.
+class _AnimatedVisualSection extends ConsumerStatefulWidget {
+  const _AnimatedVisualSection();
+
+  @override
+  ConsumerState<_AnimatedVisualSection> createState() => _AnimatedVisualSectionState();
+}
+
+class _AnimatedVisualSectionState extends ConsumerState<_AnimatedVisualSection> {
+  int _editing = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final setting = ref.watch(finampSettingsProvider.milkdropPreset);
+    final shown = setting >= 0 ? setting % MilkdropPreset.values.length : _editing;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 0.0),
+          child: Text(l10n.visualAnimatedTitle, style: const TextStyle(fontWeight: FontWeight.w600)),
+        ),
+        SwitchListTile.adaptive(
+          title: Text(l10n.visualAnimatedOnCover),
+          subtitle: Text(l10n.visualAnimatedOnCoverSubtitle),
+          value: ref.watch(finampSettingsProvider.milkdropOnCover),
+          onChanged: FinampSetters.setMilkdropOnCover,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              ChoiceChip(
+                label: Text(l10n.visualAnimatedPresetCycle),
+                selected: setting < 0,
+                onSelected: (_) => FinampSetters.setMilkdropPreset(-1),
+              ),
+              for (final option in MilkdropPreset.values)
+                ChoiceChip(
+                  label: Text(option.label(l10n)),
+                  selected: setting >= 0 && shown == option.index,
+                  onSelected: (_) {
+                    setState(() => _editing = option.index);
+                    FinampSetters.setMilkdropPreset(option.index);
+                  },
+                ),
+            ],
+          ),
+        ),
+        // Tuning follows the chosen preset; while cycling, pick which one to edit with the chips above.
+        MilkdropTuningSliders(preset: MilkdropPreset.values[shown]),
+        SwitchListTile.adaptive(
+          title: Text(l10n.visualAnimatedLowPower),
+          subtitle: Text(l10n.visualAnimatedLowPowerSubtitle),
+          value: ref.watch(finampSettingsProvider.milkdropLowPower),
+          onChanged: FinampSetters.setMilkdropLowPower,
+        ),
+      ],
     );
   }
 }

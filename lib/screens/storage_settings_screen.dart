@@ -1,5 +1,6 @@
 import 'package:diapason/l10n/app_localizations.dart';
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/screens/cache_settings_screen.dart';
 import 'package:diapason/screens/downloads_settings_screen.dart';
@@ -100,59 +101,62 @@ class _StorageSettingsScreenState extends ConsumerState<StorageSettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 120),
         children: [
-          _header(theme, AppLocalizations.of(context)!.storageHeaderKept),
-          _SizeTile(
-            key: ValueKey("stream$_generation"),
-            icon: TablerIcons.music,
-            title: AppLocalizations.of(context)!.storageStreamed,
-            subtitle: AppLocalizations.of(context)!.storageStreamedSubtitle,
-            measure: () => GetIt.instance<StreamCacheService>().currentSizeBytes(),
-            onClear: () => _clear(
-              "Streamed track cache",
-              AppLocalizations.of(context)!.storageWhatStream,
-              () => GetIt.instance<StreamCacheService>().clear(),
-            ),
-            onOpen: () => Navigator.of(context).pushNamed(CacheSettingsScreen.routeName),
-          ),
-          _SizeTile(
-            key: ValueKey("art$_generation"),
-            icon: TablerIcons.photo,
-            title: AppLocalizations.of(context)!.storageCoverArt,
-            subtitle: AppLocalizations.of(context)!.storageCoverArtSubtitle,
-            measure: widget.coverArtBytes,
-            onClear: () =>
-                _clear("Cover art cache", AppLocalizations.of(context)!.storageWhatCoverArt, widget.clearCoverArt),
-          ),
-          _SizeTile(
-            key: ValueKey("logs$_generation"),
-            icon: TablerIcons.file_text,
-            title: AppLocalizations.of(context)!.storageLogs,
-            subtitle: AppLocalizations.of(context)!.storageLogsSubtitle,
-            measure: _logBytes,
-            clearLabel: AppLocalizations.of(context)!.storageDeleteOld,
-            onClear: () => _clear("Old log", AppLocalizations.of(context)!.storageWhatOldLog, () async {
-              final old = await _logFile("diapason-logs-old.txt");
-              if (old.existsSync()) await old.delete();
-            }),
-            onOpen: () => Navigator.of(context).pushNamed(LogsScreen.routeName),
-          ),
-          if (LocalYtDlpService.supported)
+          // A browser keeps nothing on disk for Diapason to measure or clear; only the log settings apply there.
+          if (!Platform.isWeb) ...[
+            _header(theme, AppLocalizations.of(context)!.storageHeaderKept),
             _SizeTile(
-              key: ValueKey("ytdlp$_generation"),
-              icon: TablerIcons.brand_youtube,
-              title: AppLocalizations.of(context)!.storageYtdlp,
-              subtitle: AppLocalizations.of(context)!.storageYtdlpSubtitle,
-              measure: () async => _dirBytes(await YtDlpPaths.managedDir()),
-              onOpen: () => Navigator.of(context).pushNamed(YtDlpSettingsScreen.routeName),
+              key: ValueKey("stream$_generation"),
+              icon: TablerIcons.music,
+              title: AppLocalizations.of(context)!.storageStreamed,
+              subtitle: AppLocalizations.of(context)!.storageStreamedSubtitle,
+              measure: () => GetIt.instance<StreamCacheService>().currentSizeBytes(),
+              onClear: () => _clear(
+                "Streamed track cache",
+                AppLocalizations.of(context)!.storageWhatStream,
+                () => GetIt.instance<StreamCacheService>().clear(),
+              ),
+              onOpen: () => Navigator.of(context).pushNamed(CacheSettingsScreen.routeName),
             ),
-          ListTile(
-            leading: const Icon(Icons.download),
-            title: Text(AppLocalizations.of(context)!.storageDownloadedMusic),
-            subtitle: Text(AppLocalizations.of(context)!.storageDownloadedMusicSubtitle),
-            trailing: const Icon(TablerIcons.chevron_right),
-            onTap: () => Navigator.of(context).pushNamed(DownloadsSettingsScreen.routeName),
-          ),
-          const Divider(height: 32),
+            _SizeTile(
+              key: ValueKey("art$_generation"),
+              icon: TablerIcons.photo,
+              title: AppLocalizations.of(context)!.storageCoverArt,
+              subtitle: AppLocalizations.of(context)!.storageCoverArtSubtitle,
+              measure: widget.coverArtBytes,
+              onClear: () =>
+                  _clear("Cover art cache", AppLocalizations.of(context)!.storageWhatCoverArt, widget.clearCoverArt),
+            ),
+            _SizeTile(
+              key: ValueKey("logs$_generation"),
+              icon: TablerIcons.file_text,
+              title: AppLocalizations.of(context)!.storageLogs,
+              subtitle: AppLocalizations.of(context)!.storageLogsSubtitle,
+              measure: _logBytes,
+              clearLabel: AppLocalizations.of(context)!.storageDeleteOld,
+              onClear: () => _clear("Old log", AppLocalizations.of(context)!.storageWhatOldLog, () async {
+                final old = await _logFile("diapason-logs-old.txt");
+                if (old.existsSync()) await old.delete();
+              }),
+              onOpen: () => Navigator.of(context).pushNamed(LogsScreen.routeName),
+            ),
+            if (LocalYtDlpService.supported)
+              _SizeTile(
+                key: ValueKey("ytdlp$_generation"),
+                icon: TablerIcons.brand_youtube,
+                title: AppLocalizations.of(context)!.storageYtdlp,
+                subtitle: AppLocalizations.of(context)!.storageYtdlpSubtitle,
+                measure: () async => _dirBytes(await YtDlpPaths.managedDir()),
+                onOpen: () => Navigator.of(context).pushNamed(YtDlpSettingsScreen.routeName),
+              ),
+            ListTile(
+              leading: const Icon(Icons.download),
+              title: Text(AppLocalizations.of(context)!.storageDownloadedMusic),
+              subtitle: Text(AppLocalizations.of(context)!.storageDownloadedMusicSubtitle),
+              trailing: const Icon(TablerIcons.chevron_right),
+              onTap: () => Navigator.of(context).pushNamed(DownloadsSettingsScreen.routeName),
+            ),
+            const Divider(height: 32),
+          ],
           _header(theme, AppLocalizations.of(context)!.storageLogDetail),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),

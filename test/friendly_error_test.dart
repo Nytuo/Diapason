@@ -23,8 +23,12 @@ void main() {
       expect(FriendlyError.message(const SocketException('Connection refused')), contains('refused the connection'));
     });
 
-    test('any other socket trouble', () {
-      expect(FriendlyError.message(const SocketException('Network is unreachable')), contains('Check your network'));
+    test('no route to the server', () {
+      expect(FriendlyError.message(const SocketException('Network is unreachable')), contains('No route to the server'));
+    });
+
+    test('any other socket trouble names the system error', () {
+      expect(FriendlyError.message(const SocketException('Connection reset by peer')), contains("Couldn't connect"));
     });
 
     test('a timeout', () {
@@ -141,7 +145,7 @@ void main() {
 
       expect(text, contains('refused the connection'));
       expect(records, hasLength(1));
-      expect(records.single.level, Level.WARNING);
+      expect(records.single.level, Level.SEVERE);
       expect(
         records.single.message,
         allOf(contains('Searching YouTube'), contains('connection'), contains('Connection refused')),

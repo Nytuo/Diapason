@@ -1,5 +1,5 @@
 import 'package:diapason/l10n/app_localizations.dart';
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/uploader/local_file_upload.dart';

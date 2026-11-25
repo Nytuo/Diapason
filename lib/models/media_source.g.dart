@@ -19,7 +19,7 @@ extension GetMediaSourceConfigCollection on Isar {
 
 const MediaSourceConfigSchema = CollectionSchema(
   name: r'MediaSourceConfig',
-  id: -1906117831632664255,
+  id: (0xE58C1BEE << 32 | 0x617F4941),
   properties: {
     r'accessToken': PropertySchema(
       id: 0,
@@ -80,7 +80,7 @@ const MediaSourceConfigSchema = CollectionSchema(
   idName: r'isarId',
   indexes: {
     r'sourceId': IndexSchema(
-      id: 2155220942429093580,
+      id: (0x1DE8E207 << 32 | 0x3DF7FECC),
       name: r'sourceId',
       unique: true,
       replace: true,
@@ -219,6 +219,8 @@ const _MediaSourceConfigkindEnumValueMap = {
   r'local': r'local',
   r'mpd': r'mpd',
   r'youtube': r'youtube',
+  r'dlna': r'dlna',
+  r'radio': r'radio',
 };
 const _MediaSourceConfigkindValueEnumMap = {
   r'jellyfin': MediaSourceKind.jellyfin,
@@ -227,6 +229,8 @@ const _MediaSourceConfigkindValueEnumMap = {
   r'local': MediaSourceKind.local,
   r'mpd': MediaSourceKind.mpd,
   r'youtube': MediaSourceKind.youtube,
+  r'dlna': MediaSourceKind.dlna,
+  r'radio': MediaSourceKind.radio,
 };
 
 Id _mediaSourceConfigGetId(MediaSourceConfig object) {

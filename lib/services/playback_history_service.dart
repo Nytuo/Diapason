@@ -4,13 +4,14 @@ import 'package:diapason/services/discovery/auto_radio_service.dart';
 import 'package:diapason/services/stats/stats_service.dart';
 import 'package:diapason/services/scrobbling/scrobble_service.dart';
 import 'dart:async';
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:diapason/services/backends/jellyfin_backend.dart';
 import 'package:diapason/services/backends/media_backend.dart';
-import 'package:diapason/services/discord_rpc.dart';
+import 'package:diapason/services/discord_rpc.dart'
+    if (dart.library.js_interop) 'package:diapason/services/discord_rpc_web.dart';
 import 'package:diapason/services/music_player_background_task.dart';
 import 'package:diapason/services/playon_service.dart';
 import 'package:diapason/services/queue_service.dart';

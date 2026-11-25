@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:collection/collection.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/finamp_models.dart';
@@ -116,7 +117,7 @@ class _ArtistChipContent extends StatelessWidget {
           borderRadius: _borderRadius,
           child: InkWell(
             // We shouldn't click through to artists if not passed one
-            onTap: !isArtist ? null : () => Navigator.of(context).pushNamed(ArtistScreen.routeName, arguments: item),
+            onTap: !isArtist ? null : () => DesktopRouter.pushNamed(context, ArtistScreen.routeName, arguments: item),
             borderRadius: _borderRadius,
             child: Row(
               mainAxisSize: MainAxisSize.min,

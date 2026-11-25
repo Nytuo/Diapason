@@ -39,7 +39,7 @@ void main() {
       expect(s.youtubeShowHits, isTrue);
       expect(s.youtubeShowNew, isTrue);
       expect(s.youtubeSearchByDefault, isFalse);
-      expect(s.logLevel, 'all');
+      expect(s.logLevel, 'auto');
       expect(s.ytdlpConfigJson, isEmpty);
     });
   });
@@ -113,7 +113,7 @@ void main() {
 
       expect(loaded.uploaderYtProxy, isTrue, reason: 'default, not the false that was stored');
       expect(loaded.youtubeResultCount, 20);
-      expect(loaded.logLevel, 'all');
+      expect(loaded.logLevel, 'auto');
       expect(loaded.uploaderWifiOnly, isFalse);
       expect(loaded.downloadLocationsMap, isNotEmpty, reason: 'and the old data itself is intact');
     });
@@ -168,11 +168,14 @@ void main() {
     final before = Logger.root.level;
     tearDown(() => Logger.root.level = before);
 
-    test('maps the saved choice to a logger level, falling back to everything', () {
-      expect(LogDetail.fromId('info').level, Level.INFO);
-      expect(LogDetail.fromId('warning').level, Level.WARNING);
-      expect(LogDetail.fromId('all').level, Level.ALL);
-      expect(LogDetail.fromId('garbage').level, Level.ALL);
+    test('maps the saved choice to a logger level, falling back to automatic', () {
+      expect(LogDetail.fromId('errors').effectiveLevel, Level.SEVERE);
+      expect(LogDetail.fromId('info').effectiveLevel, Level.INFO);
+      expect(LogDetail.fromId('warning').effectiveLevel, Level.WARNING);
+      expect(LogDetail.fromId('all').effectiveLevel, Level.ALL);
+      expect(LogDetail.fromId('garbage'), LogDetail.auto);
+      // Tests run as a debug build: automatic logs everything there (errors only in release).
+      expect(LogDetail.auto.effectiveLevel, Level.ALL);
     });
 
     test('applying it changes what the app logs', () {

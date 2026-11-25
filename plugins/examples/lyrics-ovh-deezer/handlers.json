@@ -1,0 +1,10 @@
+{
+  "lyrics": {
+    "request": { "url": "https://api.lyrics.ovh/v1/{artist}/{title}" },
+    "response": { "plain": "$.lyrics" }
+  },
+  "cover_art": {
+    "request": { "url": "https://api.deezer.com/search/album?limit=3&q={artist}%20{album}" },
+    "response": { "urls": "$.data[*].cover_xl" }
+  }
+}

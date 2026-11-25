@@ -1,0 +1,19 @@
+{
+  "manifestVersion": 1,
+  "id": "org.diapason.example.lyrics-ovh-deezer",
+  "name": "lyrics.ovh + Deezer covers",
+  "version": "1.0.0",
+  "author": "Diapason",
+  "description": "Example declarative plugin: plain lyrics from lyrics.ovh and cover art from Deezer, for items that have none.",
+  "homepage": "https://github.com/Nytuo/Diapason",
+  "minAppVersion": "0.11.0",
+  "runtime": "declarative",
+  "entry": "handlers.json",
+  "permissions": [
+    { "type": "network", "hosts": ["api.lyrics.ovh", "api.deezer.com", "*.dzcdn.net"] }
+  ],
+  "extensions": [
+    { "point": "lyrics", "title": "lyrics.ovh" },
+    { "point": "cover_art", "title": "Deezer" }
+  ]
+}

@@ -6,6 +6,7 @@ import 'package:file/file.dart' as cache;
 import 'package:file/local.dart';
 // Directly use LocalFile to avoid touching every cached file on initialization
 import 'package:file/src/backends/local/local_file.dart';
+import 'package:diapason/services/plugins/plugins.dart';
 import 'package:diapason/services/theme_provider.dart';
 import 'package:diapason/services/youtube_service.dart';
 import 'package:flutter/cupertino.dart';
@@ -49,6 +50,8 @@ class AlbumImageRequest {
 }
 
 Future<void> initImageCache() async {
+  // The web build has no disk cache to warm up; the browser caches images itself.
+  if (kIsWeb) return;
   await _imageCache.config.repo.open();
   final entries = await _imageCache.config.repo.getAllObjects();
   final basePath = path_helper.join((await getTemporaryDirectory()).path, _imageCache.config.cacheKey);
@@ -67,6 +70,7 @@ Future<void> initImageCache() async {
 
 /// Disk space used by cached cover art.
 Future<int> albumImageCacheBytes() async {
+  if (kIsWeb) return 0;
   final dir = Directory(path_helper.join((await getTemporaryDirectory()).path, _imageCache.config.cacheKey));
   if (!dir.existsSync()) return 0;
   var total = 0;
@@ -129,6 +133,14 @@ AlbumImageInfo _buildAlbumImage(Ref ref, AlbumImageRequest request, void Functio
   });
 
   if (request.item.imageId == null) {
+    // No art from the library: a cover art plugin may have some. Shown once found, nothing changes otherwise.
+    if (PluginCoverArt.available) {
+      unawaited(
+        PluginCoverArt.lookup(request.item).then((url) {
+          if (url != null) publish(AlbumImageInfo(_networkThumb(url, request), request, url, fullQuality: false));
+        }),
+      );
+    }
     return AlbumImageInfo.empty(request);
   }
 
@@ -176,7 +188,8 @@ AlbumImageInfo _buildAlbumImage(Ref ref, AlbumImageRequest request, void Functio
         ? aggregate.imageHeaders(request.item)
         : const <String, String>{};
 
-    if (request.fullQuality) {
+    // A browser can't read the cache's files back as FileImages, so the web build always uses network images.
+    if (request.fullQuality && !kIsWeb) {
       // If we want full quality player images, retrieve them via the image cache instead of linking directly.
       // In most cases, the initial null value will only be seen by the precache logic.
       Future.sync(() async {
@@ -236,6 +249,15 @@ AlbumImageInfo _buildAlbumImage(Ref ref, AlbumImageRequest request, void Functio
     }
   }
   return AlbumImageInfo(out, request, Uri.file(downloadedImage.path), fullQuality: request.fullQuality);
+}
+
+ImageProvider _networkThumb(Uri url, AlbumImageRequest request) {
+  ImageProvider image = CachedImage(NetworkImage(url.toString(), scale: 0.25), url.toString());
+  final size = request.maxWidth ?? request.maxHeight;
+  if (size != null && size > 0) {
+    image = ResizeImage(image, width: size * 2, height: size * 2, policy: ResizeImagePolicy.fit);
+  }
+  return image;
 }
 
 class CachedImage extends ImageProvider<CachedImage> {
@@ -331,6 +353,9 @@ class StubImageCache implements BaseCacheManager {
 
   @override
   Future<FileInfo?> getFileFromMemory(String key) {
+    // The web build hands audio_service network art (there's no file cache to point it at). A miss lets it publish
+    // the item right away; the browser's Media Session loads the artwork URL itself.
+    if (kIsWeb) return Future.value(null);
     throw UnsupportedError("This cache should not be used");
   }
 

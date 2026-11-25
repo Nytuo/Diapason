@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 import 'dart:typed_data';
 
 import 'package:diapason/services/finamp_settings_helper.dart';

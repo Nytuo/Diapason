@@ -1,3 +1,5 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
+import 'package:diapason/services/web/web_server_preset.dart';
 import 'package:diapason/components/SettingsScreen/logout_list_tile.dart';
 import 'package:diapason/components/SourcesSettingsScreen/source_form.dart';
 import 'package:diapason/l10n/app_localizations.dart';
@@ -43,9 +45,13 @@ class _SourcesSettingsScreenState extends State<SourcesSettingsScreen> {
       MediaSourceKind.plex,
       MediaSourceKind.local,
       MediaSourceKind.mpd,
-    ];
+      MediaSourceKind.dlna,
+    ].where((kind) => kind.isAvailableHere).toList();
+    // A locked web deployment only ever talks to its preset server.
+    final preset = WebServerPreset.current;
+    if (preset != null && preset.locked) offeredKinds.retainWhere((kind) => kind == preset.kind);
 
-    final kind = await showModalBottomSheet<MediaSourceKind>(
+    final kind = await showAdaptiveModalSheet<MediaSourceKind>(
       context: context,
       builder: (context) => SafeArea(
         child: Column(
@@ -71,16 +77,14 @@ class _SourcesSettingsScreenState extends State<SourcesSettingsScreen> {
     if (kind == null || !mounted) return;
 
     if (kind == MediaSourceKind.jellyfin) {
-      await Navigator.of(
-        context,
-      ).push<void>(MaterialPageRoute(builder: (context) => const LoginScreen(jellyfinOnly: true)));
+      await DesktopRouter.pushPage<void>(context, (context) => const LoginScreen(jellyfinOnly: true));
       await _service.syncJellyfinSource();
       if (!mounted) return;
       _refresh();
       return;
     }
 
-    await Navigator.of(context).push<void>(MaterialPageRoute(builder: (context) => EditSourceScreen(kind: kind)));
+    await DesktopRouter.pushPage<void>(context, (context) => EditSourceScreen(kind: kind));
     _refresh();
   }
 
@@ -89,16 +93,12 @@ class _SourcesSettingsScreenState extends State<SourcesSettingsScreen> {
       await _showJellyfinSourceActions(source);
       return;
     }
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        builder: (context) => EditSourceScreen(kind: source.kind, existing: source),
-      ),
-    );
+    await DesktopRouter.pushPage<void>(context, (context) => EditSourceScreen(kind: source.kind, existing: source));
     _refresh();
   }
 
   Future<void> _showJellyfinSourceActions(MediaSourceConfig source) async {
-    final action = await showModalBottomSheet<_JellyfinSourceAction>(
+    final action = await showAdaptiveModalSheet<_JellyfinSourceAction>(
       context: context,
       builder: (context) => SafeArea(
         child: Column(

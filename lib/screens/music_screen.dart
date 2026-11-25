@@ -1,3 +1,4 @@
+import 'package:diapason/components/mobile_ambient_theme.dart';
 import 'package:diapason/services/shortcuts/shortcut_service.dart';
 import 'dart:async';
 import 'package:diapason/components/MusicScreen/discover_tab_view.dart';
@@ -6,7 +7,7 @@ import 'package:diapason/components/MusicScreen/search_all_results.dart';
 import 'package:diapason/components/MusicScreen/youtube_results.dart';
 import 'package:diapason/services/youtube/youtube_availability.dart';
 import 'package:diapason/components/MusicScreen/youtube_tab_view.dart';
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/components/AddToPlaylistScreen/new_playlist_dialog.dart';
 import 'package:diapason/components/HomeScreen/finamp_music_screen_header.dart';
@@ -113,7 +114,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
     } else {
       final tabs = ref
           .watch(finampSettingsProvider.tabOrder)
-          .where((x) => x.isTab)
+          .where((x) => x.isTab && x.isAvailableHere)
           .where((e) => ref.watch(finampSettingsProvider.select((value) => value.value?.showTabs[e])) ?? false)
           .where((e) => e != ContentType.youtube || ref.watch(youTubeAvailableProvider));
 
@@ -268,6 +269,7 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
             return order.where(
               (tab) =>
                   (tab != ContentType.youtube || youTubeAvailable) &&
+                  tab.isAvailableHere &&
                   (ref.watch(finampSettingsProvider.showTabs(tab)) ?? DefaultSettings.showTabs[tab] ?? false),
             );
           }();
@@ -411,6 +413,8 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
                     Expanded(
                       // Prevent track highlight background from showing on header
                       child: Material(
+                        // See-through on the ambient look, so the lists sit on the background.
+                        type: translucentSurfaces(context) ? MaterialType.transparency : MaterialType.canvas,
                         child: MusicScreenTabView(
                           refresh: refreshMap[tabType],
                           allowTrackGestures: widget.singleTabConfig != null,
@@ -485,8 +489,12 @@ class _MusicScreenState extends ConsumerState<MusicScreen> with TickerProviderSt
         ),
         Expanded(
           child: switch (source) {
-            SearchSource.youtube => Material(child: YouTubeSearchResults(query: searchQuery ?? "")),
+            SearchSource.youtube => Material(
+              type: translucentSurfaces(context) ? MaterialType.transparency : MaterialType.canvas,
+              child: YouTubeSearchResults(query: searchQuery ?? ""),
+            ),
             SearchSource.all => Material(
+              type: translucentSurfaces(context) ? MaterialType.transparency : MaterialType.canvas,
               child: SearchAllResults(
                 query: searchQuery ?? "",
                 // "See all" drops to the library filter view on the matching tab.

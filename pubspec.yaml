@@ -22,10 +22,10 @@ dependencies:
   # FLAC seeking). See packages/README.md.
   just_audio:
     path: packages/just_audio
+  # Vendored copy of Komodo5197/just_audio_media_kit (feat/queue-shuffle @ 8359da2) with a hook to reach the
+  # libmpv players (bit-perfect output, signal path). See packages/README.md.
   just_audio_media_kit:
-    git:
-      url: https://github.com/Komodo5197/just_audio_media_kit.git
-      ref: feat/queue-shuffle
+    path: packages/just_audio_media_kit
 
   media_kit_libs_linux: ^1.2.1
   media_kit_libs_windows_audio:
@@ -159,6 +159,9 @@ dependencies:
     sdk: flutter
   flutter_native_splash: ^2.4.7
   aptabase_flutter: ^0.5.0
+  wasd: ^0.6.2
+  kuromoji: ^1.0.5
+  kana_kit: ^2.1.1
 
 dev_dependencies:
   flutter_test:
@@ -199,6 +202,8 @@ flutter:
     - assets/icon/icon_combined.png
     - assets/icon/icon_square_bg-white.png
     - assets/icon/icon_white_noborder.png
+  shaders:
+    - shaders/milkdrop.frag
   generate: true
 
 flutter_launcher_icons:

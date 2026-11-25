@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/components/YtDlp/ytdlp_install_dialog.dart';
 import 'package:diapason/screens/uploader_settings_screen.dart';
 import 'package:diapason/screens/ytdlp_settings_screen.dart';
@@ -53,11 +54,11 @@ class YouTubeSetupView extends StatelessWidget {
                         ),
                       if (LocalYtDlpService.supported)
                         OutlinedButton(
-                          onPressed: () => Navigator.of(context).pushNamed(YtDlpSettingsScreen.routeName),
+                          onPressed: () => DesktopRouter.pushNamed(context, YtDlpSettingsScreen.routeName),
                           child: const Text("yt-dlp settings"),
                         ),
                       OutlinedButton.icon(
-                        onPressed: () => Navigator.of(context).pushNamed(UploaderSettingsScreen.routeName),
+                        onPressed: () => DesktopRouter.pushNamed(context, UploaderSettingsScreen.routeName),
                         icon: const Icon(TablerIcons.cloud_upload),
                         label: const Text("Use an uploader"),
                       ),

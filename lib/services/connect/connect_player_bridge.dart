@@ -2,6 +2,7 @@ import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
+import 'package:diapason/services/connect/connect_library.dart';
 import 'package:diapason/services/connect/connect_models.dart';
 import 'package:diapason/services/connect/connect_service.dart';
 import 'package:diapason/services/connect/connect_source_mapping.dart';
@@ -63,6 +64,22 @@ class ConnectPlayerBridge {
     _connect.onPlayQueue = _handlePlayQueue;
     _connect.queueProvider = () => localConnectQueue() ?? const ConnectQueue(items: [], index: 0, position: 0);
     _connect.libraryProvider = _libraryForCompanions;
+    _connect.browseProvider = _browse;
+    _connect.artProvider = (id, size) => artworkBytes(id, size: size);
+  }
+
+  /// Nothing playing here, but the library can still be browsed.
+  static const _idle = ConnectStatus(
+    song: null,
+    state: "stopped",
+    position: 0,
+    volume: 1,
+    protocol: connectProtocolVersion,
+  );
+
+  Future<List<ConnectBrowseItem>> _browse(ConnectBrowseRequest request) async {
+    final items = await browseLibraryItems(request);
+    return items.map(toBrowseItem).toList();
   }
 
   static const _libraryLimit = 300;
@@ -105,12 +122,12 @@ class ConnectPlayerBridge {
 
   ConnectStatus _currentStatus() {
     // A device that is itself controlling another one reports nothing of its own.
-    if (RemotePlayback.current?.active ?? false) return ConnectStatus.stopped;
+    if (RemotePlayback.current?.active ?? false) return _idle;
 
     final current = _queue.getQueue().currentTrack;
     final state = _player.playbackState.valueOrNull;
 
-    if (current == null) return ConnectStatus.stopped;
+    if (current == null) return _idle;
 
     // Answered on every status poll: work the queue version out from the ids alone instead of building (and copying)
     // the whole shared queue, which can hold thousands of tracks.
@@ -143,6 +160,7 @@ class ConnectPlayerBridge {
       queueIndex: queueIndex,
       shuffle: _queue.playbackOrder == FinampPlaybackOrder.shuffled,
       repeat: _queue.loopMode.name,
+      protocol: connectProtocolVersion,
     );
   }
 
@@ -217,6 +235,10 @@ class ConnectPlayerBridge {
         await _queue.reorderByOffset((args["from"] as num?)?.toInt() ?? 0, (args["to"] as num?)?.toInt() ?? 0);
       case "clearNextUp":
         await _queue.clearNextUp();
+      case "playItem":
+        if (!await playLibraryItems(args, fallbackSource: connectSource)) {
+          _log.warning("A controller asked to play items that are not in this device's library");
+        }
       default:
         _log.fine("Ignoring unknown Connect command '${command.action}'");
     }

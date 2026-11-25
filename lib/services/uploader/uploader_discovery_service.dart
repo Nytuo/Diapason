@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:diapason/services/no_network_guard.dart';
 import 'package:diapason/services/connect/connect_mdns.dart';
 import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:flutter/foundation.dart';
@@ -41,7 +42,7 @@ class UploaderDiscoveryService {
   bool get isDiscovering => _discovery != null || _tvOs != null;
 
   Future<void> start() async {
-    if (isDiscovering) return;
+    if (isDiscovering || NoNetworkGuard.active) return;
     devices.value = const [];
     if (AppleTvAudioChannel.isSupported) {
       final mdns = TvOsMdns();

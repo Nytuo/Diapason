@@ -1,7 +1,9 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/screens/desktop/desktop_theme.dart';
 import 'package:diapason/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:window_manager/window_manager.dart';
 
 class DesktopHeaderBar extends StatelessWidget {
   const DesktopHeaderBar({
@@ -20,30 +22,30 @@ class DesktopHeaderBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = DesktopThemeScope.of(context);
-    return Container(
-      height: 60,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: BoxDecoration(
-        color: p.bg,
-        border: Border(bottom: BorderSide(color: p.borderSubtle)),
-      ),
-      child: Row(
-        children: [
-          Text(
-            title,
-            style: TextStyle(color: p.textPrimary, fontSize: 15, fontWeight: FontWeight.bold, letterSpacing: -0.2),
+    // Sits inside the content panel, on its fill: no background of its own.
+    return DragToMoveArea(
+      child: SizedBox(
+        height: DesktopMetrics.headerHeight,
+        child: Padding(
+          padding: const EdgeInsets.only(left: DesktopMetrics.pagePadding, right: 14, top: 6),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: p.title),
+              ),
+              const SizedBox(width: 16),
+              _SearchTrigger(query: query, onOpen: onOpenSearch, onClear: onClearSearch),
+              const SizedBox(width: 8),
+              IconButton(
+                tooltip: "Settings",
+                iconSize: 18,
+                color: p.textSecondary,
+                icon: const Icon(TablerIcons.settings),
+                onPressed: () => DesktopRouter.pushNamed(context, SettingsScreen.routeName),
+              ),
+            ],
           ),
-          const Spacer(),
-          _SearchTrigger(query: query, onOpen: onOpenSearch, onClear: onClearSearch),
-          const SizedBox(width: 8),
-          IconButton(
-            tooltip: "Settings",
-            iconSize: 18,
-            color: p.textSecondary,
-            icon: const Icon(TablerIcons.settings),
-            onPressed: () => Navigator.of(context).pushNamed(SettingsScreen.routeName),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -67,13 +69,13 @@ class _SearchTrigger extends StatelessWidget {
       message: "Search (${mac ? '⌘' : 'Ctrl+'}K)",
       child: Material(
         color: p.surface,
-        shape: StadiumBorder(side: BorderSide(color: active ? p.accent : p.border)),
+        shape: StadiumBorder(side: BorderSide(color: active ? p.accent : p.borderSubtle)),
         child: InkWell(
           customBorder: const StadiumBorder(),
           onTap: onOpen,
           child: SizedBox(
             width: 300,
-            height: 38,
+            height: 36,
             child: Row(
               children: [
                 const SizedBox(width: 12),

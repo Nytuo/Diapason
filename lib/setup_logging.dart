@@ -16,7 +16,8 @@ Future<void> setupLogging() async {
   Logger.root.level = kDebugMode ? Level.ALL : Level.SEVERE;
   Logger.root.onRecord.listen((event) {
     // We don't want to print log messages from the Flutter logger since Flutter prints logs by itself
-    if (kDebugMode && event.loggerName != "Flutter") {
+    // The browser console is the only place a web build's logs can be read live.
+    if ((kDebugMode || kIsWeb) && event.loggerName != "Flutter") {
       debugPrint("[${event.loggerName}/${event.level.name}] ${event.time}: ${event.message}");
     }
     if (kDebugMode && event.loggerName != "Flutter" && event.getStack != null) {

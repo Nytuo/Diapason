@@ -1,9 +1,9 @@
+import 'package:diapason/utils/isar_availability.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/jellyfin_api.dart' as jellyfin_api;
 import 'package:diapason/services/jellyfin_api_helper.dart';
-import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:get_it/get_it.dart';
@@ -36,7 +36,8 @@ class FinampUserHelper {
     authorizationHeader = await jellyfin_api.getAuthHeader();
   }
 
-  static bool get _isTvOS => AppleTvAudioChannel.isSupported;
+  /// tvOS and the web have no Isar; they keep this data in Hive instead.
+  static bool get _isTvOS => !isarAvailable;
 
   final Isar? _isar = _isTvOS ? null : GetIt.instance<Isar>();
 
@@ -54,7 +55,7 @@ class FinampUserHelper {
   /// Loads the FinampUser with the id from CurrentUserId. Returns null if no
   /// user exists.
   FinampUser? get currentUser => _currentUserCache ??= _isTvOS
-      ? (currentUserId == null ? null : _tvOSUsers.get(currentUserId))
+      ? _copyOf(currentUserId == null ? null : _tvOSUsers.get(currentUserId))
       : _isar!.finampUsers.getSync(0);
   FinampUser? _currentUserCache;
 
@@ -65,6 +66,30 @@ class FinampUserHelper {
   static final Provider<FinampUser?> finampCurrentUserProvider = Provider((ref) {
     return GetIt.instance<FinampUserHelper>().currentUser;
   });
+
+  /// Hive hands back the same in-memory object on every read, and Riverpod only notifies on a different value, so the
+  /// Hive path reads a fresh copy (Isar already returns a new object on each read).
+  static FinampUser? _copyOf(FinampUser? user) => user == null
+      ? null
+      : FinampUser(
+          id: user.id,
+          publicAddress: user.publicAddress,
+          localAddress: user.localAddress,
+          preferLocalNetwork: user.preferLocalNetwork,
+          isLocal: user.isLocal,
+          accessToken: user.accessToken,
+          serverId: user.serverId,
+          currentViewId: user.currentViewId,
+          views: user.views,
+        );
+
+  /// The Hive path's stand-in for the Isar watcher in the constructor: drop the cached user and refresh its readers.
+  void _onHiveUserChanged() {
+    _currentUserCache = null;
+    if (GetIt.instance.isRegistered(type: ProviderContainer)) {
+      GetIt.instance<ProviderContainer>().invalidate(finampCurrentUserProvider);
+    }
+  }
 
   Future<void> migrateFromHive() async {
     if (_isTvOS) return; // tvOS already stores users straight in these boxes.
@@ -86,7 +111,7 @@ class FinampUserHelper {
     if (_isTvOS) {
       await _tvOSUsers.put(newUser.id, newUser);
       await _tvOSCurrentUserId.put("CurrentUserId", newUser.id);
-      _currentUserCache = null;
+      _onHiveUserChanged();
     } else {
       _isar!.writeTxnSync(() {
         _isar.finampUsers.putSync(newUser, saveLinks: false);
@@ -127,7 +152,7 @@ class FinampUserHelper {
   void _persistCurrentUser(FinampUser user) {
     if (_isTvOS) {
       _tvOSUsers.put(user.id, user);
-      _currentUserCache = null;
+      _onHiveUserChanged();
     } else {
       _isar!.writeTxnSync(() {
         _isar.finampUsers.putSync(user, saveLinks: false);
@@ -150,6 +175,7 @@ class FinampUserHelper {
     }
     if (_currentUserCache?.id == id) {
       _currentUserCache = null;
+      if (_isTvOS) _onHiveUserChanged();
     }
   }
 }

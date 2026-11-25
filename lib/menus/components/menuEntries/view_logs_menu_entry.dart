@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/menus/components/menuEntries/menu_entry.dart';
 import 'package:diapason/screens/logs_screen.dart';
@@ -18,7 +19,7 @@ class ViewLogsMenuEntry extends ConsumerWidget implements HideableMenuEntry {
         title: AppLocalizations.of(context)!.snackbarOptionsMenuViewLogsButton,
         onTap: () {
           Navigator.of(context).pop();
-          Navigator.of(context).pushNamed(LogsScreen.routeName);
+          DesktopRouter.pushNamed(context, LogsScreen.routeName);
         },
       ),
     );

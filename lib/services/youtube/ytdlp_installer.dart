@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 
 import 'package:archive/archive.dart';
 import 'package:crypto/crypto.dart';

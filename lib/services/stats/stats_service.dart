@@ -1,6 +1,7 @@
 import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/models/playback_event.dart';
+import 'package:diapason/utils/isar_availability.dart';
 import 'package:diapason/services/scrobbling/scrobble_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
@@ -84,7 +85,7 @@ class StatsService {
   Isar get _isar => GetIt.instance<Isar>();
 
   Future<void> record(BaseItemDto item, {required Duration played, DateTime? startedAt}) async {
-    if (played < const Duration(seconds: 5)) return;
+    if (played < const Duration(seconds: 5) || !isarAvailable) return;
 
     final duration = item.runTimeTicksDuration();
     final event = PlaybackEvent(
@@ -110,6 +111,7 @@ class StatsService {
   }
 
   Future<List<PlaybackEvent>> eventsIn(WrappedPeriod period, [DateTime? now]) async {
+    if (!isarAvailable) return const [];
     final range = period.range(now);
     return _isar.playbackEvents
         .filter()
@@ -198,6 +200,7 @@ class StatsService {
   }
 
   Future<void> clear() async {
+    if (!isarAvailable) return;
     await _isar.writeTxn(() => _isar.playbackEvents.clear());
     _log.info("Cleared the listening history");
   }

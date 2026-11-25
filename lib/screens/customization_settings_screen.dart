@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:collection/collection.dart';
 import 'package:diapason/components/LayoutSettingsScreen/CustomizationSettingsScreen/playback_speed_control_visibility_dropdown_list_tile.dart';

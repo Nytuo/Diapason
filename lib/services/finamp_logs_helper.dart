@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 import 'dart:math';
 
 import 'package:archive/archive_io.dart';
@@ -20,6 +21,8 @@ class FinampLogsHelper {
 
   Future<void> openLog() async {
     WidgetsFlutterBinding.ensureInitialized();
+    // A browser has no file system: logs only live in memory (and the console).
+    if (kIsWeb) return;
     final basePath = (Platform.isAndroid || Platform.isIOS)
         ? await getApplicationDocumentsDirectory()
         : await getApplicationSupportDirectory();
@@ -92,6 +95,12 @@ class FinampLogsHelper {
 
   /// Write logs to a file and share the file
   Future<void> shareLogs() async {
+    if (kIsWeb) {
+      final (zipName, internalName) = _logExportName();
+      final xFile = XFile.fromData(await _getLogsArchive(internalName), name: zipName, mimeType: "application/zip");
+      await SharePlus.instance.share(ShareParams(files: [xFile], fileNameOverrides: [zipName]));
+      return;
+    }
     final tempDir = await getTemporaryDirectory();
     final (zipName, internalName) = _logExportName();
     final tempFile = File(path_helper.join(tempDir.path, zipName));
@@ -113,7 +122,7 @@ class FinampLogsHelper {
       fileName: zipName,
       // initialDirectory is ignored on mobile
       // initialDirectory only seems to work with a trailing separator for some reason
-      initialDirectory: (await getApplicationDocumentsDirectory()).path + path_helper.separator,
+      initialDirectory: kIsWeb ? null : (await getApplicationDocumentsDirectory()).path + path_helper.separator,
       bytes: await _getLogsArchive(internalName),
     );
   }

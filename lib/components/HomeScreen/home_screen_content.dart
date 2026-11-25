@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'dart:math';
 import 'dart:ui';
 
@@ -18,7 +19,6 @@ import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/models/music_models.dart';
 import 'package:diapason/screens/home_screen_settings_screen.dart';
-import 'package:diapason/screens/music_screen.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/music_screen_provider.dart';
 import 'package:diapason/services/queue_service.dart';
@@ -162,7 +162,7 @@ class _HomeScreenContentState extends ConsumerState<HomeScreenContent>
                 child: CTASmall(
                   text: context.l10n.customizeHomeScreen,
                   icon: TablerIcons.settings,
-                  onPressed: () => Navigator.pushNamed(context, HomeScreenSettingsScreen.routeName),
+                  onPressed: () => DesktopRouter.pushNamed(context, HomeScreenSettingsScreen.routeName),
                 ),
               ),
             ),
@@ -253,16 +253,12 @@ class HomeScreenSection extends ConsumerWidget {
           ShowAllButton(
             label: context.l10n.showAll,
             onPressed: () {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute<MusicScreen>(builder: (context) => MusicScreen(singleTabConfig: sectionInfo)));
+              openSectionScreen(context, sectionInfo);
             },
           ),
         ],
         onTap: () {
-          Navigator.of(
-            context,
-          ).push(MaterialPageRoute<MusicScreen>(builder: (context) => MusicScreen(singleTabConfig: sectionInfo)));
+          openSectionScreen(context, sectionInfo);
         },
         onSecondaryTap: () => showModalHomeSectionMenu(context: context, section: sectionInfo),
         onDismiss: null,

@@ -19,7 +19,7 @@ extension GetPinnedItemCollection on Isar {
 
 const PinnedItemSchema = CollectionSchema(
   name: r'PinnedItem',
-  id: 8472166410475262939,
+  id: (0x75932E76 << 32 | 0x7E5FD3DB),
   properties: {
     r'itemId': PropertySchema(id: 0, name: r'itemId', type: IsarType.string),
     r'name': PropertySchema(id: 1, name: r'name', type: IsarType.string),
@@ -48,7 +48,7 @@ const PinnedItemSchema = CollectionSchema(
   idName: r'isarId',
   indexes: {
     r'itemId': IndexSchema(
-      id: -5342806140158601489,
+      id: (0xB5DA8A1F << 32 | 0x781216EF),
       name: r'itemId',
       unique: true,
       replace: true,
@@ -1399,7 +1399,7 @@ extension GetSearchHistoryEntryCollection on Isar {
 
 const SearchHistoryEntrySchema = CollectionSchema(
   name: r'SearchHistoryEntry',
-  id: -924937489064202741,
+  id: (0xF329F641 << 32 | 0x14E2EE0B),
   properties: {
     r'query': PropertySchema(id: 0, name: r'query', type: IsarType.string),
     r'searchedAt': PropertySchema(
@@ -1416,7 +1416,7 @@ const SearchHistoryEntrySchema = CollectionSchema(
   idName: r'isarId',
   indexes: {
     r'query': IndexSchema(
-      id: -3238105102146786367,
+      id: (0xD30FF090 << 32 | 0xD9292BC1),
       name: r'query',
       unique: true,
       replace: true,

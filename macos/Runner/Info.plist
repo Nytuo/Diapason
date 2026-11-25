@@ -57,7 +57,7 @@
 		</dict>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Diapason uses the local network to find and control other Diapason devices (Diapason Connect).</string>
+	<string>Diapason uses the local network to find and control other Diapason devices (Diapason Connect) and to find and play from DLNA/UPnP media servers.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_diapason-connect._tcp</string>

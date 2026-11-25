@@ -1,4 +1,5 @@
 import 'package:diapason/components/SourcesSettingsScreen/source_form.dart';
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/media_source.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -26,13 +27,13 @@ class LoginSourceTypePage extends StatelessWidget {
           ),
           const SizedBox(height: 32.0),
 
-          for (final kind in MediaSourceKind.values.where((k) => k.isConfigurable))
+          for (final kind in MediaSourceKind.values.where((k) => k.isConfigurable && k.isAvailableHere))
             Card(
               margin: const EdgeInsets.only(bottom: 12.0),
               child: ListTile(
                 leading: Icon(sourceKindPresentation(kind, context).icon, size: 32.0),
                 title: Text(sourceKindPresentation(kind, context).label),
-                subtitle: Text(_describe(kind)),
+                subtitle: Text(_describe(kind, context)),
                 trailing: const Icon(TablerIcons.chevron_right),
                 onTap: () => onKindSelected(kind),
               ),
@@ -42,13 +43,14 @@ class LoginSourceTypePage extends StatelessWidget {
     );
   }
 
-  static String _describe(MediaSourceKind kind) => switch (kind) {
+  static String _describe(MediaSourceKind kind, BuildContext context) => switch (kind) {
     MediaSourceKind.jellyfin => "Connect to a Jellyfin server",
     MediaSourceKind.subsonic => "Navidrome, Airsonic, Gonic and friends",
     MediaSourceKind.plex => "Connect to a Plex Media Server",
     MediaSourceKind.local => "Music already on this device",
     MediaSourceKind.mpd => "Browse a Music Player Daemon library",
-    MediaSourceKind.youtube => "",
+    MediaSourceKind.youtube || MediaSourceKind.radio => "",
+    MediaSourceKind.dlna => AppLocalizations.of(context)!.dlnaSourceDescription,
   };
 }
 
@@ -133,7 +135,12 @@ class _SourceKindGuidance extends StatelessWidget {
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.bodyMedium,
       ),
-      MediaSourceKind.jellyfin || MediaSourceKind.youtube => const SizedBox.shrink(),
+      MediaSourceKind.dlna => Text(
+        AppLocalizations.of(context)!.dlnaGuidance,
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      MediaSourceKind.jellyfin || MediaSourceKind.youtube || MediaSourceKind.radio => const SizedBox.shrink(),
     };
   }
 }

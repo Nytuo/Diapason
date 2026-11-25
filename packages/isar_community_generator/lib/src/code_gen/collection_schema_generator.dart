@@ -20,7 +20,7 @@ String generateSchema(ObjectInfo object) {
   code +=
       '''
     name: r'${object.isarName}',
-    id: ${object.id},
+    id: ${webSafeIntLiteral(object.id)},
     properties: {$properties},
 
     estimateSize: ${object.estimateSizeName},
@@ -54,6 +54,23 @@ String generateSchema(ObjectInfo object) {
   }
 
   return '$code);';
+}
+
+/// Diapason: schema ids are 64-bit hashes, and dart2js rejects integer
+/// literals that a JS double can't represent exactly, which breaks the web
+/// build. Ids outside the safe range are written as a const expression built
+/// from two 32-bit halves: the VM evaluates it to the exact same 64-bit value
+/// (wrapping like the original literal), while dart2js accepts it (with a
+/// truncated value, which is harmless: Isar is never opened on the web).
+String webSafeIntLiteral(int value) {
+  const maxSafe = 9007199254740991; // 2^53 - 1
+  if (value >= -maxSafe && value <= maxSafe) {
+    return '$value';
+  }
+  final hi = (value >> 32) & 0xFFFFFFFF;
+  final lo = value & 0xFFFFFFFF;
+  String hex(int v) => '0x${v.toRadixString(16).toUpperCase()}';
+  return '(${hex(hi)} << 32 | ${hex(lo)})';
 }
 
 String _generatePropertySchema(ObjectInfo object, int index) {
@@ -91,7 +108,7 @@ String _generateIndexSchema(ObjectIndex index) {
 
   return '''
     IndexSchema(
-      id: ${index.id},
+      id: ${webSafeIntLiteral(index.id)},
       name: r'${index.name}',
       unique: ${index.unique},
       replace: ${index.replace},
@@ -106,7 +123,7 @@ String _generateLinkSchema(ObjectInfo object, ObjectLink link) {
   }
   return '''
     LinkSchema(
-      id: ${link.id(object.isarName)},
+      id: ${webSafeIntLiteral(link.id(object.isarName))},
       name: r'${link.isarName}',
       target: r'${link.targetCollectionIsarName}',
       single: ${link.isSingle},

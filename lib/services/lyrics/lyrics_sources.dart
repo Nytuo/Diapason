@@ -10,6 +10,7 @@ import 'package:diapason/services/lyrics/lrc_parser.dart';
 import 'package:diapason/services/lyrics/lrclib_client.dart';
 import 'package:diapason/services/lyrics/word_sync_parser.dart';
 import 'package:diapason/services/lyrics/word_synced_lyrics_client.dart';
+import 'package:diapason/services/plugins/plugins.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:get_it/get_it.dart';
@@ -46,7 +47,10 @@ enum LyricsOrigin {
   downloaded,
   lrclib,
   amll,
-  netease;
+  netease,
+
+  /// An enabled lyrics plugin; the option's label names it.
+  plugin;
 
   String get databaseName => switch (this) {
     file => "File",
@@ -55,9 +59,10 @@ enum LyricsOrigin {
     lrclib => "LRCLIB",
     amll => "AMLL TTML DB",
     netease => "NetEase",
+    plugin => "Plugin",
   };
 
-  bool get isOnlineDatabase => this == lrclib || this == amll || this == netease;
+  bool get isOnlineDatabase => this == lrclib || this == amll || this == netease || this == plugin;
 }
 
 class LyricsOption {
@@ -135,6 +140,16 @@ class LyricsSources {
     return lyrics == null ? null : LyricsOption(origin: origin, lyrics: lyrics);
   }
 
+  /// The first lyrics plugin that has lyrics for the track.
+  Future<LyricsOption?> fromPlugins(BaseItemDto item) async {
+    final found = await lyricsFromPlugins(item);
+    if (found == null) return null;
+    final (result, name) = found;
+    final synced = result.synced == null ? null : LrcParser.parse(result.synced!);
+    final lyrics = synced ?? (result.plain == null ? null : LrcParser.plain(result.plain!));
+    return lyrics == null ? null : LyricsOption(origin: LyricsOrigin.plugin, lyrics: lyrics, label: name);
+  }
+
   /// The online databases the user allows.
   static List<LyricsOrigin> get enabledDatabases {
     final settings = FinampSettingsHelper.finampSettings;
@@ -142,6 +157,7 @@ class LyricsSources {
       LyricsOrigin.lrclib,
       if (settings.wordSyncedLyricsEnabled) LyricsOrigin.amll,
       if (settings.neteaseLyricsEnabled) LyricsOrigin.netease,
+      if (hasLyricsPlugins) LyricsOrigin.plugin,
     ];
   }
 
@@ -149,6 +165,7 @@ class LyricsSources {
     LyricsOrigin.file || LyricsOrigin.server => fromLibrary(item),
     LyricsOrigin.lrclib => fromLrclib(item),
     LyricsOrigin.amll || LyricsOrigin.netease => fromWordDatabase(item, origin),
+    LyricsOrigin.plugin => fromPlugins(item),
     LyricsOrigin.downloaded => Future.value(null),
   };
 
@@ -166,10 +183,15 @@ class LyricsSources {
       best = await fromLrclib(item, syncedOnly: best != null) ?? best;
     }
     if (best?.sync != LyricsSync.word) {
-      for (final origin in enabledDatabases.where((o) => o != LyricsOrigin.lrclib)) {
+      for (final origin in enabledDatabases.where((o) => o == LyricsOrigin.amll || o == LyricsOrigin.netease)) {
         final word = await fromWordDatabase(item, origin);
         if (word != null) return word;
       }
+    }
+    // Plugins come last: built-in sources win, a plugin fills the gaps they leave.
+    if (best?.sync != LyricsSync.line && best?.sync != LyricsSync.word && hasLyricsPlugins) {
+      final fromPlugin = await fromPlugins(item);
+      if (fromPlugin != null && (best == null || fromPlugin.sync != LyricsSync.plain)) return fromPlugin;
     }
     return best;
   }

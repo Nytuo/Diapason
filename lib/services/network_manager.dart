@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:core';
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:diapason/components/global_snackbar.dart';
@@ -10,6 +10,7 @@ import 'package:diapason/services/backends/media_source_service.dart';
 import 'package:diapason/services/downloads_service.dart';
 import 'package:diapason/services/finamp_user_helper.dart';
 import 'package:diapason/services/jellyfin_api_helper.dart';
+import 'package:diapason/services/no_network_guard.dart';
 import 'package:diapason/services/playon_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -104,6 +105,7 @@ bool featureEnabled() {
 
 /// Sets the offline mode based on the current connectivity and user settings
 Future<bool> _setOfflineMode(List<ConnectivityResult> connections) async {
+  if (NoNetworkGuard.active) return true; // the hard switch wins over the automation
   if (!featureEnabled()) {
     return FinampSettingsHelper.finampSettings.isOffline;
   }

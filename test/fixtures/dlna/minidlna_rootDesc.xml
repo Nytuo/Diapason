@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<root xmlns="urn:schemas-upnp-org:device-1-0">
+  <specVersion><major>1</major><minor>0</minor></specVersion>
+  <device>
+    <deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>
+    <friendlyName>NAS: minidlna</friendlyName>
+    <manufacturer>Justin Maggard</manufacturer>
+    <modelName>Windows Media Connect compatible (MiniDLNA)</modelName>
+    <modelNumber>1.3.3</modelNumber>
+    <UDN>uuid:4d696e69-444c-164e-9d41-b827eb000001</UDN>
+    <iconList>
+      <icon><mimetype>image/png</mimetype><width>48</width><height>48</height><depth>24</depth><url>/icons/sm.png</url></icon>
+      <icon><mimetype>image/png</mimetype><width>120</width><height>120</height><depth>24</depth><url>/icons/lrg.png</url></icon>
+    </iconList>
+    <serviceList>
+      <service>
+        <serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType>
+        <serviceId>urn:upnp-org:serviceId:ConnectionManager</serviceId>
+        <controlURL>/ctl/ConnectionMgr</controlURL>
+        <eventSubURL>/evt/ConnectionMgr</eventSubURL>
+        <SCPDURL>/ConnectionMgr.xml</SCPDURL>
+      </service>
+      <service>
+        <serviceType>urn:schemas-upnp-org:service:ContentDirectory:1</serviceType>
+        <serviceId>urn:upnp-org:serviceId:ContentDirectory</serviceId>
+        <controlURL>/ctl/ContentDir</controlURL>
+        <eventSubURL>/evt/ContentDir</eventSubURL>
+        <SCPDURL>/ContentDir.xml</SCPDURL>
+      </service>
+    </serviceList>
+  </device>
+</root>

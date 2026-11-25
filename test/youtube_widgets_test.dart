@@ -1,3 +1,4 @@
+import 'package:diapason/l10n/app_localizations.dart';
 import 'dart:async';
 
 import 'package:diapason/components/MusicScreen/youtube_results.dart';
@@ -19,7 +20,11 @@ import 'support/test_env.dart';
 BaseItemDto _track(String id, String title, String artist) => ytTrack(id, title, artist);
 
 Widget _app(Widget child) => ProviderScope(
-  child: MaterialApp(home: Scaffold(body: child)),
+  child: MaterialApp(
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: Scaffold(body: child),
+),
 );
 
 void main() {
@@ -288,4 +293,7 @@ void main() {
 class _ReadyUploader extends UploaderClient {
   @override
   bool get isReady => true;
+
+  @override
+  bool get isConfigured => true;
 }

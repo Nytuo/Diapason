@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:diapason/services/tvos/tvos_path_provider.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 import 'dart:isolate';
 import 'dart:ui' show DartPluginRegistrant;
 
@@ -16,7 +18,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_user_certificates_android/flutter_user_certificates_android.dart';
 import 'package:get_it/get_it.dart';
-import 'package:http/io_client.dart' as http;
+import 'package:diapason/utils/connect_timeout_client.dart'
+    if (dart.library.js_interop) 'package:diapason/utils/connect_timeout_client_web.dart';
 import 'package:isar_community/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
@@ -50,7 +53,8 @@ class JellyfinApiHelper {
   final _finampUserHelper = GetIt.instance<FinampUserHelper>();
 
   JellyfinApiHelper() {
-    if (AppleTvAudioChannel.isSupported) {
+    // The web has no isolates (nor Isar) either: requests run on the main isolate there too.
+    if (AppleTvAudioChannel.isSupported || kIsWeb) {
       // The worker isolate reconstructs its own Isar-backed FinampUserHelper
       // (Isar being isolate-safe, unlike Hive) to read the auth header. tvOS
       // has neither Isar nor a Hive-in-isolate story, so it skips the
@@ -1079,7 +1083,7 @@ class JellyfinApiHelper {
   Future<bool> _pingSpecificServer(String url) async {
     final client = ChopperClient(
       baseUrl: Uri.tryParse(url),
-      client: http.IOClient(HttpClient()..connectionTimeout = const Duration(seconds: 3)),
+      client: connectTimeoutClient(const Duration(seconds: 3)),
       interceptors: [jellyfin_api.JellyfinSpecificInterceptor(url), HttpAggregateLoggingInterceptor()],
       converter: JsonConverter(),
     );

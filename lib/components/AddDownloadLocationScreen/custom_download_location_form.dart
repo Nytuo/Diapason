@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:diapason/l10n/app_localizations.dart';

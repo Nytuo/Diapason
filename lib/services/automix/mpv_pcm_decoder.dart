@@ -1,5 +1,6 @@
 import 'dart:ffi';
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';

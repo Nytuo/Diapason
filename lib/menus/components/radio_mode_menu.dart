@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/components/themed_bottom_sheet.dart';
 import 'package:diapason/l10n/app_localizations.dart';

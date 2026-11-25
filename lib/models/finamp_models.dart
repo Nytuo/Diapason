@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -33,6 +34,7 @@ import '../services/finamp_settings_helper.dart';
 import 'jellyfin_models.dart';
 import 'migration_adapters.dart';
 import 'music_models.dart';
+import 'package:diapason/utils/isar_fast_hash.dart';
 
 part 'finamp_models.g.dart';
 
@@ -140,16 +142,28 @@ class DefaultSettings {
   static const visualizerDbFloor = -100.0;
   static const visualizerDbCeiling = -10.0;
   static const visualizerLogScale = true;
+  static const waveformSeekBar = false;
+  static const visualizerStyle = VisualizerStyle.curve;
+  static const milkdropOnCover = false;
+  static const milkdropPreset = -1;
+  static const milkdropLowPower = false;
+  static const milkdropTuning = "";
+  static const visualizerStyleTuning = "";
 
   static const uploaderEnabled = false;
   static const uploaderUrl = "";
   static const uploaderLocalUrl = "";
+  static const tagEditorAcoustIdApiKey = "";
   static const uploaderToken = "";
   static const uploaderNetworkPolicy = "local";
   static const uploaderYtProxy = true;
   static const uploaderAllowInsecure = false;
   static const ytdlpConfigJson = "";
   static const uploaderWifiOnly = false;
+  static const noNetwork = false;
+  static const desktopBigCoverArt = true;
+  static const desktopAmbientMode = "cover";
+  static const desktopReduceEffects = false;
   static const youtubeResultCount = 20;
   static const youtubeShowHits = true;
   static const youtubeShowNew = true;
@@ -158,9 +172,19 @@ class DefaultSettings {
   static const automixEnabled = false;
   static const wordSyncedLyricsEnabled = true;
   static const neteaseLyricsEnabled = false;
+  static const lyricsFurigana = false;
+  static const lyricsRomaji = false;
+  static const lyricsAppleStyle = true;
+  static const lyricsTranslationEnabled = false;
   static const analyticsEnabled = false;
   static const bugReportsEnabled = false;
   static const analyticsPromptShown = false;
+  static const watchConnectDeviceName = "";
+
+  static const hifiBitPerfect = false;
+  static const hifiOutputDevice = "";
+  static const hifiDsdMode = "dop";
+  static const hifiExclusive = true;
 
   static const listenBrainzToken = "";
   static const lastFmApiKey = "";
@@ -1109,6 +1133,34 @@ class FinampSettings {
   @HiveField(182, defaultValue: DefaultSettings.visualizerLogScale)
   bool visualizerLogScale = DefaultSettings.visualizerLogScale;
 
+  /// Replace the seek slider with a waveform of the current track, once its peaks are known.
+  @HiveField(235, defaultValue: DefaultSettings.waveformSeekBar)
+  bool waveformSeekBar = DefaultSettings.waveformSeekBar;
+
+  /// How the spectrum is drawn.
+  @HiveField(236, defaultValue: DefaultSettings.visualizerStyle)
+  VisualizerStyle visualizerStyle = DefaultSettings.visualizerStyle;
+
+  /// Play the animated (MilkDrop-like) visual over the cover in the player screen.
+  @HiveField(237, defaultValue: DefaultSettings.milkdropOnCover)
+  bool milkdropOnCover = DefaultSettings.milkdropOnCover;
+
+  /// Index of the animated visual's preset, or -1 to cycle through them.
+  @HiveField(238, defaultValue: DefaultSettings.milkdropPreset)
+  int milkdropPreset = DefaultSettings.milkdropPreset;
+
+  /// Render the animated visual at a lower resolution and frame rate.
+  @HiveField(239, defaultValue: DefaultSettings.milkdropLowPower)
+  bool milkdropLowPower = DefaultSettings.milkdropLowPower;
+
+  /// JSON of each animated-visual preset's fine-tuning (`{"plasma": {"speed": 1.2, ...}}`); see `MilkdropTuning`.
+  @HiveField(254, defaultValue: DefaultSettings.milkdropTuning)
+  String milkdropTuning = DefaultSettings.milkdropTuning;
+
+  /// JSON of each spectrum style's overrides of the global visualizer settings; see `VisualizerStyleTune`.
+  @HiveField(255, defaultValue: DefaultSettings.visualizerStyleTuning)
+  String visualizerStyleTuning = DefaultSettings.visualizerStyleTuning;
+
   /// Codec to use for live streaming on backends without Jellyfin's more
   /// detailed [transcodingStreamingFormat] concept (currently just
   /// Subsonic). Ignored by backends that don't support choosing one.
@@ -1189,6 +1241,67 @@ class FinampSettings {
   /// from anywhere; when this one answers, it is used instead, and when it doesn't, [uploaderUrl] is.
   @HiveField(204, defaultValue: DefaultSettings.uploaderLocalUrl)
   String uploaderLocalUrl = DefaultSettings.uploaderLocalUrl;
+
+  /// Hard "no network at all" switch: offline mode stays on and every HTTP request made from Dart (servers, lyrics,
+  /// covers, scrobbling, analytics, updates, uploader, plugins…) is refused before it leaves the device. Only
+  /// loopback addresses stay reachable. See `lib/services/no_network_guard.dart`.
+  @HiveField(250, defaultValue: DefaultSettings.noNetwork)
+  bool noNetwork = DefaultSettings.noNetwork;
+
+  /// Desktop: the current cover shown large at the bottom of the sidebar; clicking it opens the now playing view.
+  @HiveField(251, defaultValue: DefaultSettings.desktopBigCoverArt)
+  bool desktopBigCoverArt = DefaultSettings.desktopBigCoverArt;
+
+  /// Desktop: what is painted behind the window's floating panels: `off` (plain), `colors` (a field of the current
+  /// album's colours) or `cover` (the current cover, pre-blurred). See `DesktopAmbientMode`.
+  @HiveField(252, defaultValue: DefaultSettings.desktopAmbientMode)
+  String desktopAmbientMode = DefaultSettings.desktopAmbientMode;
+
+  /// Desktop: drop costly or animated decoration (background transitions, the spectrum strip, hover motion).
+  @HiveField(253, defaultValue: DefaultSettings.desktopReduceEffects)
+  bool desktopReduceEffects = DefaultSettings.desktopReduceEffects;
+
+  /// On a watch: the Diapason Connect device last controlled, reconnected to (by its advertised name) at launch.
+  @HiveField(210, defaultValue: DefaultSettings.watchConnectDeviceName)
+  String watchConnectDeviceName = DefaultSettings.watchConnectDeviceName;
+
+  /// Readings in hiragana above the kanji of Japanese lyrics (needs the dictionary, downloaded on demand).
+  @HiveField(230, defaultValue: DefaultSettings.lyricsFurigana)
+  bool lyricsFurigana = DefaultSettings.lyricsFurigana;
+
+  /// Romaji under each line of Japanese lyrics.
+  @HiveField(231, defaultValue: DefaultSettings.lyricsRomaji)
+  bool lyricsRomaji = DefaultSettings.lyricsRomaji;
+
+  /// Animated, Apple Music-like synced lyrics instead of the classic list.
+  @HiveField(232, defaultValue: DefaultSettings.lyricsAppleStyle)
+  bool lyricsAppleStyle = DefaultSettings.lyricsAppleStyle;
+
+  /// Translate lyrics with the provider set up in the lyrics settings. Sends the lyric text to that provider.
+  @HiveField(233, defaultValue: DefaultSettings.lyricsTranslationEnabled)
+  bool lyricsTranslationEnabled = DefaultSettings.lyricsTranslationEnabled;
+
+  /// Bit-perfect output (see `docs/HIFI_AUDIO.md`): no resampling where the platform allows it, and every stage that
+  /// changes samples (volume, ReplayGain, EQ, crossfade, speed) bypassed. Off by default: it locks the volume at 100%.
+  @HiveField(225, defaultValue: DefaultSettings.hifiBitPerfect)
+  bool hifiBitPerfect = DefaultSettings.hifiBitPerfect;
+
+  /// Output device for bit-perfect playback on Linux/Windows: an mpv `audio-device` name (`alsa/hw:1,0`,
+  /// `wasapi/{…}`); empty for the system default.
+  @HiveField(226, defaultValue: DefaultSettings.hifiOutputDevice)
+  String hifiOutputDevice = DefaultSettings.hifiOutputDevice;
+
+  /// DSD output: `dop` sends DSD as DoP when the output is bit-perfect (else converts to PCM), `pcm` always converts.
+  @HiveField(227, defaultValue: DefaultSettings.hifiDsdMode)
+  String hifiDsdMode = DefaultSettings.hifiDsdMode;
+
+  /// In bit-perfect mode, take the device for this app alone (mpv `audio-exclusive`, CoreAudio hog mode).
+  @HiveField(228, defaultValue: DefaultSettings.hifiExclusive)
+  bool hifiExclusive = DefaultSettings.hifiExclusive;
+
+  /// AcoustID application API key for fingerprint lookups in the tag editor.
+  @HiveField(245, defaultValue: DefaultSettings.tagEditorAcoustIdApiKey)
+  String tagEditorAcoustIdApiKey = DefaultSettings.tagEditorAcoustIdApiKey;
 
   static Future<FinampSettings> create() async {
     final downloadLocation = await DownloadLocation.create(
@@ -1312,6 +1425,11 @@ class DownloadLocation {
       legacyDeletable = null;
       // ignore: deprecated_member_use_from_same_package
       legacyUseHumanReadableNames = null;
+    }
+    if (kIsWeb) {
+      // No file system in a browser: downloads are unavailable there, the location only needs a placeholder path.
+      _currentPath = relativePath ?? "";
+      return;
     }
     switch (baseDirectory) {
       case DownloadLocationType.internalDocuments:
@@ -1464,6 +1582,9 @@ enum ContentType {
     ContentType.genericArtists || ContentType.performingArtists || ContentType.albumArtists => true,
     _ => false,
   };
+
+  /// Whether this tab can be shown on the running platform: a browser has no downloads.
+  bool get isAvailableHere => !(kIsWeb && this == ContentType.downloads);
 
   bool get isTab => switch (this) {
     ContentType.albums => true,
@@ -1777,20 +1898,7 @@ class DownloadStub {
   /// FNV-1a 64bit hash algorithm optimized for Dart Strings
   /// Provided by Isar documentation
   /// Do not use directly, use getHash
-  static int _fastHash(String string) {
-    var hash = 0xcbf29ce484222325;
-
-    var i = 0;
-    while (i < string.length) {
-      final codeUnit = string.codeUnitAt(i++);
-      hash ^= codeUnit >> 8;
-      hash *= 0x100000001b3;
-      hash ^= codeUnit & 0xFF;
-      hash *= 0x100000001b3;
-    }
-
-    return hash;
-  }
+  static int _fastHash(String string) => isarFastHash(string);
 
   /// Calculate a DownloadStub's isarId
   static int getHash(String id, DownloadItemType type) {
@@ -4989,4 +5097,36 @@ class ClientCertificate {
 
   @HiveField(1)
   final String password;
+}
+
+/// How the spectrum visualizer is drawn.
+@HiveType(typeId: 140)
+enum VisualizerStyle {
+  /// The original smooth curve along the bottom.
+  @HiveField(0)
+  curve,
+
+  /// Separate vertical bars.
+  @HiveField(1)
+  bars,
+
+  /// Bars growing up and down from a centre line.
+  @HiveField(2)
+  mirroredBars,
+
+  /// Bars radiating around the cover.
+  @HiveField(3)
+  radial,
+
+  /// A wave line oscillating around the centre, shaped by the spectrum.
+  @HiveField(4)
+  wave,
+
+  /// A starfield that speeds up with the bass.
+  @HiveField(5)
+  particles,
+
+  /// Layered gradient waves, one per frequency range.
+  @HiveField(6)
+  blob,
 }

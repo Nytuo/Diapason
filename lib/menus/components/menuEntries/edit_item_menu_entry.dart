@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/menus/components/menuEntries/menu_entry.dart';
@@ -28,7 +29,7 @@ class EditItemMenuEntry extends ConsumerWidget implements HideableMenuEntry {
           Navigator.pop(context); // close menu
           switch (BaseItemDtoType.fromItem(baseItem)) {
             case BaseItemDtoType.playlist:
-              Navigator.pushNamed(context, PlaylistEditScreen.routeName, arguments: baseItem);
+              DesktopRouter.pushNamed(context, PlaylistEditScreen.routeName, arguments: baseItem);
               break;
             default:
               GlobalSnackbar.message((context) => AppLocalizations.of(context)!.notImplementedYet);

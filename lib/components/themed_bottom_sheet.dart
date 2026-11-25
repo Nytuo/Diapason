@@ -1,11 +1,12 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 import 'dart:math';
 
 import 'package:diapason/components/padded_custom_scrollview.dart';
 import 'package:diapason/menus/components/menu_item_info_header.dart';
 import 'package:diapason/menus/components/playbackActions/playback_action_row.dart';
 import 'package:diapason/screens/blurred_player_screen_background.dart';
+import 'package:diapason/screens/desktop/desktop_theme.dart';
 import 'package:diapason/services/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -34,7 +35,9 @@ Future<T?> showThemedBottomSheet<T>({
   bool useRootNavigator = false,
 }) async {
   FeedbackHelper.feedback(FeedbackType.selection);
-  bool useDefaultTheme = false;
+  // Inside the desktop shell the menu follows the shell's palette and the app theme, not the item's album colours.
+  final desktopPalette = DesktopThemeScope.maybeOf(context);
+  bool useDefaultTheme = desktopPalette != null;
   final menu = ThemedBottomSheet(
     key: ValueKey((item?.id.raw ?? "") + routeName),
     buildSlivers: buildSlivers,
@@ -69,14 +72,16 @@ Future<T?> showThemedBottomSheet<T>({
       barrierDismissible: true,
       builder: (BuildContext context) {
         final scheme = ColorScheme.of(context);
-        return Dialog(
+        final dialog = Dialog(
           clipBehavior: Clip.antiAlias,
           insetPadding: const EdgeInsets.all(24),
           elevation: 12,
-          backgroundColor: ElevationOverlay.applySurfaceTint(scheme.surface, scheme.surfaceTint, 2),
+          backgroundColor:
+              desktopPalette?.bgSecondary ?? ElevationOverlay.applySurfaceTint(scheme.surface, scheme.surfaceTint, 2),
+          surfaceTintColor: desktopPalette == null ? null : Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14.0),
-            side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+            borderRadius: BorderRadius.circular(DesktopMetrics.radiusPanel + 2),
+            side: BorderSide(color: desktopPalette?.panelBorder ?? scheme.outlineVariant.withValues(alpha: 0.5)),
           ),
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -86,6 +91,8 @@ Future<T?> showThemedBottomSheet<T>({
             child: scope(context, desktopMenu),
           ),
         );
+        // The dialog lives under the root navigator, outside the shell's scope: hand the palette down.
+        return desktopPalette == null ? dialog : DesktopThemeScope(palette: desktopPalette, child: dialog);
       },
     );
   }

@@ -110,6 +110,13 @@ class FinampSettingsHelper {
     finampSettingsTemp.visualizerDbFloor = DefaultSettings.visualizerDbFloor;
     finampSettingsTemp.visualizerDbCeiling = DefaultSettings.visualizerDbCeiling;
     finampSettingsTemp.visualizerLogScale = DefaultSettings.visualizerLogScale;
+    finampSettingsTemp.visualizerStyle = DefaultSettings.visualizerStyle;
+    finampSettingsTemp.waveformSeekBar = DefaultSettings.waveformSeekBar;
+    finampSettingsTemp.milkdropOnCover = DefaultSettings.milkdropOnCover;
+    finampSettingsTemp.milkdropPreset = DefaultSettings.milkdropPreset;
+    finampSettingsTemp.milkdropLowPower = DefaultSettings.milkdropLowPower;
+    finampSettingsTemp.milkdropTuning = DefaultSettings.milkdropTuning;
+    finampSettingsTemp.visualizerStyleTuning = DefaultSettings.visualizerStyleTuning;
 
     Hive.box<FinampSettings>("FinampSettings").put("FinampSettings", finampSettingsTemp);
   }
@@ -123,6 +130,10 @@ class FinampSettingsHelper {
     finampSettingsTemp.lyricsFontSize = DefaultSettings.lyricsFontSize;
     finampSettingsTemp.wordSyncedLyricsEnabled = DefaultSettings.wordSyncedLyricsEnabled;
     finampSettingsTemp.neteaseLyricsEnabled = DefaultSettings.neteaseLyricsEnabled;
+    finampSettingsTemp.lyricsFurigana = DefaultSettings.lyricsFurigana;
+    finampSettingsTemp.lyricsRomaji = DefaultSettings.lyricsRomaji;
+    finampSettingsTemp.lyricsAppleStyle = DefaultSettings.lyricsAppleStyle;
+    finampSettingsTemp.lyricsTranslationEnabled = DefaultSettings.lyricsTranslationEnabled;
 
     Hive.box<FinampSettings>("FinampSettings").put("FinampSettings", finampSettingsTemp);
   }
@@ -175,6 +186,9 @@ class FinampSettingsHelper {
     finampSettingsTemp.showProgressOnNowPlayingBar = DefaultSettings.showProgressOnNowPlayingBar;
     finampSettingsTemp.autoSwitchItemCurationType = DefaultSettings.autoSwitchItemCurationType;
     finampSettingsTemp.useMonochromeIcon = DefaultSettings.useMonochromeIcon;
+    finampSettingsTemp.desktopBigCoverArt = DefaultSettings.desktopBigCoverArt;
+    finampSettingsTemp.desktopAmbientMode = DefaultSettings.desktopAmbientMode;
+    finampSettingsTemp.desktopReduceEffects = DefaultSettings.desktopReduceEffects;
 
     Hive.box<FinampSettings>("FinampSettings").put("FinampSettings", finampSettingsTemp);
   }

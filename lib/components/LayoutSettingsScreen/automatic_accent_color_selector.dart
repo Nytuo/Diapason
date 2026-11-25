@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/theme_provider.dart';

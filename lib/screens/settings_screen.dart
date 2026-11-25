@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'package:diapason/screens/plugins_settings_screen.dart';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/screens/analytics_settings_screen.dart';
 import 'package:diapason/components/PlaybackReportingSettingsScreen/discord_rpc_icon_selector.dart';
@@ -15,6 +16,7 @@ import 'package:diapason/screens/accessibility_settings_screen.dart';
 import 'package:diapason/screens/audio_service_settings_screen.dart';
 import 'package:diapason/screens/downloads_settings_screen.dart';
 import 'package:diapason/screens/equalizer_settings_screen.dart';
+import 'package:diapason/screens/hifi_settings_screen.dart';
 import 'package:diapason/screens/home_screen_settings_screen.dart';
 import 'package:diapason/screens/cache_settings_screen.dart';
 import 'package:diapason/screens/connect_screen.dart';
@@ -117,6 +119,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           keywords: ["server", "jellyfin", "plex", "subsonic", "navidrome", "login", "account"],
         ),
         _Entry(
+          icon: TablerIcons.radio,
+          title: l10n.settingsRadio,
+          subtitle: l10n.settingsRadioSubtitle,
+          onTap: _go(RadioScreen.routeName),
+          keywords: ["stations", "internet radio", "stream", "radio browser", "icecast", "shoutcast"],
+        ),
+        _Entry(
           icon: TablerIcons.file_import,
           title: l10n.settingsImportMusic,
           subtitle: l10n.settingsImportMusicSubtitle,
@@ -138,13 +147,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             enabled: !offline,
             onTap: _go(ViewSelector.routeName),
             keywords: ["jellyfin", "views"],
-          ),
-          _Entry(
-            icon: TablerIcons.radio,
-            title: l10n.settingsRadio,
-            subtitle: l10n.settingsRadioSubtitle,
-            onTap: _go(RadioScreen.routeName),
-            keywords: ["stations", "jellyfin"],
           ),
           if (ClientCertificateInstaller.isSupported)
             _Entry(
@@ -178,6 +180,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           onTap: _go(ScrobblingSettingsScreen.routeName),
           keywords: ["lastfm", "listenbrainz", "history", "discover"],
         ),
+        _Entry(
+          icon: TablerIcons.plug,
+          title: l10n.pluginsTitle,
+          subtitle: l10n.pluginsSubtitle,
+          onTap: _go(PluginsSettingsScreen.routeName),
+          keywords: ["plugin", "extension", "addon", "catalog", "wasm", "lyrics", "cover"],
+        ),
       ]),
       _Section(l10n.settingsSectionPlayback, TablerIcons.player_play, [
         _Entry(
@@ -200,6 +209,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           subtitle: l10n.settingsEqualizerSubtitle,
           onTap: _go(EqualizerSettingsScreen.routeName),
           keywords: ["eq", "bass", "treble"],
+        ),
+        _Entry(
+          icon: Icons.high_quality_outlined,
+          title: l10n.hifiSettingsTitle,
+          subtitle: l10n.hifiSettingsSubtitle,
+          onTap: _go(HifiSettingsScreen.routeName),
+          keywords: ["bit-perfect", "bitperfect", "dsd", "dop", "sacd", "exclusive", "dac", "wasapi", "alsa"],
         ),
         if (_hasTranscodingSource)
           _Entry(
@@ -281,7 +297,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: l10n.settingsIpodSubtitle,
             onTap: () {
               FinampSetters.setInterfaceMode(InterfaceMode.ipod.name);
-              Navigator.of(context).pushNamed(IpodShell.routeName);
+              Navigator.of(context, rootNavigator: true).pushNamed(IpodShell.routeName);
             },
             keywords: ["click wheel", "retro"],
           ),

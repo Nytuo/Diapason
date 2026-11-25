@@ -1,3 +1,4 @@
+import 'package:diapason/components/mobile_ambient_theme.dart';
 import 'dart:math' as math;
 
 import 'package:diapason/components/AlbumScreen/album_screen_content.dart';
@@ -111,10 +112,11 @@ class _TracksSectionState extends ConsumerState<TracksSection> {
       emptyText = loc.emptyFilteredListTitle;
     }
 
-    return SliverStickyHeader(
-      header: Container(
+    return SliverStickyHeader.builder(
+      sticky: headersMaySticky(context),
+      builder: (context, state) => Container(
         padding: EdgeInsets.fromLTRB(6, widget.parent.type == "MusicGenre" ? 12 : 0, 6, 0),
-        color: Theme.of(context).colorScheme.surface,
+        color: ambientHeaderColor(context, pinned: state.isPinned),
         child: GestureDetector(
           onTap: () {
             if (_isExpandable) {
@@ -310,10 +312,11 @@ class _ItemsSectionState extends ConsumerState<CollectionsSection> {
       emptyText = loc.emptyFilteredListTitle;
     }
 
-    return SliverStickyHeader(
-      header: Container(
+    return SliverStickyHeader.builder(
+      sticky: headersMaySticky(context),
+      builder: (context, state) => Container(
         padding: EdgeInsets.fromLTRB(6, widget.parent.type == "MusicGenre" ? 12 : 0, 6, 0),
-        color: Theme.of(context).colorScheme.surface,
+        color: ambientHeaderColor(context, pinned: state.isPinned),
         child: GestureDetector(
           onTap: () {
             if (_isExpandable) {

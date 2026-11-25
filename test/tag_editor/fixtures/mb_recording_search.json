@@ -1,0 +1,1224 @@
+{
+ "created": "2026-11-24T23:09:31.474Z",
+ "count": 5,
+ "offset": 0,
+ "recordings": [
+  {
+   "id": "92e97fca-4f20-481d-85c9-5de738d2f1d5",
+   "score": 100,
+   "artist-credit-id": "2ad79928-9236-33a3-830c-cc909d38f0c7",
+   "title": "Digital Love (Algeronics remix)",
+   "length": 365000,
+   "video": null,
+   "artist-credit": [
+    {
+     "name": "Daft Punk",
+     "artist": {
+      "id": "056e4f3e-d505-4dad-8ec1-d04f521cbb56",
+      "name": "Daft Punk",
+      "sort-name": "Daft Punk",
+      "disambiguation": "French electronic duo",
+      "aliases": [
+       {
+        "sort-name": "DaftPunk",
+        "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+        "name": "DaftPunk",
+        "locale": null,
+        "type": "Search hint",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Daft Punk",
+        "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+        "name": "daft punk",
+        "locale": null,
+        "type": "Artist name",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Duft Punk",
+        "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+        "name": "Duft Punk",
+        "locale": null,
+        "type": "Search hint",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "ダフト パンク",
+        "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+        "name": "ダフト・パンク",
+        "locale": "ja",
+        "type": "Artist name",
+        "primary": true,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Daft Punk",
+        "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+        "name": "Daft Punk",
+        "locale": "en",
+        "type": "Artist name",
+        "primary": true,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Da Funk",
+        "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+        "name": "Da Funk",
+        "locale": null,
+        "type": "Search hint",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       }
+      ]
+     }
+    }
+   ],
+   "first-release-date": "2011-08-05",
+   "releases": [
+    {
+     "id": "ebace3d6-1193-4840-b395-ddfa1232c62a",
+     "status-id": "1156806e-d06a-38bd-83f0-cf2284a808b9",
+     "artist-credit-id": "2ad79928-9236-33a3-830c-cc909d38f0c7",
+     "count": 1,
+     "title": "Re-Discovery",
+     "status": "Bootleg",
+     "artist-credit": [
+      {
+       "name": "Daft Punk",
+       "artist": {
+        "id": "056e4f3e-d505-4dad-8ec1-d04f521cbb56",
+        "name": "Daft Punk",
+        "sort-name": "Daft Punk",
+        "disambiguation": "French electronic duo"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "be3df8a5-39cb-4a8c-bb17-a079b13faf74",
+      "type-id": "0c60f497-ff81-3818-befd-abfc84a4858b",
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "title": "Re-Discovery",
+      "primary-type": "Album",
+      "secondary-types": [
+       "Remix"
+      ],
+      "secondary-type-ids": [
+       "0c60f497-ff81-3818-befd-abfc84a4858b"
+      ]
+     },
+     "date": "2011-08-05",
+     "country": "XW",
+     "release-events": [
+      {
+       "date": "2011-08-05",
+       "area": {
+        "id": "525d4e18-3d00-31b9-a58b-a146a916de8f",
+        "name": "[Worldwide]",
+        "sort-name": "[Worldwide]",
+        "iso-3166-1-codes": [
+         "XW"
+        ]
+       }
+      }
+     ],
+     "track-count": 14,
+     "media": [
+      {
+       "id": "79e9aef7-d373-3b14-996f-be1d266fe431",
+       "position": 1,
+       "format": "Digital Media",
+       "track": [
+        {
+         "id": "68a355dc-da3f-465a-91d5-7fc11166cb7b",
+         "number": "3",
+         "title": "Digital Love (Algeronics remix)",
+         "length": 365000
+        }
+       ],
+       "track-count": 14,
+       "track-offset": 2
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "15f16efc-8762-4151-95ab-c12d06268640",
+   "score": 99,
+   "artist-credit-id": "2ad79928-9236-33a3-830c-cc909d38f0c7",
+   "title": "Digital Love",
+   "length": 298333,
+   "disambiguation": "starts with a carry over",
+   "video": null,
+   "artist-credit": [
+    {
+     "name": "Daft Punk",
+     "artist": {
+      "id": "056e4f3e-d505-4dad-8ec1-d04f521cbb56",
+      "name": "Daft Punk",
+      "sort-name": "Daft Punk",
+      "disambiguation": "French electronic duo",
+      "aliases": [
+       {
+        "sort-name": "DaftPunk",
+        "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+        "name": "DaftPunk",
+        "locale": null,
+        "type": "Search hint",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Daft Punk",
+        "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+        "name": "daft punk",
+        "locale": null,
+        "type": "Artist name",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Duft Punk",
+        "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+        "name": "Duft Punk",
+        "locale": null,
+        "type": "Search hint",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "ダフト パンク",
+        "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+        "name": "ダフト・パンク",
+        "locale": "ja",
+        "type": "Artist name",
+        "primary": true,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Daft Punk",
+        "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+        "name": "Daft Punk",
+        "locale": "en",
+        "type": "Artist name",
+        "primary": true,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Da Funk",
+        "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+        "name": "Da Funk",
+        "locale": null,
+        "type": "Search hint",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       }
+      ]
+     }
+    }
+   ],
+   "first-release-date": "2001-02-26",
+   "releases": [
+    {
+     "id": "69b198ff-fbaa-492a-bd2e-55f7aef7c29e",
+     "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+     "artist-credit-id": "2ad79928-9236-33a3-830c-cc909d38f0c7",
+     "count": 1,
+     "title": "Discovery",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Daft Punk",
+       "artist": {
+        "id": "056e4f3e-d505-4dad-8ec1-d04f521cbb56",
+        "name": "Daft Punk",
+        "sort-name": "Daft Punk",
+        "disambiguation": "French electronic duo"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "48117b90-a16e-34ca-a514-19c702df1158",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "title": "Discovery",
+      "primary-type": "Album"
+     },
+     "date": "2002",
+     "country": "XE",
+     "release-events": [
+      {
+       "date": "2002",
+       "area": {
+        "id": "89a675c2-3e37-3518-b83c-418bad59a85a",
+        "name": "Europe",
+        "sort-name": "Europe",
+        "iso-3166-1-codes": [
+         "XE"
+        ]
+       }
+      }
+     ],
+     "track-count": 14,
+     "media": [
+      {
+       "id": "ae8654e9-e03f-47f9-ad2d-cb2144aa21fe",
+       "position": 1,
+       "format": "CD",
+       "track": [
+        {
+         "id": "42430e17-7b95-4a44-88f9-d7f36cd9aed1",
+         "number": "3",
+         "title": "Digital Love",
+         "length": 298333
+        }
+       ],
+       "track-count": 14,
+       "track-offset": 2
+      }
+     ]
+    },
+    {
+     "id": "fcbe492b-c203-48c6-b15e-ae60122404bd",
+     "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+     "artist-credit-id": "2ad79928-9236-33a3-830c-cc909d38f0c7",
+     "count": 2,
+     "title": "Discovery",
+     "status": "Official",
+     "disambiguation": "Made in Poland",
+     "artist-credit": [
+      {
+       "name": "Daft Punk",
+       "artist": {
+        "id": "056e4f3e-d505-4dad-8ec1-d04f521cbb56",
+        "name": "Daft Punk",
+        "sort-name": "Daft Punk",
+        "disambiguation": "French electronic duo"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "48117b90-a16e-34ca-a514-19c702df1158",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "title": "Discovery",
+      "primary-type": "Album"
+     },
+     "date": "2022",
+     "country": "XE",
+     "release-events": [
+      {
+       "date": "2022",
+       "area": {
+        "id": "89a675c2-3e37-3518-b83c-418bad59a85a",
+        "name": "Europe",
+        "sort-name": "Europe",
+        "iso-3166-1-codes": [
+         "XE"
+        ]
+       }
+      }
+     ],
+     "track-count": 14,
+     "media": [
+      {
+       "id": "11379281-7603-4a9d-b011-e3c3e34e6220",
+       "position": 1,
+       "format": "12\" Vinyl",
+       "track": [
+        {
+         "id": "d9ae1d17-710c-4224-aa96-3768a60ae669",
+         "number": "A3",
+         "title": "Digital Love",
+         "length": 298000
+        }
+       ],
+       "track-count": 7,
+       "track-offset": 2
+      }
+     ]
+    },
+    {
+     "id": "ea225cf1-0254-481d-86cc-b4e2274a3af1",
+     "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+     "artist-credit-id": "2ad79928-9236-33a3-830c-cc909d38f0c7",
+     "count": 2,
+     "title": "Discovery / Human After All",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Daft Punk",
+       "artist": {
+        "id": "056e4f3e-d505-4dad-8ec1-d04f521cbb56",
+        "name": "Daft Punk",
+        "sort-name": "Daft Punk",
+        "disambiguation": "French electronic duo"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "2dda747c-d6b3-44e6-a1ce-d1dcc15055ff",
+      "type-id": "dd2a21e1-0c00-3729-a7a0-de60b84eb5d1",
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "title": "Discovery / Human After All",
+      "primary-type": "Album",
+      "secondary-types": [
+       "Compilation"
+      ],
+      "secondary-type-ids": [
+       "dd2a21e1-0c00-3729-a7a0-de60b84eb5d1"
+      ]
+     },
+     "date": "2011",
+     "country": "GB",
+     "release-events": [
+      {
+       "date": "2011",
+       "area": {
+        "id": "8a754a16-0027-3a29-b6d7-2b40ea0481ed",
+        "name": "United Kingdom",
+        "sort-name": "United Kingdom",
+        "iso-3166-1-codes": [
+         "GB"
+        ]
+       }
+      }
+     ],
+     "track-count": 24,
+     "media": [
+      {
+       "id": "2b527f02-5144-409b-bf90-705458b115e3",
+       "position": 1,
+       "format": "CD",
+       "track": [
+        {
+         "id": "def6d538-cbfd-49d5-88e7-ecae712a7392",
+         "number": "3",
+         "title": "Digital Love",
+         "length": 298000
+        }
+       ],
+       "track-count": 14,
+       "track-offset": 2
+      }
+     ]
+    },
+    {
+     "id": "9432447c-e311-442e-a4f9-1fd3b3d2c48a",
+     "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+     "artist-credit-id": "2ad79928-9236-33a3-830c-cc909d38f0c7",
+     "count": 1,
+     "title": "Digital Love",
+     "status": "Official",
+     "disambiguation": "33 ⅓ rpm",
+     "artist-credit": [
+      {
+       "name": "Daft Punk",
+       "artist": {
+        "id": "056e4f3e-d505-4dad-8ec1-d04f521cbb56",
+        "name": "Daft Punk",
+        "sort-name": "Daft Punk",
+        "disambiguation": "French electronic duo"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "3888f64b-f8ce-3e3d-a2f7-23d83697f43d",
+      "type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "title": "Digital Love",
+      "primary-type": "Single"
+     },
+     "date": "2001-06-11",
+     "country": "GB",
+     "release-events": [
+      {
+       "date": "2001-06-11",
+       "area": {
+        "id": "8a754a16-0027-3a29-b6d7-2b40ea0481ed",
+        "name": "United Kingdom",
+        "sort-name": "United Kingdom",
+        "iso-3166-1-codes": [
+         "GB"
+        ]
+       }
+      }
+     ],
+     "track-count": 2,
+     "media": [
+      {
+       "id": "c3a06108-d8e3-4f51-b14d-ceed517dd593",
+       "position": 1,
+       "format": "12\" Vinyl",
+       "track": [
+        {
+         "id": "325243de-ea35-4687-9a99-e79133e1faf9",
+         "number": "A",
+         "title": "Digital Love",
+         "length": 298000
+        }
+       ],
+       "track-count": 2,
+       "track-offset": 0
+      }
+     ]
+    }
+   ],
+   "isrcs": [
+    "GBDUW0000058"
+   ],
+   "tags": [
+    {
+     "count": 1,
+     "name": "trip-hop"
+    },
+    {
+     "count": 7,
+     "name": "electronic"
+    },
+    {
+     "count": 2,
+     "name": "dance"
+    },
+    {
+     "count": 7,
+     "name": "house"
+    },
+    {
+     "count": 1,
+     "name": "electro"
+    },
+    {
+     "count": 1,
+     "name": "techno"
+    },
+    {
+     "count": 0,
+     "name": "electronica"
+    },
+    {
+     "count": 1,
+     "name": "synth-pop"
+    },
+    {
+     "count": 0,
+     "name": "electropop"
+    },
+    {
+     "count": 1,
+     "name": "disco"
+    },
+    {
+     "count": 1,
+     "name": "dance-pop"
+    },
+    {
+     "count": 0,
+     "name": "progressive house"
+    },
+    {
+     "count": 0,
+     "name": "club"
+    },
+    {
+     "count": 1,
+     "name": "elektro"
+    },
+    {
+     "count": 5,
+     "name": "french house"
+    },
+    {
+     "count": 2,
+     "name": "electronica dance"
+    },
+    {
+     "count": 2,
+     "name": "euro house"
+    },
+    {
+     "count": 1,
+     "name": "party"
+    },
+    {
+     "count": 1,
+     "name": "pop_electro_downtempo"
+    },
+    {
+     "count": 0,
+     "name": "nu disco"
+    },
+    {
+     "count": 1,
+     "name": "left-field house"
+    },
+    {
+     "count": 6,
+     "name": "club/dance"
+    }
+   ]
+  },
+  {
+   "id": "8c896057-b145-4076-8dea-89684a35ee11",
+   "score": 97,
+   "artist-credit-id": "2ad79928-9236-33a3-830c-cc909d38f0c7",
+   "title": "Digital Love (album version)",
+   "length": 301360,
+   "video": null,
+   "artist-credit": [
+    {
+     "name": "Daft Punk",
+     "artist": {
+      "id": "056e4f3e-d505-4dad-8ec1-d04f521cbb56",
+      "name": "Daft Punk",
+      "sort-name": "Daft Punk",
+      "disambiguation": "French electronic duo",
+      "aliases": [
+       {
+        "sort-name": "DaftPunk",
+        "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+        "name": "DaftPunk",
+        "locale": null,
+        "type": "Search hint",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Daft Punk",
+        "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+        "name": "daft punk",
+        "locale": null,
+        "type": "Artist name",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Duft Punk",
+        "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+        "name": "Duft Punk",
+        "locale": null,
+        "type": "Search hint",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "ダフト パンク",
+        "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+        "name": "ダフト・パンク",
+        "locale": "ja",
+        "type": "Artist name",
+        "primary": true,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Daft Punk",
+        "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+        "name": "Daft Punk",
+        "locale": "en",
+        "type": "Artist name",
+        "primary": true,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Da Funk",
+        "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+        "name": "Da Funk",
+        "locale": null,
+        "type": "Search hint",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       }
+      ]
+     }
+    }
+   ],
+   "first-release-date": "2001-05-29",
+   "releases": [
+    {
+     "id": "8d28a4da-8077-4cae-a0a1-2d16c4923775",
+     "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+     "artist-credit-id": "2ad79928-9236-33a3-830c-cc909d38f0c7",
+     "count": 1,
+     "title": "Discovery",
+     "status": "Official",
+     "disambiguation": "Interstella 5555 artwork",
+     "artist-credit": [
+      {
+       "name": "Daft Punk",
+       "artist": {
+        "id": "056e4f3e-d505-4dad-8ec1-d04f521cbb56",
+        "name": "Daft Punk",
+        "sort-name": "Daft Punk",
+        "disambiguation": "French electronic duo"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "48117b90-a16e-34ca-a514-19c702df1158",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "title": "Discovery",
+      "primary-type": "Album"
+     },
+     "date": "2024-10-08",
+     "country": "XW",
+     "release-events": [
+      {
+       "date": "2024-10-08",
+       "area": {
+        "id": "525d4e18-3d00-31b9-a58b-a146a916de8f",
+        "name": "[Worldwide]",
+        "sort-name": "[Worldwide]",
+        "iso-3166-1-codes": [
+         "XW"
+        ]
+       }
+      }
+     ],
+     "track-count": 14,
+     "media": [
+      {
+       "id": "0ba70e77-eebd-3835-a251-fbefcef4590c",
+       "position": 1,
+       "format": "Digital Media",
+       "track": [
+        {
+         "id": "adb51999-0c1d-4f4e-a9d2-edc03c638e68",
+         "number": "3",
+         "title": "Digital Love",
+         "length": 301373
+        }
+       ],
+       "track-count": 14,
+       "track-offset": 2
+      }
+     ]
+    },
+    {
+     "id": "6cd30d99-4923-4d5e-8e51-9d87506976f1",
+     "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+     "artist-credit-id": "2ad79928-9236-33a3-830c-cc909d38f0c7",
+     "count": 1,
+     "title": "Discovery",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Daft Punk",
+       "artist": {
+        "id": "056e4f3e-d505-4dad-8ec1-d04f521cbb56",
+        "name": "Daft Punk",
+        "sort-name": "Daft Punk",
+        "disambiguation": "French electronic duo"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "48117b90-a16e-34ca-a514-19c702df1158",
+      "type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "title": "Discovery",
+      "primary-type": "Album"
+     },
+     "date": "2005-01-24",
+     "country": "XW",
+     "release-events": [
+      {
+       "date": "2005-01-24",
+       "area": {
+        "id": "525d4e18-3d00-31b9-a58b-a146a916de8f",
+        "name": "[Worldwide]",
+        "sort-name": "[Worldwide]",
+        "iso-3166-1-codes": [
+         "XW"
+        ]
+       }
+      }
+     ],
+     "track-count": 14,
+     "media": [
+      {
+       "id": "c9d80beb-bc2e-3f16-a071-b8cb16d22be5",
+       "position": 1,
+       "format": "Digital Media",
+       "track": [
+        {
+         "id": "102d06d7-e7ef-48b7-9db8-64f3e3ce53c6",
+         "number": "3",
+         "title": "Digital Love",
+         "length": 301373
+        }
+       ],
+       "track-count": 14,
+       "track-offset": 2
+      }
+     ]
+    },
+    {
+     "id": "61fbc6c9-42cd-445f-affa-790c9887ab45",
+     "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+     "artist-credit-id": "2ad79928-9236-33a3-830c-cc909d38f0c7",
+     "count": 1,
+     "title": "Digital Love",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Daft Punk",
+       "artist": {
+        "id": "056e4f3e-d505-4dad-8ec1-d04f521cbb56",
+        "name": "Daft Punk",
+        "sort-name": "Daft Punk",
+        "disambiguation": "French electronic duo"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "3888f64b-f8ce-3e3d-a2f7-23d83697f43d",
+      "type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "title": "Digital Love",
+      "primary-type": "Single"
+     },
+     "date": "2001-06-18",
+     "country": "AU",
+     "release-events": [
+      {
+       "date": "2001-06-18",
+       "area": {
+        "id": "106e0bec-b638-3b37-b731-f53d507dc00e",
+        "name": "Australia",
+        "sort-name": "Australia",
+        "iso-3166-1-codes": [
+         "AU"
+        ]
+       }
+      }
+     ],
+     "track-count": 4,
+     "media": [
+      {
+       "id": "b1bf6fa4-9141-3ad4-b33c-9c5f291fc4f8",
+       "position": 1,
+       "format": "CD",
+       "track": [
+        {
+         "id": "ed263f4f-4dd6-4661-a81b-d8be2bcf47c7",
+         "number": "2",
+         "title": "Digital Love (album version)",
+         "length": 301480
+        }
+       ],
+       "track-count": 4,
+       "track-offset": 1
+      }
+     ]
+    },
+    {
+     "id": "46937ece-a947-40eb-8c83-c8cd5d375bdd",
+     "status-id": "4e304316-386d-3409-af2e-78857eec5cfe",
+     "artist-credit-id": "2ad79928-9236-33a3-830c-cc909d38f0c7",
+     "count": 1,
+     "title": "Digital Love",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Daft Punk",
+       "artist": {
+        "id": "056e4f3e-d505-4dad-8ec1-d04f521cbb56",
+        "name": "Daft Punk",
+        "sort-name": "Daft Punk",
+        "disambiguation": "French electronic duo"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "3888f64b-f8ce-3e3d-a2f7-23d83697f43d",
+      "type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "primary-type-id": "d6038452-8ee0-3f68-affc-2de9a1ede0b9",
+      "title": "Digital Love",
+      "primary-type": "Single"
+     },
+     "date": "2001-06-16",
+     "country": "JP",
+     "release-events": [
+      {
+       "date": "2001-06-16",
+       "area": {
+        "id": "2db42837-c832-3c27-b4a3-08198f75693c",
+        "name": "Japan",
+        "sort-name": "Japan",
+        "iso-3166-1-codes": [
+         "JP"
+        ]
+       }
+      }
+     ],
+     "track-count": 5,
+     "media": [
+      {
+       "id": "ef5bfe4f-9bdc-3656-9041-8f7e2971941b",
+       "position": 1,
+       "format": "CD",
+       "track": [
+        {
+         "id": "dca0d8b2-2afc-3a02-b6ae-e0e35a551cc1",
+         "number": "2",
+         "title": "Digital Love (album version)",
+         "length": 301360
+        }
+       ],
+       "track-count": 5,
+       "track-offset": 1
+      }
+     ]
+    }
+   ],
+   "isrcs": [
+    "GBDUW0000058"
+   ],
+   "tags": [
+    {
+     "count": 1,
+     "name": "rock"
+    },
+    {
+     "count": 1,
+     "name": "electronic"
+    },
+    {
+     "count": 1,
+     "name": "dance"
+    },
+    {
+     "count": 1,
+     "name": "house"
+    },
+    {
+     "count": 1,
+     "name": "electronica"
+    }
+   ]
+  },
+  {
+   "id": "f6b9f09a-64a6-4734-a4fc-4033be4d00ae",
+   "score": 97,
+   "artist-credit-id": "2ad79928-9236-33a3-830c-cc909d38f0c7",
+   "title": "Digital Love (James Richardson remix)",
+   "length": 387440,
+   "video": null,
+   "artist-credit": [
+    {
+     "name": "Daft Punk",
+     "artist": {
+      "id": "056e4f3e-d505-4dad-8ec1-d04f521cbb56",
+      "name": "Daft Punk",
+      "sort-name": "Daft Punk",
+      "disambiguation": "French electronic duo",
+      "aliases": [
+       {
+        "sort-name": "DaftPunk",
+        "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+        "name": "DaftPunk",
+        "locale": null,
+        "type": "Search hint",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Daft Punk",
+        "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+        "name": "daft punk",
+        "locale": null,
+        "type": "Artist name",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Duft Punk",
+        "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+        "name": "Duft Punk",
+        "locale": null,
+        "type": "Search hint",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "ダフト パンク",
+        "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+        "name": "ダフト・パンク",
+        "locale": "ja",
+        "type": "Artist name",
+        "primary": true,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Daft Punk",
+        "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+        "name": "Daft Punk",
+        "locale": "en",
+        "type": "Artist name",
+        "primary": true,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Da Funk",
+        "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+        "name": "Da Funk",
+        "locale": null,
+        "type": "Search hint",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       }
+      ]
+     }
+    }
+   ],
+   "first-release-date": "2012-03-10",
+   "releases": [
+    {
+     "id": "f3b06083-57ef-4909-aee8-da2e4f3cfcdf",
+     "status-id": "1156806e-d06a-38bd-83f0-cf2284a808b9",
+     "artist-credit-id": "2ad79928-9236-33a3-830c-cc909d38f0c7",
+     "count": 1,
+     "title": "Discovery Remixed",
+     "status": "Bootleg",
+     "artist-credit": [
+      {
+       "name": "Daft Punk",
+       "artist": {
+        "id": "056e4f3e-d505-4dad-8ec1-d04f521cbb56",
+        "name": "Daft Punk",
+        "sort-name": "Daft Punk",
+        "disambiguation": "French electronic duo"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "2292c05e-299a-4c03-8688-3bf3d0a01277",
+      "type-id": "0c60f497-ff81-3818-befd-abfc84a4858b",
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "title": "Discovery Remixed",
+      "primary-type": "Album",
+      "secondary-types": [
+       "Remix",
+       "Mixtape/Street"
+      ],
+      "secondary-type-ids": [
+       "0c60f497-ff81-3818-befd-abfc84a4858b",
+       "15c1b1f5-d893-3375-a1db-e180c5ae15ed"
+      ]
+     },
+     "date": "2012-03-10",
+     "country": "XW",
+     "release-events": [
+      {
+       "date": "2012-03-10",
+       "area": {
+        "id": "525d4e18-3d00-31b9-a58b-a146a916de8f",
+        "name": "[Worldwide]",
+        "sort-name": "[Worldwide]",
+        "iso-3166-1-codes": [
+         "XW"
+        ]
+       }
+      }
+     ],
+     "track-count": 9,
+     "media": [
+      {
+       "id": "073d20c0-51c2-367b-be29-14675f1764ff",
+       "position": 1,
+       "format": "Digital Media",
+       "track": [
+        {
+         "id": "851e9b00-d756-4e28-8860-beb387a428be",
+         "number": "3",
+         "title": "Digital Love (James Richardson remix)",
+         "length": 387440
+        }
+       ],
+       "track-count": 9,
+       "track-offset": 2
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "8e6fd393-c2ea-4bdf-8193-29c07b2ff71d",
+   "score": 88,
+   "artist-credit-id": "2ad79928-9236-33a3-830c-cc909d38f0c7",
+   "title": "Digital Love (Boris Dlugosch club edit)",
+   "length": 450000,
+   "video": null,
+   "artist-credit": [
+    {
+     "name": "Daft Punk",
+     "artist": {
+      "id": "056e4f3e-d505-4dad-8ec1-d04f521cbb56",
+      "name": "Daft Punk",
+      "sort-name": "Daft Punk",
+      "disambiguation": "French electronic duo",
+      "aliases": [
+       {
+        "sort-name": "DaftPunk",
+        "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+        "name": "DaftPunk",
+        "locale": null,
+        "type": "Search hint",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Daft Punk",
+        "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+        "name": "daft punk",
+        "locale": null,
+        "type": "Artist name",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Duft Punk",
+        "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+        "name": "Duft Punk",
+        "locale": null,
+        "type": "Search hint",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "ダフト パンク",
+        "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+        "name": "ダフト・パンク",
+        "locale": "ja",
+        "type": "Artist name",
+        "primary": true,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Daft Punk",
+        "type-id": "894afba6-2816-3c24-8072-eadb66bd04bc",
+        "name": "Daft Punk",
+        "locale": "en",
+        "type": "Artist name",
+        "primary": true,
+        "begin-date": null,
+        "end-date": null
+       },
+       {
+        "sort-name": "Da Funk",
+        "type-id": "1937e404-b981-3cb7-8151-4c86ebfc8d8e",
+        "name": "Da Funk",
+        "locale": null,
+        "type": "Search hint",
+        "primary": null,
+        "begin-date": null,
+        "end-date": null
+       }
+      ]
+     }
+    }
+   ],
+   "first-release-date": "2001",
+   "releases": [
+    {
+     "id": "76f2dad0-8235-4400-996e-f90132e6607c",
+     "status-id": "518ffc83-5cde-34df-8627-81bff5093d92",
+     "artist-credit-id": "2ad79928-9236-33a3-830c-cc909d38f0c7",
+     "count": 1,
+     "title": "Discovery: Bonus Tracks From daftclub.com",
+     "status": "Promotion",
+     "artist-credit": [
+      {
+       "name": "Daft Punk",
+       "artist": {
+        "id": "056e4f3e-d505-4dad-8ec1-d04f521cbb56",
+        "name": "Daft Punk",
+        "sort-name": "Daft Punk",
+        "disambiguation": "French electronic duo"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "2a7840ab-9567-37f4-85b8-3208db09434b",
+      "type-id": "0c60f497-ff81-3818-befd-abfc84a4858b",
+      "primary-type-id": "f529b476-6e62-324f-b0aa-1f3e33d313fc",
+      "title": "Discovery: Bonus Tracks From daftclub.com",
+      "primary-type": "Album",
+      "secondary-types": [
+       "Remix"
+      ],
+      "secondary-type-ids": [
+       "0c60f497-ff81-3818-befd-abfc84a4858b"
+      ]
+     },
+     "date": "2001",
+     "country": "XW",
+     "release-events": [
+      {
+       "date": "2001",
+       "area": {
+        "id": "525d4e18-3d00-31b9-a58b-a146a916de8f",
+        "name": "[Worldwide]",
+        "sort-name": "[Worldwide]",
+        "iso-3166-1-codes": [
+         "XW"
+        ]
+       }
+      }
+     ],
+     "track-count": 13,
+     "media": [
+      {
+       "id": "9c39f76a-1bfb-38b1-be55-3b748f2e97f6",
+       "position": 1,
+       "format": "Digital Media",
+       "track": [
+        {
+         "id": "a82b453e-fce0-3151-96cf-c0b5af059f62",
+         "number": "5",
+         "title": "Digital Love (Boris Dlugosch club edit)",
+         "length": 450000
+        }
+       ],
+       "track-count": 13,
+       "track-offset": 4
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -38,7 +39,7 @@ List<TextSpan> buildArtistsTextSpans(BaseItemDto item, Color? textColour, BuildC
                   if (!context.mounted) return;
                   popRoutes
                       ? Navigator.of(context).popAndPushNamed(ArtistScreen.routeName, arguments: artist)
-                      : Navigator.of(context).pushNamed(ArtistScreen.routeName, arguments: artist);
+                      : DesktopRouter.pushNamed(context, ArtistScreen.routeName, arguments: artist);
                 });
               },
           ),

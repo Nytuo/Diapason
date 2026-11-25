@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/services/uploader/youtube_library_import.dart';
 import 'dart:async';
 
@@ -28,25 +29,25 @@ void navigateToSource(BuildContext context, QueueItemSource source) {
     case QueueItemSourceType.album:
     case QueueItemSourceType.nextUpAlbum:
     case QueueItemSourceType.albumMix:
-      Navigator.of(context).pushNamed(AlbumScreen.routeName, arguments: source.item);
+      DesktopRouter.pushNamed(context, AlbumScreen.routeName, arguments: source.item);
       break;
     case QueueItemSourceType.artist:
     case QueueItemSourceType.nextUpArtist:
     case QueueItemSourceType.artistMix:
-      Navigator.of(context).pushNamed(ArtistScreen.routeName, arguments: source.item);
+      DesktopRouter.pushNamed(context, ArtistScreen.routeName, arguments: source.item);
       break;
     case QueueItemSourceType.genre:
     case QueueItemSourceType.nextUpGenre:
     case QueueItemSourceType.genreMix:
-      Navigator.of(context).pushNamed(GenreScreen.routeName, arguments: source.item);
+      DesktopRouter.pushNamed(context, GenreScreen.routeName, arguments: source.item);
       break;
     case QueueItemSourceType.playlist:
     case QueueItemSourceType.nextUpPlaylist:
-      Navigator.of(context).pushNamed(AlbumScreen.routeName, arguments: source.item);
+      DesktopRouter.pushNamed(context, AlbumScreen.routeName, arguments: source.item);
       break;
     case QueueItemSourceType.allTracks:
     case QueueItemSourceType.favorites:
-      Navigator.of(context).pushNamed(MusicScreen.routeName, arguments: ContentType.tracks);
+      DesktopRouter.pushNamed(context, MusicScreen.routeName, arguments: ContentType.tracks);
       break;
     case QueueItemSourceType.track:
     case QueueItemSourceType.trackMix:
@@ -57,19 +58,16 @@ void navigateToSource(BuildContext context, QueueItemSource source) {
     case QueueItemSourceType.collectionMix:
       if (source.item != null) {
         // showModalCollectionMenu(context: context, item: source.item!);
-        Navigator.of(context).push(
-          MaterialPageRoute<MusicScreen>(
-            builder: (context) => MusicScreen(
-              singleTabConfig: HomeScreenSectionConfiguration(
-                base: CollectionHomeSection(
-                  itemId: source.item!.id,
-                  libraryId: GetIt.instance<FinampUserHelper>().currentUser?.currentViewId ?? allLibraryPlaceholder,
-                  contentType: ContentType.mixed,
-                ),
-                customSectionTitle: source.item!.name ?? AppLocalizations.of(context)!.unknownName,
-                sortConfig: SortAndFilterConfiguration.defaultSort,
-              ),
+        openSectionScreen(
+          context,
+          HomeScreenSectionConfiguration(
+            base: CollectionHomeSection(
+              itemId: source.item!.id,
+              libraryId: GetIt.instance<FinampUserHelper>().currentUser?.currentViewId ?? allLibraryPlaceholder,
+              contentType: ContentType.mixed,
             ),
+            customSectionTitle: source.item!.name ?? AppLocalizations.of(context)!.unknownName,
+            sortConfig: SortAndFilterConfiguration.defaultSort,
           ),
         );
       }
@@ -84,28 +82,25 @@ void navigateToSource(BuildContext context, QueueItemSource source) {
           break;
         case BaseItemDtoType.album:
         case BaseItemDtoType.playlist:
-          Navigator.of(context).pushNamed(AlbumScreen.routeName, arguments: radioSource.item);
+          DesktopRouter.pushNamed(context, AlbumScreen.routeName, arguments: radioSource.item);
           break;
         case BaseItemDtoType.artist:
-          Navigator.of(context).pushNamed(ArtistScreen.routeName, arguments: radioSource.item);
+          DesktopRouter.pushNamed(context, ArtistScreen.routeName, arguments: radioSource.item);
           break;
         case BaseItemDtoType.genre:
-          Navigator.of(context).pushNamed(GenreScreen.routeName, arguments: radioSource.item);
+          DesktopRouter.pushNamed(context, GenreScreen.routeName, arguments: radioSource.item);
           break;
         case BaseItemDtoType.collection:
-          Navigator.of(context).push(
-            MaterialPageRoute<MusicScreen>(
-              builder: (context) => MusicScreen(
-                singleTabConfig: HomeScreenSectionConfiguration(
-                  base: CollectionHomeSection(
-                    itemId: radioSource.item!.id,
-                    libraryId: GetIt.instance<FinampUserHelper>().currentUser?.currentViewId ?? allLibraryPlaceholder,
-                    contentType: ContentType.mixed,
-                  ),
-                  customSectionTitle: radioSource.item!.name ?? AppLocalizations.of(context)!.unknownName,
-                  sortConfig: SortAndFilterConfiguration.defaultSort,
-                ),
+          openSectionScreen(
+            context,
+            HomeScreenSectionConfiguration(
+              base: CollectionHomeSection(
+                itemId: radioSource.item!.id,
+                libraryId: GetIt.instance<FinampUserHelper>().currentUser?.currentViewId ?? allLibraryPlaceholder,
+                contentType: ContentType.mixed,
               ),
+              customSectionTitle: radioSource.item!.name ?? AppLocalizations.of(context)!.unknownName,
+              sortConfig: SortAndFilterConfiguration.defaultSort,
             ),
           );
         case BaseItemDtoType.noItem:
@@ -125,12 +120,10 @@ void navigateToSource(BuildContext context, QueueItemSource source) {
       final sectionInfo = FinampSettingsHelper.finampSettings.homeScreenConfiguration.sections.singleWhere(
         (section) => section.id == source.id,
       );
-      Navigator.of(
-        context,
-      ).push(MaterialPageRoute<MusicScreen>(builder: (context) => MusicScreen(singleTabConfig: sectionInfo)));
+      openSectionScreen(context, sectionInfo);
       break;
     case QueueItemSourceType.downloads:
-      Navigator.of(context).pushNamed(DownloadsScreen.routeName);
+      DesktopRouter.pushNamed(context, DownloadsScreen.routeName);
       break;
     case QueueItemSourceType.nextUp:
     case QueueItemSourceType.formerNextUp:

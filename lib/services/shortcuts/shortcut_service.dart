@@ -1,5 +1,6 @@
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/models/library_shortcut.dart';
+import 'package:diapason/utils/isar_availability.dart';
 import 'package:get_it/get_it.dart';
 import 'package:isar_community/isar.dart';
 import 'package:logging/logging.dart';
@@ -14,6 +15,9 @@ class ShortcutService {
 
   Isar get _isar => GetIt.instance<Isar>();
 
+  /// Pins and search history live in Isar; without it (web, tvOS) they're empty and writes are dropped.
+  bool get available => isarAvailable;
+
   final List<void Function()> _listeners = [];
   void addListener(void Function() listener) => _listeners.add(listener);
   void _notify() {
@@ -22,13 +26,16 @@ class ShortcutService {
     }
   }
 
-  List<PinnedItem> get pins => _isar.pinnedItems.where().sortBySortIndex().thenByPinnedAt().findAllSync();
+  List<PinnedItem> get pins => !available
+      ? const []
+      : _isar.pinnedItems.where().sortBySortIndex().thenByPinnedAt().findAllSync();
 
-  bool isPinned(BaseItemId id) => _isar.pinnedItems.getSync(PinnedItem.fastHash(id.raw)) != null;
+  bool isPinned(BaseItemId id) => available && _isar.pinnedItems.getSync(PinnedItem.fastHash(id.raw)) != null;
 
   bool get isFull => pins.length >= maxPins;
 
   Future<bool> pin(BaseItemDto item) async {
+    if (!available) return false;
     if (isPinned(item.id)) return true;
     if (isFull) return false;
 
@@ -48,6 +55,7 @@ class ShortcutService {
   }
 
   Future<void> unpin(BaseItemId id) async {
+    if (!available) return;
     _isar.writeTxnSync(() => _isar.pinnedItems.deleteSync(PinnedItem.fastHash(id.raw)));
     _notify();
   }
@@ -61,6 +69,7 @@ class ShortcutService {
   }
 
   Future<void> reorderPins(List<PinnedItem> ordered) async {
+    if (!available) return;
     _isar.writeTxnSync(() {
       for (final (index, pin) in ordered.indexed) {
         pin.sortIndex = index;
@@ -73,6 +82,7 @@ class ShortcutService {
   /// Adds pins from a backup after the existing ones, skipping duplicates and stopping at [maxPins].
   /// Returns how many were added.
   Future<int> restorePins(List<PinnedItem> incoming) async {
+    if (!available) return 0;
     final existing = pins;
     final ordered = [...incoming]..sort((a, b) => a.sortIndex.compareTo(b.sortIndex));
     final toAdd = <PinnedItem>[];
@@ -88,12 +98,13 @@ class ShortcutService {
     return toAdd.length;
   }
 
-  List<SearchHistoryEntry> get recentSearches =>
-      _isar.searchHistoryEntrys.where().sortBySearchedAtDesc().limit(maxSearchHistory).findAllSync();
+  List<SearchHistoryEntry> get recentSearches => !available
+      ? const []
+      : _isar.searchHistoryEntrys.where().sortBySearchedAtDesc().limit(maxSearchHistory).findAllSync();
 
   Future<void> recordSearch(String query) async {
     final trimmed = query.trim();
-    if (trimmed.isEmpty) return;
+    if (trimmed.isEmpty || !available) return;
 
     _isar.writeTxnSync(() {
       _isar.searchHistoryEntrys.putSync(SearchHistoryEntry(query: trimmed, searchedAt: DateTime.now()));
@@ -108,10 +119,12 @@ class ShortcutService {
   }
 
   Future<void> removeSearch(String query) async {
+    if (!available) return;
     _isar.writeTxnSync(() => _isar.searchHistoryEntrys.deleteSync(PinnedItem.fastHash(query.toLowerCase())));
   }
 
   Future<void> clearSearchHistory() async {
+    if (!available) return;
     _isar.writeTxnSync(() => _isar.searchHistoryEntrys.clearSync());
     _log.info("Cleared the search history");
   }

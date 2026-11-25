@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 import 'dart:math';
 
 import 'package:diapason/services/tvos/appletv_audio_channel.dart';
@@ -12,7 +12,11 @@ import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/main.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
+import 'package:diapason/components/lyrics/apple_lyrics_view.dart';
+import 'package:diapason/components/lyrics/lyric_text.dart';
 import 'package:diapason/components/lyrics_source_chip.dart';
+import 'package:diapason/services/lyrics/furigana.dart';
+import 'package:diapason/services/lyrics/lyrics_extras.dart';
 import 'package:diapason/services/current_track_metadata_provider.dart';
 import 'package:diapason/services/lyrics/lyrics_offset_service.dart';
 import 'package:diapason/services/lyrics/lyrics_sources.dart';
@@ -274,6 +278,23 @@ class _LyricsViewState extends ConsumerState<LyricsView> with WidgetsBindingObse
     super.dispose();
   }
 
+  /// Furigana, romaji and translation for the shown lyrics, as far as they're ready (lyrics show without them first).
+  LyricsExtras _extras(BaseItemId trackId, List<LyricLine> lines) {
+    if (lines.isEmpty) return LyricsExtras.none;
+    final furigana = ref.watch(furiganaProvider(lines)).value;
+    final config = ref.watch(lyricsTranslationConfigProvider);
+    final translation = ref
+        .watch(
+          lyricsTranslationProvider((
+            trackId: trackId.raw,
+            lines: lines,
+            target: lyricsTranslationTarget(context, config),
+          )),
+        )
+        .value;
+    return LyricsExtras(furigana: furigana, translation: translation);
+  }
+
   // Only call while within build()
   Widget _getEmptyState({required String message, required IconData icon, MetadataProvider? metadata}) {
     return Center(
@@ -341,6 +362,17 @@ class _LyricsViewState extends ConsumerState<LyricsView> with WidgetsBindingObse
     } else {
       // We have lyrics that we can display
       final lyricLines = lyrics ?? [];
+      final extras = _extras(metadata.value!.item.id, lyricLines);
+      final appleStyle = _isSynchronizedLyrics && ref.watch(finampSettingsProvider.lyricsAppleStyle);
+
+      Future<void> seekTo(LyricLine line) async {
+        // Seek to the start of the line + 1 millisecond to account for player inaccuracy,
+        // shifted by this track's lyrics offset so the tapped line is the one that plays.
+        final offsetMicros = LyricsOffsetService.offsetMs(metadata.value!.item.id) * 1000;
+        await GetIt.instance<MusicPlayerBackgroundTask>().seek(
+          Duration(microseconds: max(0, line.startMicros + 1000 + offsetMicros)),
+        );
+      }
 
       return LayoutBuilder(
         builder: (context, constraints) {
@@ -348,91 +380,114 @@ class _LyricsViewState extends ConsumerState<LyricsView> with WidgetsBindingObse
             padding: const EdgeInsets.only(left: 20.0, right: 12.0),
             child: Stack(
               children: [
-                // Manually build scrollbar above lyricsListMask
-                Scrollbar(
-                  controller: autoScrollController,
-                  // Use notificationPredicate from LyricsScrollBehavior
-                  notificationPredicate: (notification) {
-                    if (notification.depth != 0) return false;
-                    if (autoScrollController.isAutoScrolling) {
-                      if (notification is ScrollUpdateNotification && notification.scrollDelta == null) {
-                        return true;
-                      }
-                      return false;
-                    }
-                    return true;
-                  },
-                  child: ScrollConfiguration(
-                    behavior: const FinampScrollBehavior(scrollbars: false),
+                if (appleStyle)
+                  Positioned.fill(
                     child: LyricsListMask(
-                      child: ListView.builder(
-                        key: PageStorageKey(metadata.value?.item),
-                        controller: autoScrollController,
-                        itemCount: lyricLines.length + 2,
-                        itemBuilder: (context, rawIndex) {
-                          if (rawIndex == 0) {
-                            // build header
-                            return AutoScrollTag(
-                              key: const ValueKey(-1),
-                              controller: autoScrollController,
-                              index: -1,
-                              child: ref.watch(finampSettingsProvider.showLyricsScreenAlbumPrelude)
-                                  ? SizedBox(
-                                      height: constraints.maxHeight * 0.65,
-                                      child: Center(
-                                        child: SizedBox(
-                                          height: constraints.maxHeight * 0.55,
-                                          child: const PlayerScreenAlbumImage(),
-                                        ),
-                                      ),
-                                    )
-                                  : SizedBox(height: constraints.maxHeight * 0.2),
-                            );
-                          } else if (rawIndex == lyricLines.length + 1) {
-                            // build footer
-                            return SizedBox(height: constraints.maxHeight * 0.2);
-                          } else {
-                            final index = rawIndex - 1;
-                            final line = lyricLines[index];
-                            return AutoScrollTag(
-                              key: ValueKey(index),
-                              controller: autoScrollController,
-                              index: index,
-                              child: _LyricLine(
-                                lineNumber: index,
-                                line: line,
-                                onTap: () async {
-                                  // Seek to the start of the line + 1 millisecond to account for player inaccuracy,
-                                  // shifted by this track's lyrics offset so the tapped line is the one that plays.
-                                  final offsetMicros = LyricsOffsetService.offsetMs(metadata.value!.item.id) * 1000;
-                                  await GetIt.instance<MusicPlayerBackgroundTask>().seek(
-                                    Duration(microseconds: max(0, line.startMicros + 1000 + offsetMicros)),
-                                  );
-                                  setState(() {
-                                    isAutoScrollEnabled = true;
-                                  });
-                                  if (!context.mounted) return;
-                                  unawaited(
-                                    autoScrollController.scrollToIndex(
-                                      index,
-                                      preferPosition: AutoScrollPosition.middle,
-                                      duration: MediaQuery.disableAnimationsOf(context)
-                                          ? const Duration(
-                                              milliseconds: 1,
-                                            ) // there's an assertion in the library forbidding a duration of 0, so we use 1ms instead to get instant scrolling
-                                          : const Duration(milliseconds: 500),
-                                    ),
-                                  );
-                                },
-                                currentLineNumberNotifier: currentLineNotifier,
-                              ),
-                            );
-                          }
+                      child: AppleLyricsView(
+                        key: ValueKey(metadata.value?.item.id),
+                        lines: lyricLines,
+                        extras: extras,
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyLarge!.color,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.4,
+                          height: 1.2,
+                          fontSize: lyricsFontSizeToSize(ref.watch(finampSettingsProvider.lyricsFontSize)) + 2.0,
+                        ),
+                        textAlign: lyricsAlignmentToTextAlign(ref.watch(finampSettingsProvider.lyricsAlignment)),
+                        offsetMicros: () => LyricsOffsetService.offsetMs(metadata.value!.item.id) * 1000,
+                        autoScrollEnabled: isAutoScrollEnabled,
+                        onUserScroll: () => setState(() => isAutoScrollEnabled = false),
+                        onSeek: (line) {
+                          unawaited(seekTo(line));
+                          setState(() => isAutoScrollEnabled = true);
                         },
+                        padding: const EdgeInsets.only(right: 8),
+                      ),
+                    ),
+                  )
+                else
+                  // Manually build scrollbar above lyricsListMask
+                  Scrollbar(
+                    controller: autoScrollController,
+                    // Use notificationPredicate from LyricsScrollBehavior
+                    notificationPredicate: (notification) {
+                      if (notification.depth != 0) return false;
+                      if (autoScrollController.isAutoScrolling) {
+                        if (notification is ScrollUpdateNotification && notification.scrollDelta == null) {
+                          return true;
+                        }
+                        return false;
+                      }
+                      return true;
+                    },
+                    child: ScrollConfiguration(
+                      behavior: const FinampScrollBehavior(scrollbars: false),
+                      child: LyricsListMask(
+                        child: ListView.builder(
+                          key: PageStorageKey(metadata.value?.item),
+                          controller: autoScrollController,
+                          itemCount: lyricLines.length + 2,
+                          itemBuilder: (context, rawIndex) {
+                            if (rawIndex == 0) {
+                              // build header
+                              return AutoScrollTag(
+                                key: const ValueKey(-1),
+                                controller: autoScrollController,
+                                index: -1,
+                                child: ref.watch(finampSettingsProvider.showLyricsScreenAlbumPrelude)
+                                    ? SizedBox(
+                                        height: constraints.maxHeight * 0.65,
+                                        child: Center(
+                                          child: SizedBox(
+                                            height: constraints.maxHeight * 0.55,
+                                            child: const PlayerScreenAlbumImage(),
+                                          ),
+                                        ),
+                                      )
+                                    : SizedBox(height: constraints.maxHeight * 0.2),
+                              );
+                            } else if (rawIndex == lyricLines.length + 1) {
+                              // build footer
+                              return SizedBox(height: constraints.maxHeight * 0.2);
+                            } else {
+                              final index = rawIndex - 1;
+                              final line = lyricLines[index];
+                              return AutoScrollTag(
+                                key: ValueKey(index),
+                                controller: autoScrollController,
+                                index: index,
+                                child: _LyricLine(
+                                  lineNumber: index,
+                                  line: line,
+                                  extras: extras[index],
+                                  onTap: () async {
+                                    await seekTo(line);
+                                    setState(() {
+                                      isAutoScrollEnabled = true;
+                                    });
+                                    if (!context.mounted) return;
+                                    unawaited(
+                                      autoScrollController.scrollToIndex(
+                                        index,
+                                        preferPosition: AutoScrollPosition.middle,
+                                        duration: MediaQuery.disableAnimationsOf(context)
+                                            ? const Duration(
+                                                milliseconds: 1,
+                                              ) // there's an assertion in the library forbidding a duration of 0, so we use 1ms instead to get instant scrolling
+                                            : const Duration(milliseconds: 500),
+                                      ),
+                                    );
+                                  },
+                                  currentLineNumberNotifier: currentLineNotifier,
+                                ),
+                              );
+                            }
+                          },
+                        ),
                       ),
                     ),
                   ),
-                ),
                 Positioned(
                   top: 0,
                   right: 0,
@@ -452,7 +507,7 @@ class _LyricsViewState extends ConsumerState<LyricsView> with WidgetsBindingObse
                         setState(() {
                           isAutoScrollEnabled = true;
                         });
-                        if (currentLineNotifier.value != null) {
+                        if (currentLineNotifier.value != null && !appleStyle) {
                           unawaited(
                             autoScrollController.scrollToIndex(
                               currentLineNotifier.value!,
@@ -483,8 +538,15 @@ class _LyricLine extends ConsumerWidget {
   final VoidCallback? onTap;
   final int lineNumber;
   final ValueNotifier<int?> currentLineNumberNotifier;
+  final LyricLineExtras extras;
 
-  const _LyricLine({required this.line, required this.lineNumber, required this.currentLineNumberNotifier, this.onTap});
+  const _LyricLine({
+    required this.line,
+    required this.lineNumber,
+    required this.currentLineNumberNotifier,
+    this.extras = LyricLineExtras.empty,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -539,16 +601,40 @@ class _LyricLine extends ConsumerWidget {
                 ),
               ),
             Expanded(
-              child: _LyricLineText(
-                line: line,
-                lineNumber: lineNumber,
-                currentLineNumberNotifier: currentLineNumberNotifier,
-                lowlightStyle: lowlightStyle,
-                cueGreyStyle: cueGreyStyle,
-                cueHighlightStyle: cueHighlightStyle,
-                unSyncedStyle: unSyncedStyle,
-                currentLineStyle: currentLineStyle,
-                cueFadeStyle: cueFadeStyle,
+              child: Column(
+                crossAxisAlignment: switch (ref.watch(finampSettingsProvider.lyricsAlignment)) {
+                  LyricsAlignment.start => CrossAxisAlignment.start,
+                  LyricsAlignment.center => CrossAxisAlignment.center,
+                  LyricsAlignment.end => CrossAxisAlignment.end,
+                },
+                children: [
+                  _LyricLineText(
+                    line: line,
+                    lineNumber: lineNumber,
+                    ruby: extras.ruby,
+                    currentLineNumberNotifier: currentLineNumberNotifier,
+                    lowlightStyle: lowlightStyle,
+                    cueGreyStyle: cueGreyStyle,
+                    cueHighlightStyle: cueHighlightStyle,
+                    unSyncedStyle: unSyncedStyle,
+                    currentLineStyle: currentLineStyle,
+                    cueFadeStyle: cueFadeStyle,
+                  ),
+                  for (final extra in [extras.romaji, extras.translation])
+                    if (extra != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          extra,
+                          textAlign: lyricsAlignmentToTextAlign(ref.watch(finampSettingsProvider.lyricsAlignment)),
+                          style: TextStyle(
+                            color: (isSynchronized ? lowlightStyle : unSyncedStyle).color,
+                            fontSize: unSyncedStyle.fontSize! * 0.62,
+                            fontStyle: identical(extra, extras.translation) ? FontStyle.italic : null,
+                          ),
+                        ),
+                      ),
+                ],
               ),
             ),
           ],
@@ -561,6 +647,7 @@ class _LyricLine extends ConsumerWidget {
 class _LyricLineText extends ConsumerStatefulWidget {
   final LyricLine line;
   final int lineNumber;
+  final List<RubySegment> ruby;
   final ValueNotifier<int?> currentLineNumberNotifier;
   final TextStyle lowlightStyle;
   final TextStyle unSyncedStyle;
@@ -575,6 +662,7 @@ class _LyricLineText extends ConsumerStatefulWidget {
   const _LyricLineText({
     required this.line,
     required this.lineNumber,
+    this.ruby = const [],
     required this.currentLineNumberNotifier,
     required this.lowlightStyle,
     required this.cueGreyStyle,
@@ -591,6 +679,10 @@ class _LyricLineText extends ConsumerStatefulWidget {
 class _LyricLineTextState extends ConsumerState<_LyricLineText> {
   InlineSpan? textSpan;
   bool isCurrentLine = false;
+
+  /// The sweep, for lines drawn with furigana (the plain text path styles letters instead).
+  final _fill = ValueNotifier<LyricFill>(LyricFill.none);
+  bool _rubyDrawnAsCurrent = false;
   StreamSubscription<ProgressState>? cueStream;
 
   @override
@@ -625,6 +717,16 @@ class _LyricLineTextState extends ConsumerState<_LyricLineText> {
   void _updateTextFromCues(int currentMicros) {
     assert(isCurrentLine && widget._useCues);
     final text = widget.line.text;
+    if (widget.ruby.isNotEmpty) {
+      _fill.value = LyricFill.at(widget.line, currentMicros);
+      if (textSpan == null || _rubyDrawnAsCurrent != isCurrentLine) {
+        setState(() {
+          textSpan = TextSpan(text: text);
+          _rubyDrawnAsCurrent = isCurrentLine;
+        });
+      }
+      return;
+    }
 
     if (text == null || text.isEmpty) {
       setState(() {
@@ -717,7 +819,9 @@ class _LyricLineTextState extends ConsumerState<_LyricLineText> {
       oldWidget.currentLineNumberNotifier.removeListener(_updateCurrentTrack);
       widget.currentLineNumberNotifier.addListener(_updateCurrentTrack);
     }
-    if (widget.line != oldWidget.line || widget.lineNumber != oldWidget.lineNumber) {
+    if (widget.line != oldWidget.line ||
+        widget.lineNumber != oldWidget.lineNumber ||
+        !identical(widget.ruby, oldWidget.ruby)) {
       _updateCurrentTrack(force: true);
     } else if (isCurrentLine) {
       if (widget._useCues) {
@@ -749,11 +853,31 @@ class _LyricLineTextState extends ConsumerState<_LyricLineText> {
   void dispose() {
     widget.currentLineNumberNotifier.removeListener(_updateCurrentTrack);
     cueStream?.cancel();
+    _fill.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.ruby.isNotEmpty) {
+      final cues = isCurrentLine && widget._useCues;
+      final style = !widget._isSynced
+          ? widget.unSyncedStyle
+          : !isCurrentLine
+          ? widget.lowlightStyle
+          : cues
+          ? widget.cueGreyStyle
+          : widget.currentLineStyle;
+      return LyricText(
+        text: widget.line.text ?? "",
+        style: style,
+        color: style.color!,
+        ruby: widget.ruby,
+        textAlign: lyricsAlignmentToTextAlign(ref.watch(finampSettingsProvider.lyricsAlignment)),
+        fillColor: cues ? widget.cueHighlightStyle.color : null,
+        fill: cues ? _fill : null,
+      );
+    }
     return RichText(
       text: textSpan!,
       textAlign: lyricsAlignmentToTextAlign(ref.watch(finampSettingsProvider.lyricsAlignment)),

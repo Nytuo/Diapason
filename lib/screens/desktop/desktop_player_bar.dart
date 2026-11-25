@@ -1,8 +1,10 @@
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/components/PlayerScreen/progress_slider.dart';
 import 'package:diapason/components/PlayerScreen/spectrum_visualizer.dart';
 import 'package:diapason/components/album_image.dart';
+import 'package:diapason/screens/desktop/desktop_kit.dart';
 import 'package:diapason/screens/desktop/desktop_theme.dart';
 import 'package:diapason/screens/desktop/desktop_track_info.dart';
 import 'package:diapason/screens/desktop/desktop_transport_controls.dart';
@@ -27,12 +29,16 @@ class DesktopPlayerBar extends ConsumerStatefulWidget {
     required this.onMiniPlayer,
     required this.onFullscreen,
     required this.onOpenLibraryItem,
+    this.onOpenVisualizer,
   });
 
   final bool lyricsOpen;
   final VoidCallback onToggleLyrics;
   final VoidCallback onMiniPlayer;
   final VoidCallback onFullscreen;
+
+  /// Opens the animated visual page; null hides the button.
+  final VoidCallback? onOpenVisualizer;
 
   /// Opens an already-resolved album or artist as a detail page in the main
   /// content area.
@@ -49,24 +55,26 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
   @override
   Widget build(BuildContext context) {
     final p = DesktopThemeScope.of(context);
-    return Container(
-      height: 148,
-      decoration: BoxDecoration(
-        color: p.bgSecondary,
-        border: Border(top: BorderSide(color: p.borderSubtle)),
-      ),
+    return DesktopPanel(
+      chrome: true,
+      radius: DesktopMetrics.radiusPlayer,
+      height: DesktopMetrics.playerBarHeight,
       child: Stack(
         clipBehavior: Clip.hardEdge,
         children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: 260,
-            child: IgnorePointer(
-              child: Opacity(opacity: 0.6, child: RepaintBoundary(child: const SpectrumVisualizer())),
+          if (!p.reduceEffects)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 260,
+              child: IgnorePointer(
+                child: Opacity(
+                  opacity: 0.6,
+                  child: RepaintBoundary(child: const SpectrumVisualizer(placement: SpectrumPlacement.strip)),
+                ),
+              ),
             ),
-          ),
           // While Diapason Connect plays on another device, this same bar shows that device: the queue and
           // player state mirror it and every control is sent there (see RemotePlayback).
           _content(p),
@@ -112,18 +120,24 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
     final base = _baseItemOf(item);
     final artistId = _firstArtistId(base);
     final albumId = base?.albumId;
+    // The big cover in the sidebar already shows the art.
+    final bigCover = ref.watch(finampSettingsProvider.desktopBigCoverArt) && item != null;
     return _trackInfoLayout(
       p,
+      showArt: !bigCover,
       art: item == null
           ? Container(
               decoration: BoxDecoration(color: p.surface, borderRadius: BorderRadius.circular(6)),
               child: Icon(TablerIcons.disc, color: p.textTertiary),
             )
           : ClipRRect(
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(DesktopMetrics.radiusArtSmall),
               child: AlbumImage(imageListenable: currentAlbumImageProvider),
             ),
-      onArtTap: item == null ? null : widget.onFullscreen,
+      // Fullscreen has its own button; tapping the art toggles the big sidebar cover.
+      onArtTap: item == null
+          ? null
+          : () => FinampSetters.setDesktopBigCoverArt(!ref.read(finampSettingsProvider.desktopBigCoverArt)),
       title: item?.title ?? "No track playing",
       artist: item?.artist ?? "—",
       onTitleTap: albumId == null ? null : () => _openResolved(albumId, isArtist: false),
@@ -166,6 +180,7 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
 
   Widget _trackInfoLayout(
     DesktopPalette p, {
+    required bool showArt,
     required Widget art,
     required VoidCallback? onArtTap,
     required String title,
@@ -192,22 +207,33 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.only(left: 20, right: 16),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: onArtTap,
-            child: SizedBox(width: 76, height: 76, child: art),
+          AnimatedSize(
+            duration: p.motion(const Duration(milliseconds: 220)),
+            curve: Curves.easeOutCubic,
+            child: showArt
+                ? Padding(
+                    padding: const EdgeInsets.only(right: 14),
+                    child: MouseRegion(
+                      cursor: onArtTap == null ? MouseCursor.defer : SystemMouseCursors.click,
+                      child: GestureDetector(
+                        onTap: onArtTap,
+                        child: SizedBox(width: 68, height: 68, child: art),
+                      ),
+                    ),
+                  )
+                : const SizedBox(height: 68),
           ),
-          const SizedBox(width: 12),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                line(title, TextStyle(color: p.textPrimary, fontSize: 14, fontWeight: FontWeight.bold), onTitleTap),
+                line(title, p.body.copyWith(fontSize: 14, fontWeight: FontWeight.w700), onTitleTap),
                 const SizedBox(height: 2),
-                line(artist, TextStyle(color: p.textSecondary, fontSize: 12), onArtistTap),
+                line(artist, p.caption.copyWith(fontSize: 12.5), onArtistTap),
                 const SizedBox(height: 2),
                 extra,
               ],
@@ -238,6 +264,14 @@ class _DesktopPlayerBarState extends ConsumerState<DesktopPlayerBar> {
             icon: const Icon(TablerIcons.picture_in_picture),
             onPressed: widget.onMiniPlayer,
           ),
+          if (widget.onOpenVisualizer != null)
+            IconButton(
+              iconSize: 18,
+              tooltip: AppLocalizations.of(context)!.visualAnimatedOpen,
+              color: p.textSecondary,
+              icon: const Icon(TablerIcons.sparkles),
+              onPressed: widget.onOpenVisualizer,
+            ),
           IconButton(
             iconSize: 18,
             tooltip: "Fullscreen player",

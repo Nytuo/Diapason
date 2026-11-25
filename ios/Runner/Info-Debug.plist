@@ -79,7 +79,7 @@
 		<string>_F5D5D6EA._googlecast._tcp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Diapason uses the local network to find and control other Diapason devices, and for debugging.</string>
+	<string>Diapason uses the local network to find and control other Diapason devices, to find and play from DLNA/UPnP media servers, and for debugging.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>I don't know why this permission is being requested, you should probably deny it. If you can, create a GitHub issue with a screenshot of this message.</string>
 	<key>UIApplicationSceneManifest</key>

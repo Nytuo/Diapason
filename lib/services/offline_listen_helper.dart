@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:diapason/models/finamp_models.dart';
@@ -63,6 +64,8 @@ class OfflineListenLogHelper {
   }
 
   Future<void> _exportOfflineListenToFile(OfflineListen listen) async {
+    // A browser has no file to append to; the Hive box (IndexedDB) still keeps the listen.
+    if (Platform.isWeb) return;
     final data = {
       'timestamp': listen.timestamp,
       'item_id': listen.itemId,

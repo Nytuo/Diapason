@@ -1,6 +1,8 @@
+import 'package:diapason/utils/native_abi.dart'
+    if (dart.library.js_interop) 'package:diapason/utils/native_abi_web.dart';
 import 'dart:convert';
-import 'dart:ffi' show Abi;
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
@@ -104,14 +106,9 @@ class UpdateService {
   /// the running machine's native arch first, then any compatible fallback (an
   /// x64 build runs fine under emulation on arm64 Windows/macOS).
   static List<String> get _archTokens {
-    switch (Abi.current()) {
-      case Abi.windowsArm64:
-      case Abi.linuxArm64:
-      case Abi.macosArm64:
-        return const ["aarch64", "arm64", "x64", "x86_64", "amd64"];
-      default:
-        return const ["x64", "x86_64", "amd64"];
-    }
+    return isDesktopArm64
+        ? const ["aarch64", "arm64", "x64", "x86_64", "amd64"]
+        : const ["x64", "x86_64", "amd64"];
   }
 
   String? _pickAsset(dynamic assets) {

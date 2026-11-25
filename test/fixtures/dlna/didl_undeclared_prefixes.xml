@@ -1,0 +1,8 @@
+<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/">
+  <container id="7" parentID="0" childCount="12" restricted="1">
+    <dc:title>Some Album</dc:title>
+    <upnp:class>object.container.album.musicAlbum</upnp:class>
+    <upnp:artist>Someone</upnp:artist>
+    <upnp:albumArtURI>/art/7.jpg</upnp:albumArtURI>
+  </container>
+</DIDL-Lite>

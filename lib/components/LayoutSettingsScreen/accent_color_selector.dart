@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/color_schemes.g.dart';
 import 'package:diapason/extensions/color_extensions.dart';
 import 'package:diapason/extensions/string.dart';
@@ -25,7 +26,7 @@ class AccentColorSelector extends ConsumerWidget {
         onTap: useSystemAccent
             ? null
             : () {
-                showModalBottomSheet<void>(
+                showAdaptiveModalSheet<void>(
                   context: context,
                   isScrollControlled: true,
                   useSafeArea: true,

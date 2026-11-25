@@ -1,7 +1,8 @@
 // ignore_for_file: experimental_member_use (audio_session's AudioDeviceType, see _bluetoothOutputTypes)
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 import 'dart:math';
 
 import 'package:audio_service/audio_service.dart';
@@ -25,6 +26,10 @@ import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:diapason/services/playback_history_service.dart';
 import 'package:diapason/services/queue_service.dart';
 import 'package:diapason/services/radio_service_helper.dart' as RadioServiceHelper;
+import 'package:diapason/models/radio_station.dart';
+import 'package:diapason/services/backends/radio_backend.dart';
+import 'package:diapason/services/radio/icy_metadata.dart';
+import 'package:diapason/services/radio/radio_now_playing.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,7 +40,12 @@ import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 import 'package:logging/logging.dart';
 import 'package:rxdart/rxdart.dart';
 
+import 'package:diapason/services/friendly_error.dart';
+import 'package:path/path.dart' as p;
+
 import 'android_auto_helper.dart';
+import 'hifi/dsd_audio_source.dart';
+import 'hifi/hifi_service.dart';
 import 'finamp_settings_helper.dart';
 import 'ios_helpers.dart';
 import 'metadata_provider.dart';
@@ -121,7 +131,15 @@ class PlayerVolumeController {
     _updateVolume();
   }
 
+  /// Re-applies the volume (bit-perfect mode was switched).
+  Future<void> refresh() => _updateVolume();
+
   Future<void> _updateVolume() {
+    if (HifiService.instance.bitPerfectActive) {
+      // Bit-perfect: unity gain, so no sample is scaled. User volume, ReplayGain, fades and ducking are bypassed.
+      _volumeLogger.info("Bit-perfect output: volume held at 100%");
+      return _player.setVolume(1.0);
+    }
     var vol1 = _internalVolume.clamp(0.0, 1.0);
     var vol2 = _replayGainVolume.clamp(0.0, 1.0);
     var vol3 = _fadeVolume.clamp(0.0, 1.0);
@@ -393,6 +411,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
   MusicPlayerBackgroundTask() {
     _audioServiceBackgroundTaskLogger.info("Starting audio service");
+    HifiService.instance.init();
 
     if (Platform.isWindows || Platform.isLinux) {
       _audioServiceBackgroundTaskLogger.info("Initializing media-kit for Windows/Linux");
@@ -512,9 +531,13 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     _volumeB = PlayerVolumeController(_playerB);
 
     try {
-      _loudnessEnhancerEffectA?.setEnabled(FinampSettingsHelper.finampSettings.volumeNormalizationActive);
+      _loudnessEnhancerEffectA?.setEnabled(
+        FinampSettingsHelper.finampSettings.volumeNormalizationActive && !HifiService.instance.bitPerfectActive,
+      );
       _loudnessEnhancerEffectA?.setTargetGain(0.0);
-      _loudnessEnhancerEffectB?.setEnabled(FinampSettingsHelper.finampSettings.volumeNormalizationActive);
+      _loudnessEnhancerEffectB?.setEnabled(
+        FinampSettingsHelper.finampSettings.volumeNormalizationActive && !HifiService.instance.bitPerfectActive,
+      );
       _loudnessEnhancerEffectB?.setTargetGain(0.0);
     } catch (_) {
       // Assume we've hit https://github.com/UnicornsOnLSD/finamp/issues/1343 and disable loudness enhancer effect permanently
@@ -572,8 +595,8 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
           pow(10.0, iosGain / 20.0)
               as double; // https://sound.stackexchange.com/questions/38722/convert-db-value-to-linear-scale
       if (normalizationActive) {
-        _loudnessEnhancerEffectA?.setEnabled(true);
-        _loudnessEnhancerEffectB?.setEnabled(true);
+        _loudnessEnhancerEffectA?.setEnabled(!HifiService.instance.bitPerfectActive);
+        _loudnessEnhancerEffectB?.setEnabled(!HifiService.instance.bitPerfectActive);
         _applyVolumeNormalization(mediaItem.valueOrNull);
       } else {
         _loudnessEnhancerEffectA?.setEnabled(false);
@@ -601,6 +624,8 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       sleepTimer?.onTrackCompleted();
     });
 
+    _setupBitPerfect();
+
     _activeErrorStream.listen((error) {
       _audioServiceBackgroundTaskLogger.severe("Player error: $error", error);
     });
@@ -620,6 +645,11 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
     // Special processing for state transitions.
     _activeProcessingStateStream.listen((event) async {
+      if (event == ProcessingState.completed && _currentIsLive && !AppleTvAudioChannel.isSupported) {
+        // A live stream only "completes" when the connection dropped.
+        unawaited(_reconnectLive("stream ended"));
+        return;
+      }
       if (event == ProcessingState.completed) {
         await handleEndOfQueue();
       }
@@ -631,6 +661,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
     _setupStreamCacheProgressTracking();
     _setupDurationReconciliation();
     _setupStuckAtEndWatchdog();
+    _setupLiveRadio();
 
     if (AppleTvAudioChannel.isSupported) {
       _setupTvOSPlayback();
@@ -781,6 +812,16 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   }
 
   AudioPlayer _buildPlayer({required AudioPipeline audioPipeline, required Duration maxBufferDuration}) {
+    final player = _newPlayer(audioPipeline: audioPipeline, maxBufferDuration: maxBufferDuration);
+    if (kIsWeb) {
+      // Fetch audio in CORS mode, like the API calls. Without it the browser loads the cross-origin stream "opaque",
+      // and Chrome's Opaque Response Blocking intermittently rejects one of the range requests ("Failed to load URL").
+      unawaited(player.setWebCrossOrigin(WebCrossOrigin.anonymous));
+    }
+    return player;
+  }
+
+  AudioPlayer _newPlayer({required AudioPipeline audioPipeline, required Duration maxBufferDuration}) {
     return AudioPlayer(
       maxSkipsOnError: 0,
       handleInterruptions: FinampSettingsHelper.finampSettings.duckOnAudioInterruption,
@@ -829,6 +870,145 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   /// Streams that go through just_audio's caching proxy (YouTube in particular) can stall right at the end on Apple
   /// platforms: the audio stops, the player stays "playing", "completed" never comes, and the queue never advances
   /// while the clock keeps running.
+  // ---------------------------------------------------------------------
+  // Live radio
+  //
+  // Station items have no duration and cannot be seeked. Their ICY
+  // StreamTitle (from just_audio on Android/iOS/macOS, from a Dart poller on
+  // the media_kit platforms and tvOS) replaces the title and artist of the
+  // media item, so the notification, lock screen and player show the song on
+  // air; the station stays the album. A dropped stream is reconnected a few
+  // times with a growing delay.
+  // ---------------------------------------------------------------------
+
+  static const _maxLiveReconnects = 5;
+  int _liveReconnects = 0;
+  bool _liveReconnecting = false;
+  IcyPoller? _icyPoller;
+  String? _liveMediaItemId;
+  Timer? _liveStableTimer;
+
+  bool _isLiveQueueItem(FinampQueueItem? queueItem) => queueItem != null && RadioStation.isLiveItem(queueItem.baseItem);
+
+  jellyfin_models.BaseItemDto? _baseItemOf(MediaItem? item) {
+    final json = item?.extras?["itemJson"];
+    return json is Map<String, dynamic> ? jellyfin_models.BaseItemDto.fromJson(json) : null;
+  }
+
+  bool get _currentIsLive {
+    final tag = _player.sequenceState.currentSource?.tag;
+    if (tag is FinampQueueItem) return _isLiveQueueItem(tag);
+    return RadioStation.isLiveItem(_baseItemOf(mediaItem.valueOrNull));
+  }
+
+  void _setupLiveRadio() {
+    for (final player in [_playerA, _playerB]) {
+      player.icyMetadataStream.listen((icy) {
+        if (player != _player || !_currentIsLive) return;
+        final title = icy?.info?.title;
+        if (title == null) return;
+        _applyNowPlaying(IcyNowPlaying.parse(title));
+      });
+    }
+
+    mediaItem.listen((item) {
+      final baseItem = _baseItemOf(item);
+      final live = RadioStation.isLiveItem(baseItem);
+      if (item?.id != _liveMediaItemId) {
+        _liveMediaItemId = item?.id;
+        _liveReconnects = 0;
+        RadioNowPlaying.set(null);
+        unawaited(_icyPoller?.close());
+        _icyPoller = null;
+        if (live && baseItem != null && (Platform.isWindows || Platform.isLinux || AppleTvAudioChannel.isSupported)) {
+          unawaited(_startIcyPoller(baseItem));
+        }
+        // The notification's seek controls depend on whether this is live.
+        playbackState.add(_transformEvent(_player.playbackEvent));
+        return;
+      }
+      // Something re-published the plain station item: put the song on air back.
+      final nowPlaying = RadioNowPlaying.current;
+      if (live && item != null && nowPlaying != null && item.title != nowPlaying.title) {
+        _applyNowPlaying(nowPlaying);
+      }
+    });
+
+    _activeErrorStream.listen((error) {
+      if (_currentIsLive && !AppleTvAudioChannel.isSupported) unawaited(_reconnectLive("player error: $error"));
+    });
+
+    // Once a station has played fine for a while, a later drop gets a fresh set of retries.
+    _activeProcessingStateStream.listen((state) {
+      _liveStableTimer?.cancel();
+      if (state == ProcessingState.ready && _currentIsLive) {
+        _liveStableTimer = Timer(const Duration(seconds: 30), () {
+          if (_player.playing) _liveReconnects = 0;
+        });
+      }
+    });
+  }
+
+  Future<void> _startIcyPoller(jellyfin_models.BaseItemDto item) async {
+    Uri? url;
+    try {
+      final station = RadioStation.fromBaseItem(item);
+      url = station != null ? (await RadioBackend.resolveStationUrl(station)).uri : Uri.tryParse(item.path ?? "");
+    } catch (e) {
+      _audioServiceBackgroundTaskLogger.fine("No ICY polling for '${item.name}': $e");
+    }
+    if (url == null || url.path.toLowerCase().endsWith(".m3u8")) return;
+    final myId = _liveMediaItemId;
+    if (myId != mediaItem.valueOrNull?.id) return;
+    final poller = _icyPoller = IcyPoller(url);
+    poller.stream.listen((nowPlaying) {
+      if (_liveMediaItemId == myId && nowPlaying != null) _applyNowPlaying(nowPlaying);
+    });
+    poller.start();
+  }
+
+  void _applyNowPlaying(IcyNowPlaying? nowPlaying) {
+    if (nowPlaying == null) return;
+    RadioNowPlaying.set(nowPlaying);
+    final current = mediaItem.valueOrNull;
+    final station = _baseItemOf(current);
+    if (current == null || station == null) return;
+    final stationName = station.album ?? station.name ?? current.album;
+    if (current.title == nowPlaying.title && current.artist == (nowPlaying.artist ?? stationName)) return;
+    mediaItem.add(
+      current.copyWith(title: nowPlaying.title, artist: nowPlaying.artist ?? stationName, album: stationName),
+    );
+    if (AppleTvAudioChannel.isSupported) _tvPushNowPlayingInfo();
+  }
+
+  Future<void> _reconnectLive(String why) async {
+    if (_liveReconnecting || RemotePlayback.isForwarding) return;
+    final index = _player.currentIndex;
+    if (index == null) return;
+    if (_liveReconnects >= _maxLiveReconnects) {
+      _audioServiceBackgroundTaskLogger.warning("Live stream lost ($why); giving up after $_liveReconnects attempts");
+      return;
+    }
+    _liveReconnecting = true;
+    _liveReconnects++;
+    final itemId = mediaItem.valueOrNull?.id;
+    var failed = false;
+    try {
+      _audioServiceBackgroundTaskLogger.info("Live stream lost ($why); reconnecting (attempt $_liveReconnects)");
+      await Future<void>.delayed(Duration(seconds: 2 * _liveReconnects));
+      if (mediaItem.valueOrNull?.id != itemId || _player.currentIndex != index) return;
+      await _player.seek(Duration.zero, index: index);
+      await _player.load();
+      await _player.play();
+    } catch (e) {
+      _audioServiceBackgroundTaskLogger.warning("Reconnecting the live stream failed: $e");
+      failed = true;
+    } finally {
+      _liveReconnecting = false;
+    }
+    if (failed) unawaited(_reconnectLive(why));
+  }
+
   void _setupStuckAtEndWatchdog() {
     if (AppleTvAudioChannel.isSupported) return;
     DateTime? atEndSince;
@@ -941,6 +1121,44 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   TrackAnalysisService? get _analysis =>
       GetIt.instance.isRegistered<TrackAnalysisService>() ? GetIt.instance<TrackAnalysisService>() : null;
 
+  /// Bit-perfect mode (see `HifiService`): bypasses the stages that change samples, and matches the output to each
+  /// track's format.
+  void _setupBitPerfect() {
+    var active = HifiService.instance.bitPerfectActive;
+    FinampSettingsHelper.finampSettingsListener.addListener(() {
+      final now = HifiService.instance.bitPerfectActive;
+      if (now == active) return;
+      active = now;
+      final settings = FinampSettingsHelper.finampSettings;
+      for (final effect in [_loudnessEnhancerEffectA, _loudnessEnhancerEffectB]) {
+        unawaited(effect?.setEnabled(settings.volumeNormalizationActive && !now));
+      }
+      unawaited(_applyEqualizerEnabled(settings.equalizerEnabled));
+      unawaited(_volumeA.refresh());
+      unawaited(_volumeB.refresh());
+      if (now) {
+        unawaited(_abortCrossfadeIfInProgress());
+        if (_player.speed != 1.0) unawaited(_player.setSpeed(1.0));
+      }
+    });
+
+    String? lastId;
+    mediaItem.listen((_) {
+      final queueItem = _player.sequenceState.currentSource?.tag;
+      if (queueItem is! FinampQueueItem || queueItem.id == lastId) return;
+      lastId = queueItem.id;
+      final dsd = dsdTrackInfo[queueItem.id];
+      final format = dsd != null
+          ? SourceFormat(
+              container: dsd.container,
+              sampleRate: dsd.outputRate,
+              bitDepth: dsd.outputRate == null ? null : 24,
+            )
+          : SourceFormat.of(queueItem.baseItem);
+      unawaited(HifiService.instance.onTrackChanged(format));
+    });
+  }
+
   void _setupCrossfade() {
     if (AppleTvAudioChannel.isSupported) return;
 
@@ -949,7 +1167,8 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       if (pending != null && pending.running) return;
 
       final settings = FinampSettingsHelper.finampSettings;
-      if (settings.crossfadeSeconds <= 0 && !settings.automixEnabled) {
+      // Bit-perfect: no crossfade (it mixes two tracks); tracks change gaplessly.
+      if ((settings.crossfadeSeconds <= 0 && !settings.automixEnabled) || HifiService.instance.bitPerfectActive) {
         if (pending != null) unawaited(_abortCrossfadeIfInProgress());
         return;
       }
@@ -1356,6 +1575,12 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
   @override
   Future<void> setSpeed(final double speed) async {
+    if (HifiService.instance.bitPerfectActive && speed != 1.0) {
+      // Changing the speed resamples or time-stretches: refused while bit-perfect output is on.
+      _audioServiceBackgroundTaskLogger.info("Speed $speed ignored: bit-perfect output is on");
+      await _player.setSpeed(1.0);
+      return HifiService.instance.apply();
+    }
     return _player.setSpeed(speed);
   }
 
@@ -1396,6 +1621,8 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   }
 
   Future<void> _applyEqualizerEnabled(bool enabled) async {
+    // Bit-perfect: the EQ stays off whatever its setting.
+    enabled = enabled && !HifiService.instance.bitPerfectActive;
     await _forEachEqualizerPlayer((android, darwin) async {
       await android?.setEnabled(enabled);
       await darwin?.setEnabled(enabled);
@@ -1779,6 +2006,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
   @override
   Future<void> seek(Duration position) async {
     if (RemotePlayback.isForwarding) return RemotePlayback.current!.seek(position);
+    if (_currentIsLive) return; // live radio: nothing to seek in
     _markManualSeek();
     await _abortCrossfadeIfInProgress();
     try {
@@ -2208,7 +2436,7 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
         if (FinampSettingsHelper.finampSettings.showStopButtonOnMediaNotification)
           MediaControl.stop.copyWith(androidIcon: "drawable/baseline_stop_24"),
       ],
-      systemActions: FinampSettingsHelper.finampSettings.showSeekControlsOnMediaNotification
+      systemActions: FinampSettingsHelper.finampSettings.showSeekControlsOnMediaNotification && !_currentIsLive
           ? const {MediaAction.seek, MediaAction.seekForward, MediaAction.seekBackward}
           : {},
       androidCompactActionIndices: const [0, 1, 2],
@@ -2274,7 +2502,48 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
 
   /// Syncs the list of MediaItems (_queue) with the internal queue of the player.
   /// Called by onAddQueueItem and onUpdateQueue.
+  /// DSF, DFF and SACD image tracks: a [DsdAudioSource] (PCM, DoP or DST re-wrap), or null to let the player
+  /// open the file itself (mpv decodes DSD). Errors (DST without a decoder) are reported and fail the track.
+  Future<AudioSource?> _dsdAudioSource(FinampQueueItem queueItem, Uri uri, Map<String, String>? headers) async {
+    try {
+      return await DsdAudioSource.create(
+        uri: uri,
+        headers: headers,
+        queueItemId: queueItem.id,
+        backend: HifiService.instance.backend,
+        bitPerfect: HifiService.instance.bitPerfectActive,
+        dsdMode: HifiService.instance.dsdMode,
+        tag: queueItem,
+      );
+    } catch (e, stack) {
+      final message = FriendlyError.report(
+        _audioServiceBackgroundTaskLogger,
+        "Opening DSD track '${queueItem.item.title}'",
+        e,
+        stack,
+      );
+      GlobalSnackbar.message((_) => message);
+      rethrow;
+    }
+  }
+
   Future<AudioSource> _queueItemToAudioSource(FinampQueueItem queueItem) async {
+    final extras = queueItem.item.extras!;
+    final downloadedPath = extras["downloadedTrackPath"] as String?;
+    final offline = extras["isOffline"] as bool? ?? false;
+    final transcoding = extras["shouldTranscode"] as bool? ?? false;
+    final dsdContainer = downloadedPath != null
+        ? p.extension(downloadedPath).replaceFirst(".", "")
+        : (transcoding ? null : queueItem.baseItem.container);
+    if (isDsdContainer(dsdContainer) && (downloadedPath != null || !offline)) {
+      final source = downloadedPath != null ? null : await _resolveStream(queueItem.item);
+      final uri = downloadedPath != null ? Uri.file(downloadedPath) : source!.uri;
+      final headers = source == null || source.headers.isEmpty ? null : source.headers;
+      final dsd = await _dsdAudioSource(queueItem, uri, headers);
+      if (dsd != null) return dsd;
+      // mpv opens a file URI without its fragment.
+      return AudioSource.uri(uri.removeFragment(), headers: headers, tag: queueItem);
+    }
     if (queueItem.item.extras!["downloadedTrackPath"] == null) {
       // If downloadedTrack wasn't passed, we assume that the item is not
       // downloaded.
@@ -2287,6 +2556,13 @@ class MusicPlayerBackgroundTask extends BaseAudioHandler with SeekHandler, Queue
       } else {
         final source = await _resolveStream(queueItem.item);
         final headers = source.headers.isEmpty ? null : source.headers;
+
+        if (_isLiveQueueItem(queueItem)) {
+          // A live stream never ends: no caching proxy, which would try to store it whole.
+          return source.container == "hls"
+              ? HlsAudioSource(source.uri, headers: headers, tag: queueItem)
+              : AudioSource.uri(source.uri, headers: headers, tag: queueItem);
+        }
 
         final transcoding = queueItem.item.extras!["shouldTranscode"] as bool;
         final isYouTube = queueItem.baseItemId.sourceId == YouTubeService.sourceId;

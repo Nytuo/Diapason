@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/datetime_helper.dart';
@@ -128,12 +129,12 @@ class _AlbumChipContent extends StatelessWidget {
                   if (FinampSettingsHelper.finampSettings.isOffline) {
                     var stub = await isarDownloader.getCollectionInfo(id: item.albumId!);
                     if (stub?.baseItem != null && context.mounted) {
-                      await Navigator.of(context).pushNamed(AlbumScreen.routeName, arguments: stub!.baseItem!);
+                      await DesktopRouter.pushNamed(context, AlbumScreen.routeName, arguments: stub!.baseItem!);
                     }
                   } else {
                     var album = await GetIt.instance<AggregateBackend>().getItemById(item.albumId!);
                     if (album != null && context.mounted) {
-                      await Navigator.of(context).pushNamed(AlbumScreen.routeName, arguments: album);
+                      await DesktopRouter.pushNamed(context, AlbumScreen.routeName, arguments: album);
                     }
                   }
                 }

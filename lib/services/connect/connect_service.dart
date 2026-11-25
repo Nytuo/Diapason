@@ -3,11 +3,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:diapason/services/no_network_guard.dart';
 import 'package:diapason/services/connect/connect_mdns.dart';
 import 'package:diapason/services/connect/connect_models.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ConnectService {
   ConnectService({http.Client? httpClient, ConnectMdns? mdns})
@@ -75,24 +77,157 @@ class ConnectService {
   /// The name we advertise ourselves as.
   String deviceName = "Diapason";
 
-  Future<void> start({String deviceName = "Diapason"}) async {
+  /// What we advertise ourselves as (see [ConnectDevice.role]).
+  String role = ConnectDevice.rolePlayer;
+
+  bool _advertised = false;
+
+  /// This install's stable id and when this listener started, announced so others can tell restarts from new devices.
+  String? _instanceId;
+  int _startedAt = 0;
+
+  Future<String> _loadInstanceId() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      var id = prefs.getString("connect_instance_id");
+      if (id == null || id.isEmpty) {
+        id = _randomToken();
+        await prefs.setString("connect_instance_id", id);
+      }
+      return id;
+    } catch (_) {
+      return _randomToken();
+    }
+  }
+
+  /// What the last [start] asked for, kept so the listener can be brought back after the OS took it away.
+  bool _wantServing = false;
+  bool _wantAdvertise = true;
+  Timer? _watchdog;
+  _ConnectLifecycle? _lifecycle;
+
+  /// Answers browse requests from a controller (protocol 2). Unset: `GET browse` answers 404, as on older devices.
+  Future<List<ConnectBrowseItem>> Function(ConnectBrowseRequest request)? browseProvider;
+
+  /// Serves artwork to a controller (protocol 2).
+  Future<({List<int> bytes, String contentType})?> Function(String id, int size)? artProvider;
+
+  /// Starts answering other devices. With [advertise] false nobody finds us until [setAdvertised] says so: a watch
+  /// only shows up while it waits for accounts, so phones never offer it as a speaker.
+  Future<void> start({
+    String deviceName = "Diapason",
+    String role = ConnectDevice.rolePlayer,
+    bool advertise = true,
+  }) async {
     if (_server != null) return;
     this.deviceName = deviceName;
+    this.role = role;
+    _wantAdvertise = advertise;
+    _wantServing = true;
+    if (NoNetworkGuard.active) {
+      _log.info("Not starting Connect: no network mode is on");
+      return;
+    }
 
     _token = _randomToken();
+    _instanceId ??= await _loadInstanceId();
+    _startedAt = DateTime.now().millisecondsSinceEpoch;
     _localAddress = await _bestLocalAddress();
 
     final server = await HttpServer.bind(InternetAddress.anyIPv4, 0);
     _server = server;
     _port = server.port;
     unawaited(_serve(server));
+    _log.info("Connect is serving on port $_port");
 
+    if (advertise) await setAdvertised(true);
+  }
+
+  /// Starts or stops advertising over mDNS, while the server keeps running.
+  Future<void> setAdvertised(bool advertised) async {
+    if (_server == null || advertised == _advertised) return;
+    _advertised = advertised;
     try {
-      await _mdns.register(name: deviceName, type: serviceType, port: _port, txt: {"token": _token});
-      _log.info("Connect is serving on port $_port and advertising as '$deviceName'");
+      if (advertised) {
+        await _mdns.register(
+          name: deviceName,
+          type: serviceType,
+          port: _port,
+          txt: {
+            "token": _token,
+            "id": ?_instanceId,
+            "t": "$_startedAt",
+            if (role != ConnectDevice.rolePlayer) "role": role,
+          },
+        );
+        _log.info("Advertising as '$deviceName' ($role)");
+      } else {
+        await _mdns.unregister();
+      }
     } catch (e) {
-      _log.warning("Could not advertise over mDNS: $e");
+      _log.warning("Could not ${advertised ? "advertise" : "stop advertising"} over mDNS: $e");
     }
+  }
+
+  /// Whether the listener really accepts connections now. A suspended app (an Apple TV coming out of idle, a phone
+  /// in the background) can have its sockets closed while [_server] still looks alive, and its mDNS record can go
+  /// stale: other devices then see us in their list but cannot connect.
+  Future<bool> _listenerAlive() async {
+    if (_server == null || _port == 0) return false;
+    try {
+      final socket = await Socket.connect(InternetAddress.loopbackIPv4, _port, timeout: const Duration(seconds: 2));
+      socket.destroy();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Makes sure we can be reached: restarts the listener when it died (or never started), and re-announces on mDNS
+  /// when [reannounce] is set (after the app came back to the front).
+  Future<void> ensureServing({bool reannounce = false}) async {
+    if (!_wantServing) return;
+    if (_ensuring) return;
+    _ensuring = true;
+    try {
+      if (!await _listenerAlive()) {
+        _log.info("Connect listener is gone; restarting it");
+        final name = deviceName;
+        final currentRole = role;
+        final advertise = _wantAdvertise;
+        // Only the listener is rebuilt: a controller's discovery and the device it is controlling stay as they are.
+        try {
+          await _mdns.unregister();
+        } catch (_) {}
+        _advertised = false;
+        try {
+          await _server?.close(force: true);
+        } catch (_) {}
+        _server = null;
+        _port = 0;
+        await start(deviceName: name, role: currentRole, advertise: advertise);
+      } else if (reannounce && _advertised) {
+        _localAddress = await _bestLocalAddress();
+        _advertised = false;
+        try {
+          await _mdns.unregister();
+        } catch (_) {}
+        await setAdvertised(true);
+      }
+    } catch (e) {
+      _log.warning("Could not make sure Connect is reachable: $e");
+    } finally {
+      _ensuring = false;
+    }
+  }
+
+  bool _ensuring = false;
+
+  /// Keeps us reachable for good: checks again whenever the app comes back to the front and every half minute.
+  /// Meant for devices that are mostly waiting to be controlled, like a TV.
+  void keepReachable() {
+    _lifecycle ??= _ConnectLifecycle(() => unawaited(ensureServing(reannounce: true)))..attach();
+    _watchdog ??= Timer.periodic(const Duration(seconds: 30), (_) => unawaited(ensureServing()));
   }
 
   Future<void> stop() async {
@@ -103,6 +238,7 @@ class ConnectService {
     try {
       await _mdns.unregister();
     } catch (_) {}
+    _advertised = false;
     await _server?.close(force: true);
     _server = null;
     _port = 0;
@@ -158,6 +294,34 @@ class ConnectService {
           ..headers.contentType = ContentType.json
           ..write(jsonEncode(queue.toJson()));
 
+      case ("GET", "browse"):
+        final provider = browseProvider;
+        final browse = ConnectBrowseRequest.tryParse(request.uri.queryParameters);
+        if (provider == null) {
+          response.statusCode = HttpStatus.notFound;
+        } else if (browse == null) {
+          response.statusCode = HttpStatus.badRequest;
+        } else {
+          final items = await provider(browse);
+          response
+            ..headers.contentType = ContentType.json
+            ..write(jsonEncode({"items": items.map((i) => i.toJson()).toList()}));
+        }
+
+      case ("GET", "art"):
+        final provider = artProvider;
+        final id = request.uri.queryParameters["id"];
+        final size = int.tryParse(request.uri.queryParameters["size"] ?? "") ?? 200;
+        final art = provider == null || id == null || id.isEmpty ? null : await provider(id, size);
+        if (art == null) {
+          response.statusCode = HttpStatus.notFound;
+        } else {
+          response
+            ..headers.set(HttpHeaders.contentTypeHeader, art.contentType)
+            ..headers.set(HttpHeaders.cacheControlHeader, "max-age=3600")
+            ..add(art.bytes);
+        }
+
       case ("GET", "library"):
         final tracks = await libraryProvider?.call() ?? const <Map<String, dynamic>>[];
         response
@@ -199,10 +363,14 @@ class ConnectService {
         final name = body?["name"] as String?;
         final url = body?["url"] as String?;
         if (name != null && url != null && url.isNotEmpty) {
-          final device = ConnectDevice(name: name, baseUrl: url);
-          if (!devices.value.contains(device)) {
-            devices.value = [...devices.value, device];
-          }
+          final device = ConnectDevice(
+            name: name,
+            baseUrl: url,
+            id: body?["id"] as String?,
+            startedAt: (body?["t"] as num?)?.toInt(),
+          );
+          // One entry per device: registering again (after a restart, or on top of its mDNS record) replaces it.
+          if (device.id != _instanceId) devices.value = ConnectDevice.unique([...devices.value, device]);
           _log.info("Device registered with us: $device");
         }
         response.write("ok");
@@ -226,13 +394,13 @@ class ConnectService {
   }
 
   Future<void> startDiscovery() async {
-    if (_discovering) return;
+    if (_discovering || NoNetworkGuard.active) return;
     devices.value = const [];
 
     try {
       _discovering = true;
       await _mdns.startBrowse(serviceType, (services) {
-        devices.value = services.map(_toDevice).nonNulls.where(_isNotUs).toList();
+        devices.value = ConnectDevice.unique(services.map(_toDevice).nonNulls.where(_isNotUs));
       });
     } catch (e) {
       _discovering = false;
@@ -255,23 +423,57 @@ class ConnectService {
     if (host == null || port == null || token == null || token.isEmpty) return null;
 
     final normalized = host.endsWith(".") ? host.substring(0, host.length - 1) : host;
+    final role = service.txt["role"];
     return ConnectDevice(
       name: service.name.isEmpty ? "Diapason" : service.name,
       baseUrl: "http://$normalized:$port/$token/connect",
+      role: role == null || role.isEmpty ? ConnectDevice.rolePlayer : role,
+      id: service.txt["id"],
+      startedAt: int.tryParse(service.txt["t"] ?? ""),
     );
   }
 
-  bool _isNotUs(ConnectDevice device) => !device.baseUrl.contains("/$_token/");
+  /// A device's library listing (protocol 2). Null when it cannot be reached or cannot be browsed.
+  Future<List<ConnectBrowseItem>?> browse(ConnectBrowseRequest request, {ConnectDevice? device}) async {
+    final target = device ?? connectedDevice.value;
+    if (target == null) return null;
+    try {
+      final response = await _http
+          .get(target.endpoint("browse", request.toQuery()))
+          .timeout(const Duration(seconds: 15));
+      if (response.statusCode != 200) return null;
+      return ConnectBrowseItem.listFrom(jsonDecode(utf8.decode(response.bodyBytes)));
+    } catch (e) {
+      _log.fine("Could not browse ${target.name}: $e");
+      return null;
+    }
+  }
+
+  /// Where [device] (by default the controlled one) serves the artwork of item [id] (protocol 2).
+  Uri? artUrl(String id, {int size = 200, ConnectDevice? device}) =>
+      (device ?? connectedDevice.value)?.endpoint("art", {"id": id, "size": "$size"});
+
+  bool _isNotUs(ConnectDevice device) =>
+      !device.baseUrl.contains("/$_token/") && (device.id == null || device.id != _instanceId);
 
   /// Starts controlling [device]. False when it does not answer.
   Future<bool> connect(ConnectDevice device) async {
-    final status = await fetchStatus(device);
+    var status = await fetchStatus(device);
+    if (status == null) {
+      // The device may have restarted its listener (new port and token) since it was listed: look again once.
+      final fresh = await _rediscover(device);
+      if (fresh != null) {
+        device = fresh;
+        status = await fetchStatus(device);
+      }
+    }
     if (status == null) return false;
 
     _failedPolls = 0;
     remoteStatus.value = status;
     connectedDevice.value = device;
-    await _register(device);
+    // A watch is a remote only: registering would make it show up as a speaker on the device it controls.
+    if (role != ConnectDevice.roleWatch) await _register(device);
 
     _pollTimer?.cancel();
     // On a slow network a status request can outlast the poll interval; don't stack requests on top of each other.
@@ -279,6 +481,22 @@ class ConnectService {
       if (!_polling) unawaited(_pollStatus());
     });
     return true;
+  }
+
+  /// Browses again for a device with [old]'s name and returns it when it now lives at another address.
+  Future<ConnectDevice?> _rediscover(ConnectDevice old) async {
+    try {
+      await stopDiscovery();
+      await startDiscovery();
+      for (var i = 0; i < 8; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+        final match = devices.value.where((d) => d.identity == old.identity && d.baseUrl != old.baseUrl).firstOrNull;
+        if (match != null) return match;
+      }
+    } catch (e) {
+      _log.fine("Could not look for ${old.name} again: $e");
+    }
+    return null;
   }
 
   Future<ConnectStatus?> fetchStatus(ConnectDevice device) async {
@@ -319,7 +537,7 @@ class ConnectService {
   Future<void> _register(ConnectDevice device) async {
     final url = serverUrl;
     if (url == null) return;
-    await _post(device.endpoint("register"), {"name": deviceName, "url": url});
+    await _post(device.endpoint("register"), {"name": deviceName, "url": url, "id": _instanceId, "t": _startedAt});
   }
 
   bool _polling = false;
@@ -347,29 +565,32 @@ class ConnectService {
     }
   }
 
-  Future<void> sendCommand(
+  /// Sends a command to the controlled device. False when it did not get there.
+  Future<bool> sendCommand(
     String action, {
     double? position,
     double? volume,
     Map<String, dynamic> args = const {},
   }) async {
     final device = connectedDevice.value;
-    if (device == null) return;
+    if (device == null) return false;
 
-    await _post(
+    final ok = await _post(
       device.endpoint("command"),
       ConnectCommand(action, position: position, volume: volume, args: args).toJson(),
     );
     await _pollStatus();
+    return ok;
   }
 
-  /// Replaces the controlled device's queue and starts it.
-  Future<void> playQueue(ConnectQueue queue) async {
+  /// Replaces the controlled device's queue and starts it. False when it did not get there.
+  Future<bool> playQueue(ConnectQueue queue) async {
     final device = connectedDevice.value;
-    if (device == null) return;
+    if (device == null) return false;
 
-    await _post(device.endpoint("play-queue"), queue.toJson(), timeout: const Duration(seconds: 10));
+    final ok = await _post(device.endpoint("play-queue"), queue.toJson(), timeout: const Duration(seconds: 10));
     await _pollStatus();
+    return ok;
   }
 
   /// Offers [sources] to [device], to land in its profile [profileName]. True when the device took the offer to ask
@@ -395,11 +616,15 @@ class ConnectService {
     }
   }
 
-  Future<void> _post(Uri url, Map<String, dynamic> body, {Duration timeout = const Duration(seconds: 4)}) async {
+  Future<bool> _post(Uri url, Map<String, dynamic> body, {Duration timeout = const Duration(seconds: 4)}) async {
     try {
-      await _http.post(url, headers: {"Content-Type": "application/json"}, body: jsonEncode(body)).timeout(timeout);
+      final response = await _http
+          .post(url, headers: {"Content-Type": "application/json"}, body: jsonEncode(body))
+          .timeout(timeout);
+      return response.statusCode == 200;
     } catch (e) {
       _log.fine("Connect POST to $url failed: $e");
+      return false;
     }
   }
 
@@ -415,5 +640,19 @@ class ConnectService {
       _log.fine("Could not determine a local address: $e");
     }
     return null;
+  }
+}
+
+/// Calls back when the app returns to the front.
+class _ConnectLifecycle with WidgetsBindingObserver {
+  _ConnectLifecycle(this.onResumed);
+
+  final void Function() onResumed;
+
+  void attach() => WidgetsBinding.instance.addObserver(this);
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) onResumed();
   }
 }

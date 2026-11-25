@@ -1,6 +1,12 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
+import 'package:diapason/services/no_network_guard.dart';
+import 'package:diapason/screens/plugins_settings_screen.dart';
+import 'package:diapason/services/plugins/plugins.dart';
 import 'package:diapason/services/uploader/youtube_library_import.dart';
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/isar_availability.dart';
+import 'package:diapason/utils/platform.dart';
 import 'dart:math';
 import 'dart:ui';
 
@@ -22,6 +28,7 @@ import 'package:diapason/utils/tv_focus.dart';
 import 'package:diapason/services/stats/stats_service.dart';
 import 'package:diapason/services/analytics_service.dart';
 import 'package:diapason/screens/analytics_settings_screen.dart';
+import 'package:diapason/components/mobile_ambient_theme.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:diapason/services/backends/backend_registry.dart';
 import 'package:diapason/services/backends/media_source_service.dart';
@@ -40,7 +47,9 @@ import 'package:diapason/services/stream_cache_service.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:diapason/services/connect/connect_player_bridge.dart';
 import 'package:diapason/services/connect/connect_remote_controller.dart';
+import 'package:diapason/services/connect/connect_models.dart';
 import 'package:diapason/services/connect/connect_service.dart';
+import 'package:diapason/services/connect/watch_connect_controller.dart';
 import 'package:diapason/services/uploader/uploader_client.dart';
 import 'package:diapason/services/log_level.dart';
 import 'package:diapason/services/youtube/youtube_prefetcher.dart';
@@ -56,6 +65,7 @@ import 'package:diapason/screens/album_settings_screen.dart';
 import 'package:diapason/screens/artist_settings_screen.dart';
 import 'package:diapason/screens/downloads_settings_screen.dart';
 import 'package:diapason/screens/equalizer_settings_screen.dart';
+import 'package:diapason/screens/hifi_settings_screen.dart';
 import 'package:diapason/screens/genre_settings_screen.dart';
 import 'package:diapason/screens/home_screen_settings_screen.dart';
 import 'package:diapason/screens/interaction_settings_screen.dart';
@@ -70,12 +80,14 @@ import 'package:diapason/screens/playlist_edit_screen.dart';
 import 'package:diapason/screens/queue_restore_screen.dart';
 import 'package:diapason/services/album_image_provider.dart';
 import 'package:diapason/services/android_auto_helper.dart';
-import 'package:diapason/services/audio_service_smtc.dart';
+import 'package:diapason/services/audio_service_smtc.dart'
+    if (dart.library.js_interop) 'package:diapason/services/audio_service_smtc_web.dart';
 import 'package:diapason/services/carplay_helper.dart';
 import 'package:diapason/services/client_certificate_installer.dart';
 import 'package:diapason/services/data_source_service.dart';
 import 'package:diapason/services/dbus_manager.dart';
-import 'package:diapason/services/discord_rpc.dart';
+import 'package:diapason/services/discord_rpc.dart'
+    if (dart.library.js_interop) 'package:diapason/services/discord_rpc_web.dart';
 import 'package:diapason/services/downloads_service.dart';
 import 'package:diapason/services/downloads_service_backend.dart';
 import 'package:diapason/services/finamp_logs_helper.dart';
@@ -112,6 +124,7 @@ import 'package:diapason/screens/tv/tv_profile_picker_screen.dart';
 import 'package:diapason/services/tv/tv_profile_service.dart';
 import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:diapason/components/tv_focus_ring.dart';
+import 'package:diapason/components/web_unavailable.dart';
 import 'package:diapason/components/tv_now_playing_pill.dart';
 import 'package:diapason/utils/tv_zoom.dart';
 import 'package:diapason/services/tvos/tvos_path_provider.dart';
@@ -162,6 +175,8 @@ import 'screens/wrapped_screen.dart';
 import 'screens/backup_screen.dart';
 import 'package:diapason/services/share_links.dart';
 import 'package:diapason/services/lyrics/lyrics_offset_service.dart';
+import 'package:diapason/services/radio/radio_station_store.dart';
+import 'package:diapason/services/lyrics/lyrics_translation.dart';
 import 'screens/uploader_settings_screen.dart';
 import 'screens/ytdlp_settings_screen.dart';
 import 'screens/storage_settings_screen.dart';
@@ -182,7 +197,8 @@ late DateTime startTime;
 final providerScopeKey = GlobalKey();
 
 Future<void> main({bool integrationTesting = false, bool loginTesting = false}) async {
-  DartPluginRegistrant.ensureInitialized();
+  // Dart-side plugin registration is a native-only concept (it throws in a browser).
+  if (!kIsWeb) DartPluginRegistrant.ensureInitialized();
 
   if (loginTesting) {
     final data = await TestingPathProvider.baseDirectory();
@@ -203,6 +219,8 @@ Future<void> main({bool integrationTesting = false, bool loginTesting = false}) 
     _mainLog.info("Setup edge-to-edge overlay");
     await setupHive();
     _mainLog.info("Setup hive and isar");
+    NoNetworkGuard.install();
+    if (NoNetworkGuard.active) unawaited(NoNetworkGuard.apply(true));
     await AnalyticsService.init();
     applyConfiguredLogLevel();
     await DeviceFormFactorDetector.detect();
@@ -222,6 +240,7 @@ Future<void> main({bool integrationTesting = false, bool loginTesting = false}) 
     await _setupJellyfinApiData();
     _mainLog.info("setup jellyfin api");
     await _setupMediaSources();
+    await setupPlugins();
     _mainLog.info("Setup media sources");
     _setupOfflineListenLogHelper();
     _mainLog.info("Setup offline listen tracking");
@@ -356,7 +375,7 @@ void _setupOfflineListenLogHelper() {
 }
 
 Future<void> _setupDownloadsHelper() async {
-  if (AppleTvAudioChannel.isSupported) {
+  if (!isarAvailable) {
     // No Isar, and tvOS can't download to local storage anyway; register a
     // DownloadsService whose constructor skips its Isar-backed setup (see
     // its tvOS guard) instead of wiring up FileDownloader/IsarPersistentStorage.
@@ -426,14 +445,22 @@ Future<void> _setupKeepScreenOnHelper() async {
   GetIt.instance.registerSingleton(KeepScreenOnHelper());
 }
 
-Future<void> setupHive() async {
+/// Where Hive (and Isar) keep their files. Null in a browser, where Hive stores
+/// its boxes in IndexedDB and path_provider has no implementation.
+Future<String?> hiveDirectoryPath() async {
+  if (kIsWeb) return null;
   final dir = (Platform.isAndroid || Platform.isIOS)
       ? await getApplicationDocumentsDirectory()
       : await getApplicationSupportDirectory();
+  return dir.path;
+}
+
+Future<void> setupHive() async {
+  final dirPath = await hiveDirectoryPath();
 
   // Use Hive.init instead of initFlutter to set correct default path.
   WidgetsFlutterBinding.ensureInitialized();
-  Hive.init(dir.path);
+  Hive.init(dirPath);
   Hive.registerAdapters();
   Hive.registerAdapter(ThemeModeAdapter());
   Hive.registerAdapter(ColorAdapter());
@@ -441,11 +468,11 @@ Future<void> setupHive() async {
   Hive.registerAdapter(FinampStorableQueueInfoMigrationAdapter());
 
   await Future.wait([
-    Hive.openBox<FinampSettings>("FinampSettings", path: dir.path),
-    Hive.openBox<FinampStorableQueueInfo>("Queues", path: dir.path),
-    Hive.openBox<OfflineListen>("OfflineListens", path: dir.path),
-    Hive.openBox<RawThemeResult>("CachedThemes", path: dir.path),
-    Hive.openBox<bool>("HiddenItems", path: dir.path),
+    Hive.openBox<FinampSettings>("FinampSettings", path: dirPath),
+    Hive.openBox<FinampStorableQueueInfo>("Queues", path: dirPath),
+    Hive.openBox<OfflineListen>("OfflineListens", path: dirPath),
+    Hive.openBox<RawThemeResult>("CachedThemes", path: dirPath),
+    Hive.openBox<bool>("HiddenItems", path: dirPath),
   ]);
 
   // If the settings box is empty, we add an initial settings value here.
@@ -457,9 +484,12 @@ Future<void> setupHive() async {
   // The TV's profiles (who is listening) are a few small JSON strings; every platform keeps them in Hive.
   await Hive.openBox<String>(TvProfileService.boxName);
   await LyricsOffsetService.open();
+  // The user's radio stations: JSON strings in Hive, so tvOS has them too.
+  await RadioStationStore.open();
+  await LyricsTranslationService.open();
 
-  if (AppleTvAudioChannel.isSupported) {
-    // Isar's native core has no tvOS binary, so tvOS never opens it (and
+  if (!isarAvailable) {
+    // Isar's native core has no tvOS binary (nor a web build), so tvOS never opens it (and
     // never registers an Isar singleton). It stores the small slice of
     // persistence it actually needs - the current user and media source
     // configs - directly in Hive instead; see FinampUserHelper and
@@ -474,6 +504,7 @@ Future<void> setupHive() async {
     return;
   }
 
+  final dir = Directory(dirPath!);
   final compactFile = File(path_helper.join(dir.path, "$isarDatabaseName.isar.compact"));
   if (compactFile.existsSync()) {
     compactFile.deleteSync();
@@ -555,6 +586,9 @@ Future<void> _setupOSIntegration() async {
     );
   }
 
+  // Nothing below applies in a browser: no file system, no Android Auto, no native theme channel.
+  if (kIsWeb) return;
+
   // Load the album image from assets and save it to the documents directory for use in Android Auto
   final applicationSupportDirectory = await getApplicationSupportDirectory();
   final albumImageFile = File(
@@ -587,10 +621,32 @@ Future<void> _setupOSIntegration() async {
 
 Future<void> _setupConnect() async {
   GetIt.instance.registerSingleton(ConnectService());
+
+  if (DeviceFormFactorDetector.current.isWatch) {
+    // A watch plays nothing: it only controls other devices (WatchConnectController), never mirrors their queue into
+    // its own player, and only shows itself on the network while it waits for accounts from a phone.
+    GetIt.instance.registerSingleton(WatchConnectController()..attach());
+    unawaited(() async {
+      try {
+        await GetIt.instance<ConnectService>().start(
+          deviceName: await _connectDeviceName(),
+          role: ConnectDevice.roleWatch,
+          advertise: false,
+        );
+      } catch (e) {
+        _mainLog.warning("Could not start Diapason Connect: $e");
+      }
+    }());
+    return;
+  }
+
   GetIt.instance.registerSingleton(ConnectPlayerBridge());
   GetIt.instance<ConnectPlayerBridge>().attach();
   GetIt.instance.registerSingleton(ConnectRemoteController());
   GetIt.instance<ConnectRemoteController>().attach();
+
+  // A browser can't bind a server socket or advertise over mDNS, so the web build is never a Connect target.
+  if (kIsWeb) return;
 
   // Binding the server and advertising over mDNS can take a while on some networks; nothing at launch needs it, so
   // don't hold the splash screen for it.
@@ -600,6 +656,9 @@ Future<void> _setupConnect() async {
     } catch (e) {
       _mainLog.warning("Could not start Diapason Connect: $e");
     }
+    // Stay reachable even after the app was idle or in the background (an Apple TV waking up, a phone resumed):
+    // the OS can close the listener and leave a stale mDNS record behind.
+    GetIt.instance<ConnectService>().keepReachable();
   }());
 }
 
@@ -677,8 +736,10 @@ Future<void> _setupPlaybackServices() async {
     GetIt.instance.registerSingleton<CarPlayHelper>(CarPlayHelper());
   }
 
-  // Begin to restore queue
-  unawaited(queueService.performInitialQueueLoad().catchError((dynamic x) => GlobalSnackbar.error(x)));
+  // Begin to restore queue (not on a watch: it plays nothing, it only controls other devices)
+  if (!DeviceFormFactorDetector.current.isWatch) {
+    unawaited(queueService.performInitialQueueLoad().catchError((dynamic x) => GlobalSnackbar.error(x)));
+  }
 }
 
 /// Migrates the old DownloadLocations list to a map
@@ -910,6 +971,8 @@ Future<void> _migrateThemeModeLocale() async {
 Future<void> _trustAndroidUserCerts() async {
   // Extend the default security context to trust Android user certificates.
   // This is a workaround for <https://github.com/dart-lang/sdk/issues/50435>.
+  // The browser owns TLS on the web; there is no SecurityContext to extend.
+  if (kIsWeb) return;
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await FlutterUserCertificatesAndroid().trustAndroidUserCertificates(SecurityContext.defaultContext);
@@ -975,7 +1038,7 @@ class _FinampState extends State<Finamp> with WindowListener {
     final container = GetIt.instance<ProviderContainer>();
     switch (uri.host) {
       case "internal":
-        await state.pushNamed(uri.path);
+        await DesktopRouter.pushNamedOn(state, uri.path);
 
       case "play":
         switch (uri.pathSegments) {
@@ -1107,17 +1170,18 @@ class FinampApp extends ConsumerWidget {
         SplashScreen.routeName: (context) => const SplashScreen(),
         LoginScreen.routeName: (context) => const LoginScreen(),
         SourcesSettingsScreen.routeName: (context) => const SourcesSettingsScreen(),
-        CacheSettingsScreen.routeName: (context) => const CacheSettingsScreen(),
+        CacheSettingsScreen.routeName: nativeOnlyRoute((context) => const CacheSettingsScreen()),
         StorageSettingsScreen.routeName: (context) => const StorageSettingsScreen(),
         ScrobblingSettingsScreen.routeName: (context) => const ScrobblingSettingsScreen(),
+        PluginsSettingsScreen.routeName: nativeOnlyRoute((context) => const PluginsSettingsScreen()),
         UploaderSettingsScreen.routeName: (context) => const UploaderSettingsScreen(),
-        YtDlpSettingsScreen.routeName: (context) => const YtDlpSettingsScreen(),
-        ConnectScreen.routeName: (context) => const ConnectScreen(),
+        YtDlpSettingsScreen.routeName: nativeOnlyRoute((context) => const YtDlpSettingsScreen()),
+        ConnectScreen.routeName: nativeOnlyRoute((context) => const ConnectScreen()),
         WrappedScreen.routeName: (context) => const WrappedScreen(),
-        BackupScreen.routeName: (context) => const BackupScreen(),
+        BackupScreen.routeName: nativeOnlyRoute((context) => const BackupScreen()),
         RadioScreen.routeName: (context) => const RadioScreen(),
-        CastScreen.routeName: (context) => const CastScreen(),
-        ImportScreen.routeName: (context) => const ImportScreen(),
+        CastScreen.routeName: nativeOnlyRoute((context) => const CastScreen()),
+        ImportScreen.routeName: nativeOnlyRoute((context) => const ImportScreen()),
         ShortcutsScreen.routeName: (context) => const ShortcutsScreen(),
         TvProfilePickerScreen.routeName: (context) => const TvProfilePickerScreen(),
         TvProfileEditScreen.routeName: (context) =>
@@ -1132,21 +1196,22 @@ class FinampApp extends ConsumerWidget {
         ArtistScreen.routeName: (context) => const ArtistScreen(),
         GenreScreen.routeName: (context) => const GenreScreen(),
         PlayerScreen.routeName: (context) => const PlayerScreen(key: ValueKey(PlayerScreen.routeName)),
-        DownloadsScreen.routeName: (context) => const DownloadsScreen(),
-        ActiveDownloadsScreen.routeName: (context) => const ActiveDownloadsScreen(),
+        DownloadsScreen.routeName: nativeOnlyRoute((context) => const DownloadsScreen()),
+        ActiveDownloadsScreen.routeName: nativeOnlyRoute((context) => const ActiveDownloadsScreen()),
         PlaybackHistoryScreen.routeName: (context) => const PlaybackHistoryScreen(),
         LogsScreen.routeName: (context) => const LogsScreen(),
         QueueRestoreScreen.routeName: (context) => const QueueRestoreScreen(),
         SettingsScreen.routeName: (context) => const SettingsScreen(),
         HomeScreenSettingsScreen.routeName: (context) => const HomeScreenSettingsScreen(),
         TranscodingSettingsScreen.routeName: (context) => const TranscodingSettingsScreen(),
-        DownloadsLocationScreen.routeName: (context) => const DownloadsLocationScreen(),
-        DownloadsSettingsScreen.routeName: (context) => const DownloadsSettingsScreen(),
-        AddDownloadLocationScreen.routeName: (context) => const AddDownloadLocationScreen(),
+        DownloadsLocationScreen.routeName: nativeOnlyRoute((context) => const DownloadsLocationScreen()),
+        DownloadsSettingsScreen.routeName: nativeOnlyRoute((context) => const DownloadsSettingsScreen()),
+        AddDownloadLocationScreen.routeName: nativeOnlyRoute((context) => const AddDownloadLocationScreen()),
         PlaybackReportingSettingsScreen.routeName: (context) => const PlaybackReportingSettingsScreen(),
         AudioServiceSettingsScreen.routeName: (context) => const AudioServiceSettingsScreen(),
         VolumeNormalizationSettingsScreen.routeName: (context) => const VolumeNormalizationSettingsScreen(),
         EqualizerSettingsScreen.routeName: (context) => const EqualizerSettingsScreen(),
+        HifiSettingsScreen.routeName: (context) => const HifiSettingsScreen(),
         InteractionSettingsScreen.routeName: (context) => const InteractionSettingsScreen(),
         TabsSettingsScreen.routeName: (context) => const TabsSettingsScreen(),
         LayoutSettingsScreen.routeName: (context) => const LayoutSettingsScreen(),
@@ -1168,6 +1233,8 @@ class FinampApp extends ConsumerWidget {
       navigatorObservers: [SplitScreenNavigatorObserver(), KeepScreenOnObserver()],
       builder: (BuildContext context, Widget? widget) {
         Widget child = GlobalShortcutManager(child: buildPlayerSplitScreenScaffold(context, widget));
+        // Phones and tablets: the app takes the playing album's colours and sits on its ambient background.
+        child = MobileAmbientTheme(child: child);
         if (Platform.isMacOS) {
           final media = MediaQuery.of(context);
           child = MediaQuery(
@@ -1307,11 +1374,7 @@ class ErrorScreen extends StatelessWidget {
                                 text: 'Delete FinampSettings',
                                 icon: Icons.delete,
                                 onPressed: () async {
-                                  final dir = (Platform.isAndroid || Platform.isIOS)
-                                      ? await getApplicationDocumentsDirectory()
-                                      : await getApplicationSupportDirectory();
-
-                                  await Hive.deleteBoxFromDisk("FinampSettings", path: dir.path);
+                                  await Hive.deleteBoxFromDisk("FinampSettings", path: await hiveDirectoryPath());
                                   Gaimon.success();
                                 },
                               ),
@@ -1319,11 +1382,7 @@ class ErrorScreen extends StatelessWidget {
                                 text: 'Delete Stored Queues',
                                 icon: Icons.delete,
                                 onPressed: () async {
-                                  final dir = (Platform.isAndroid || Platform.isIOS)
-                                      ? await getApplicationDocumentsDirectory()
-                                      : await getApplicationSupportDirectory();
-
-                                  await Hive.deleteBoxFromDisk("Queues", path: dir.path);
+                                  await Hive.deleteBoxFromDisk("Queues", path: await hiveDirectoryPath());
                                   Gaimon.success();
                                 },
                               ),

@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'dart:async';
 
 import 'package:diapason/components/MusicScreen/item_card.dart';
@@ -108,7 +109,7 @@ class _ItemCollectionWrapperState extends ConsumerState<ItemWrapper> {
                     break;
                   case BaseItemDtoType.artist:
                     if (isDesktop) {
-                      Navigator.of(context).pushNamed(ArtistScreen.routeName, arguments: mutableItem);
+                      DesktopRouter.pushNamed(context, ArtistScreen.routeName, arguments: mutableItem);
                       break;
                     }
                     Navigator.of(context).push(
@@ -123,11 +124,11 @@ class _ItemCollectionWrapperState extends ConsumerState<ItemWrapper> {
                     );
                     break;
                   case BaseItemDtoType.genre:
-                    Navigator.of(context).pushNamed(GenreScreen.routeName, arguments: mutableItem);
+                    DesktopRouter.pushNamed(context, GenreScreen.routeName, arguments: mutableItem);
                     break;
                   case BaseItemDtoType.playlist:
                     if (isDesktop) {
-                      Navigator.of(context).pushNamed(AlbumScreen.routeName, arguments: mutableItem);
+                      DesktopRouter.pushNamed(context, AlbumScreen.routeName, arguments: mutableItem);
                       break;
                     }
                     Navigator.of(context).push(
@@ -142,7 +143,7 @@ class _ItemCollectionWrapperState extends ConsumerState<ItemWrapper> {
                     );
                     break;
                   default:
-                    Navigator.of(context).pushNamed(AlbumScreen.routeName, arguments: mutableItem);
+                    DesktopRouter.pushNamed(context, AlbumScreen.routeName, arguments: mutableItem);
                     return;
                 }
               }

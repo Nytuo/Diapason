@@ -1,3 +1,5 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
+import 'package:diapason/components/live_badge.dart';
 import 'package:diapason/components/connect_devices.dart';
 import 'package:diapason/utils/device_form_factor.dart';
 import 'package:diapason/components/tv_tap.dart';
@@ -252,6 +254,10 @@ class NowPlayingBar extends ConsumerWidget {
                         // If we have a media item and the player hasn't finished, show
                         // the now playing bar.
                         if (mediaState.mediaItem != null) {
+                          // Live radio: the handler's media item carries the song on air (ICY).
+                          final isLive = isLiveMediaItem(mediaState.mediaItem);
+                          final shownTitle = isLive ? mediaState.mediaItem!.title : currentTrack.item.title;
+                          final shownArtist = isLive ? mediaState.mediaItem!.artist : currentTrack.item.artist;
                           //TODO move into separate component and share with queue list
                           return Container(
                             width: MediaQuery.widthOf(context),
@@ -360,8 +366,8 @@ class NowPlayingBar extends ConsumerWidget {
                                                     SizedBox(
                                                       height: 20,
                                                       child: OneLineMarqueeHelper(
-                                                        key: ValueKey(currentTrack.item.id),
-                                                        text: currentTrack.item.title,
+                                                        key: ValueKey("${currentTrack.item.id}-$shownTitle"),
+                                                        text: shownTitle,
                                                         style: TextStyle(
                                                           fontSize: 16,
                                                           height: 26 / 20,
@@ -378,7 +384,7 @@ class NowPlayingBar extends ConsumerWidget {
                                                       children: [
                                                         Expanded(
                                                           child: Text(
-                                                            processArtist(currentTrack.item.artist, context),
+                                                            processArtist(shownArtist, context),
                                                             style: TextStyle(
                                                               color: primaryTextColor,
                                                               fontSize: 13,
@@ -387,81 +393,95 @@ class NowPlayingBar extends ConsumerWidget {
                                                             ),
                                                           ),
                                                         ),
-                                                        StreamBuilder<Duration>(
-                                                          stream: audioPosition,
-                                                          initialData: audioHandler.playbackState.value.position,
-                                                          builder: (context, snapshot) {
-                                                            if (snapshot.hasData) {
-                                                              playbackPosition = snapshot.data;
-                                                              final positionFullMinutes =
-                                                                  (playbackPosition?.inMinutes ?? 0) % 60;
-                                                              final positionFullHours =
-                                                                  (playbackPosition?.inHours ?? 0);
-                                                              final positionSeconds =
-                                                                  (playbackPosition?.inSeconds ?? 0) % 60;
-                                                              final durationFullHours =
-                                                                  (mediaState.mediaItem?.duration?.inHours ?? 0);
-                                                              final durationFullMinutes =
-                                                                  (mediaState.mediaItem?.duration?.inMinutes ?? 0) % 60;
-                                                              final durationSeconds =
-                                                                  (mediaState.mediaItem?.duration?.inSeconds ?? 0) % 60;
-                                                              return Semantics.fromProperties(
-                                                                properties: SemanticsProperties(
-                                                                  label:
-                                                                      "${positionFullHours > 0 ? "$positionFullHours hours " : ""}${positionFullMinutes > 0 ? "$positionFullMinutes minutes " : ""}$positionSeconds seconds of ${durationFullHours > 0 ? "$durationFullHours hours " : ""}${durationFullMinutes > 0 ? "$durationFullMinutes minutes " : ""}$durationSeconds seconds",
-                                                                ),
-                                                                excludeSemantics: true,
-                                                                container: true,
-                                                                child: Row(
-                                                                  children: [
-                                                                    Text(
-                                                                      printDuration(
-                                                                        playbackPosition,
-                                                                        leadingZeroes: false,
+                                                        if (isLive)
+                                                          const LiveBadge(compact: true)
+                                                        else
+                                                          StreamBuilder<Duration>(
+                                                            stream: audioPosition,
+                                                            initialData: audioHandler.playbackState.value.position,
+                                                            builder: (context, snapshot) {
+                                                              if (snapshot.hasData) {
+                                                                playbackPosition = snapshot.data;
+                                                                final positionFullMinutes =
+                                                                    (playbackPosition?.inMinutes ?? 0) % 60;
+                                                                final positionFullHours =
+                                                                    (playbackPosition?.inHours ?? 0);
+                                                                final positionSeconds =
+                                                                    (playbackPosition?.inSeconds ?? 0) % 60;
+                                                                final durationFullHours =
+                                                                    (mediaState.mediaItem?.duration?.inHours ?? 0);
+                                                                final durationFullMinutes =
+                                                                    (mediaState.mediaItem?.duration?.inMinutes ?? 0) %
+                                                                    60;
+                                                                final durationSeconds =
+                                                                    (mediaState.mediaItem?.duration?.inSeconds ?? 0) %
+                                                                    60;
+                                                                return Semantics.fromProperties(
+                                                                  properties: SemanticsProperties(
+                                                                    label:
+                                                                        "${positionFullHours > 0 ? "$positionFullHours hours " : ""}${positionFullMinutes > 0 ? "$positionFullMinutes minutes " : ""}$positionSeconds seconds of ${durationFullHours > 0 ? "$durationFullHours hours " : ""}${durationFullMinutes > 0 ? "$durationFullMinutes minutes " : ""}$durationSeconds seconds",
+                                                                  ),
+                                                                  excludeSemantics: true,
+                                                                  container: true,
+                                                                  child: Row(
+                                                                    children: [
+                                                                      Text(
+                                                                        printDuration(
+                                                                          playbackPosition,
+                                                                          leadingZeroes: false,
+                                                                        ),
+                                                                        style: TextStyle(
+                                                                          fontSize:
+                                                                              DeviceFormFactorDetector.current.isTv
+                                                                              ? 20
+                                                                              : 14,
+                                                                          fontWeight: FontWeight.w400,
+                                                                          color: primaryTextColor.withValues(
+                                                                            alpha: 0.8,
+                                                                          ),
+                                                                        ),
                                                                       ),
-                                                                      style: TextStyle(
-                                                                        fontSize: DeviceFormFactorDetector.current.isTv
-                                                                            ? 20
-                                                                            : 14,
-                                                                        fontWeight: FontWeight.w400,
-                                                                        color: primaryTextColor.withValues(alpha: 0.8),
+                                                                      const SizedBox(width: 2),
+                                                                      Text(
+                                                                        '/',
+                                                                        style: TextStyle(
+                                                                          color: primaryTextColor.withValues(
+                                                                            alpha: 0.8,
+                                                                          ),
+                                                                          fontSize:
+                                                                              DeviceFormFactorDetector.current.isTv
+                                                                              ? 20
+                                                                              : 14,
+                                                                          fontWeight: FontWeight.w400,
+                                                                        ),
                                                                       ),
-                                                                    ),
-                                                                    const SizedBox(width: 2),
-                                                                    Text(
-                                                                      '/',
-                                                                      style: TextStyle(
-                                                                        color: primaryTextColor.withValues(alpha: 0.8),
-                                                                        fontSize: DeviceFormFactorDetector.current.isTv
-                                                                            ? 20
-                                                                            : 14,
-                                                                        fontWeight: FontWeight.w400,
+                                                                      const SizedBox(width: 2),
+                                                                      Text(
+                                                                        // '3:44',
+                                                                        (mediaState.mediaItem?.duration?.inHours ??
+                                                                                    0.0) >=
+                                                                                1.0
+                                                                            ? "${mediaState.mediaItem?.duration?.inHours.toString()}:${((mediaState.mediaItem?.duration?.inMinutes ?? 0) % 60).toString().padLeft(2, '0')}:${((mediaState.mediaItem?.duration?.inSeconds ?? 0) % 60).toString().padLeft(2, '0')}"
+                                                                            : "${mediaState.mediaItem?.duration?.inMinutes.toString()}:${((mediaState.mediaItem?.duration?.inSeconds ?? 0) % 60).toString().padLeft(2, '0')}",
+                                                                        style: TextStyle(
+                                                                          color: primaryTextColor.withValues(
+                                                                            alpha: 0.8,
+                                                                          ),
+                                                                          fontSize:
+                                                                              DeviceFormFactorDetector.current.isTv
+                                                                              ? 20
+                                                                              : 14,
+                                                                          fontWeight: FontWeight.w400,
+                                                                        ),
                                                                       ),
-                                                                    ),
-                                                                    const SizedBox(width: 2),
-                                                                    Text(
-                                                                      // '3:44',
-                                                                      (mediaState.mediaItem?.duration?.inHours ??
-                                                                                  0.0) >=
-                                                                              1.0
-                                                                          ? "${mediaState.mediaItem?.duration?.inHours.toString()}:${((mediaState.mediaItem?.duration?.inMinutes ?? 0) % 60).toString().padLeft(2, '0')}:${((mediaState.mediaItem?.duration?.inSeconds ?? 0) % 60).toString().padLeft(2, '0')}"
-                                                                          : "${mediaState.mediaItem?.duration?.inMinutes.toString()}:${((mediaState.mediaItem?.duration?.inSeconds ?? 0) % 60).toString().padLeft(2, '0')}",
-                                                                      style: TextStyle(
-                                                                        color: primaryTextColor.withValues(alpha: 0.8),
-                                                                        fontSize: DeviceFormFactorDetector.current.isTv
-                                                                            ? 20
-                                                                            : 14,
-                                                                        fontWeight: FontWeight.w400,
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              );
-                                                            } else {
-                                                              return const SizedBox.shrink();
-                                                            }
-                                                          },
-                                                        ),
+                                                                    ],
+                                                                  ),
+                                                                );
+                                                              } else {
+                                                                return const SizedBox.shrink();
+                                                              }
+                                                            },
+                                                          ),
                                                       ],
                                                     ),
                                                   ],
@@ -557,6 +577,8 @@ class NowPlayingBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final onTv = DeviceFormFactorDetector.current.isTv;
     if (onTv && !tvTop) return const SizedBox.shrink();
+    // Inside the desktop shell, its own player bar is already on screen.
+    if (DesktopRouter.isInShell(context)) return const SizedBox.shrink();
     final queueService = GetIt.instance<QueueService>();
 
     if (tvTop) return _buildContent(context, ref, queueService, safeArea: false);

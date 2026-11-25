@@ -8,6 +8,9 @@ import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/backends/item_mapper.dart';
 import 'package:diapason/services/backends/item_sorter.dart';
 import 'package:diapason/services/backends/media_backend.dart';
+import 'package:diapason/services/hifi/dsd/byte_source.dart';
+import 'package:diapason/services/hifi/dsd/dsd_container.dart';
+import 'package:diapason/services/hifi/dsd/sacd.dart';
 import 'package:diapason/services/lyrics/lrc_parser.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
@@ -18,6 +21,9 @@ class LocalBackend implements MediaBackend {
 
   static final _log = Logger("LocalBackend");
   static const _audioExtensions = {".mp3", ".flac", ".m4a", ".aac", ".ogg", ".opus", ".wav", ".wma", ".alac", ".aiff"};
+
+  /// DSD files and SACD images, read with the app's own parsers (see `lib/services/hifi`).
+  static const _dsdExtensions = {".dsf", ".dff", ".iso"};
 
   @override
   final MediaSourceConfig config;
@@ -57,6 +63,9 @@ class LocalBackend implements MediaBackend {
     return true;
   }
 
+  /// The file behind a scanned track (used by the tag editor).
+  String? pathFor(BaseItemId id) => _paths[id.nativeId];
+
   static String _idFor(String path) => sha1.convert(path.codeUnits).toString().substring(0, 16);
 
   Future<void> scan() async {
@@ -76,7 +85,12 @@ class LocalBackend implements MediaBackend {
 
     await for (final entity in root.list(recursive: true, followLinks: false)) {
       if (entity is! File) continue;
-      if (!_audioExtensions.contains(p.extension(entity.path).toLowerCase())) continue;
+      final extension = p.extension(entity.path).toLowerCase();
+      if (_dsdExtensions.contains(extension)) {
+        _scanDsd(entity, extension, albumsSeen);
+        continue;
+      }
+      if (!_audioExtensions.contains(extension)) continue;
 
       try {
         final metadata = readMetadata(entity, getImage: false);
@@ -138,6 +152,71 @@ class LocalBackend implements MediaBackend {
 
     _scanned = true;
     _log.info("Scanned ${config.localPath}: ${_tracks.length} tracks, ${_albums.length} albums.");
+  }
+
+  /// A DSF/DFF file becomes a track named after its file (their tags are ID3 in DSF only, and not read here); a SACD
+  /// image becomes an album of its stereo area's tracks. Files that do not parse are skipped.
+  void _scanDsd(File file, String extension, Map<String, _AlbumAccumulator> albumsSeen) {
+    final path = file.path;
+    ByteSource? source;
+    try {
+      source = FileByteSource(path);
+      if (extension != ".iso") {
+        final info = tryParseDsd(source);
+        if (info == null) return;
+        final trackId = _idFor(path);
+        _paths[trackId] = path;
+        _tracks.add(
+          _map.track(
+            nativeId: trackId,
+            name: p.basenameWithoutExtension(path),
+            duration: info.duration,
+            container: extension.substring(1),
+            codec: info.dst ? "dst" : "dsd",
+            sampleRate: info.sampleRate,
+            bitDepth: 1,
+            channels: info.channels,
+          ),
+        );
+        return;
+      }
+      final image = SacdImage.open(source);
+      final area = image.area;
+      final albumName = area.album ?? p.basenameWithoutExtension(path);
+      final albumId = _idFor("sacd:$path");
+      albumsSeen
+              .putIfAbsent(
+                albumId,
+                () => _AlbumAccumulator(name: albumName, artist: area.artist, artistId: null, year: null),
+              )
+              .trackCount +=
+          area.tracks.length;
+      for (final track in area.tracks) {
+        final trackId = _idFor("$path#${track.number}");
+        _paths[trackId] = "$path#sacd=${track.number}";
+        _tracks.add(
+          _map.track(
+            nativeId: trackId,
+            name: track.title ?? "Track ${track.number}",
+            album: albumName,
+            albumNativeId: albumId,
+            artist: track.performer ?? area.artist,
+            indexNumber: track.number,
+            parentIndexNumber: area.discNumber,
+            duration: track.duration,
+            container: "iso",
+            codec: track.encoding == SacdEncoding.dst ? "dst" : "dsd",
+            sampleRate: dsd64Rate,
+            bitDepth: 1,
+            channels: 2,
+          ),
+        );
+      }
+    } catch (e) {
+      _log.fine("Skipping $path: $e");
+    } finally {
+      source?.close();
+    }
   }
 
   @override
@@ -265,6 +344,14 @@ class LocalBackend implements MediaBackend {
   Future<PlayableSource> resolveStream(BaseItemDto item, {required bool transcode, String? playSessionId}) async {
     final path = _paths[item.id.nativeId];
     if (path == null) throw StateError("No local file is known for '${item.name}'.");
+    final sacd = path.indexOf("#sacd=");
+    if (sacd >= 0) {
+      // A track of a SACD image: the fragment names it (see `sacdTrackOf`).
+      return PlayableSource(
+        Uri.file(File(path.substring(0, sacd)).absolute.path).replace(fragment: path.substring(sacd + 1)),
+        container: "iso",
+      );
+    }
     return PlayableSource(Uri.file(File(path).absolute.path));
   }
 

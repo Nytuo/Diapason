@@ -5936,5 +5936,1761 @@
     "wrappedPeriodThisYear": "This year",
     "@wrappedPeriodThisYear": {
         "description": "Wrapped period name"
+    },
+    "noNetworkTitle": "No network at all",
+    "@noNetworkTitle": {
+        "description": "Title of the hard switch that blocks every network request"
+    },
+    "noNetworkSubtitle": "Blocks every connection from Diapason: servers, lyrics, covers, scrobbling, updates, uploader and Connect. Offline mode stays on and only downloaded music plays.",
+    "@noNetworkSubtitle": {
+        "description": "Subtitle of the no network switch"
+    },
+    "noNetworkBlocked": "Diapason's network is turned off (Settings → Network → No network at all).",
+    "@noNetworkBlocked": {
+        "description": "Error shown when a request was refused because the no network switch is on"
+    },
+    "dlnaSourceDescription": "MiniDLNA, Serviio, Universal Media Server, NAS…",
+    "@dlnaSourceDescription": {
+        "description": "Subtitle of the DLNA/UPnP entry in the source type picker"
+    },
+    "dlnaGuidance": "Play music from a DLNA / UPnP media server on your local network (MiniDLNA, Serviio, Universal Media Server, a NAS…). Pick a server found on the network, or enter its address. The server decides who may read it: there is no sign-in.",
+    "@dlnaGuidance": {
+        "description": "Explanation shown above the DLNA source form"
+    },
+    "dlnaDiscoveredServers": "Servers on this network",
+    "@dlnaDiscoveredServers": {
+        "description": "Header of the list of DLNA media servers found with SSDP"
+    },
+    "dlnaScanAgain": "Search again",
+    "@dlnaScanAgain": {
+        "description": "Tooltip of the button that searches the network for DLNA servers again"
+    },
+    "dlnaScanning": "Searching the local network…",
+    "@dlnaScanning": {
+        "description": "Shown while searching the network for DLNA servers"
+    },
+    "dlnaNoServersFound": "No media server found. Enter its address below; on iPhone and iPad, automatic discovery may be unavailable.",
+    "@dlnaNoServersFound": {
+        "description": "Shown when SSDP discovery found no DLNA server"
+    },
+    "dlnaAddressLabel": "Server address",
+    "@dlnaAddressLabel": {
+        "description": "Label of the DLNA server address field"
+    },
+    "dlnaAddressHelper": "The address of its description (e.g. http://192.168.1.10:8200/rootDesc.xml), or just host:port to look for it.",
+    "@dlnaAddressHelper": {
+        "description": "Helper text of the DLNA server address field"
+    },
+    "dlnaServerError": "The DLNA media server answered with an error ({reason}).",
+    "@dlnaServerError": {
+        "description": "Friendly error shown when a DLNA/UPnP media server rejects a request or sends something unreadable",
+        "placeholders": {
+            "reason": {
+                "type": "String"
+            }
+        }
+    },
+    "watchSendAccountsSubtitle": "Watch: send it your accounts",
+    "@watchSendAccountsSubtitle": {
+        "description": "Connect device list on a phone: subtitle of a watch waiting for accounts"
+    },
+    "watchChooseDevice": "Choose a device",
+    "@watchChooseDevice": {
+        "description": "Watch: title of the list of devices to control"
+    },
+    "watchSearchingDevices": "Looking for Diapason on your network…",
+    "@watchSearchingDevices": {
+        "description": "Watch: shown while no device has been found"
+    },
+    "watchNoDevicesHint": "Open Diapason on a phone, computer or TV on the same Wi-Fi.",
+    "@watchNoDevicesHint": {
+        "description": "Watch: hint under the empty device list"
+    },
+    "watchReconnecting": "Reconnecting to {name}…",
+    "@watchReconnecting": {
+        "description": "Watch: the remembered device is being looked for",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "watchCouldNotConnect": "Couldn't reach {name}.",
+    "@watchCouldNotConnect": {
+        "description": "Watch: a device did not answer",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "watchNothingPlaying": "Nothing playing",
+    "@watchNothingPlaying": {
+        "description": "Watch: now playing page when the device plays nothing"
+    },
+    "watchQueue": "Queue",
+    "@watchQueue": {
+        "description": "Watch: queue page title and button"
+    },
+    "watchQueueEmpty": "The queue is empty",
+    "@watchQueueEmpty": {
+        "description": "Watch: empty queue"
+    },
+    "watchLibrary": "Library",
+    "@watchLibrary": {
+        "description": "Watch: library page title and button"
+    },
+    "watchVolume": "Volume",
+    "@watchVolume": {
+        "description": "Watch: volume page title and button"
+    },
+    "watchDevices": "Devices",
+    "@watchDevices": {
+        "description": "Watch: devices page title"
+    },
+    "watchDisconnect": "Disconnect",
+    "@watchDisconnect": {
+        "description": "Watch: stop controlling the device and forget it"
+    },
+    "watchSetUp": "Set up the watch",
+    "@watchSetUp": {
+        "description": "Watch: opens the set-up page"
+    },
+    "watchRecent": "Recently played",
+    "@watchRecent": {
+        "description": "Watch library: recently played tracks"
+    },
+    "watchFavorites": "Favorites",
+    "@watchFavorites": {
+        "description": "Watch library: favorite tracks"
+    },
+    "watchAlbums": "Albums",
+    "@watchAlbums": {
+        "description": "Watch library: albums"
+    },
+    "watchArtists": "Artists",
+    "@watchArtists": {
+        "description": "Watch library: artists"
+    },
+    "watchPlaylists": "Playlists",
+    "@watchPlaylists": {
+        "description": "Watch library: playlists"
+    },
+    "watchSearch": "Search",
+    "@watchSearch": {
+        "description": "Watch library: search"
+    },
+    "watchSourceDevice": "On {name}",
+    "@watchSourceDevice": {
+        "description": "Watch library: browsing the controlled device's library",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "watchSourceWatch": "On this watch",
+    "@watchSourceWatch": {
+        "description": "Watch library: browsing the watch's own accounts"
+    },
+    "watchLibraryUnavailable": "{name} can't be browsed from a watch. Update Diapason there, or add accounts to the watch.",
+    "@watchLibraryUnavailable": {
+        "description": "Watch library: the device is too old to be browsed and the watch has no accounts",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "watchNotConnected": "Pick a device first.",
+    "@watchNotConnected": {
+        "description": "Watch library: no device is controlled"
+    },
+    "watchLoadFailed": "Couldn't load this.",
+    "@watchLoadFailed": {
+        "description": "Watch: a listing failed to load"
+    },
+    "watchRetry": "Retry",
+    "@watchRetry": {
+        "description": "Watch: retry button"
+    },
+    "watchEmptyList": "Nothing here",
+    "@watchEmptyList": {
+        "description": "Watch: an empty listing"
+    },
+    "watchPlay": "Play",
+    "@watchPlay": {
+        "description": "Watch: play an item on the device"
+    },
+    "watchShuffle": "Shuffle",
+    "@watchShuffle": {
+        "description": "Watch: shuffle an item on the device"
+    },
+    "watchPlayNext": "Play next",
+    "@watchPlayNext": {
+        "description": "Watch: play an item after the current track"
+    },
+    "watchAddToQueue": "Add to queue",
+    "@watchAddToQueue": {
+        "description": "Watch: append an item to the device's queue"
+    },
+    "watchSent": "Sent to {name}",
+    "@watchSent": {
+        "description": "Watch: an item was sent to the device",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "watchSendFailed": "It didn't get through.",
+    "@watchSendFailed": {
+        "description": "Watch: an item could not be sent"
+    },
+    "watchSetupReceiveHint": "On your phone, open Diapason, tap the devices button and pick this watch to send it your accounts.",
+    "@watchSetupReceiveHint": {
+        "description": "Watch set-up: how to send accounts from a phone"
+    },
+    "watchSetupSignIn": "Sign in on the watch",
+    "@watchSetupSignIn": {
+        "description": "Watch set-up: opens the login screen"
+    },
+    "watchSetupAccounts": "{count, plural, =0{No accounts on the watch} =1{1 account on the watch} other{{count} accounts on the watch}}",
+    "@watchSetupAccounts": {
+        "description": "Watch set-up: how many accounts the watch has",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "watchSetupOptional": "Not needed to control a device: accounts only let the watch browse music on its own.",
+    "@watchSetupOptional": {
+        "description": "Watch set-up: explains accounts are optional"
+    },
+    "watchOfferTitle": "Add accounts?",
+    "@watchOfferTitle": {
+        "description": "Watch: a phone sent accounts"
+    },
+    "watchOfferBody": "{from} sends {count, plural, =1{1 account} other{{count} accounts}}.",
+    "@watchOfferBody": {
+        "description": "Watch: a phone sent accounts",
+        "placeholders": {
+            "from": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "watchOfferAdd": "Add",
+    "@watchOfferAdd": {
+        "description": "Watch: accept accounts sent by a phone"
+    },
+    "watchOfferRefuse": "Refuse",
+    "@watchOfferRefuse": {
+        "description": "Watch: refuse accounts sent by a phone"
+    },
+    "watchOfferAdded": "{count, plural, =0{No new account} =1{1 account added} other{{count} accounts added}}",
+    "@watchOfferAdded": {
+        "description": "Watch: accounts sent by a phone were added",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "watchAnotherDevice": "A device",
+    "@watchAnotherDevice": {
+        "description": "Watch: name of a phone that did not say its name"
+    },
+    "visualWaveformSeekBar": "Waveform seek bar",
+    "@visualWaveformSeekBar": {
+        "description": "Settings switch and accessibility label of the waveform seek bar"
+    },
+    "visualWaveformSeekBarSubtitle": "Show the track's waveform instead of the progress slider. It is computed from downloaded tracks and from streams once fully cached; until then the usual slider shows.",
+    "@visualWaveformSeekBarSubtitle": {
+        "description": "Subtitle of the waveform seek bar setting"
+    },
+    "visualStyle": "Style",
+    "@visualStyle": {
+        "description": "Title of the visualizer style picker"
+    },
+    "visualStyleCurve": "Curve",
+    "@visualStyleCurve": {
+        "description": "Visualizer style"
+    },
+    "visualStyleBars": "Bars",
+    "@visualStyleBars": {
+        "description": "Visualizer style"
+    },
+    "visualStyleMirroredBars": "Mirrored bars",
+    "@visualStyleMirroredBars": {
+        "description": "Visualizer style"
+    },
+    "visualStyleRadial": "Radial (around the cover)",
+    "@visualStyleRadial": {
+        "description": "Visualizer style: bars radiating around the cover art"
+    },
+    "visualStyleWave": "Wave line",
+    "@visualStyleWave": {
+        "description": "Visualizer style: an oscillating line shaped by the spectrum"
+    },
+    "visualStyleParticles": "Starfield",
+    "@visualStyleParticles": {
+        "description": "Visualizer style: stars flying outwards, faster with the bass"
+    },
+    "visualStyleBlob": "Gradient waves",
+    "@visualStyleBlob": {
+        "description": "Visualizer style: layered smooth filled waves"
+    },
+    "visualAnimatedTitle": "Animated visual",
+    "@visualAnimatedTitle": {
+        "description": "Section title for the MilkDrop-like animated visual"
+    },
+    "visualAnimatedOnCover": "Animated visual on the cover",
+    "@visualAnimatedOnCover": {
+        "description": "Switch: play the animated visual over the cover art in the player screen"
+    },
+    "visualAnimatedOnCoverSubtitle": "Plays a MilkDrop-like animation that follows the music over the cover art in the player.",
+    "@visualAnimatedOnCoverSubtitle": {
+        "description": "Subtitle of the animated visual on cover switch"
+    },
+    "visualAnimatedPreset": "Preset",
+    "@visualAnimatedPreset": {
+        "description": "Title of the animated visual preset picker"
+    },
+    "visualAnimatedPresetCycle": "Cycle through presets",
+    "@visualAnimatedPresetCycle": {
+        "description": "Preset option: change preset automatically every 30 seconds"
+    },
+    "visualPresetPlasma": "Plasma",
+    "@visualPresetPlasma": {
+        "description": "Animated visual preset name"
+    },
+    "visualPresetKaleidoscope": "Kaleidoscope",
+    "@visualPresetKaleidoscope": {
+        "description": "Animated visual preset name"
+    },
+    "visualPresetTunnel": "Tunnel",
+    "@visualPresetTunnel": {
+        "description": "Animated visual preset name"
+    },
+    "visualPresetNebula": "Nebula",
+    "@visualPresetNebula": {
+        "description": "Animated visual preset name"
+    },
+    "visualPresetVortex": "Vortex",
+    "@visualPresetVortex": {
+        "description": "Animated visual preset name"
+    },
+    "visualAnimatedLowPower": "Low power",
+    "@visualAnimatedLowPower": {
+        "description": "Switch: render the animated visual at a lower resolution and frame rate"
+    },
+    "visualAnimatedLowPowerSubtitle": "Renders the animation at a lower resolution and frame rate to save battery.",
+    "@visualAnimatedLowPowerSubtitle": {
+        "description": "Subtitle of the low power switch"
+    },
+    "visualAnimatedOpen": "Open the animated visual",
+    "@visualAnimatedOpen": {
+        "description": "Button/tile opening the full-page animated visual"
+    },
+    "visualAnimatedUnavailable": "Animated visuals aren't available on this device.",
+    "@visualAnimatedUnavailable": {
+        "description": "Shown when the shader can't be loaded"
+    },
+    "visualAnimatedNoAudio": "No audio data: the animation isn't following the music.",
+    "@visualAnimatedNoAudio": {
+        "description": "Shown on the animated visual page when no spectrum source is available"
+    },
+    "visualNextPreset": "Next preset",
+    "@visualNextPreset": {
+        "description": "Tooltip"
+    },
+    "visualPreviousPreset": "Previous preset",
+    "@visualPreviousPreset": {
+        "description": "Tooltip"
+    },
+    "visualFullscreen": "Fullscreen",
+    "@visualFullscreen": {
+        "description": "Tooltip"
+    },
+    "visualExitFullscreen": "Exit fullscreen",
+    "@visualExitFullscreen": {
+        "description": "Tooltip"
+    },
+    "visualClose": "Close",
+    "@visualClose": {
+        "description": "Tooltip closing the animated visual page"
+    },
+    "visualMoreSettings": "More visualizer settings",
+    "@visualMoreSettings": {
+        "description": "Sheet entry opening the visualizer settings screen"
+    },
+    "radioStationsTitle": "Radio",
+    "@radioStationsTitle": {
+        "description": "Title of the internet radio screen"
+    },
+    "radioStationsLive": "LIVE",
+    "@radioStationsLive": {
+        "description": "Badge shown instead of the seek bar while a live radio stream plays"
+    },
+    "radioStationsTabMine": "My stations",
+    "@radioStationsTabMine": {
+        "description": "Radio screen tab with the user's saved, recent and server stations"
+    },
+    "radioStationsTabBrowse": "Browse",
+    "@radioStationsTabBrowse": {
+        "description": "Radio screen tab with the Radio Browser directory"
+    },
+    "radioStationsTabSearch": "Search",
+    "@radioStationsTabSearch": {
+        "description": "Radio screen tab to search the Radio Browser directory"
+    },
+    "radioStationsSaved": "Saved stations",
+    "@radioStationsSaved": {
+        "description": "Section header for the user's saved radio stations"
+    },
+    "radioStationsRecent": "Recently played",
+    "@radioStationsRecent": {
+        "description": "Section header for recently played radio stations"
+    },
+    "radioStationsClearRecent": "Clear recently played",
+    "@radioStationsClearRecent": {
+        "description": "Tooltip of the button clearing the recently played radio stations"
+    },
+    "radioStationsFromServer": "From your servers",
+    "@radioStationsFromServer": {
+        "description": "Section header for internet radio stations configured on the user's media servers"
+    },
+    "radioStationsEmptyMine": "No stations yet. Browse the directory, or add a station by its stream URL.",
+    "@radioStationsEmptyMine": {
+        "description": "Shown when the user has no radio stations"
+    },
+    "radioStationsAdd": "Add station",
+    "@radioStationsAdd": {
+        "description": "Button/dialog title to add a radio station by URL"
+    },
+    "radioStationsEdit": "Edit station",
+    "@radioStationsEdit": {
+        "description": "Menu item/dialog title to edit a user radio station"
+    },
+    "radioStationsDelete": "Delete station",
+    "@radioStationsDelete": {
+        "description": "Menu item/button deleting a user radio station"
+    },
+    "radioStationsDeleteConfirm": "Delete \"{name}\"?",
+    "@radioStationsDeleteConfirm": {
+        "description": "Confirmation before deleting a radio station",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "radioStationsSave": "Save to my stations",
+    "@radioStationsSave": {
+        "description": "Tooltip of the button saving a radio station"
+    },
+    "radioStationsUnsave": "Remove from my stations",
+    "@radioStationsUnsave": {
+        "description": "Tooltip of the button removing a saved radio station"
+    },
+    "radioStationsName": "Name",
+    "@radioStationsName": {
+        "description": "Radio station dialog: name field"
+    },
+    "radioStationsStreamUrl": "Stream or playlist URL",
+    "@radioStationsStreamUrl": {
+        "description": "Radio station dialog: stream URL field"
+    },
+    "radioStationsStreamUrlHint": "https://… (.pls and .m3u links work too)",
+    "@radioStationsStreamUrlHint": {
+        "description": "Radio station dialog: stream URL hint"
+    },
+    "radioStationsFaviconUrl": "Logo URL (optional)",
+    "@radioStationsFaviconUrl": {
+        "description": "Radio station dialog: logo URL field"
+    },
+    "radioStationsHomepage": "Website (optional)",
+    "@radioStationsHomepage": {
+        "description": "Radio station dialog: website field"
+    },
+    "radioStationsTagsField": "Tags, comma separated (optional)",
+    "@radioStationsTagsField": {
+        "description": "Radio station dialog: tags field"
+    },
+    "radioStationsInvalidUrl": "Enter an http:// or https:// URL",
+    "@radioStationsInvalidUrl": {
+        "description": "Radio station dialog: invalid URL error"
+    },
+    "radioStationsNameRequired": "Enter a name",
+    "@radioStationsNameRequired": {
+        "description": "Radio station dialog: missing name error"
+    },
+    "radioStationsTop": "Top",
+    "@radioStationsTop": {
+        "description": "Radio directory: most played stations"
+    },
+    "radioStationsTrending": "Trending",
+    "@radioStationsTrending": {
+        "description": "Radio directory: stations gaining listeners"
+    },
+    "radioStationsCountries": "Countries",
+    "@radioStationsCountries": {
+        "description": "Radio directory: browse by country"
+    },
+    "radioStationsLanguages": "Languages",
+    "@radioStationsLanguages": {
+        "description": "Radio directory: browse by language"
+    },
+    "radioStationsTags": "Genres & tags",
+    "@radioStationsTags": {
+        "description": "Radio directory: browse by tag"
+    },
+    "radioStationsStationCount": "{count, plural, =1{1 station} other{{count} stations}}",
+    "@radioStationsStationCount": {
+        "description": "Number of stations in a radio directory category",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "radioStationsSearchHint": "Search stations by name",
+    "@radioStationsSearchHint": {
+        "description": "Radio directory search field hint"
+    },
+    "radioStationsNoResults": "No stations found.",
+    "@radioStationsNoResults": {
+        "description": "Shown when a radio directory listing is empty"
+    },
+    "radioStationsLoadError": "Couldn't load the radio directory. {reason}",
+    "@radioStationsLoadError": {
+        "description": "Radio Browser request failed",
+        "placeholders": {
+            "reason": {
+                "type": "String"
+            }
+        }
+    },
+    "radioStationsPlayError": "Couldn't tune in. {reason}",
+    "@radioStationsPlayError": {
+        "description": "Starting a radio station failed",
+        "placeholders": {
+            "reason": {
+                "type": "String"
+            }
+        }
+    },
+    "radioStationsDirectoryCredit": "Directory by radio-browser.info",
+    "@radioStationsDirectoryCredit": {
+        "description": "Credit line for the community radio directory"
+    },
+    "radioStationsOffline": "Radio needs the network. Turn off offline mode to listen.",
+    "@radioStationsOffline": {
+        "description": "Banner on the radio screen in offline mode"
+    },
+    "pluginsTitle": "Plugins",
+    "@pluginsTitle": {
+        "description": "Title of the plugins settings screen"
+    },
+    "pluginsSubtitle": "Lyrics, covers and menu actions from plugins",
+    "@pluginsSubtitle": {
+        "description": "Subtitle of the plugins entry in settings"
+    },
+    "pluginsSandboxNote": "Plugins are made by third parties. They run sandboxed and can only do what you approve, but install only plugins you trust.",
+    "@pluginsSandboxNote": {
+        "description": "Warning at the top of the plugins screen"
+    },
+    "pluginsInstalled": "Installed",
+    "@pluginsInstalled": {
+        "description": "Section header for installed plugins"
+    },
+    "pluginsNoneInstalled": "No plugins installed.",
+    "@pluginsNoneInstalled": {
+        "description": "Shown when no plugin is installed"
+    },
+    "pluginsInstallFromFile": "Install from file",
+    "@pluginsInstallFromFile": {
+        "description": "Button to install a plugin package (.zip) from a file"
+    },
+    "pluginsCatalogs": "Catalogs",
+    "@pluginsCatalogs": {
+        "description": "Section header for plugin catalogs"
+    },
+    "pluginsNoCatalogs": "No catalog yet. Add a catalog URL to browse its plugins.",
+    "@pluginsNoCatalogs": {
+        "description": "Shown when no catalog was added"
+    },
+    "pluginsAddCatalog": "Add catalog",
+    "@pluginsAddCatalog": {
+        "description": "Button and dialog title to add a plugin catalog by URL"
+    },
+    "pluginsCatalogUrl": "Catalog URL",
+    "@pluginsCatalogUrl": {
+        "description": "Label of the catalog URL field"
+    },
+    "pluginsInvalidCatalogUrl": "Enter an http(s) URL.",
+    "@pluginsInvalidCatalogUrl": {
+        "description": "Error when the catalog URL is invalid"
+    },
+    "pluginsRemoveCatalog": "Remove catalog",
+    "@pluginsRemoveCatalog": {
+        "description": "Button to remove a catalog"
+    },
+    "pluginsCatalogEmpty": "This catalog lists no plugins.",
+    "@pluginsCatalogEmpty": {
+        "description": "Shown when a catalog has no entries"
+    },
+    "pluginsCatalogFailed": "Could not load the catalog: {reason}",
+    "@pluginsCatalogFailed": {
+        "description": "Error when a catalog cannot be loaded",
+        "placeholders": {
+            "reason": {
+                "type": "String"
+            }
+        }
+    },
+    "pluginsInstall": "Install",
+    "@pluginsInstall": {
+        "description": "Button to install a plugin from a catalog"
+    },
+    "pluginsUpdateTo": "Update to {version}",
+    "@pluginsUpdateTo": {
+        "description": "Button to update a plugin",
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
+    },
+    "pluginsUpToDate": "Installed",
+    "@pluginsUpToDate": {
+        "description": "Shown next to a catalog plugin that is installed and up to date"
+    },
+    "pluginsUninstall": "Uninstall",
+    "@pluginsUninstall": {
+        "description": "Button to uninstall a plugin"
+    },
+    "pluginsUninstallConfirm": "Uninstall {name}? What it stored on this device is deleted too.",
+    "@pluginsUninstallConfirm": {
+        "description": "Confirmation before uninstalling a plugin",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "pluginsClearData": "Clear stored data",
+    "@pluginsClearData": {
+        "description": "Button to delete what a plugin stored"
+    },
+    "pluginsDataCleared": "Stored data cleared",
+    "@pluginsDataCleared": {
+        "description": "Snackbar after clearing a plugin's data"
+    },
+    "pluginsLogs": "Logs",
+    "@pluginsLogs": {
+        "description": "Section header and button for a plugin's logs"
+    },
+    "pluginsNoLogs": "Nothing logged yet.",
+    "@pluginsNoLogs": {
+        "description": "Shown when a plugin's log is empty"
+    },
+    "pluginsClearLogs": "Clear logs",
+    "@pluginsClearLogs": {
+        "description": "Button to clear a plugin's logs"
+    },
+    "pluginsPermissions": "Permissions",
+    "@pluginsPermissions": {
+        "description": "Section header for a plugin's permissions"
+    },
+    "pluginsNoPermissions": "No permissions",
+    "@pluginsNoPermissions": {
+        "description": "Shown when a plugin declares no permission"
+    },
+    "pluginsProvides": "Provides",
+    "@pluginsProvides": {
+        "description": "Section header for what a plugin provides"
+    },
+    "pluginsVersionBy": "{version} by {author}",
+    "@pluginsVersionBy": {
+        "description": "Version and author of a plugin",
+        "placeholders": {
+            "version": {
+                "type": "String"
+            },
+            "author": {
+                "type": "String"
+            }
+        }
+    },
+    "pluginsStatusRunning": "Running",
+    "@pluginsStatusRunning": {
+        "description": "Status of an enabled, loaded plugin"
+    },
+    "pluginsStatusDisabled": "Disabled",
+    "@pluginsStatusDisabled": {
+        "description": "Status of a disabled plugin"
+    },
+    "pluginsStatusNeedsApproval": "Needs approval",
+    "@pluginsStatusNeedsApproval": {
+        "description": "Status of a plugin whose new permissions must be approved"
+    },
+    "pluginsStatusFailed": "Failed",
+    "@pluginsStatusFailed": {
+        "description": "Status of a plugin that could not run"
+    },
+    "pluginsApproveInstallTitle": "Install {name}?",
+    "@pluginsApproveInstallTitle": {
+        "description": "Title of the permission approval dialog for a new plugin",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "pluginsApproveUpdateTitle": "Update {name}?",
+    "@pluginsApproveUpdateTitle": {
+        "description": "Title of the permission approval dialog for an update",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "pluginsApproveEnableTitle": "Enable {name}?",
+    "@pluginsApproveEnableTitle": {
+        "description": "Title of the permission approval dialog when enabling",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "pluginsApproveAsks": "It will be allowed to:",
+    "@pluginsApproveAsks": {
+        "description": "Introduces the list of permissions to approve"
+    },
+    "pluginsApproveAsksMore": "This version also asks to:",
+    "@pluginsApproveAsksMore": {
+        "description": "Introduces the new permissions an update asks for"
+    },
+    "pluginsApproveNothing": "It asks for no permissions.",
+    "@pluginsApproveNothing": {
+        "description": "Shown when there is nothing to approve"
+    },
+    "pluginsApproveSandbox": "It cannot do anything else: no other sites, files or app data.",
+    "@pluginsApproveSandbox": {
+        "description": "Reminder of the sandbox in the approval dialog"
+    },
+    "pluginsApprove": "Approve",
+    "@pluginsApprove": {
+        "description": "Button to approve a plugin's permissions"
+    },
+    "pluginsPermissionNetwork": "Connect to {hosts}",
+    "@pluginsPermissionNetwork": {
+        "description": "Network permission with its hosts",
+        "placeholders": {
+            "hosts": {
+                "type": "String"
+            }
+        }
+    },
+    "pluginsPermissionStorage": "Keep its own data on this device",
+    "@pluginsPermissionStorage": {
+        "description": "Storage permission"
+    },
+    "pluginsPermissionPlaybackControl": "Play, pause and skip tracks",
+    "@pluginsPermissionPlaybackControl": {
+        "description": "Playback control permission"
+    },
+    "pluginsPermissionNowPlaying": "See what is playing",
+    "@pluginsPermissionNowPlaying": {
+        "description": "Now playing permission"
+    },
+    "pluginsPermissionLibraryRead": "Search your library",
+    "@pluginsPermissionLibraryRead": {
+        "description": "Library read permission"
+    },
+    "pluginsPointLyrics": "Lyrics",
+    "@pluginsPointLyrics": {
+        "description": "Extension point: lyrics"
+    },
+    "pluginsPointCoverArt": "Cover art",
+    "@pluginsPointCoverArt": {
+        "description": "Extension point: cover art"
+    },
+    "pluginsPointMetadata": "Metadata",
+    "@pluginsPointMetadata": {
+        "description": "Extension point: metadata"
+    },
+    "pluginsPointRadioDirectory": "Radio directory",
+    "@pluginsPointRadioDirectory": {
+        "description": "Extension point: radio directory"
+    },
+    "pluginsPointScrobbler": "Scrobbling",
+    "@pluginsPointScrobbler": {
+        "description": "Extension point: scrobbler"
+    },
+    "pluginsPointSource": "Music source",
+    "@pluginsPointSource": {
+        "description": "Extension point: read-only music source"
+    },
+    "pluginsPointCommand": "Menu action: {title}",
+    "@pluginsPointCommand": {
+        "description": "Extension point: a context menu command",
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "pluginsInstalledMessage": "{name} installed",
+    "@pluginsInstalledMessage": {
+        "description": "Snackbar after installing a plugin",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "pluginsUpdatedMessage": "{name} updated",
+    "@pluginsUpdatedMessage": {
+        "description": "Snackbar after updating a plugin",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "pluginsInstallFailed": "Could not install the plugin: {reason}",
+    "@pluginsInstallFailed": {
+        "description": "Error when installing a plugin fails",
+        "placeholders": {
+            "reason": {
+                "type": "String"
+            }
+        }
+    },
+    "pluginsCommandFailed": "{name} failed: {reason}",
+    "@pluginsCommandFailed": {
+        "description": "Error when a plugin menu action fails",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "reason": {
+                "type": "String"
+            }
+        }
+    },
+    "pluginsCommandDone": "Done",
+    "@pluginsCommandDone": {
+        "description": "Snackbar after a plugin menu action that returned no message"
+    },
+    "pluginsWebsite": "Website",
+    "@pluginsWebsite": {
+        "description": "Button to open a plugin's homepage"
+    },
+    "pluginsFromFile": "Installed from a file",
+    "@pluginsFromFile": {
+        "description": "Origin of a plugin installed from a file"
+    },
+    "pluginsFromCatalog": "From {catalog}",
+    "@pluginsFromCatalog": {
+        "description": "Origin of a plugin installed from a catalog",
+        "placeholders": {
+            "catalog": {
+                "type": "String"
+            }
+        }
+    },
+    "lyricsAppleStyleTitle": "Animated lyrics",
+    "@lyricsAppleStyleTitle": {
+        "description": "Lyrics settings: Apple Music-like style toggle"
+    },
+    "lyricsAppleStyleSubtitle": "The current line glides into place and lights up word by word, the others fade and blur, like Apple Music. Off: the classic list.",
+    "@lyricsAppleStyleSubtitle": {
+        "description": "Lyrics settings"
+    },
+    "lyricsFuriganaTitle": "Furigana for Japanese lyrics",
+    "@lyricsFuriganaTitle": {
+        "description": "Lyrics settings"
+    },
+    "lyricsFuriganaSubtitle": "Shows how kanji are read, in hiragana above them. Works offline once the dictionary is downloaded.",
+    "@lyricsFuriganaSubtitle": {
+        "description": "Lyrics settings"
+    },
+    "lyricsRomajiTitle": "Romaji for Japanese lyrics",
+    "@lyricsRomajiTitle": {
+        "description": "Lyrics settings"
+    },
+    "lyricsRomajiSubtitle": "Adds the reading in latin letters under each Japanese line.",
+    "@lyricsRomajiSubtitle": {
+        "description": "Lyrics settings"
+    },
+    "lyricsDictionaryTitle": "Japanese dictionary",
+    "@lyricsDictionaryTitle": {
+        "description": "Lyrics settings: dictionary used for furigana"
+    },
+    "lyricsDictionaryMissing": "Not downloaded ({size} MB). Needed for furigana and romaji.",
+    "@lyricsDictionaryMissing": {
+        "description": "Lyrics settings",
+        "placeholders": {
+            "size": {
+                "type": "String"
+            }
+        }
+    },
+    "lyricsDictionaryDownloading": "Downloading… {percent}%",
+    "@lyricsDictionaryDownloading": {
+        "description": "Lyrics settings",
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "lyricsDictionaryReady": "Installed ({size} MB)",
+    "@lyricsDictionaryReady": {
+        "description": "Lyrics settings",
+        "placeholders": {
+            "size": {
+                "type": "String"
+            }
+        }
+    },
+    "lyricsDictionaryFailed": "Download failed: {error}",
+    "@lyricsDictionaryFailed": {
+        "description": "Lyrics settings",
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "lyricsDictionaryUnsupported": "Not available on this platform",
+    "@lyricsDictionaryUnsupported": {
+        "description": "Lyrics settings"
+    },
+    "lyricsDictionaryDownload": "Download",
+    "@lyricsDictionaryDownload": {
+        "description": "Lyrics settings: button"
+    },
+    "lyricsDictionaryDelete": "Delete",
+    "@lyricsDictionaryDelete": {
+        "description": "Lyrics settings: button"
+    },
+    "lyricsDictionaryNeeded": "Download the Japanese dictionary ({size} MB) to see furigana and romaji.",
+    "@lyricsDictionaryNeeded": {
+        "description": "Lyrics options sheet, Japanese song without dictionary",
+        "placeholders": {
+            "size": {
+                "type": "String"
+            }
+        }
+    },
+    "lyricsTranslationTitle": "Translate lyrics",
+    "@lyricsTranslationTitle": {
+        "description": "Lyrics settings"
+    },
+    "lyricsTranslationSubtitle": "Shows a translation under each line. Sends the lyrics' text to the service set below, once per song.",
+    "@lyricsTranslationSubtitle": {
+        "description": "Lyrics settings"
+    },
+    "lyricsTranslationService": "Translation service",
+    "@lyricsTranslationService": {
+        "description": "Lyrics settings"
+    },
+    "lyricsTranslationServerUrl": "LibreTranslate server",
+    "@lyricsTranslationServerUrl": {
+        "description": "Lyrics settings: text field label"
+    },
+    "lyricsTranslationApiKey": "API key",
+    "@lyricsTranslationApiKey": {
+        "description": "Lyrics settings: text field label"
+    },
+    "lyricsTranslationApiKeyOptional": "API key (optional)",
+    "@lyricsTranslationApiKeyOptional": {
+        "description": "Lyrics settings: text field label"
+    },
+    "lyricsTranslationTarget": "Translate into",
+    "@lyricsTranslationTarget": {
+        "description": "Lyrics settings"
+    },
+    "lyricsTranslationAppLanguage": "App language",
+    "@lyricsTranslationAppLanguage": {
+        "description": "Lyrics settings: target language option"
+    },
+    "lyricsTranslationNotSetUp": "Add a server or an API key to start translating.",
+    "@lyricsTranslationNotSetUp": {
+        "description": "Lyrics settings"
+    },
+    "lyricsTranslationClearCache": "Clear saved translations",
+    "@lyricsTranslationClearCache": {
+        "description": "Lyrics settings: button"
+    },
+    "lyricsTranslationCacheCleared": "Saved translations cleared",
+    "@lyricsTranslationCacheCleared": {
+        "description": "Snackbar"
+    },
+    "lyricsShowTranslation": "Show translation",
+    "@lyricsShowTranslation": {
+        "description": "Lyrics options sheet: per-song toggle"
+    },
+    "lyricsTranslationLoading": "Translating…",
+    "@lyricsTranslationLoading": {
+        "description": "Lyrics options sheet"
+    },
+    "lyricsTranslationSameLanguage": "Already in the target language",
+    "@lyricsTranslationSameLanguage": {
+        "description": "Lyrics options sheet"
+    },
+    "lyricsTranslationFrom": "Translated from {language}",
+    "@lyricsTranslationFrom": {
+        "description": "Lyrics options sheet",
+        "placeholders": {
+            "language": {
+                "type": "String"
+            }
+        }
+    },
+    "lyricsTranslationFailed": "Translation failed: {error}",
+    "@lyricsTranslationFailed": {
+        "description": "Lyrics options sheet",
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "lyricsExport": "Export lyrics",
+    "@lyricsExport": {
+        "description": "Lyrics options sheet"
+    },
+    "lyricsExportSubtitle": "LRC, SRT or text file, or copy",
+    "@lyricsExportSubtitle": {
+        "description": "Lyrics options sheet"
+    },
+    "lyricsExportFormatLrc": "LRC (synced lines)",
+    "@lyricsExportFormatLrc": {
+        "description": "Export format"
+    },
+    "lyricsExportFormatEnhancedLrc": "Enhanced LRC (word timings)",
+    "@lyricsExportFormatEnhancedLrc": {
+        "description": "Export format"
+    },
+    "lyricsExportFormatSrt": "SRT subtitles",
+    "@lyricsExportFormatSrt": {
+        "description": "Export format"
+    },
+    "lyricsExportFormatTxt": "Plain text",
+    "@lyricsExportFormatTxt": {
+        "description": "Export format"
+    },
+    "lyricsExportShare": "Share",
+    "@lyricsExportShare": {
+        "description": "Export button (mobile)"
+    },
+    "lyricsExportSave": "Save…",
+    "@lyricsExportSave": {
+        "description": "Export button (desktop)"
+    },
+    "lyricsExportCopy": "Copy",
+    "@lyricsExportCopy": {
+        "description": "Export button"
+    },
+    "lyricsExportCopied": "Lyrics copied",
+    "@lyricsExportCopied": {
+        "description": "Snackbar"
+    },
+    "lyricsExportSaved": "Lyrics saved",
+    "@lyricsExportSaved": {
+        "description": "Snackbar"
+    },
+    "lyricsExportFailed": "Couldn't export the lyrics: {error}",
+    "@lyricsExportFailed": {
+        "description": "Snackbar",
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "hifiSettingsTitle": "Hi-Fi output",
+    "@hifiSettingsTitle": {
+        "description": "Title of the Hi-Fi output settings screen"
+    },
+    "hifiSettingsSubtitle": "Bit-perfect output, DSD, SACD",
+    "@hifiSettingsSubtitle": {
+        "description": "Subtitle of the Hi-Fi output entry in the settings list"
+    },
+    "hifiBitPerfectTitle": "Bit-perfect output",
+    "@hifiBitPerfectTitle": {
+        "description": "Switch that turns bit-perfect output on"
+    },
+    "hifiBitPerfectSubtitle": "Sends the samples to the DAC unchanged where the system allows it. Volume, ReplayGain, equalizer, crossfade and playback speed are bypassed: use the volume of your DAC or amplifier.",
+    "@hifiBitPerfectSubtitle": {
+        "description": "Explains what bit-perfect output does and what it bypasses"
+    },
+    "hifiPlatformNone": "Not possible on iOS, iPadOS and tvOS: the system always mixes and resamples the output.",
+    "@hifiPlatformNone": {
+        "description": "Why bit-perfect output is not offered on Apple mobile platforms"
+    },
+    "hifiPlatformMpv": "mpv opens the output at each track's rate, with no filters. In exclusive mode, or on an ALSA “hw:” device, the system mixer is out of the path.",
+    "@hifiPlatformMpv": {
+        "description": "What bit-perfect output does on Linux and Windows"
+    },
+    "hifiPlatformMacos": "The output device is switched to each track's sample rate, so nothing is resampled. The audio still goes through the system's floating-point mixer at unity gain: transparent, but not guaranteed bit-perfect.",
+    "@hifiPlatformMacos": {
+        "description": "What bit-perfect output does on macOS"
+    },
+    "hifiPlatformAndroid": "Needs Android 14 or later and a USB DAC: the system's bit-perfect mixer is requested at each track's rate. The player decodes to 16-bit, so only 16-bit sources reach the DAC bit-perfect. Otherwise the output stays shared.",
+    "@hifiPlatformAndroid": {
+        "description": "What bit-perfect output does on Android"
+    },
+    "hifiExclusiveTitle": "Exclusive mode",
+    "@hifiExclusiveTitle": {
+        "description": "Switch for exclusive access to the output device"
+    },
+    "hifiExclusiveSubtitle": "Takes the output device for this app alone (mpv exclusive mode, CoreAudio hog mode). Other apps go silent meanwhile. If you hear nothing, turn it off.",
+    "@hifiExclusiveSubtitle": {
+        "description": "Explains exclusive mode"
+    },
+    "hifiOutputDeviceTitle": "Output device",
+    "@hifiOutputDeviceTitle": {
+        "description": "Output device picker title"
+    },
+    "hifiOutputDeviceDefault": "System default",
+    "@hifiOutputDeviceDefault": {
+        "description": "Output device option meaning the system default"
+    },
+    "hifiOutputDeviceEmpty": "No device reported yet: start playback, then come back.",
+    "@hifiOutputDeviceEmpty": {
+        "description": "Shown when mpv has not listed its output devices yet"
+    },
+    "hifiDsdTitle": "DSD playback",
+    "@hifiDsdTitle": {
+        "description": "Title of the DSD mode choice"
+    },
+    "hifiDsdDop": "DoP when possible",
+    "@hifiDsdDop": {
+        "description": "DSD mode: DoP when the output is bit-perfect"
+    },
+    "hifiDsdDopSubtitle": "With bit-perfect output on Linux or Windows, DSD is sent as DoP (your DAC must support it). Everywhere else DSD is converted to PCM.",
+    "@hifiDsdDopSubtitle": {
+        "description": "Explains the DoP DSD mode"
+    },
+    "hifiDsdPcm": "Always convert to PCM",
+    "@hifiDsdPcm": {
+        "description": "DSD mode: always convert DSD to PCM"
+    },
+    "hifiDsdPcmSubtitle": "DSD is low-pass filtered to 24-bit PCM (88.2 kHz here, 352.8 kHz when mpv decodes it).",
+    "@hifiDsdPcmSubtitle": {
+        "description": "Explains the PCM DSD mode"
+    },
+    "hifiSignalPathTitle": "Signal path",
+    "@hifiSignalPathTitle": {
+        "description": "Title of the signal path panel"
+    },
+    "hifiSignalPathHint": "Tap the format line under the track in the player to see its signal path.",
+    "@hifiSignalPathHint": {
+        "description": "Tells where to find the signal path panel"
+    },
+    "hifiSource": "Source",
+    "@hifiSource": {
+        "description": "Signal path section: the source file"
+    },
+    "hifiDecoding": "Decoding",
+    "@hifiDecoding": {
+        "description": "Signal path section: how the source is decoded"
+    },
+    "hifiProcessing": "Processing",
+    "@hifiProcessing": {
+        "description": "Signal path section: stages that change samples"
+    },
+    "hifiOutput": "Output",
+    "@hifiOutput": {
+        "description": "Signal path section: the output device"
+    },
+    "hifiNone": "None",
+    "@hifiNone": {
+        "description": "No processing stage is active"
+    },
+    "hifiUnknown": "Unknown",
+    "@hifiUnknown": {
+        "description": "A value the system did not report"
+    },
+    "hifiTranscodedByServer": "Transcoded by the server",
+    "@hifiTranscodedByServer": {
+        "description": "The server converts the file before sending it"
+    },
+    "hifiDecodedByPlayer": "Decoded by the player",
+    "@hifiDecodedByPlayer": {
+        "description": "The player decodes the file itself"
+    },
+    "hifiDeliveryNative": "DSD decoded to PCM by the player (ffmpeg)",
+    "@hifiDeliveryNative": {
+        "description": "DSD decoded by mpv/ffmpeg"
+    },
+    "hifiDeliveryPcm": "DSD converted to PCM by the app",
+    "@hifiDeliveryPcm": {
+        "description": "DSD converted to PCM by Diapason"
+    },
+    "hifiDeliveryDop": "DoP: native DSD packed in PCM",
+    "@hifiDeliveryDop": {
+        "description": "DSD sent as DoP"
+    },
+    "hifiDeliveryDst": "DST decoded by the player (ffmpeg)",
+    "@hifiDeliveryDst": {
+        "description": "DST-compressed DSD decoded by mpv/ffmpeg"
+    },
+    "hifiExclusive": "Exclusive",
+    "@hifiExclusive": {
+        "description": "Output state: exclusive access"
+    },
+    "hifiShared": "Shared",
+    "@hifiShared": {
+        "description": "Output state: shared with the system mixer"
+    },
+    "hifiResampled": "Resampled",
+    "@hifiResampled": {
+        "description": "The output runs at another rate than the source"
+    },
+    "hifiNotResampled": "Not resampled",
+    "@hifiNotResampled": {
+        "description": "The output runs at the source rate"
+    },
+    "hifiVolumeLocked": "Volume held at 100%",
+    "@hifiVolumeLocked": {
+        "description": "Bit-perfect output keeps the volume at 100%"
+    },
+    "hifiVerdictBitPerfect": "Bit-perfect",
+    "@hifiVerdictBitPerfect": {
+        "description": "Verdict: the output is bit-perfect"
+    },
+    "hifiVerdictTransparent": "No resampling, unity gain",
+    "@hifiVerdictTransparent": {
+        "description": "Verdict on macOS: transparent but not proven bit-perfect"
+    },
+    "hifiVerdictNotBitPerfect": "Not bit-perfect",
+    "@hifiVerdictNotBitPerfect": {
+        "description": "Verdict: the output is not bit-perfect"
+    },
+    "hifiVerdictUnknown": "Not verified",
+    "@hifiVerdictUnknown": {
+        "description": "Verdict: the output state could not be read"
+    },
+    "hifiIssuePlatform": "The system mixes and resamples the output",
+    "@hifiIssuePlatform": {
+        "description": "Reason: platform limit"
+    },
+    "hifiIssueModeOff": "Bit-perfect output is off",
+    "@hifiIssueModeOff": {
+        "description": "Reason: the setting is off"
+    },
+    "hifiIssueTranscoded": "The server transcodes the track",
+    "@hifiIssueTranscoded": {
+        "description": "Reason: transcoding"
+    },
+    "hifiIssueDsdConverted": "DSD is converted to PCM",
+    "@hifiIssueDsdConverted": {
+        "description": "Reason: DSD to PCM conversion"
+    },
+    "hifiIssueResampled": "The output rate differs from the source",
+    "@hifiIssueResampled": {
+        "description": "Reason: resampling"
+    },
+    "hifiIssueVolume": "Volume below 100%",
+    "@hifiIssueVolume": {
+        "description": "Reason: software volume"
+    },
+    "hifiIssueReplayGain": "ReplayGain is applied",
+    "@hifiIssueReplayGain": {
+        "description": "Reason: ReplayGain"
+    },
+    "hifiIssueEqualizer": "The equalizer is on",
+    "@hifiIssueEqualizer": {
+        "description": "Reason: equalizer"
+    },
+    "hifiIssueCrossfade": "Crossfade mixes the tracks",
+    "@hifiIssueCrossfade": {
+        "description": "Reason: crossfade"
+    },
+    "hifiIssueSpeed": "Playback speed is not 1×",
+    "@hifiIssueSpeed": {
+        "description": "Reason: speed change"
+    },
+    "hifiIssueSharedMixer": "The system mixer is in the path (no exclusive mode)",
+    "@hifiIssueSharedMixer": {
+        "description": "Reason: shared output"
+    },
+    "hifiIssueDecoderDepth": "The player decodes to 16-bit, the source has more",
+    "@hifiIssueDecoderDepth": {
+        "description": "Reason: Android decoder bit depth"
+    },
+    "hifiIssueNoBitPerfectMixer": "No bit-perfect mixer (needs Android 14 and a USB DAC supporting this format)",
+    "@hifiIssueNoBitPerfectMixer": {
+        "description": "Reason: Android bit-perfect mixer unavailable"
+    },
+    "hifiIssueFilters": "The player applies an audio filter",
+    "@hifiIssueFilters": {
+        "description": "Reason: mpv runs an audio filter"
+    },
+    "tagEditorMenuEntry": "Edit tags",
+    "@tagEditorMenuEntry": {
+        "description": "Context menu entry opening the tag editor"
+    },
+    "tagEditorTitle": "Edit tags",
+    "@tagEditorTitle": {
+        "description": "Title of the tag editor for a track"
+    },
+    "tagEditorAlbumTitle": "Edit album tags",
+    "@tagEditorAlbumTitle": {
+        "description": "Title of the tag editor for an album (batch edit)"
+    },
+    "tagEditorSave": "Save",
+    "@tagEditorSave": {
+        "description": "Tag editor save button"
+    },
+    "tagEditorSaved": "Tags saved",
+    "@tagEditorSaved": {
+        "description": "Snackbar after saving tags"
+    },
+    "tagEditorSaveFailed": "Couldn't save {count, plural, =1{1 item} other{{count} items}}: {error}",
+    "@tagEditorSaveFailed": {
+        "description": "Error after saving tags failed for some items",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "tagEditorLoadFailed": "Couldn't open the tag editor: {error}",
+    "@tagEditorLoadFailed": {
+        "description": "Error when the tag editor can't load the item",
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "tagEditorDiscardTitle": "Discard your changes?",
+    "@tagEditorDiscardTitle": {
+        "description": "Confirmation when closing the tag editor with unsaved changes"
+    },
+    "tagEditorDiscard": "Discard",
+    "@tagEditorDiscard": {
+        "description": "Button discarding unsaved tag edits"
+    },
+    "tagEditorCancel": "Cancel",
+    "@tagEditorCancel": {
+        "description": "Cancel button in tag editor dialogs"
+    },
+    "tagEditorMultipleValues": "Multiple values",
+    "@tagEditorMultipleValues": {
+        "description": "Hint for a field whose value differs between the tracks of an album batch edit"
+    },
+    "tagEditorMultiValueHelper": "Separate values with ;",
+    "@tagEditorMultiValueHelper": {
+        "description": "Helper text under fields accepting several values"
+    },
+    "tagEditorNotEditable": "Not editable on this source",
+    "@tagEditorNotEditable": {
+        "description": "Helper text for a field the source can't change"
+    },
+    "tagEditorSectionTags": "Tags",
+    "@tagEditorSectionTags": {
+        "description": "Tag editor section header"
+    },
+    "tagEditorSectionTracks": "Tracks",
+    "@tagEditorSectionTracks": {
+        "description": "Tag editor section listing the album's tracks"
+    },
+    "tagEditorSectionMusicBrainz": "MusicBrainz identifiers",
+    "@tagEditorSectionMusicBrainz": {
+        "description": "Tag editor section header"
+    },
+    "tagEditorSectionReplayGain": "ReplayGain",
+    "@tagEditorSectionReplayGain": {
+        "description": "Tag editor section header"
+    },
+    "tagEditorSectionCover": "Cover",
+    "@tagEditorSectionCover": {
+        "description": "Tag editor section header"
+    },
+    "tagEditorFieldTitle": "Title",
+    "@tagEditorFieldTitle": {
+        "description": "Tag field label"
+    },
+    "tagEditorFieldArtists": "Artists",
+    "@tagEditorFieldArtists": {
+        "description": "Tag field label"
+    },
+    "tagEditorFieldAlbumArtists": "Album artists",
+    "@tagEditorFieldAlbumArtists": {
+        "description": "Tag field label"
+    },
+    "tagEditorFieldAlbum": "Album",
+    "@tagEditorFieldAlbum": {
+        "description": "Tag field label"
+    },
+    "tagEditorFieldTrackNumber": "Track",
+    "@tagEditorFieldTrackNumber": {
+        "description": "Tag field label (track number)"
+    },
+    "tagEditorFieldTrackTotal": "Total tracks",
+    "@tagEditorFieldTrackTotal": {
+        "description": "Tag field label"
+    },
+    "tagEditorFieldDiscNumber": "Disc",
+    "@tagEditorFieldDiscNumber": {
+        "description": "Tag field label (disc number)"
+    },
+    "tagEditorFieldDiscTotal": "Total discs",
+    "@tagEditorFieldDiscTotal": {
+        "description": "Tag field label"
+    },
+    "tagEditorFieldDate": "Date or year",
+    "@tagEditorFieldDate": {
+        "description": "Tag field label"
+    },
+    "tagEditorFieldGenres": "Genres",
+    "@tagEditorFieldGenres": {
+        "description": "Tag field label"
+    },
+    "tagEditorFieldComposers": "Composers",
+    "@tagEditorFieldComposers": {
+        "description": "Tag field label"
+    },
+    "tagEditorFieldComment": "Comment",
+    "@tagEditorFieldComment": {
+        "description": "Tag field label"
+    },
+    "tagEditorFieldLyrics": "Lyrics",
+    "@tagEditorFieldLyrics": {
+        "description": "Tag field label"
+    },
+    "tagEditorFieldMbRecording": "Recording ID",
+    "@tagEditorFieldMbRecording": {
+        "description": "MusicBrainz recording id field label"
+    },
+    "tagEditorFieldMbReleaseTrack": "Release track ID",
+    "@tagEditorFieldMbReleaseTrack": {
+        "description": "MusicBrainz release track id field label"
+    },
+    "tagEditorFieldMbRelease": "Release ID",
+    "@tagEditorFieldMbRelease": {
+        "description": "MusicBrainz release (album) id field label"
+    },
+    "tagEditorFieldMbReleaseGroup": "Release group ID",
+    "@tagEditorFieldMbReleaseGroup": {
+        "description": "MusicBrainz release group id field label"
+    },
+    "tagEditorFieldMbArtists": "Artist IDs",
+    "@tagEditorFieldMbArtists": {
+        "description": "MusicBrainz artist ids field label"
+    },
+    "tagEditorFieldMbAlbumArtists": "Album artist IDs",
+    "@tagEditorFieldMbAlbumArtists": {
+        "description": "MusicBrainz album artist ids field label"
+    },
+    "tagEditorFieldRgTrackGain": "Track gain",
+    "@tagEditorFieldRgTrackGain": {
+        "description": "ReplayGain track gain field label"
+    },
+    "tagEditorFieldRgTrackPeak": "Track peak",
+    "@tagEditorFieldRgTrackPeak": {
+        "description": "ReplayGain track peak field label"
+    },
+    "tagEditorFieldRgAlbumGain": "Album gain",
+    "@tagEditorFieldRgAlbumGain": {
+        "description": "ReplayGain album gain field label"
+    },
+    "tagEditorFieldRgAlbumPeak": "Album peak",
+    "@tagEditorFieldRgAlbumPeak": {
+        "description": "ReplayGain album peak field label"
+    },
+    "tagEditorStorageFile": "Changes are written into the audio files.",
+    "@tagEditorStorageFile": {
+        "description": "Explains where local tag edits are stored"
+    },
+    "tagEditorStorageJellyfin": "Changes are saved in Jellyfin's library, not in the audio files. Changing images needs an administrator account.",
+    "@tagEditorStorageJellyfin": {
+        "description": "Explains where Jellyfin tag edits are stored"
+    },
+    "tagEditorStoragePlex": "Changes are saved and locked in Plex's library, not in the audio files. Album, date and genres are edited on the album.",
+    "@tagEditorStoragePlex": {
+        "description": "Explains where Plex tag edits are stored"
+    },
+    "tagEditorReadOnlySubsonic": "Read-only: the Subsonic API (used by Navidrome) can't change tags. Navidrome reads them from the files: edit the files and rescan the library.",
+    "@tagEditorReadOnlySubsonic": {
+        "description": "Why a Subsonic/Navidrome item can't be edited"
+    },
+    "tagEditorReadOnlyMpd": "Read-only: MPD reads tags from the files and has no command to change them.",
+    "@tagEditorReadOnlyMpd": {
+        "description": "Why an MPD item can't be edited"
+    },
+    "tagEditorReadOnlyYoutube": "Read-only: YouTube items have no editable tags.",
+    "@tagEditorReadOnlyYoutube": {
+        "description": "Why a YouTube item can't be edited"
+    },
+    "tagEditorReadOnlyUnsupportedFile": "Read-only: this file format isn't supported (MP3, FLAC, Ogg Vorbis, Opus and MP4/M4A are).",
+    "@tagEditorReadOnlyUnsupportedFile": {
+        "description": "Why a local file can't be edited"
+    },
+    "tagEditorReadOnlyMissingFile": "Read-only: the audio file couldn't be found.",
+    "@tagEditorReadOnlyMissingFile": {
+        "description": "Why a local file can't be edited"
+    },
+    "tagEditorReadOnlyNotLoaded": "Read-only: the tags couldn't be read.",
+    "@tagEditorReadOnlyNotLoaded": {
+        "description": "Shown when loading the tags failed"
+    },
+    "tagEditorCoverNone": "No cover",
+    "@tagEditorCoverNone": {
+        "description": "Shown when the item has no cover"
+    },
+    "tagEditorCoverPending": "New cover, not saved yet",
+    "@tagEditorCoverPending": {
+        "description": "Shown under a replaced cover before saving"
+    },
+    "tagEditorCoverWillBeRemoved": "The cover will be removed",
+    "@tagEditorCoverWillBeRemoved": {
+        "description": "Shown after removing the cover before saving"
+    },
+    "tagEditorCoverFromFile": "From file",
+    "@tagEditorCoverFromFile": {
+        "description": "Button replacing the cover with an image file"
+    },
+    "tagEditorCoverFromUrl": "From URL",
+    "@tagEditorCoverFromUrl": {
+        "description": "Button replacing the cover with an image URL"
+    },
+    "tagEditorCoverSearch": "Search online",
+    "@tagEditorCoverSearch": {
+        "description": "Button opening the online cover search"
+    },
+    "tagEditorCoverRemove": "Remove",
+    "@tagEditorCoverRemove": {
+        "description": "Button removing the cover"
+    },
+    "tagEditorCoverUrlHint": "https://…",
+    "@tagEditorCoverUrlHint": {
+        "description": "Hint of the cover URL field"
+    },
+    "tagEditorCoverDownload": "Download",
+    "@tagEditorCoverDownload": {
+        "description": "Button downloading a cover from a URL"
+    },
+    "tagEditorCoverSearchTitle": "Find a cover",
+    "@tagEditorCoverSearchTitle": {
+        "description": "Title of the online cover search"
+    },
+    "tagEditorCoversNone": "No covers found",
+    "@tagEditorCoversNone": {
+        "description": "Online cover search without results"
+    },
+    "tagEditorCoverNominalSize": "up to {size} px",
+    "@tagEditorCoverNominalSize": {
+        "description": "Advertised cover size in the cover grid",
+        "placeholders": {
+            "size": {
+                "type": "int"
+            }
+        }
+    },
+    "tagEditorCoverResolution": "{width} × {height} px",
+    "@tagEditorCoverResolution": {
+        "description": "Actual size of a downloaded cover",
+        "placeholders": {
+            "width": {
+                "type": "int"
+            },
+            "height": {
+                "type": "int"
+            }
+        }
+    },
+    "tagEditorCoverUse": "Use this cover",
+    "@tagEditorCoverUse": {
+        "description": "Button applying a cover from the search"
+    },
+    "tagEditorMatch": "Match",
+    "@tagEditorMatch": {
+        "description": "Button opening the MusicBrainz match"
+    },
+    "tagEditorMatchTitle": "Match with MusicBrainz",
+    "@tagEditorMatchTitle": {
+        "description": "Title of the MusicBrainz match dialog"
+    },
+    "tagEditorMatchSearch": "Search",
+    "@tagEditorMatchSearch": {
+        "description": "Button running a MusicBrainz search"
+    },
+    "tagEditorMatchNoResults": "No matches found",
+    "@tagEditorMatchNoResults": {
+        "description": "MusicBrainz search without results"
+    },
+    "tagEditorMatchConfidence": "{percent}%",
+    "@tagEditorMatchConfidence": {
+        "description": "Match confidence badge",
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "tagEditorMatchTracks": "{count, plural, =1{1 track} other{{count} tracks}}",
+    "@tagEditorMatchTracks": {
+        "description": "Track count of a release in match results",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "tagEditorMatchIncludeGenres": "Also use MusicBrainz genres",
+    "@tagEditorMatchIncludeGenres": {
+        "description": "Switch in the match dialog"
+    },
+    "tagEditorMatchApplied": "Values filled in: review them, then save",
+    "@tagEditorMatchApplied": {
+        "description": "Snackbar after applying a match"
+    },
+    "tagEditorMatchAppliedTracks": "Matched {matched} of {total} tracks: review them, then save",
+    "@tagEditorMatchAppliedTracks": {
+        "description": "Snackbar after applying a release to an album",
+        "placeholders": {
+            "matched": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "tagEditorAcoustId": "Identify by fingerprint",
+    "@tagEditorAcoustId": {
+        "description": "Button running an AcoustID fingerprint lookup"
+    },
+    "tagEditorAcoustIdNotDesktop": "Fingerprint identification (AcoustID) is only available on desktop.",
+    "@tagEditorAcoustIdNotDesktop": {
+        "description": "AcoustID unavailable on mobile"
+    },
+    "tagEditorAcoustIdNoFpcalc": "Fingerprint identification needs Chromaprint's fpcalc, which wasn't found. Install it (e.g. brew install chromaprint) and reopen the editor.",
+    "@tagEditorAcoustIdNoFpcalc": {
+        "description": "AcoustID unavailable without fpcalc"
+    },
+    "tagEditorAcoustIdNoKey": "Enter an AcoustID application API key (free at acoustid.org) to identify tracks by fingerprint.",
+    "@tagEditorAcoustIdNoKey": {
+        "description": "AcoustID unavailable without API key"
+    },
+    "tagEditorAcoustIdNotLocal": "Fingerprint identification needs a local audio file.",
+    "@tagEditorAcoustIdNotLocal": {
+        "description": "AcoustID unavailable for server items"
+    },
+    "tagEditorAcoustIdKeyLabel": "AcoustID API key",
+    "@tagEditorAcoustIdKeyLabel": {
+        "description": "Label of the AcoustID API key field"
+    },
+    "tagEditorTrackNumberShort": "#",
+    "@tagEditorTrackNumberShort": {
+        "description": "Short label of the track number column in the album batch editor"
+    },
+    "webServerLockedHelper": "This web app is set up for this server only",
+    "@webServerLockedHelper": {
+        "description": "Helper under the read-only server address when a self-hosted web deployment locks the server (SERVER_LOCK)"
+    },
+    "webFeatureUnavailable": "Not available in the web version",
+    "@webFeatureUnavailable": {
+        "description": "Shown in place of features a browser can't support (downloads, local files, yt-dlp, Discord, Connect...)"
+    },
+    "webFeatureUnavailableDetails": "Downloads, local files, casting, Diapason Connect and yt-dlp need the desktop or mobile app.",
+    "@webFeatureUnavailableDetails": {
+        "description": "Explains why a feature is missing from the web version and where to find it"
+    },
+    "desktopStyleSectionTitle": "Desktop appearance",
+    "@desktopStyleSectionTitle": {
+        "description": "Settings section header for the desktop window's look"
+    },
+    "desktopStyleAmbientTitle": "Window background",
+    "@desktopStyleAmbientTitle": {
+        "description": "Setting: what is painted behind the desktop window's panels"
+    },
+    "desktopStyleAmbientSubtitle": "Painted behind the floating panels, from the track that is playing.",
+    "@desktopStyleAmbientSubtitle": {
+        "description": "Subtitle of the desktop window background setting"
+    },
+    "desktopStyleAmbientOff": "Plain",
+    "@desktopStyleAmbientOff": {
+        "description": "Window background option: a plain colour"
+    },
+    "desktopStyleAmbientColors": "Album colours",
+    "@desktopStyleAmbientColors": {
+        "description": "Window background option: a gradient of the current album's colours"
+    },
+    "desktopStyleAmbientCover": "Blurred cover",
+    "@desktopStyleAmbientCover": {
+        "description": "Window background option: the current album cover, blurred"
+    },
+    "desktopStyleBigCoverTitle": "Big cover art",
+    "@desktopStyleBigCoverTitle": {
+        "description": "Setting: show the current cover large at the bottom of the desktop sidebar"
+    },
+    "desktopStyleBigCoverSubtitle": "Shows the current cover at the bottom of the sidebar. Click it to open the now playing view.",
+    "@desktopStyleBigCoverSubtitle": {
+        "description": "Subtitle of the big cover art setting"
+    },
+    "desktopStyleReduceEffectsTitle": "Reduce effects",
+    "@desktopStyleReduceEffectsTitle": {
+        "description": "Setting: turn off costly or animated decoration on desktop"
+    },
+    "desktopStyleReduceEffectsSubtitle": "No background transitions, spectrum strip or hover motion. Lighter on older computers.",
+    "@desktopStyleReduceEffectsSubtitle": {
+        "description": "Subtitle of the reduce effects setting"
+    },
+    "desktopStyleShowBigCover": "Show big cover art",
+    "@desktopStyleShowBigCover": {
+        "description": "Tooltip of the player bar button that shows the big cover art in the sidebar"
+    },
+    "desktopStyleHideBigCover": "Hide big cover art",
+    "@desktopStyleHideBigCover": {
+        "description": "Tooltip of the button that hides the big cover art in the sidebar"
+    },
+    "desktopStyleOpenNowPlaying": "Open now playing",
+    "@desktopStyleOpenNowPlaying": {
+        "description": "Tooltip of the big cover art: clicking opens the fullscreen now playing view"
+    },
+    "desktopStyleFeatured": "Featured",
+    "@desktopStyleFeatured": {
+        "description": "Accessibility label of the featured albums carousel on the desktop home page"
+    },
+    "desktopStylePrevious": "Previous",
+    "@desktopStylePrevious": {
+        "description": "Tooltip of the button that scrolls a shelf or carousel back"
+    },
+    "desktopStyleNext": "Next",
+    "@desktopStyleNext": {
+        "description": "Tooltip of the button that scrolls a shelf or carousel forward"
+    },
+    "desktopStyleShuffleFeatured": "New picks",
+    "@desktopStyleShuffleFeatured": {
+        "description": "Tooltip of the button that picks other featured albums on the desktop home page"
+    },
+    "desktopStyleCustomizeHome": "Customize home",
+    "@desktopStyleCustomizeHome": {
+        "description": "Button at the bottom of the desktop home page that opens the home screen settings"
+    },
+    "desktopStyleNothingHere": "Nothing here yet",
+    "@desktopStyleNothingHere": {
+        "description": "Shown in a desktop home shelf with no items"
     }
 }

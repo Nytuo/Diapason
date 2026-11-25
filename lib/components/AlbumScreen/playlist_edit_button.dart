@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/screens/playlist_edit_screen.dart';
@@ -15,7 +16,7 @@ class PlaylistEditButton extends StatelessWidget {
     return IconButton(
       icon: const Icon(TablerIcons.edit),
       tooltip: AppLocalizations.of(context)!.editItemTitle(BaseItemDtoType.fromItem(playlist).name),
-      onPressed: () => Navigator.pushNamed(context, PlaylistEditScreen.routeName, arguments: playlist),
+      onPressed: () => DesktopRouter.pushNamed(context, PlaylistEditScreen.routeName, arguments: playlist),
     );
   }
 }

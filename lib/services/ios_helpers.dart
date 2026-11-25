@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';

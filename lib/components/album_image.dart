@@ -123,8 +123,12 @@ class _AlbumImageState extends ConsumerState<AlbumImage> {
               // If we use logical pixels for the image request, we'll get a smaller image than we want.
               // Because of this, we convert the logical pixels to physical pixels by multiplying by the device's DPI.
               final pixelRatio = MediaQuery.devicePixelRatioOf(context);
-              int physicalWidth = currentPhysicalWidth ?? (constraints.maxWidth * pixelRatio).toInt();
-              int physicalHeight = currentPhysicalHeight ?? (constraints.maxHeight * pixelRatio).toInt();
+              // Requests must be square (the image provider asserts it), but a tile can hand us a box that is not:
+              // use its shortest finite side, which is what the square image will actually fill.
+              final sides = [constraints.maxWidth, constraints.maxHeight].where((v) => v.isFinite && v > 0);
+              final side = sides.isEmpty ? 256.0 : sides.reduce((a, b) => a < b ? a : b);
+              int physicalWidth = currentPhysicalWidth ?? (side * pixelRatio).toInt();
+              int physicalHeight = currentPhysicalHeight ?? (side * pixelRatio).toInt();
               if (widget.sizePreset != null) {
                 currentPhysicalHeight = physicalHeight;
                 currentPhysicalWidth = physicalWidth;

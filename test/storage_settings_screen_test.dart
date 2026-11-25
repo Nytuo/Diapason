@@ -136,10 +136,10 @@ void main() {
 
   testWidgets('choosing how much detail to log takes effect immediately and is remembered', (tester) async {
     await open(tester);
-    expect(find.textContaining('Most detail'), findsOneWidget);
+    expect(find.textContaining('Everything in debug builds'), findsOneWidget);
 
     await tester.runAsync(() async {
-      await tester.tap(find.text('Problems only'));
+      await tester.tap(find.text('Warnings'));
       await Future<void>.delayed(const Duration(milliseconds: 200));
     });
     await tester.pump();

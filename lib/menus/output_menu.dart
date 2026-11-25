@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:diapason/color_schemes.g.dart';

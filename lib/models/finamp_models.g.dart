@@ -551,7 +551,7 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..youtubeSearchByDefault = fields[195] == null
           ? false
           : fields[195] as bool
-      ..logLevel = fields[196] == null ? 'all' : fields[196] as String
+      ..logLevel = fields[196] == null ? 'auto' : fields[196] as String
       ..automixEnabled = fields[197] == null ? false : fields[197] as bool
       ..wordSyncedLyricsEnabled = fields[198] == null
           ? true
@@ -563,13 +563,46 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..autoRadioPreferYouTube = fields[203] == null
           ? true
           : fields[203] as bool
-      ..uploaderLocalUrl = fields[204] == null ? '' : fields[204] as String;
+      ..uploaderLocalUrl = fields[204] == null ? '' : fields[204] as String
+      ..watchConnectDeviceName = fields[210] == null
+          ? ''
+          : fields[210] as String
+      ..hifiBitPerfect = fields[225] == null ? false : fields[225] as bool
+      ..hifiOutputDevice = fields[226] == null ? '' : fields[226] as String
+      ..hifiDsdMode = fields[227] == null ? 'dop' : fields[227] as String
+      ..hifiExclusive = fields[228] == null ? true : fields[228] as bool
+      ..lyricsFurigana = fields[230] == null ? false : fields[230] as bool
+      ..lyricsRomaji = fields[231] == null ? false : fields[231] as bool
+      ..lyricsAppleStyle = fields[232] == null ? true : fields[232] as bool
+      ..lyricsTranslationEnabled = fields[233] == null
+          ? false
+          : fields[233] as bool
+      ..waveformSeekBar = fields[235] == null ? false : fields[235] as bool
+      ..visualizerStyle = fields[236] == null
+          ? VisualizerStyle.curve
+          : fields[236] as VisualizerStyle
+      ..milkdropOnCover = fields[237] == null ? false : fields[237] as bool
+      ..milkdropPreset = fields[238] == null ? -1 : (fields[238] as num).toInt()
+      ..milkdropLowPower = fields[239] == null ? false : fields[239] as bool
+      ..tagEditorAcoustIdApiKey = fields[245] == null
+          ? ''
+          : fields[245] as String
+      ..noNetwork = fields[250] == null ? false : fields[250] as bool
+      ..desktopBigCoverArt = fields[251] == null ? true : fields[251] as bool
+      ..desktopAmbientMode = fields[252] == null
+          ? 'cover'
+          : fields[252] as String
+      ..desktopReduceEffects = fields[253] == null ? false : fields[253] as bool
+      ..milkdropTuning = fields[254] == null ? '' : fields[254] as String
+      ..visualizerStyleTuning = fields[255] == null
+          ? ''
+          : fields[255] as String;
   }
 
   @override
   void write(BinaryWriter writer, FinampSettings obj) {
     writer
-      ..writeByte(197)
+      ..writeByte(218)
       ..writeByte(0)
       ..write(obj.isOffline)
       ..writeByte(1)
@@ -963,7 +996,49 @@ class FinampSettingsAdapter extends TypeAdapter<FinampSettings> {
       ..writeByte(203)
       ..write(obj.autoRadioPreferYouTube)
       ..writeByte(204)
-      ..write(obj.uploaderLocalUrl);
+      ..write(obj.uploaderLocalUrl)
+      ..writeByte(210)
+      ..write(obj.watchConnectDeviceName)
+      ..writeByte(225)
+      ..write(obj.hifiBitPerfect)
+      ..writeByte(226)
+      ..write(obj.hifiOutputDevice)
+      ..writeByte(227)
+      ..write(obj.hifiDsdMode)
+      ..writeByte(228)
+      ..write(obj.hifiExclusive)
+      ..writeByte(230)
+      ..write(obj.lyricsFurigana)
+      ..writeByte(231)
+      ..write(obj.lyricsRomaji)
+      ..writeByte(232)
+      ..write(obj.lyricsAppleStyle)
+      ..writeByte(233)
+      ..write(obj.lyricsTranslationEnabled)
+      ..writeByte(235)
+      ..write(obj.waveformSeekBar)
+      ..writeByte(236)
+      ..write(obj.visualizerStyle)
+      ..writeByte(237)
+      ..write(obj.milkdropOnCover)
+      ..writeByte(238)
+      ..write(obj.milkdropPreset)
+      ..writeByte(239)
+      ..write(obj.milkdropLowPower)
+      ..writeByte(245)
+      ..write(obj.tagEditorAcoustIdApiKey)
+      ..writeByte(250)
+      ..write(obj.noNetwork)
+      ..writeByte(251)
+      ..write(obj.desktopBigCoverArt)
+      ..writeByte(252)
+      ..write(obj.desktopAmbientMode)
+      ..writeByte(253)
+      ..write(obj.desktopReduceEffects)
+      ..writeByte(254)
+      ..write(obj.milkdropTuning)
+      ..writeByte(255)
+      ..write(obj.visualizerStyleTuning);
   }
 
   @override
@@ -4021,6 +4096,63 @@ class ItemFilterTypeAdapter extends TypeAdapter<ItemFilterType> {
           typeId == other.typeId;
 }
 
+class VisualizerStyleAdapter extends TypeAdapter<VisualizerStyle> {
+  @override
+  final typeId = 140;
+
+  @override
+  VisualizerStyle read(BinaryReader reader) {
+    switch (reader.readByte()) {
+      case 0:
+        return VisualizerStyle.curve;
+      case 1:
+        return VisualizerStyle.bars;
+      case 2:
+        return VisualizerStyle.mirroredBars;
+      case 3:
+        return VisualizerStyle.radial;
+      case 4:
+        return VisualizerStyle.wave;
+      case 5:
+        return VisualizerStyle.particles;
+      case 6:
+        return VisualizerStyle.blob;
+      default:
+        return VisualizerStyle.curve;
+    }
+  }
+
+  @override
+  void write(BinaryWriter writer, VisualizerStyle obj) {
+    switch (obj) {
+      case VisualizerStyle.curve:
+        writer.writeByte(0);
+      case VisualizerStyle.bars:
+        writer.writeByte(1);
+      case VisualizerStyle.mirroredBars:
+        writer.writeByte(2);
+      case VisualizerStyle.radial:
+        writer.writeByte(3);
+      case VisualizerStyle.wave:
+        writer.writeByte(4);
+      case VisualizerStyle.particles:
+        writer.writeByte(5);
+      case VisualizerStyle.blob:
+        writer.writeByte(6);
+    }
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is VisualizerStyleAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
 // **************************************************************************
 // IsarCollectionGenerator
 // **************************************************************************
@@ -4034,7 +4166,7 @@ extension GetFinampUserCollection on Isar {
 
 const FinampUserSchema = CollectionSchema(
   name: r'FinampUser',
-  id: -4140083613547586279,
+  id: (0xC68B77E3 << 32 | 0x7A149D19),
   properties: {
     r'accessToken': PropertySchema(
       id: 0,
@@ -5959,7 +6091,7 @@ extension GetDownloadItemCollection on Isar {
 
 const DownloadItemSchema = CollectionSchema(
   name: r'DownloadItem',
-  id: 3470061580579511306,
+  id: (0x3028229F << 32 | 0x532C1C0A),
   properties: {
     r'baseIndexNumber': PropertySchema(
       id: 0,
@@ -6033,7 +6165,7 @@ const DownloadItemSchema = CollectionSchema(
   idName: r'isarId',
   indexes: {
     r'state': IndexSchema(
-      id: 7917036384617311412,
+      id: (0x6DDEF6A5 << 32 | 0x42F52CB4),
       name: r'state',
       unique: false,
       replace: false,
@@ -6046,7 +6178,7 @@ const DownloadItemSchema = CollectionSchema(
       ],
     ),
     r'type': IndexSchema(
-      id: 5117122708147080838,
+      id: (0x4703ABFD << 32 | 0xCB310E86),
       name: r'type',
       unique: false,
       replace: false,
@@ -6061,26 +6193,26 @@ const DownloadItemSchema = CollectionSchema(
   },
   links: {
     r'requires': LinkSchema(
-      id: 2869659933205985607,
+      id: (0x27D31481 << 32 | 0x50E9F947),
       name: r'requires',
       target: r'DownloadItem',
       single: false,
     ),
     r'requiredBy': LinkSchema(
-      id: 8162545016065706399,
+      id: (0x71472F71 << 32 | 0xF1BB499F),
       name: r'requiredBy',
       target: r'DownloadItem',
       single: false,
       linkName: r'requires',
     ),
     r'info': LinkSchema(
-      id: 577543621393535253,
+      id: (0x803D8DD << 32 | 0x1B745115),
       name: r'info',
       target: r'DownloadItem',
       single: false,
     ),
     r'infoFor': LinkSchema(
-      id: -2484078441196254859,
+      id: (0xDD86C7D1 << 32 | 0xA64A8975),
       name: r'infoFor',
       target: r'DownloadItem',
       single: false,
@@ -8797,7 +8929,7 @@ extension GetDownloadedLyricsCollection on Isar {
 
 const DownloadedLyricsSchema = CollectionSchema(
   name: r'DownloadedLyrics',
-  id: 7780135185558523971,
+  id: (0x6BF897BA << 32 | 0xF7BBD043),
   properties: {
     r'jsonItem': PropertySchema(
       id: 0,
@@ -9272,7 +9404,7 @@ extension DownloadedLyricsQueryProperty
 
 const DownloadProfileSchema = Schema(
   name: r'DownloadProfile',
-  id: -2481428030095603358,
+  id: (0xDD90325A << 32 | 0x92744962),
   properties: {
     r'codec': PropertySchema(
       id: 0,

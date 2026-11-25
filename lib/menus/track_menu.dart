@@ -1,3 +1,6 @@
+import 'package:diapason/screens/desktop/desktop_item_menu.dart';
+import 'package:diapason/screens/desktop/desktop_router.dart';
+import 'package:diapason/menus/components/menuEntries/plugin_command_menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/share_link_menu_entry.dart';
 import 'dart:async';
 
@@ -10,6 +13,7 @@ import 'package:diapason/menus/components/menuEntries/add_to_playlist_menu_entry
 import 'package:diapason/menus/components/menuEntries/clear_queue_menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/create_playlist_from_current_queue.dart';
 import 'package:diapason/menus/components/menuEntries/delete_from_server_menu_entry.dart';
+import 'package:diapason/menus/components/menuEntries/edit_tags_menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/instant_mix_menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/remove_from_current_playlist_menu_entry.dart';
@@ -56,7 +60,28 @@ Future<void> showModalTrackMenu({
   FinampStorableQueueInfo? queueInfo,
   FinampQueueItem? queueItem,
   QueueItemSource? source,
+  bool desktopMenu = true,
 }) async {
+  // On desktop a compact popup at the pointer replaces the bottom sheet, unless the caller needs the sheet's
+  // context-specific actions (removing from a playlist or the queue, playback controls).
+  if (desktopMenu &&
+      DesktopRouter.isActive &&
+      onRemoveFromList == null &&
+      !showQueueActions &&
+      !showPlaybackControls &&
+      queueItem == null &&
+      queueInfo == null &&
+      (parentItem == null || BaseItemDtoType.fromItem(parentItem) != BaseItemDtoType.playlist)) {
+    await showDesktopItemMenu(
+      context: context,
+      item: item,
+      source: source,
+      openFullMenu: () => unawaited(
+        showModalTrackMenu(context: context, item: item, parentItem: parentItem, source: source, desktopMenu: false),
+      ),
+    );
+    return;
+  }
   await showThemedBottomSheet<void>(
     context: context,
     item: item,
@@ -254,6 +279,8 @@ class _TrackMenuState extends ConsumerState<TrackMenu> with TickerProviderStateM
       AdaptiveDownloadLockDeleteMenuEntry(baseItem: widget.item),
       ToggleFavoriteMenuEntry(baseItem: widget.item),
       ShareLinkMenuEntry(baseItem: widget.item),
+      EditTagsMenuEntry(baseItem: widget.item),
+      ...pluginCommandMenuEntries(widget.item),
       if (widget.showQueueActions) CreatePlaylistFromCurrentQueueMenuEntry(),
       if (widget.showQueueActions) ClearQueueMenuEntry(baseItem: widget.item),
       DeleteFromServerMenuEntry(baseItem: widget.item),

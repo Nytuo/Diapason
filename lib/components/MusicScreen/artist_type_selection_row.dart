@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/finamp_models.dart';

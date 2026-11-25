@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:diapason/extensions/color_extensions.dart';

@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 import 'package:dbus/dbus.dart';
 import 'package:diapason/extensions/string.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';

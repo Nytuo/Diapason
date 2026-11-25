@@ -1,4 +1,11 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
+import 'package:diapason/components/lyrics/lyrics_export_sheet.dart';
 import 'package:diapason/l10n/app_localizations.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/lyrics/furigana.dart';
+import 'package:diapason/services/lyrics/japanese_dictionary.dart';
+import 'package:diapason/services/lyrics/lyrics_extras.dart';
+import 'package:diapason/services/lyrics/lyrics_translation.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/feedback_helper.dart';
 import 'package:diapason/services/lyrics/lrclib_client.dart';
@@ -7,7 +14,11 @@ import 'package:diapason/services/lyrics/lyrics_sources.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:diapason/services/friendly_error.dart';
 import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
+
+final _log = Logger("LyricsManager");
 
 /// "Word sync" / "Synced" / "Plain", as a small pill.
 class LyricsSyncBadge extends StatelessWidget {
@@ -98,7 +109,7 @@ Future<void> showLyricsManager(
   required LyricsOption? automatic,
   required LyricsOption? shown,
 }) {
-  return showModalBottomSheet<void>(
+  return showAdaptiveModalSheet<void>(
     context: context,
     useRootNavigator: true,
     showDragHandle: true,
@@ -309,6 +320,10 @@ class _LyricsManagerSheetState extends ConsumerState<_LyricsManagerSheet> {
           const Divider(height: 1),
           _TimingSection(trackId: widget.item.id),
         ],
+        if (shown?.lyrics.lyrics case final lines? when lines.isNotEmpty) ...[
+          const Divider(height: 1),
+          _ExtrasSection(item: widget.item, lines: lines),
+        ],
         const SizedBox(height: 8),
       ],
     );
@@ -395,6 +410,7 @@ class _LyricsManagerSheetState extends ConsumerState<_LyricsManagerSheet> {
     LyricsOrigin.server => TablerIcons.server,
     LyricsOrigin.downloaded => TablerIcons.download,
     LyricsOrigin.lrclib || LyricsOrigin.amll || LyricsOrigin.netease => TablerIcons.world,
+    LyricsOrigin.plugin => TablerIcons.plug,
   };
 }
 
@@ -469,5 +485,102 @@ class _TimingSection extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+/// Per-song translation toggle, a nudge to get the Japanese dictionary, and export.
+class _ExtrasSection extends ConsumerWidget {
+  const _ExtrasSection({required this.item, required this.lines});
+
+  final BaseItemDto item;
+  final List<LyricLine> lines;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final translationOn = ref.watch(finampSettingsProvider.lyricsTranslationEnabled);
+    final config = ref.watch(lyricsTranslationConfigProvider);
+    final hidden = ref.watch(lyricsTranslationHiddenProvider(item.id.raw));
+    final wantsJapanese =
+        ref.watch(finampSettingsProvider.lyricsFurigana) || ref.watch(finampSettingsProvider.lyricsRomaji);
+    final dictionary = ref.watch(japaneseDictionaryProvider);
+    final japanese = wantsJapanese && Furigana.isJapaneseSong(lines.map((l) => l.text));
+
+    String? translationStatus() {
+      if (!config.isUsable) return l10n.lyricsTranslationNotSetUp;
+      if (hidden) return null;
+      final translation = ref.watch(
+        lyricsTranslationProvider((
+          trackId: item.id.raw,
+          lines: lines,
+          target: lyricsTranslationTarget(context, config),
+        )),
+      );
+      return translation.when(
+        loading: () => l10n.lyricsTranslationLoading,
+        error: (e, _) => l10n.lyricsTranslationFailed(lyricsTranslationErrorMessage(e)),
+        data: (t) => t == null
+            ? null
+            : t.sameLanguage
+            ? l10n.lyricsTranslationSameLanguage
+            : t.sourceLanguage == null
+            ? null
+            : l10n.lyricsTranslationFrom(t.sourceLanguage!),
+      );
+    }
+
+    final status = translationOn ? translationStatus() : null;
+    return Column(
+      children: [
+        if (translationOn)
+          SwitchListTile.adaptive(
+            secondary: const Icon(TablerIcons.language),
+            title: Text(l10n.lyricsShowTranslation),
+            subtitle: status == null ? null : Text(status),
+            value: !hidden && config.isUsable,
+            onChanged: config.isUsable
+                ? (value) => LyricsTranslationService.instance.setHidden(item.id.raw, !value)
+                : null,
+          ),
+        if (japanese &&
+            (dictionary.status == JapaneseDictionaryStatus.missing ||
+                dictionary.status == JapaneseDictionaryStatus.failed ||
+                dictionary.status == JapaneseDictionaryStatus.downloading))
+          ListTile(
+            leading: const Icon(TablerIcons.language_hiragana),
+            title: Text(l10n.lyricsDictionaryNeeded(JapaneseDictionary.sizeLabel)),
+            subtitle: dictionary.status == JapaneseDictionaryStatus.downloading
+                ? LinearProgressIndicator(value: dictionary.progress)
+                : dictionary.error == null
+                ? null
+                : Text(l10n.lyricsDictionaryFailed(dictionary.error!)),
+            trailing: dictionary.status == JapaneseDictionaryStatus.downloading
+                ? null
+                : TextButton(
+                    onPressed: () => downloadJapaneseDictionary(context),
+                    child: Text(l10n.lyricsDictionaryDownload),
+                  ),
+          ),
+        ListTile(
+          leading: const Icon(TablerIcons.file_export),
+          title: Text(l10n.lyricsExport),
+          subtitle: Text(l10n.lyricsExportSubtitle),
+          trailing: const Icon(TablerIcons.chevron_right),
+          onTap: () => showLyricsExport(context, item: item, lines: lines),
+        ),
+      ],
+    );
+  }
+}
+
+/// Downloads the Japanese dictionary, reporting a failure in a snackbar.
+Future<void> downloadJapaneseDictionary(BuildContext context) async {
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  final l10n = AppLocalizations.of(context)!;
+  try {
+    await JapaneseDictionary.instance.download();
+  } catch (e, stack) {
+    final message = FriendlyError.report(_log, "Japanese dictionary download", e, stack);
+    messenger?.showSnackBar(SnackBar(content: Text(l10n.lyricsDictionaryFailed(message))));
   }
 }

@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/screens/connect_screen.dart';
 import 'package:diapason/screens/desktop/desktop_theme.dart';
 import 'package:diapason/screens/downloads_screen.dart';
@@ -18,12 +19,18 @@ class DesktopAppMenu extends ConsumerWidget {
     final p = DesktopThemeScope.of(context);
     final rpcEnabled = ref.watch(finampSettingsProvider.rpcEnabled);
 
-    void push(String route) => Navigator.of(context).pushNamed(route);
+    void push(String route) => DesktopRouter.pushNamed(context, route);
 
     return PopupMenuButton<VoidCallback>(
       tooltip: "Menu",
       iconSize: 18,
-      color: p.surface,
+      // An opaque, themed background: the translucent surface colour let the page show through the menu.
+      color: p.bgSecondary,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: BorderSide(color: p.panelBorder),
+      ),
       icon: Icon(TablerIcons.dots, color: p.textTertiary),
       onSelected: (action) => action(),
       itemBuilder: (context) => [
@@ -37,7 +44,7 @@ class DesktopAppMenu extends ConsumerWidget {
         CheckedPopupMenuItem<VoidCallback>(
           checked: rpcEnabled,
           value: () => FinampSetters.setRpcEnabled(!rpcEnabled),
-          child: const Text("Discord Rich Presence"),
+          child: Text("Discord Rich Presence", style: TextStyle(color: p.textPrimary)),
         ),
       ],
     );
@@ -50,7 +57,7 @@ class DesktopAppMenu extends ConsumerWidget {
         children: [
           Icon(icon, size: 18, color: p.textSecondary),
           const SizedBox(width: 12),
-          Text(label),
+          Text(label, style: TextStyle(color: p.textPrimary)),
         ],
       ),
     );

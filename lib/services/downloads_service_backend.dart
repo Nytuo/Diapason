@@ -26,6 +26,7 @@ import '../screens/downloads_screen.dart';
 import 'finamp_settings_helper.dart';
 import 'finamp_user_helper.dart';
 import 'jellyfin_api_helper.dart';
+import 'package:diapason/utils/isar_fast_hash.dart';
 
 part 'downloads_service_backend.g.dart';
 
@@ -171,20 +172,7 @@ class IsarTaskData<T> {
   /// FNV-1a 64bit hash algorithm optimized for Dart Strings
   /// Provided by Isar documentation
   /// Do not use directly, use getHash
-  static int _fastHash(String string) {
-    var hash = 0xcbf29ce484222325;
-
-    var i = 0;
-    while (i < string.length) {
-      final codeUnit = string.codeUnitAt(i++);
-      hash ^= codeUnit >> 8;
-      hash *= 0x100000001b3;
-      hash ^= codeUnit & 0xFF;
-      hash *= 0x100000001b3;
-    }
-
-    return hash;
-  }
+  static int _fastHash(String string) => isarFastHash(string);
 
   @override
   bool operator ==(Object other) {

@@ -1,9 +1,11 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 import 'dart:isolate';
 import 'dart:typed_data';
 
-import 'package:diapason/services/automix/mpv_pcm_decoder.dart';
+import 'package:diapason/services/automix/mpv_pcm_decoder.dart'
+    if (dart.library.js_interop) 'package:diapason/services/automix/mpv_pcm_decoder_web.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
@@ -47,28 +49,41 @@ class AudioAnalysisDecoder {
   static bool get supported =>
       Platform.isAndroid || Platform.isIOS || Platform.isMacOS || Platform.isWindows || Platform.isLinux;
 
-  Future<Float32List?> decode(AnalysisSource source, {required Duration start, required Duration length}) async {
+  /// [rate] defaults to [sampleRate]; the waveform seek bar asks for less on long tracks.
+  Future<Float32List?> decode(
+    AnalysisSource source, {
+    required Duration start,
+    required Duration length,
+    int? sampleRate,
+  }) async {
+    final rate = sampleRate ?? AudioAnalysisDecoder.sampleRate;
     try {
-      if (Platform.isWindows || Platform.isLinux) return await _decodeWithMpv(source, start, length);
-      if (Platform.isIOS || Platform.isMacOS) return await _decodeOnDarwin(source, start, length);
-      if (Platform.isAndroid) return await _decodeNative(source.uri, source.headers, start, length);
+      if (Platform.isWindows || Platform.isLinux) return await _decodeWithMpv(source, start, length, rate);
+      if (Platform.isIOS || Platform.isMacOS) return await _decodeOnDarwin(source, start, length, rate);
+      if (Platform.isAndroid) return await _decodeNative(source.uri, source.headers, start, length, rate);
     } catch (e) {
       _log.fine("Could not decode $source for analysis: $e");
     }
     return null;
   }
 
-  Future<Float32List?> _decodeNative(String uri, Map<String, String> headers, Duration start, Duration length) {
+  Future<Float32List?> _decodeNative(
+    String uri,
+    Map<String, String> headers,
+    Duration start,
+    Duration length, [
+    int rate = sampleRate,
+  ]) {
     return _channel.invokeMethod<Float32List>("decode", {
       "source": uri,
       "headers": headers,
       "startMs": start.inMilliseconds,
       "durationMs": length.inMilliseconds,
-      "sampleRate": sampleRate,
+      "sampleRate": rate,
     });
   }
 
-  Future<Float32List?> _decodeWithMpv(AnalysisSource source, Duration start, Duration length) async {
+  Future<Float32List?> _decodeWithMpv(AnalysisSource source, Duration start, Duration length, int rate) async {
     final scratch = p.join(
       (await getTemporaryDirectory()).path,
       "diapason-automix-${DateTime.now().microsecondsSinceEpoch}.wav",
@@ -81,14 +96,14 @@ class AudioAnalysisDecoder {
         headers: headers,
         start: start,
         length: length,
-        sampleRate: sampleRate,
+        sampleRate: rate,
         scratchPath: scratch,
       ),
     );
   }
 
-  Future<Float32List?> _decodeOnDarwin(AnalysisSource source, Duration start, Duration length) async {
-    if (source.isFile) return _decodeNative(source.uri, const {}, start, length);
+  Future<Float32List?> _decodeOnDarwin(AnalysisSource source, Duration start, Duration length, int rate) async {
+    if (source.isFile) return _decodeNative(source.uri, const {}, start, length, rate);
 
     final temp = File(
       p.join((await getTemporaryDirectory()).path, "diapason-automix-${DateTime.now().microsecondsSinceEpoch}"),
@@ -98,13 +113,13 @@ class AudioAnalysisDecoder {
       if (start == Duration.zero) {
         if (await _download(source, temp, maxBytes: _darwinHeadBytes)) {
           try {
-            final head = await _decodeNative(temp.path, const {}, start, length);
-            if (head != null && head.length > sampleRate * length.inSeconds * 0.8) return head;
+            final head = await _decodeNative(temp.path, const {}, start, length, rate);
+            if (head != null && head.length > rate * length.inSeconds * 0.8) return head;
           } catch (_) {}
         }
       }
       if (!await _download(source, temp, maxBytes: _darwinMaxBytes)) return null;
-      return await _decodeNative(temp.path, const {}, start, length);
+      return await _decodeNative(temp.path, const {}, start, length, rate);
     } finally {
       try {
         if (temp.existsSync()) temp.deleteSync();

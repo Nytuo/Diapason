@@ -1,3 +1,4 @@
+import 'package:diapason/utils/isar_availability.dart';
 import 'package:diapason/components/AlbumScreen/download_dialog.dart';
 import 'package:diapason/components/MusicScreen/music_screen_tab_view.dart';
 import 'package:diapason/components/MusicScreen/youtube_upload_button.dart';
@@ -43,6 +44,8 @@ class DownloadButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Downloads need Isar and a file system (not on the web or tvOS).
+    if (!isarAvailable) return const SizedBox.shrink();
     final childrenLength = childrenCount ?? children?.length;
     final downloadsService = GetIt.instance<DownloadsService>();
     DownloadItemStatus? status = ref.watch(downloadsService.statusProvider((item, childrenLength)));

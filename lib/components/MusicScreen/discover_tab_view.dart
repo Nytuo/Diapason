@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/components/MusicScreen/similar_artists_section.dart';
 import 'package:diapason/models/finamp_models.dart';
@@ -150,9 +151,7 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
           const Icon(TablerIcons.chevron_right),
         ],
       ),
-      onTap: () => Navigator.of(
-        context,
-      ).push(MaterialPageRoute<void>(builder: (_) => DiscoverPlaylistScreen(playlist: playlist))),
+      onTap: () => DesktopRouter.pushPage<void>(context, (_) => DiscoverPlaylistScreen(playlist: playlist)),
     );
   }
 
@@ -200,7 +199,7 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
                 title: Text(AppLocalizations.of(context)!.discoverConnectLb),
                 subtitle: Text(AppLocalizations.of(context)!.discoverConnectLbSubtitle),
                 trailing: const Icon(TablerIcons.chevron_right),
-                onTap: () => Navigator.of(context).pushNamed(ScrobblingSettingsScreen.routeName),
+                onTap: () => DesktopRouter.pushNamed(context, ScrobblingSettingsScreen.routeName),
               ),
             ),
 
@@ -212,7 +211,7 @@ class _DiscoverTabViewState extends ConsumerState<DiscoverTabView> {
                 title: Text(AppLocalizations.of(context)!.discoverAddLfmKey),
                 subtitle: Text(AppLocalizations.of(context)!.discoverAddLfmKeySubtitle),
                 trailing: const Icon(TablerIcons.chevron_right),
-                onTap: () => Navigator.of(context).pushNamed(ScrobblingSettingsScreen.routeName),
+                onTap: () => DesktopRouter.pushNamed(context, ScrobblingSettingsScreen.routeName),
               ),
             ),
 

@@ -1,9 +1,12 @@
 import 'package:diapason/utils/device_form_factor.dart';
 import 'dart:async';
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:diapason/components/PlayerScreen/chapter_track.dart';
+import 'package:diapason/components/PlayerScreen/waveform_seek_bar.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/components/live_badge.dart';
 import 'package:diapason/components/print_duration.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/jellyfin_models.dart' as jellyfin_models;
@@ -83,6 +86,38 @@ class _ProgressSliderState extends State<ProgressSlider> {
     super.dispose();
   }
 
+  /// The waveform seek bar instead of [slider], when enabled and the track's peaks are known.
+  Widget _waveformOr(ProgressState state, Widget slider) {
+    if (!widget.allowSeeking || DeviceFormFactorDetector.current.isTv) return slider;
+    return Consumer(
+      builder: (context, ref, _) {
+        if (!ref.watch(finampSettingsProvider.waveformSeekBar)) return slider;
+        final item = state.mediaItem;
+        return WaveformPeaksBuilder(
+          item: item,
+          builder: (context, peaks) {
+            final total = item?.duration?.inMicroseconds ?? 0;
+            if (peaks == null || total <= 0) return slider;
+            final color = IconTheme.of(context).color ?? Theme.of(context).colorScheme.onSurface;
+            return WaveformSeekBar(
+              peaks: peaks,
+              height: 36.0,
+              value: (_dragValue ?? state.position.inMicroseconds.toDouble()) / total,
+              activeColor: Theme.of(context).colorScheme.primary,
+              inactiveColor: color.withValues(alpha: 0.3),
+              semanticLabel: AppLocalizations.of(context)!.visualWaveformSeekBar,
+              onChanged: (v) => setState(() => _dragValue = v * total),
+              onChangeEnd: (v) async {
+                await GetIt.instance<MusicPlayerBackgroundTask>().seek(Duration(microseconds: (v * total).round()));
+                if (mounted) setState(() => _dragValue = null);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // The slider always needs to be LTR, so we use Directionality to save
@@ -127,27 +162,32 @@ class _ProgressSliderState extends State<ProgressSlider> {
                             ],
                           )
                         : const SizedBox.shrink();
+                  } else if (isLiveMediaItem(snapshot.data!.mediaItem)) {
+                    return LiveProgressIndicator(position: snapshot.data!.position, showDuration: widget.showDuration);
                   } else if (snapshot.hasData) {
                     final chapters = chaptersFromMediaItem(snapshot.data!.mediaItem);
                     return Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SizedBox(
-                          height: 24.0,
-                          child: Stack(
-                            children: [
-                              // Slider displaying playback progress.
-                              _PlaybackProgressSlider(
-                                allowSeeking: widget.allowSeeking,
-                                playbackState: snapshot.data!.playbackState,
-                                position: snapshot.data!.position,
-                                mediaItem: snapshot.data!.mediaItem,
-                                chapters: chapters,
-                                onDrag: (value) => setState(() {
-                                  _dragValue = value;
-                                }),
-                              ),
-                            ],
+                        _waveformOr(
+                          snapshot.data!,
+                          SizedBox(
+                            height: 24.0,
+                            child: Stack(
+                              children: [
+                                // Slider displaying playback progress.
+                                _PlaybackProgressSlider(
+                                  allowSeeking: widget.allowSeeking,
+                                  playbackState: snapshot.data!.playbackState,
+                                  position: snapshot.data!.position,
+                                  mediaItem: snapshot.data!.mediaItem,
+                                  chapters: chapters,
+                                  onDrag: (value) => setState(() {
+                                    _dragValue = value;
+                                  }),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         if (widget.showDuration)

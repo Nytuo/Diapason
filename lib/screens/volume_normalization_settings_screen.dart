@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/components/finamp_app_bar_back_button.dart';
 import 'package:diapason/l10n/app_localizations.dart';

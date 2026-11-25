@@ -6,7 +6,10 @@ import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/current_track_metadata_provider.dart';
+import 'package:diapason/components/PlayerScreen/signal_path_sheet.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/hifi/dsd_audio_source.dart';
+import 'package:diapason/services/hifi/signal_path.dart';
 import 'package:diapason/services/metadata_provider.dart';
 import 'package:diapason/services/music_player_background_task.dart';
 import 'package:diapason/services/queue_service.dart';
@@ -231,20 +234,38 @@ class FeatureChips extends ConsumerWidget {
         //TODO if feature chips are disabled, this won't be logged, but is super useful for debugging. Ideally, move the whole metadata stuff into the metadata provider and log it there, and then use the generated values to create the feature chips if needed
         featureLogger.finer("Current track features: ${featureState.properties}");
 
-        return Padding(
-          padding: const EdgeInsets.only(left: 32.0, right: 32.0),
-          child: ScrollConfiguration(
-            // Allow drag scrolling on desktop
-            behavior: ScrollConfiguration.of(context).copyWith(dragDevices: PointerDeviceKind.values.toSet()),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Builder(
-                builder: (context) {
-                  return Features(
-                    backgroundColor: IconTheme.of(context).color?.withValues(alpha: 0.1) ?? _defaultBackgroundColour,
-                    features: featureState,
-                  );
-                },
+        // Tapping the format line opens the signal path panel.
+        final track = snapshot.data!;
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => showSignalPathSheet(
+            context,
+            speed: queueService.playbackSpeed,
+            source: SignalSource(
+              codec: featureState.codec,
+              container: featureState.container,
+              sampleRate: featureState.sampleRate,
+              bitDepth: featureState.bitDepth,
+              channels: featureState.audioStream?.channels,
+              transcoded: featureState.isTranscodingAndStreaming,
+              dsd: dsdTrackInfo[track.id],
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.only(left: 32.0, right: 32.0),
+            child: ScrollConfiguration(
+              // Allow drag scrolling on desktop
+              behavior: ScrollConfiguration.of(context).copyWith(dragDevices: PointerDeviceKind.values.toSet()),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Builder(
+                  builder: (context) {
+                    return Features(
+                      backgroundColor: IconTheme.of(context).color?.withValues(alpha: 0.1) ?? _defaultBackgroundColour,
+                      features: featureState,
+                    );
+                  },
+                ),
               ),
             ),
           ),

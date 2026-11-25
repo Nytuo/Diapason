@@ -1,0 +1,36 @@
+<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/">
+  <item id="64$1$0$0" parentID="64$1$0" restricted="1" refID="64$0$A">
+    <dc:title>Intro &amp; Outro</dc:title>
+    <upnp:class>object.item.audioItem.musicTrack</upnp:class>
+    <dc:creator>Composer Name</dc:creator>
+    <upnp:artist>Main Artist</upnp:artist>
+    <upnp:artist role="AlbumArtist">Various Artists</upnp:artist>
+    <upnp:artist role="Composer">Composer Name</upnp:artist>
+    <upnp:album>Great Album</upnp:album>
+    <upnp:genre>Rock</upnp:genre>
+    <upnp:genre>Unknown</upnp:genre>
+    <upnp:originalTrackNumber>3</upnp:originalTrackNumber>
+    <upnp:originalDiscNumber>2</upnp:originalDiscNumber>
+    <dc:date>2019-05-04</dc:date>
+    <upnp:albumArtURI dlna:profileID="JPEG_TN">http://192.168.1.10:8200/AlbumArt/42-17.jpg</upnp:albumArtURI>
+    <res size="7340032" duration="0:04:05.500" bitrate="40000" sampleFrequency="44100" bitsPerSample="16" nrAudioChannels="2" protocolInfo="http-get:*:audio/L16;rate=44100;channels=2:DLNA.ORG_PN=LPCM;DLNA.ORG_CI=1">http://192.168.1.10:8200/MediaItems/17.lpcm</res>
+    <res size="29360128" duration="0:04:05.500" bitrate="120000" sampleFrequency="44100" bitsPerSample="16" nrAudioChannels="2" protocolInfo="http-get:*:audio/x-flac:*">http://192.168.1.10:8200/MediaItems/17.flac</res>
+  </item>
+  <item id="64$1$0$1" parentID="64$1$0" restricted="1">
+    <dc:title>Second Song</dc:title>
+    <upnp:class>object.item.audioItem.musicTrack</upnp:class>
+    <upnp:artist>Main Artist</upnp:artist>
+    <upnp:album>Great Album</upnp:album>
+    <upnp:originalTrackNumber>4</upnp:originalTrackNumber>
+    <res duration="0:03:00" protocolInfo="http-get:*:audio/mpeg:DLNA.ORG_PN=MP3">/MediaItems/18.mp3</res>
+  </item>
+  <item id="64$1$0$2" parentID="64$1$0" restricted="1">
+    <dc:title>cover</dc:title>
+    <upnp:class>object.item.imageItem.photo</upnp:class>
+    <res protocolInfo="http-get:*:image/jpeg:*">http://192.168.1.10:8200/MediaItems/19.jpg</res>
+  </item>
+  <container id="64$1$0$CD2" parentID="64$1$0" restricted="1" childCount="5">
+    <dc:title>CD2</dc:title>
+    <upnp:class>object.container.storageFolder</upnp:class>
+  </container>
+</DIDL-Lite>

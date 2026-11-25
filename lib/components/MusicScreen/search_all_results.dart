@@ -46,9 +46,7 @@ class SearchAllResults extends ConsumerWidget {
     final loading = results.values.any((r) => r.isLoading && !r.hasValue);
     final allEmpty = results.values.every((r) => (r.value ?? const []).isEmpty);
     if (allEmpty) {
-      return Center(
-        child: loading ? const CircularProgressIndicator.adaptive() : Text('No results for "$query"'),
-      );
+      return Center(child: loading ? const CircularProgressIndicator.adaptive() : Text('No results for "$query"'));
     }
 
     return ListView(

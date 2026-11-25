@@ -115,6 +115,7 @@ extension HiveRegistrar on HiveInterface {
     registerAdapter(UserDtoAdapter());
     registerAdapter(UserItemDataDtoAdapter());
     registerAdapter(UserPolicyAdapter());
+    registerAdapter(VisualizerStyleAdapter());
     registerAdapter(VolumeNormalizationModeAdapter());
     registerAdapter(XmlAttributeAdapter());
   }
@@ -229,6 +230,7 @@ extension IsolatedHiveRegistrar on IsolatedHiveInterface {
     registerAdapter(UserDtoAdapter());
     registerAdapter(UserItemDataDtoAdapter());
     registerAdapter(UserPolicyAdapter());
+    registerAdapter(VisualizerStyleAdapter());
     registerAdapter(VolumeNormalizationModeAdapter());
     registerAdapter(XmlAttributeAdapter());
   }

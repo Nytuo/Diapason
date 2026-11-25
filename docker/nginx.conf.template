@@ -1,0 +1,32 @@
+server {
+  listen 8080;
+  listen [::]:8080;
+  sendfile on;
+  default_type application/octet-stream;
+
+  gzip on;
+  gzip_http_version 1.1;
+  gzip_min_length   256;
+  gzip_vary         on;
+  gzip_proxied      expired no-cache no-store private auth;
+  gzip_types        text/plain text/css application/json application/javascript text/javascript application/wasm image/svg+xml font/ttf font/otf;
+  gzip_comp_level   6;
+
+  root /usr/share/nginx/html;
+
+  # The runtime config is generated per container and must never be cached.
+  location = /diapason-config.js {
+    alias /etc/nginx/conf.d/diapason-config.js;
+    add_header Cache-Control "no-store";
+  }
+
+  # Entry points are revalidated so a new image is picked up on reload.
+  location ~ ^/(index\.html|flutter_bootstrap\.js|flutter_service_worker\.js|manifest\.json|version\.json)?$ {
+    add_header Cache-Control "no-cache";
+    try_files $uri /index.html =404;
+  }
+
+  location / {
+    try_files $uri $uri/ /index.html =404;
+  }
+}

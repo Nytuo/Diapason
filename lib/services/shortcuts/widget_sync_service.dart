@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/album_image_provider.dart';

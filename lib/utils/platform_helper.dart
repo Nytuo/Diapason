@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 bool get isDesktop => Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 

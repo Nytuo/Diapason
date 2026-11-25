@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:diapason/components/PlayerScreen/queue_source_helper.dart';
+import 'package:diapason/components/PlayerScreen/spectrum_visualizer.dart';
+import 'package:diapason/components/visuals/milkdrop_view.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/services/feedback_helper.dart';
@@ -60,10 +62,26 @@ class PlayerScreenAlbumImage extends ConsumerWidget {
                 FeedbackHelper.feedback(FeedbackType.selection);
               },
               onDoubleTap: () {
+                // With the animated visual available, a double tap shows / hides it over the cover.
+                if (MilkdropShader.platformSupported) {
+                  FinampSetters.setMilkdropOnCover(!FinampSettingsHelper.finampSettings.milkdropOnCover);
+                  FeedbackHelper.feedback(FeedbackType.selection);
+                  return;
+                }
                 final currentTrack = queueService.getCurrentTrack();
                 if (currentTrack?.baseItem != null && !FinampSettingsHelper.finampSettings.isOffline) {
                   ref.read(isFavoriteProvider(currentTrack!.baseItem).notifier).toggleFavorite();
                 }
+              },
+              onVerticalSwipe: (direction) {
+                // Swipe up / down on the animated cover for the next / previous preset.
+                final settings = FinampSettingsHelper.finampSettings;
+                if (!MilkdropShader.platformSupported || !settings.milkdropOnCover) return;
+                final count = MilkdropPreset.values.length;
+                final current = settings.milkdropPreset < 0 ? 0 : settings.milkdropPreset % count;
+                final delta = direction == SwipeDirection.up ? 1 : -1;
+                FinampSetters.setMilkdropPreset((current + delta + count) % count);
+                FeedbackHelper.feedback(FeedbackType.selection);
               },
               onHorizontalSwipe: (direction) {
                 if (direction == SwipeDirection.left) {
@@ -87,19 +105,23 @@ class PlayerScreenAlbumImage extends ConsumerWidget {
                   final verticalPadding = constraints.maxHeight * (minPadding / 100.0);
                   return Padding(
                     padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: verticalPadding),
-                    child: AlbumImage(
-                      imageListenable: currentAlbumImageProvider,
-                      borderRadius: BorderRadius.circular(8.0),
-                      // Load player cover at max size to allow more seamless scaling
-                      autoScale: false,
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            blurRadius: 24,
-                            offset: const Offset(0, 4),
-                            color: Colors.black.withValues(alpha: 0.3),
+                    child: SpectrumCoverRing(
+                      child: _CoverVisual(
+                        child: AlbumImage(
+                          imageListenable: currentAlbumImageProvider,
+                          borderRadius: BorderRadius.circular(8.0),
+                          // Load player cover at max size to allow more seamless scaling
+                          autoScale: false,
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 24,
+                                offset: const Offset(0, 4),
+                                color: Colors.black.withValues(alpha: 0.3),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   );
@@ -109,6 +131,27 @@ class PlayerScreenAlbumImage extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// The cover, with the animated visual playing over it when enabled.
+class _CoverVisual extends ConsumerWidget {
+  const _CoverVisual({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(finampSettingsProvider.milkdropOnCover) || !MilkdropShader.platformSupported) return child;
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        child,
+        IgnorePointer(
+          child: AspectRatio(aspectRatio: 1, child: MilkdropView(borderRadius: BorderRadius.circular(8.0))),
+        ),
+      ],
     );
   }
 }

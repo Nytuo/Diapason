@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart';
@@ -313,8 +314,8 @@ class BackupService {
     required BackupRestoreReport report,
   }) async {
     final service = GetIt.instance<MediaSourceService>();
-    if (incoming.kind == MediaSourceKind.local || incoming.kind == MediaSourceKind.youtube) {
-      // Folders on another device don't exist here; YouTube needs no stored source.
+    if (incoming.kind == MediaSourceKind.local || !incoming.kind.isConfigurable) {
+      // Folders on another device don't exist here; YouTube and radio need no stored source.
       report.sourcesSkipped++;
       return;
     }

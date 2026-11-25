@@ -1,7 +1,8 @@
 // This file collects structured metadata about the device, app, and server
 // for logging, analytics, and diagnostics.
 
-import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:diapason/utils/platform.dart';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:diapason/models/jellyfin_models.dart';
@@ -56,7 +57,15 @@ class DeviceInfo {
   static Future<DeviceInfo> fromPlatform() async {
     final deviceInfoPlugin = DeviceInfoPlugin();
 
-    if (Platform.isAndroid) {
+    if (kIsWeb) {
+      final info = await deviceInfoPlugin.webBrowserInfo;
+      return DeviceInfo(
+        deviceName: info.browserName.name,
+        deviceModel: info.platform ?? 'Unknown',
+        osVersion: info.appVersion ?? 'Unknown',
+        platform: 'Web',
+      );
+    } else if (Platform.isAndroid) {
       final info = await deviceInfoPlugin.androidInfo;
       final isTV = info.systemFeatures.contains('android.software.leanback');
       final isWatch = info.systemFeatures.contains('android.hardware.type.watch');

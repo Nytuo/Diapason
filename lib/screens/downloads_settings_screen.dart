@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/components/AlbumScreen/download_button.dart';
 import 'package:diapason/components/finamp_app_bar_back_button.dart';

@@ -1,6 +1,7 @@
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/menus/output_menu.dart';
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/backends/media_source_service.dart';
@@ -181,7 +182,17 @@ class _ConnectDeviceListState extends State<ConnectDeviceList> {
                     enabled: !transferring,
                     onTap: () => _pick(null),
                   ),
-                  for (final device in others)
+                  // A watch only advertises itself while it waits for accounts; it can't play anything.
+                  for (final device in others.where((d) => d.isWatch))
+                    _DeviceTile(
+                      icon: TablerIcons.device_watch,
+                      title: connectDisplayName(device.name),
+                      subtitle: AppLocalizations.of(context)!.watchSendAccountsSubtitle,
+                      selected: false,
+                      enabled: !transferring,
+                      onTap: () => sendAccountsTo(context, device),
+                    ),
+                  for (final device in others.where((d) => !d.isWatch))
                     _DeviceTile(
                       icon: TablerIcons.device_speaker,
                       title: connectDisplayName(device.name),

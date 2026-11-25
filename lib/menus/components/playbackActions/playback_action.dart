@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/services/feedback_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,6 +60,35 @@ class PlaybackAction extends ConsumerWidget {
         ],
       ),
     );
+
+    if (DesktopRouter.isActive) {
+      // Desktop: a pill with the icon beside its label, not the mobile icon-over-text button.
+      final ink = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
+      return Flexible(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+            child: TextButton.icon(
+              style: TextButton.styleFrom(
+                backgroundColor: ink.withValues(alpha: 0.08),
+                foregroundColor: iconColor,
+                shape: const StadiumBorder(),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              ),
+              onPressed: enabled
+                  ? () {
+                      FeedbackHelper.feedback(FeedbackType.selection);
+                      onPressed();
+                    }
+                  : null,
+              onLongPress: onLongPress,
+              icon: Icon(icon, size: 18),
+              label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13)),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Flexible(
       flex: 1,

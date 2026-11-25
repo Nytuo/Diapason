@@ -7,11 +7,15 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore.INTENT_ACTION_MUSIC_PLAYER
 import android.provider.Settings
+import android.view.InputDevice
+import android.view.MotionEvent
+import android.view.ViewConfiguration
 import android.system.ErrnoException
 import android.system.Os
 import android.util.Log
 import androidx.annotation.WorkerThread
 import androidx.core.net.toUri
+import androidx.core.view.ViewConfigurationCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.mediarouter.app.SystemOutputSwitcherDialogController
 import androidx.mediarouter.media.MediaRouter
@@ -42,9 +46,30 @@ class MainActivity : AudioServiceActivity() {
 
         private const val SET_NATIVE_THEME_CHANNEL = "fr.nytuo.diapason/set_native_theme"
         private const val SET_NATIVE_THEME_CHANNEL_LOG_TAG = "setNativeThemeChannel"
+
+        private const val ROTARY_CHANNEL = "fr.nytuo.diapason/rotary"
     }
 
     private lateinit var mediaRouter: MediaRouter
+
+    private var rotaryChannel: MethodChannel? = null
+
+    /**
+     * A watch's crown or rotating bezel: Flutter does not turn it into scroll events, so it is sent to Dart (see
+     * WatchRotary) as pixels to scroll by, positive towards the end of a list.
+     */
+    override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
+        val channel = rotaryChannel
+        if (channel != null &&
+            event.action == MotionEvent.ACTION_SCROLL &&
+            event.isFromSource(InputDevice.SOURCE_ROTARY_ENCODER)
+        ) {
+            val factor = ViewConfigurationCompat.getScaledVerticalScrollFactor(ViewConfiguration.get(this), this)
+            channel.invokeMethod("scroll", (-event.getAxisValue(MotionEvent.AXIS_SCROLL) * factor).toDouble())
+            return true
+        }
+        return super.dispatchGenericMotionEvent(event)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         updateIntent(intent)
@@ -71,6 +96,8 @@ class MainActivity : AudioServiceActivity() {
         super.configureFlutterEngine(flutterEngine)
         VisualizerChannel(flutterEngine.dartExecutor.binaryMessenger)
         AudioDecodeChannel(flutterEngine.dartExecutor.binaryMessenger)
+        rotaryChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, ROTARY_CHANNEL)
+        HifiChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             CLIENT_CERT_CHANNEL,

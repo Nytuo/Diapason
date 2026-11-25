@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -26,14 +27,12 @@ List<TextSpan> getArtistsTextSpans(BaseItemDto item, BuildContext context, bool 
                 // Offline artists aren't implemented yet so we return if offline
                 if (FinampSettingsHelper.finampSettings.isOffline) return;
 
-                jellyfinApiHelper
-                    .getItemById(e.id)
-                    .then((artist) {
-                      if (!context.mounted) return;
-                      popRoutes
-                          ? Navigator.of(context).popAndPushNamed(ArtistScreen.routeName, arguments: artist)
-                          : Navigator.of(context).pushNamed(ArtistScreen.routeName, arguments: artist);
-                    });
+                jellyfinApiHelper.getItemById(e.id).then((artist) {
+                  if (!context.mounted) return;
+                  popRoutes
+                      ? Navigator.of(context).popAndPushNamed(ArtistScreen.routeName, arguments: artist)
+                      : DesktopRouter.pushNamed(context, ArtistScreen.routeName, arguments: artist);
+                });
               },
           ),
         )

@@ -38,7 +38,13 @@ class GlobalSnackbar {
   static ScaffoldMessengerState? get scaffoldState => rawMaterialAppScaffoldKey.currentState;
   static NavigatorState? get navigatorState => rawMaterialAppNavigatorKey.currentState;
   static AppLocalizations? get _contextL10n {
-    final context = rawMaterialAppNavigatorKey.currentContext;
+    // No widgets binding (a background isolate, a plain unit test): fall back to the cache or English.
+    BuildContext? context;
+    try {
+      context = rawMaterialAppNavigatorKey.currentContext;
+    } catch (_) {
+      return null;
+    }
     if (context != null && context.mounted) {
       final localization = AppLocalizations.of(context);
       if (localization != null) {

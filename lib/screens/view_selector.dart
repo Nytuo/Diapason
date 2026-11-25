@@ -3,6 +3,7 @@ import 'package:diapason/components/finamp_app_bar_back_button.dart';
 import 'package:diapason/screens/desktop/desktop_shell.dart';
 import 'package:diapason/screens/music_screen.dart';
 import 'package:diapason/utils/platform_helper.dart';
+import 'package:diapason/utils/device_form_factor.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:diapason/l10n/app_localizations.dart';
@@ -141,7 +142,10 @@ class _ViewSelectorState extends State<ViewSelector> {
 
                       if (!context.mounted) return;
 
-                      await Navigator.of(context).pushNamedAndRemoveUntil(SplashScreen.routeName, (route) => false);
+                      await Navigator.of(
+                        context,
+                        rootNavigator: true,
+                      ).pushNamedAndRemoveUntil(SplashScreen.routeName, (route) => false);
                     },
                   ),
                 ],
@@ -171,9 +175,15 @@ class _ViewSelectorState extends State<ViewSelector> {
         Future.microtask(() {
           if (!context.mounted) return;
           unawaited(
-            Navigator.of(
-              context,
-            ).pushNamedAndRemoveUntil(isDesktop ? DesktopShell.routeName : MusicScreen.routeName, (route) => false),
+            Navigator.of(context, rootNavigator: true).pushNamedAndRemoveUntil(
+              // A watch has its own home (see SplashScreen).
+              DeviceFormFactorDetector.current.isWatch
+                  ? SplashScreen.routeName
+                  : isDesktop
+                  ? DesktopShell.routeName
+                  : MusicScreen.routeName,
+              (route) => false,
+            ),
           );
         });
       } catch (e) {

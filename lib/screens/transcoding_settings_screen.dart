@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/components/SettingsScreen/finamp_settings_dropdown.dart';
 import 'package:diapason/components/TranscodingSettingsScreen/bitrate_selector.dart';

@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:collection/collection.dart';
 import 'package:diapason/components/Buttons/cta_medium.dart';

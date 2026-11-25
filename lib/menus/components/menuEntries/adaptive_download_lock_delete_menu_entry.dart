@@ -1,3 +1,4 @@
+import 'package:diapason/utils/isar_availability.dart';
 import 'package:diapason/menus/components/menuEntries/delete_from_device_menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/download_menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/lock_download_menu_entry.dart';
@@ -19,6 +20,8 @@ class AdaptiveDownloadLockDeleteMenuEntry extends ConsumerWidget implements Hide
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Downloads need Isar and a file system (not on the web or tvOS).
+    if (!isarAvailable) return const SizedBox.shrink();
     final downloadsService = GetIt.instance<DownloadsService>();
 
     final DownloadStub? downloadStub = _getStub();
@@ -57,6 +60,7 @@ class AdaptiveDownloadLockDeleteMenuEntry extends ConsumerWidget implements Hide
 
   @override
   bool get isVisible {
+    if (!isarAvailable) return false;
     final stub = _getStub();
     if (stub == null) return false;
     final DownloadItemStatus downloadStatus = GetIt.instance<DownloadsService>().getStatus(stub, null);

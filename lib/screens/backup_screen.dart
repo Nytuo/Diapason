@@ -1,5 +1,5 @@
 import 'package:diapason/l10n/app_localizations.dart';
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 import 'dart:typed_data';
 
 import 'package:diapason/services/backup/backup_service.dart';

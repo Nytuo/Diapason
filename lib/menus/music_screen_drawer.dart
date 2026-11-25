@@ -1,5 +1,6 @@
+import 'package:diapason/screens/radio_screen.dart';
 import 'package:diapason/services/backends/backend_registry.dart';
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 import 'dart:math';
 
 import 'package:diapason/components/HomeScreen/finamp_music_screen_header.dart';
@@ -122,6 +123,14 @@ Future<void> showFinampMainMenu({required BuildContext context}) async {
                     leading: const Padding(padding: EdgeInsets.only(right: 16), child: Icon(TablerIcons.bolt)),
                     title: const Text("Smart Playlists"),
                     onTap: () => Navigator.of(context).pushNamed(SmartPlaylistsScreen.routeName),
+                  ),
+                ),
+                Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    leading: const Padding(padding: EdgeInsets.only(right: 16), child: Icon(TablerIcons.radio)),
+                    title: Text(AppLocalizations.of(context)!.radioStationsTitle),
+                    onTap: () => Navigator.of(context).pushNamed(RadioScreen.routeName),
                   ),
                 ),
                 const Divider(),
@@ -310,6 +319,11 @@ class MusicScreenDrawer extends ConsumerWidget {
                         leading: const Padding(padding: EdgeInsets.only(right: 16), child: Icon(TablerIcons.bolt)),
                         title: const Text("Smart Playlists"),
                         onTap: () => Navigator.of(context).pushNamed(SmartPlaylistsScreen.routeName),
+                      ),
+                      ListTile(
+                        leading: const Padding(padding: EdgeInsets.only(right: 16), child: Icon(TablerIcons.radio)),
+                        title: Text(AppLocalizations.of(context)!.radioStationsTitle),
+                        onTap: () => Navigator.of(context).pushNamed(RadioScreen.routeName),
                       ),
                       const Divider(),
                     ]),

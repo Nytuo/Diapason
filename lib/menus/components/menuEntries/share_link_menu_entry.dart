@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/menus/components/menuEntries/menu_entry.dart';

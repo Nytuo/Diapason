@@ -1,3 +1,5 @@
+import 'package:diapason/components/mobile_ambient_theme.dart';
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'dart:async';
 
 import 'package:diapason/components/Buttons/simple_button.dart';
@@ -10,7 +12,6 @@ import 'package:diapason/components/finamp_app_bar_back_button.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/menus/components/playbackActions/playback_action_row.dart';
 import 'package:diapason/models/music_models.dart';
-import 'package:diapason/screens/music_screen.dart';
 import 'package:diapason/services/finamp_user_helper.dart';
 import 'package:diapason/services/genre_screen_provider.dart';
 import 'package:flutter/material.dart';
@@ -90,22 +91,19 @@ class _GenreScreenContentState extends ConsumerState<GenreScreenContent> {
           isFavoriteOverride = false;
       }
     }
-    Navigator.of(context).push(
-      MaterialPageRoute<MusicScreen>(
-        builder: (context) => MusicScreen(
-          singleTabConfig: HomeScreenSectionConfiguration(
-            base: TabsHomeSection(libraryId: currentLibraryPlaceholder, contentType: tabContentType),
-            customSectionTitle: widget.parent.name,
-            sortConfig: SortAndFilterController.trackSettings(tabContentType).resolveConfig().copyWith(
-              sortBy: sortByOverride,
-              sortOrder: sortOrderOverride,
-              favoriteFilter: isFavoriteOverride ? true : null,
-              genreFilter: widget.parent,
-            ),
-          ),
-          allowFilters: (filter) => !filter.type.isArtistGenre,
+    openSectionScreen(
+      context,
+      HomeScreenSectionConfiguration(
+        base: TabsHomeSection(libraryId: currentLibraryPlaceholder, contentType: tabContentType),
+        customSectionTitle: widget.parent.name,
+        sortConfig: SortAndFilterController.trackSettings(tabContentType).resolveConfig().copyWith(
+          sortBy: sortByOverride,
+          sortOrder: sortOrderOverride,
+          favoriteFilter: isFavoriteOverride ? true : null,
+          genreFilter: widget.parent,
         ),
       ),
+      allowFilters: (filter) => !filter.type.isArtistGenre,
     );
   }
 
@@ -196,8 +194,12 @@ class _GenreScreenContentState extends ConsumerState<GenreScreenContent> {
 
     final countsTextColor = IconTheme.of(context).color;
     final countsSubtitleColor = IconTheme.of(context).color!.withValues(alpha: 0.6);
-    final countsBorderColor = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2);
-    final countsBackgroundColor = Theme.of(context).colorScheme.surface;
+    final desktop = translucentSurfaces(context);
+    final ink = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
+    final countsBorderColor = desktop
+        ? ink.withValues(alpha: 0.08)
+        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2);
+    final countsBackgroundColor = desktop ? ink.withValues(alpha: 0.06) : Theme.of(context).colorScheme.surface;
 
     return PaddedCustomScrollview(
       slivers: <Widget>[

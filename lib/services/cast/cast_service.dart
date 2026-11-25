@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';

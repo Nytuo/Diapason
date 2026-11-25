@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/services/queue_service.dart';
@@ -57,7 +57,10 @@ class LogoutListTile extends ConsumerWidget {
 
                     if (!context.mounted) return;
 
-                    await Navigator.of(context).pushNamedAndRemoveUntil(SplashScreen.routeName, (route) => false);
+                    await Navigator.of(
+                      context,
+                      rootNavigator: true,
+                    ).pushNamedAndRemoveUntil(SplashScreen.routeName, (route) => false);
                   } catch (e) {
                     GlobalSnackbar.error(e);
                     return;

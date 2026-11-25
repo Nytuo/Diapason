@@ -1,3 +1,4 @@
+import 'package:diapason/components/mobile_ambient_theme.dart';
 import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/jellyfin_models.dart';
@@ -67,8 +68,19 @@ Widget buildCuratedItemFilterRow({
                       selected: isSelected,
                       showCheckmark: false,
                       selectedColor: colorScheme.primary,
-                      backgroundColor: colorScheme.surface,
+                      // On desktop the page sits on a translucent panel: a faint veil and no outline, not the
+                      // opaque mobile surface.
+                      backgroundColor: translucentSurfaces(context)
+                          ? (colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black).withValues(
+                              alpha: 0.08,
+                            )
+                          : colorScheme.surface,
                       labelStyle: TextStyle(color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface),
+                      side: translucentSurfaces(context) ? BorderSide.none : null,
+                      elevation: translucentSurfaces(context) ? 0 : null,
+                      pressElevation: translucentSurfaces(context) ? 0 : null,
+                      surfaceTintColor: translucentSurfaces(context) ? Colors.transparent : null,
+                      shadowColor: translucentSurfaces(context) ? Colors.transparent : null,
                       shape: const StadiumBorder(),
                     );
 

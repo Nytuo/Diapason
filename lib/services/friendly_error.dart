@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:chopper/chopper.dart' as chopper;
 import 'package:diapason/components/global_snackbar.dart';
+import 'package:diapason/services/dlna/dlna_protocol.dart';
 import 'package:http/http.dart' as http;
+import 'package:diapason/services/no_network_guard.dart';
 import 'package:logging/logging.dart';
 
 enum ErrorSource { connection, uploader, ytdlp, device, unknown }
@@ -51,6 +53,10 @@ class FriendlyError {
     }
     final technical = "${error.runtimeType}: $error";
 
+    if (NoNetworkGuard.active && (error is SocketException || error is http.ClientException || error is HttpException)) {
+      return (message: GlobalSnackbar.requireL10n.noNetworkBlocked, source: ErrorSource.device, technical: technical);
+    }
+
     if (error is TimeoutException) {
       return (message: GlobalSnackbar.requireL10n.errorTimeout, source: ErrorSource.connection, technical: technical);
     }
@@ -88,6 +94,13 @@ class FriendlyError {
         _ => GlobalSnackbar.requireL10n.errorHttpOther(status),
       };
       return (message: message, source: ErrorSource.connection, technical: "HTTP $status ${error.error ?? ""}".trim());
+    }
+    if (error is DlnaException) {
+      return (
+        message: GlobalSnackbar.requireL10n.dlnaServerError(error.message),
+        source: ErrorSource.connection,
+        technical: technical,
+      );
     }
     if (error is FileSystemException) {
       final os = error.osError?.errorCode;

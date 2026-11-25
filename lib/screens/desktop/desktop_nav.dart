@@ -12,6 +12,7 @@ enum DesktopNav {
   smart(TablerIcons.bolt, "Smart", null),
   discover(TablerIcons.compass, "Discover", ContentType.discover),
   youtube(TablerIcons.brand_youtube, "YouTube", null),
+  radio(TablerIcons.radio, "Radio", null),
   folders(TablerIcons.folder, "Folders", null),
   queue(TablerIcons.list_numbers, "Queue", null);
 

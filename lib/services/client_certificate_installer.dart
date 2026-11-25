@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/models/finamp_models.dart';
 import 'package:flutter/services.dart';

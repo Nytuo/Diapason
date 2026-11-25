@@ -1,6 +1,7 @@
 import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' hide Platform;
+import 'package:diapason/utils/platform.dart';
 import 'dart:math';
 
 import 'package:app_links/app_links.dart';
@@ -312,6 +313,13 @@ class QueueService {
 
       void updateMediaItem(AlbumImageInfo latest, bool force) async {
         var artUri = latest.uri;
+        if (Platform.isWeb) {
+          // The browser's media session takes the network art as is; there's no file system for a placeholder.
+          if (!force && _audioHandler.mediaItem.valueOrNull?.id != currentMediaItem?.id) return;
+          currentMediaItem = currentMediaItem?.copyWith(artUri: artUri);
+          _audioHandler.mediaItem.add(currentMediaItem);
+          return;
+        }
         if (artUri == null) {
           // replace with placeholder art
           final applicationSupportDirectory = await getApplicationSupportDirectory();

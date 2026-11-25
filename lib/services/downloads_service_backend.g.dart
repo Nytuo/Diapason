@@ -19,7 +19,7 @@ extension GetIsarTaskDataCollection on Isar {
 
 const IsarTaskDataSchema = CollectionSchema(
   name: r'IsarTaskData',
-  id: 5660606271041189933,
+  id: (0x4E8E8369 << 32 | 0x8EC2382D),
   properties: {
     r'age': PropertySchema(id: 0, name: r'age', type: IsarType.long),
     r'jsonData': PropertySchema(
@@ -42,7 +42,7 @@ const IsarTaskDataSchema = CollectionSchema(
   idName: r'id',
   indexes: {
     r'type': IndexSchema(
-      id: 5117122708147080838,
+      id: (0x4703ABFD << 32 | 0xCB310E86),
       name: r'type',
       unique: false,
       replace: false,

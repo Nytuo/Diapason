@@ -239,7 +239,7 @@ final class GetSortedPlaylistTracksProvider
 }
 
 String _$getSortedPlaylistTracksHash() =>
-    r'f4cc84c7a588acdfabd32956b014e59d093f163b';
+    r'fca966458d0c7e14af6c84aeb8c48158308160c1';
 
 final class GetSortedPlaylistTracksFamily extends $Family
     with

@@ -10,7 +10,9 @@ import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/services/jellyfin_api_helper.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
 import 'package:diapason/services/finamp_user_helper.dart';
+import 'package:diapason/services/no_network_guard.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:get_it/get_it.dart';
 
@@ -60,6 +62,7 @@ class _NetworkSettingsScreenState extends State<NetworkSettingsScreen> {
                 ],
               ),
             ),
+          const _NoNetworkSwitch(),
           AutoOfflineSelector(),
           Divider(),
           if (hasJellyfinServer) ...[
@@ -93,6 +96,22 @@ class _NetworkSettingsScreenState extends State<NetworkSettingsScreen> {
           ],
         ],
       ),
+    );
+  }
+}
+
+class _NoNetworkSwitch extends ConsumerWidget {
+  const _NoNetworkSwitch();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    return SwitchListTile(
+      secondary: const Icon(TablerIcons.world_off),
+      title: Text(l10n.noNetworkTitle),
+      subtitle: Text(l10n.noNetworkSubtitle),
+      value: ref.watch(finampSettingsProvider.noNetwork),
+      onChanged: (value) => NoNetworkGuard.setEnabled(value),
     );
   }
 }

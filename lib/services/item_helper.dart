@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/services/backends/aggregate_backend.dart';
 import 'package:collection/collection.dart';
 import 'package:diapason/components/MusicScreen/sort_and_filter_row.dart';
@@ -18,7 +19,6 @@ import '../menus/track_menu.dart';
 import '../screens/album_screen.dart';
 import '../screens/artist_screen.dart';
 import '../screens/genre_screen.dart';
-import '../screens/music_screen.dart';
 import 'music_screen_provider.dart';
 
 // TODO remove this and use getSliceProvider for all cases.
@@ -163,19 +163,16 @@ void openItemPage(BaseItemDto item, NavigatorState navigator, {bool showTracks =
     return;
   } else if (BaseItemDtoType.fromItem(item) == BaseItemDtoType.collection) {
     final finampUserHelper = GetIt.instance<FinampUserHelper>();
-    navigator.push(
-      MaterialPageRoute<MusicScreen>(
-        builder: (context) => MusicScreen(
-          singleTabConfig: HomeScreenSectionConfiguration(
-            base: CollectionHomeSection(
-              itemId: item.id,
-              libraryId: finampUserHelper.currentUser!.currentViewId!,
-              contentType: ContentType.mixed,
-            ),
-            customSectionTitle: item.name ?? AppLocalizations.of(context)!.unknownName,
-            sortConfig: SortAndFilterConfiguration.defaultSort,
-          ),
+    openSectionScreen(
+      navigator.context,
+      HomeScreenSectionConfiguration(
+        base: CollectionHomeSection(
+          itemId: item.id,
+          libraryId: finampUserHelper.currentUser!.currentViewId!,
+          contentType: ContentType.mixed,
         ),
+        customSectionTitle: item.name ?? AppLocalizations.of(navigator.context)!.unknownName,
+        sortConfig: SortAndFilterConfiguration.defaultSort,
       ),
     );
     return;
@@ -187,5 +184,5 @@ void openItemPage(BaseItemDto item, NavigatorState navigator, {bool showTracks =
     BaseItemDtoType.artist => ArtistScreen.routeName,
     _ => AlbumScreen.routeName,
   };
-  navigator.pushNamed(targetRoute, arguments: item);
+  DesktopRouter.pushNamedOn(navigator, targetRoute, arguments: item);
 }

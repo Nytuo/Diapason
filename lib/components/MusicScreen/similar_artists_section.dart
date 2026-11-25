@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/screens/artist_screen.dart';
 import 'package:diapason/services/discovery/discovery_service.dart';
@@ -33,7 +34,7 @@ class _SimilarArtistsSectionState extends State<SimilarArtistsSection> {
 
     final owned = await discovery.findArtist(name);
     if (owned != null && mounted) {
-      await Navigator.of(context).pushNamed(ArtistScreen.routeName, arguments: owned);
+      await DesktopRouter.pushNamed(context, ArtistScreen.routeName, arguments: owned);
       return;
     }
 

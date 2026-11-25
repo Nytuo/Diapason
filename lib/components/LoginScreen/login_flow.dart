@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:diapason/services/web/web_server_preset.dart';
 import 'package:diapason/components/LoginScreen/login_server_selection_page.dart';
 import 'package:diapason/components/LoginScreen/login_source_type_page.dart';
 import 'package:diapason/models/media_source.dart';
@@ -101,7 +102,18 @@ class _LoginFlowState extends State<LoginFlow> {
             case LoginSplashPage.routeName:
               route = createRoute(
                 LoginSplashPage(
-                  onGetStartedPressed: () => loginNavigatorKey.currentState!.pushNamed(LoginSourceTypePage.routeName),
+                  onGetStartedPressed: () {
+                    // A preset web deployment goes straight to its server's form.
+                    final preset = WebServerPreset.current;
+                    if (preset == null) {
+                      loginNavigatorKey.currentState!.pushNamed(LoginSourceTypePage.routeName);
+                    } else if (preset.kind == MediaSourceKind.jellyfin) {
+                      loginNavigatorKey.currentState!.pushNamed(LoginServerSelectionPage.routeName);
+                    } else {
+                      pendingSourceKind = preset.kind;
+                      loginNavigatorKey.currentState!.pushNamed(LoginSourceFormPage.routeName);
+                    }
+                  },
                 ),
               );
               break;
@@ -127,7 +139,7 @@ class _LoginFlowState extends State<LoginFlow> {
                     await GetIt.instance<MediaSourceService>().addSource(config);
                     if (!context.mounted) return;
 
-                    Navigator.of(context).pushReplacementNamed(SplashScreen.routeName);
+                    Navigator.of(context, rootNavigator: true).pushReplacementNamed(SplashScreen.routeName);
                   },
                 ),
               );
@@ -159,7 +171,7 @@ class _LoginFlowState extends State<LoginFlow> {
                     // before we navigate to it.
                     await GetIt.instance<MediaSourceService>().syncJellyfinSource();
                     if (!context.mounted) return;
-                    Navigator.of(context).pushReplacementNamed(ViewSelector.routeName);
+                    Navigator.of(context, rootNavigator: true).pushReplacementNamed(ViewSelector.routeName);
                   },
                 ),
               );

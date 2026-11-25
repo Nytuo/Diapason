@@ -2,7 +2,7 @@ import 'package:diapason/components/connect_devices.dart';
 import 'package:diapason/utils/device_form_factor.dart';
 import 'package:diapason/components/tv_now_playing_pill.dart';
 import 'dart:async';
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 import 'dart:math';
 
 import 'package:balanced_text/balanced_text.dart';

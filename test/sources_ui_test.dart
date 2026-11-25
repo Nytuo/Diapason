@@ -1,10 +1,15 @@
+import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/components/LoginScreen/login_source_type_page.dart';
 import 'package:diapason/components/SourcesSettingsScreen/source_form.dart';
 import 'package:diapason/models/media_source.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
+Widget _wrap(Widget child) => MaterialApp(
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: Scaffold(body: child),
+);
 
 void main() {
   group("LoginSourceTypePage", () {

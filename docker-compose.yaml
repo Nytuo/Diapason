@@ -1,0 +1,15 @@
+# Example deployment of the Diapason web app. See docs/WEB_DOCKER.md.
+services:
+  diapason:
+    container_name: diapason
+    build: .
+    # image: diapason-web:latest   # once built or pulled from your registry
+    restart: unless-stopped
+    environment:
+      - SERVER_NAME=Jellyfin # display name of the preset server
+      - SERVER_TYPE=jellyfin # jellyfin, subsonic, navidrome or plex (case insensitive)
+      - SERVER_URL=http://localhost:8096 # http(s)://address:port, as reachable from the browser
+      - SERVER_LOCK=false # true: the address is read-only and no other server can be added
+    ports:
+      - 8080:8080
+      # To restrict to this machine only: - 127.0.0.1:8080:8080

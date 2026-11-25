@@ -1,6 +1,6 @@
 import 'package:diapason/components/PlayerScreen/progress_slider.dart';
 import 'package:diapason/components/PlayerScreen/spectrum_visualizer.dart';
-import 'package:diapason/screens/blurred_player_screen_background.dart';
+import 'package:diapason/screens/desktop/desktop_ambient_background.dart';
 import 'package:diapason/components/album_image.dart';
 import 'package:diapason/screens/desktop/desktop_theme.dart';
 import 'package:diapason/screens/desktop/desktop_track_info.dart';
@@ -26,6 +26,42 @@ class DesktopFullscreenPlayer extends ConsumerStatefulWidget {
 class _DesktopFullscreenPlayerState extends ConsumerState<DesktopFullscreenPlayer> {
   bool _showLyrics = false;
 
+  /// The cover's colours and a heavily blurred copy of the cover, under a veil that darkens towards the edges so the
+  /// text stays legible whatever the artwork.
+  Widget _background(BuildContext context, DesktopPalette p) {
+    final scheme = Theme.of(context).colorScheme;
+    final image = ref.watch(currentAlbumImageProvider).image;
+    const fade = Duration(milliseconds: 900);
+    return Positioned.fill(
+      child: RepaintBoundary(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ColoredBox(color: scheme.surfaceContainerLowest),
+            DesktopColorField(scheme: scheme, duration: p.motion(fade)),
+            Opacity(
+              opacity: 0.85,
+              child: DesktopBlurredCover(image: image, duration: p.motion(fade)),
+            ),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.25),
+                    Colors.black.withValues(alpha: 0.35),
+                    Colors.black.withValues(alpha: 0.65),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = DesktopThemeScope.of(context);
@@ -45,14 +81,17 @@ class _DesktopFullscreenPlayerState extends ConsumerState<DesktopFullscreenPlaye
           final playing = state.playbackState.playing;
           return Stack(
             children: [
-              const BlurredPlayerScreenBackground(),
+              _background(context, p),
               const Positioned(
                 left: 0,
                 right: 0,
                 bottom: 0,
                 height: 220,
                 child: IgnorePointer(
-                  child: Opacity(opacity: 0.5, child: RepaintBoundary(child: SpectrumVisualizer())),
+                  child: Opacity(
+                    opacity: 0.5,
+                    child: RepaintBoundary(child: SpectrumVisualizer(placement: SpectrumPlacement.strip)),
+                  ),
                 ),
               ),
               Row(
@@ -68,14 +107,29 @@ class _DesktopFullscreenPlayerState extends ConsumerState<DesktopFullscreenPlaye
                             child: Center(
                               child: AspectRatio(
                                 aspectRatio: 1,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: item == null
-                                      ? Container(
-                                          color: p.surface,
-                                          child: Icon(TablerIcons.disc, size: 96, color: p.textTertiary),
-                                        )
-                                      : AlbumImage(imageListenable: currentAlbumImageProvider),
+                                child: SpectrumCoverRing(
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(18),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          blurRadius: 60,
+                                          spreadRadius: 2,
+                                          offset: const Offset(0, 24),
+                                          color: Colors.black.withValues(alpha: 0.55),
+                                        ),
+                                      ],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(18),
+                                      child: item == null
+                                          ? Container(
+                                              color: p.surface,
+                                              child: Icon(TablerIcons.disc, size: 96, color: p.textTertiary),
+                                            )
+                                          : AlbumImage(imageListenable: currentAlbumImageProvider),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -92,14 +146,20 @@ class _DesktopFullscreenPlayerState extends ConsumerState<DesktopFullscreenPlaye
                                     item?.title ?? "No track playing",
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(color: p.textPrimary, fontSize: 32, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      color: p.textPrimary,
+                                      fontSize: 40,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: -0.8,
+                                      height: 1.1,
+                                    ),
                                   ),
                                   const SizedBox(height: 10),
                                   Text(
                                     item?.artist ?? "—",
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(color: p.textSecondary, fontSize: 18),
+                                    style: TextStyle(color: p.textSecondary, fontSize: 20),
                                   ),
                                   const SizedBox(height: 12),
                                   const DesktopTrackInfoLine(fontSize: 13),
@@ -119,13 +179,20 @@ class _DesktopFullscreenPlayerState extends ConsumerState<DesktopFullscreenPlaye
                     ),
                   ),
                   if (_showLyrics)
-                    Container(
-                      width: 420,
-                      decoration: BoxDecoration(
-                        border: Border(left: BorderSide(color: p.borderSubtle)),
-                        color: p.bgSecondary,
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 56, 20, 20),
+                      // No BackdropFilter: the background is already a blurred bitmap, and a live blur would be
+                      // recomputed every frame under the animated spectrum.
+                      child: Container(
+                        width: 440,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.42),
+                          borderRadius: BorderRadius.circular(DesktopMetrics.radiusPanel + 6),
+                          border: Border.all(color: p.panelBorder),
+                        ),
+                        child: const LyricsView(),
                       ),
-                      child: const LyricsView(),
                     ),
                 ],
               ),

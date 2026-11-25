@@ -1,18 +1,20 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
+import 'package:diapason/utils/isar_availability.dart';
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/backends/backend_registry.dart';
+import 'package:diapason/services/backends/dlna_backend.dart';
 import 'package:diapason/services/backends/jellyfin_backend.dart';
 import 'package:diapason/services/backends/local_backend.dart';
 import 'package:diapason/services/backends/mpd_backend.dart';
 import 'package:diapason/services/backends/plex_backend.dart';
 import 'package:diapason/services/backends/subsonic_backend.dart';
+import 'package:diapason/services/backends/radio_backend.dart';
 import 'package:diapason/services/backends/youtube_backend.dart';
 import 'package:diapason/services/backends/media_backend.dart';
 import 'package:diapason/services/finamp_user_helper.dart';
 import 'package:diapason/services/tv/tv_profile_service.dart';
-import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:isar_community/isar.dart';
@@ -25,7 +27,8 @@ class MediaSourceService implements TvProfileSources {
 
   static final _log = Logger("MediaSourceService");
 
-  static bool get _isTvOS => AppleTvAudioChannel.isSupported;
+  /// tvOS and the web have no Isar; they keep this data in Hive instead.
+  static bool get _isTvOS => !isarAvailable;
 
   final Isar? _isar = _isTvOS ? null : GetIt.instance<Isar>();
   BackendRegistry get _registry => GetIt.instance<BackendRegistry>();
@@ -55,6 +58,7 @@ class MediaSourceService implements TvProfileSources {
     }
 
     _registry.register(YouTubeBackend());
+    _registry.register(RadioBackend());
 
     _log.info("Loaded ${_registry.all.length} source(s).");
   }
@@ -66,6 +70,8 @@ class MediaSourceService implements TvProfileSources {
     MediaSourceKind.local => LocalBackend(config),
     MediaSourceKind.mpd => MpdBackend(config),
     MediaSourceKind.youtube => YouTubeBackend(),
+    MediaSourceKind.dlna => DlnaBackend(config),
+    MediaSourceKind.radio => RadioBackend(),
   };
 
   Future<void> addSource(MediaSourceConfig config) async {

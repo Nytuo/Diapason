@@ -1,3 +1,6 @@
+import 'package:diapason/components/live_badge.dart';
+import 'package:diapason/models/radio_station.dart';
+import 'package:diapason/services/radio/radio_now_playing.dart';
 import 'package:diapason/components/AddToPlaylistScreen/add_to_playlist_button.dart';
 import 'package:diapason/components/PlayerScreen/album_chip.dart';
 import 'package:diapason/components/PlayerScreen/artist_chip.dart';
@@ -27,6 +30,9 @@ class TrackNameContent extends ConsumerWidget {
     final currentTrack = queue!.currentTrack!;
 
     final jellyfin_models.BaseItemDto trackBaseItemDto = currentTrack.baseItem;
+    final isLive = RadioStation.isLiveItem(trackBaseItemDto);
+    final nowPlaying = isLive ? ref.watch(radioNowPlayingProvider).value : null;
+    final shownTitle = nowPlaying?.title ?? currentTrack.item.title;
 
     Widget getContent(BoxConstraints constraints, double padding) => Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -35,14 +41,12 @@ class TrackNameContent extends ConsumerWidget {
         ConstrainedBox(
           constraints: BoxConstraints(maxWidth: constraints.maxWidth - padding),
           child: Semantics.fromProperties(
-            properties: SemanticsProperties(
-              label: "${currentTrack.item.title} (${AppLocalizations.of(context)!.title})",
-            ),
+            properties: SemanticsProperties(label: "$shownTitle (${AppLocalizations.of(context)!.title})"),
             excludeSemantics: true,
             container: true,
             child: Consumer(
               builder: (context, ref, _) {
-                final text = currentTrack.item.title;
+                final text = shownTitle;
                 final isTwoLineMode = controller.shouldShow(PlayerHideable.twoLineTitle);
 
                 final textStyle = TextStyle(
@@ -72,7 +76,7 @@ class TrackNameContent extends ConsumerWidget {
                       width: 280,
                       height: 30,
                       child: ScrollingTextHelper(
-                        id: ValueKey(currentTrack.item.id),
+                        id: ValueKey("${currentTrack.item.id}-$shownTitle"),
                         text: text,
                         style: textStyle,
                         alignment: TextAlign.center,
@@ -97,6 +101,27 @@ class TrackNameContent extends ConsumerWidget {
             ),
           ),
         ),
+        if (isLive)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const LiveBadge(compact: true),
+                if (nowPlaying?.artist != null) ...[
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      nowPlaying!.artist!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,

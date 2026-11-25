@@ -1,7 +1,9 @@
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 import 'dart:math';
 
 import 'package:diapason/components/LayoutSettingsScreen/automatic_accent_color_selector.dart';
+import 'package:diapason/components/LayoutSettingsScreen/desktop_style_settings.dart';
+import 'package:diapason/components/mobile_ambient_theme.dart';
 import 'package:diapason/components/LayoutSettingsScreen/use_monochrome_icon.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/finamp_models.dart';
@@ -90,6 +92,13 @@ class _LayoutSettingsScreenState extends ConsumerState<LayoutSettingsScreen> {
           const UseMonochromeIcon(),
           const AccentColorSelector(),
           const AutomaticAccentColorSelector(),
+          if (isDesktop) ...[
+            const Divider(),
+            const DesktopStyleSettings(),
+          ] else if (MobileAmbientTheme.supported) ...[
+            const Divider(),
+            const MobileStyleSettings(),
+          ],
           const Divider(),
           const ContentViewTypeDropdownListTile(),
           if (ref.watch(finampSettingsProvider.contentViewType) == ContentViewType.grid) const GridImageSizeSelector(),

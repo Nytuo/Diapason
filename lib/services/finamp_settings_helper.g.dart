@@ -1553,6 +1553,62 @@ extension FinampSetters on FinampSettingsHelper {
     ).put("FinampSettings", finampSettingsTemp);
   }
 
+  static void setWaveformSeekBar(bool newWaveformSeekBar) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.waveformSeekBar = newWaveformSeekBar;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerStyle(VisualizerStyle newVisualizerStyle) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerStyle = newVisualizerStyle;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setMilkdropOnCover(bool newMilkdropOnCover) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.milkdropOnCover = newMilkdropOnCover;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setMilkdropPreset(int newMilkdropPreset) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.milkdropPreset = newMilkdropPreset;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setMilkdropLowPower(bool newMilkdropLowPower) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.milkdropLowPower = newMilkdropLowPower;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setMilkdropTuning(String newMilkdropTuning) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.milkdropTuning = newMilkdropTuning;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setVisualizerStyleTuning(String newVisualizerStyleTuning) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.visualizerStyleTuning = newVisualizerStyleTuning;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
   static void setStreamingTranscodingCodec(
     FinampTranscodingCodec newStreamingTranscodingCodec,
   ) {
@@ -1702,6 +1758,118 @@ extension FinampSetters on FinampSettingsHelper {
   static void setUploaderLocalUrl(String newUploaderLocalUrl) {
     FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
     finampSettingsTemp.uploaderLocalUrl = newUploaderLocalUrl;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setNoNetwork(bool newNoNetwork) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.noNetwork = newNoNetwork;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setDesktopBigCoverArt(bool newDesktopBigCoverArt) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.desktopBigCoverArt = newDesktopBigCoverArt;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setDesktopAmbientMode(String newDesktopAmbientMode) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.desktopAmbientMode = newDesktopAmbientMode;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setDesktopReduceEffects(bool newDesktopReduceEffects) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.desktopReduceEffects = newDesktopReduceEffects;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setWatchConnectDeviceName(String newWatchConnectDeviceName) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.watchConnectDeviceName = newWatchConnectDeviceName;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setLyricsFurigana(bool newLyricsFurigana) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.lyricsFurigana = newLyricsFurigana;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setLyricsRomaji(bool newLyricsRomaji) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.lyricsRomaji = newLyricsRomaji;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setLyricsAppleStyle(bool newLyricsAppleStyle) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.lyricsAppleStyle = newLyricsAppleStyle;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setLyricsTranslationEnabled(bool newLyricsTranslationEnabled) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.lyricsTranslationEnabled = newLyricsTranslationEnabled;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setHifiBitPerfect(bool newHifiBitPerfect) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.hifiBitPerfect = newHifiBitPerfect;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setHifiOutputDevice(String newHifiOutputDevice) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.hifiOutputDevice = newHifiOutputDevice;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setHifiDsdMode(String newHifiDsdMode) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.hifiDsdMode = newHifiDsdMode;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setHifiExclusive(bool newHifiExclusive) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.hifiExclusive = newHifiExclusive;
+    Hive.box<FinampSettings>(
+      "FinampSettings",
+    ).put("FinampSettings", finampSettingsTemp);
+  }
+
+  static void setTagEditorAcoustIdApiKey(String newTagEditorAcoustIdApiKey) {
+    FinampSettings finampSettingsTemp = FinampSettingsHelper.finampSettings;
+    finampSettingsTemp.tagEditorAcoustIdApiKey = newTagEditorAcoustIdApiKey;
     Hive.box<FinampSettings>(
       "FinampSettings",
     ).put("FinampSettings", finampSettingsTemp);
@@ -2226,6 +2394,25 @@ extension FinampSettingsProviderSelectors
       .select((value) => value.requireValue.visualizerDbCeiling);
   ProviderListenable<bool> get visualizerLogScale => finampSettingsProvider
       .select((value) => value.requireValue.visualizerLogScale);
+  ProviderListenable<bool> get waveformSeekBar => finampSettingsProvider.select(
+    (value) => value.requireValue.waveformSeekBar,
+  );
+  ProviderListenable<VisualizerStyle> get visualizerStyle =>
+      finampSettingsProvider.select(
+        (value) => value.requireValue.visualizerStyle,
+      );
+  ProviderListenable<bool> get milkdropOnCover => finampSettingsProvider.select(
+    (value) => value.requireValue.milkdropOnCover,
+  );
+  ProviderListenable<int> get milkdropPreset => finampSettingsProvider.select(
+    (value) => value.requireValue.milkdropPreset,
+  );
+  ProviderListenable<bool> get milkdropLowPower => finampSettingsProvider
+      .select((value) => value.requireValue.milkdropLowPower);
+  ProviderListenable<String> get milkdropTuning => finampSettingsProvider
+      .select((value) => value.requireValue.milkdropTuning);
+  ProviderListenable<String> get visualizerStyleTuning => finampSettingsProvider
+      .select((value) => value.requireValue.visualizerStyleTuning);
   ProviderListenable<FinampTranscodingCodec> get streamingTranscodingCodec =>
       finampSettingsProvider.select(
         (value) => value.requireValue.streamingTranscodingCodec,
@@ -2272,6 +2459,43 @@ extension FinampSettingsProviderSelectors
       .select((value) => value.requireValue.autoRadioPreferYouTube);
   ProviderListenable<String> get uploaderLocalUrl => finampSettingsProvider
       .select((value) => value.requireValue.uploaderLocalUrl);
+  ProviderListenable<bool> get noNetwork =>
+      finampSettingsProvider.select((value) => value.requireValue.noNetwork);
+  ProviderListenable<bool> get desktopBigCoverArt => finampSettingsProvider
+      .select((value) => value.requireValue.desktopBigCoverArt);
+  ProviderListenable<String> get desktopAmbientMode => finampSettingsProvider
+      .select((value) => value.requireValue.desktopAmbientMode);
+  ProviderListenable<bool> get desktopReduceEffects => finampSettingsProvider
+      .select((value) => value.requireValue.desktopReduceEffects);
+  ProviderListenable<String> get watchConnectDeviceName =>
+      finampSettingsProvider.select(
+        (value) => value.requireValue.watchConnectDeviceName,
+      );
+  ProviderListenable<bool> get lyricsFurigana => finampSettingsProvider.select(
+    (value) => value.requireValue.lyricsFurigana,
+  );
+  ProviderListenable<bool> get lyricsRomaji =>
+      finampSettingsProvider.select((value) => value.requireValue.lyricsRomaji);
+  ProviderListenable<bool> get lyricsAppleStyle => finampSettingsProvider
+      .select((value) => value.requireValue.lyricsAppleStyle);
+  ProviderListenable<bool> get lyricsTranslationEnabled =>
+      finampSettingsProvider.select(
+        (value) => value.requireValue.lyricsTranslationEnabled,
+      );
+  ProviderListenable<bool> get hifiBitPerfect => finampSettingsProvider.select(
+    (value) => value.requireValue.hifiBitPerfect,
+  );
+  ProviderListenable<String> get hifiOutputDevice => finampSettingsProvider
+      .select((value) => value.requireValue.hifiOutputDevice);
+  ProviderListenable<String> get hifiDsdMode =>
+      finampSettingsProvider.select((value) => value.requireValue.hifiDsdMode);
+  ProviderListenable<bool> get hifiExclusive => finampSettingsProvider.select(
+    (value) => value.requireValue.hifiExclusive,
+  );
+  ProviderListenable<String> get tagEditorAcoustIdApiKey =>
+      finampSettingsProvider.select(
+        (value) => value.requireValue.tagEditorAcoustIdApiKey,
+      );
   ProviderListenable<DownloadProfile> get downloadTranscodingProfile =>
       finampSettingsProvider.select(
         (value) => value.requireValue.downloadTranscodingProfile,

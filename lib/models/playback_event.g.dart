@@ -19,7 +19,7 @@ extension GetPlaybackEventCollection on Isar {
 
 const PlaybackEventSchema = CollectionSchema(
   name: r'PlaybackEvent',
-  id: -6369576981627367333,
+  id: (0xA79AB77B << 32 | 0x9098905B),
   properties: {
     r'albumId': PropertySchema(id: 0, name: r'albumId', type: IsarType.string),
     r'albumTitle': PropertySchema(
@@ -78,7 +78,7 @@ const PlaybackEventSchema = CollectionSchema(
   idName: r'id',
   indexes: {
     r'trackId': IndexSchema(
-      id: -8614467705999066844,
+      id: (0x88734343 << 32 | 0x46D9F924),
       name: r'trackId',
       unique: false,
       replace: false,
@@ -91,7 +91,7 @@ const PlaybackEventSchema = CollectionSchema(
       ],
     ),
     r'timestamp': IndexSchema(
-      id: 1852253767416892198,
+      id: (0x19B486FC << 32 | 0xE0C34B26),
       name: r'timestamp',
       unique: false,
       replace: false,

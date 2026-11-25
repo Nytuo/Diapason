@@ -80,8 +80,9 @@ void main() {
   testWidgets('Jellyfin-only entries stay hidden without a Jellyfin source', (tester) async {
     await pumpSettings(tester);
 
-    expect(find.text('Radio'), findsNothing);
     expect(find.textContaining('Client certificate'), findsNothing);
+    // Internet radio (Radio Browser, the user's stations) needs no server.
+    expect(find.text('Radio'), findsOneWidget);
   });
 
   group('searching the settings', () {
@@ -165,7 +166,7 @@ void main() {
   });
 
   group('entries that depend on your sources', () {
-    testWidgets('a Jellyfin server adds its libraries, radio and playback reporting', (tester) async {
+    testWidgets('a Jellyfin server adds its libraries and playback reporting', (tester) async {
       GetIt.instance<BackendRegistry>().register(_Fake('jf-1', MediaSourceKind.jellyfin));
 
       await pumpSettings(tester);

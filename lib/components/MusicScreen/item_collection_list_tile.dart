@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:diapason/utils/platform.dart';
 
 import 'package:diapason/components/AlbumScreen/downloaded_indicator.dart';
 import 'package:diapason/components/album_image.dart';

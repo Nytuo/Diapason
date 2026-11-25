@@ -1,6 +1,8 @@
+import 'package:diapason/components/SourcesSettingsScreen/dlna_discovery_list.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/models/media_source.dart';
 import 'package:diapason/services/backends/media_source_service.dart';
+import 'package:diapason/services/web/web_server_preset.dart';
 import 'package:diapason/utils/tv_focus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +25,8 @@ import 'package:get_it/get_it.dart';
       ),
       MediaSourceKind.mpd => (icon: TablerIcons.server_2, label: "MPD", hint: "localhost:6600"),
       MediaSourceKind.youtube => (icon: TablerIcons.brand_youtube, label: "YouTube", hint: ""),
+      MediaSourceKind.dlna => (icon: TablerIcons.devices_pc, label: "DLNA / UPnP", hint: "192.168.1.10:8200"),
+      MediaSourceKind.radio => (icon: TablerIcons.radio, label: "Radio", hint: ""),
     };
 
 class SourceForm extends StatefulWidget {
@@ -42,8 +46,13 @@ class SourceForm extends StatefulWidget {
 class _SourceFormState extends State<SourceForm> {
   final _formKey = GlobalKey<FormState>();
 
-  late final _name = TextEditingController(text: widget.existing?.name ?? "");
-  late final _address = TextEditingController(text: widget.existing?.publicAddress ?? "");
+  /// A new source of the kind this web deployment is preset for starts from the preset's name and address.
+  late final WebServerPreset? _preset = widget.existing == null && WebServerPreset.current?.kind == widget.kind
+      ? WebServerPreset.current
+      : null;
+
+  late final _name = TextEditingController(text: widget.existing?.name ?? _preset?.name ?? "");
+  late final _address = TextEditingController(text: widget.existing?.publicAddress ?? _preset?.url ?? "");
   late final _username = TextEditingController(text: widget.existing?.username ?? "");
   late final _password = TextEditingController(text: widget.existing?.password ?? "");
   late final _token = TextEditingController(text: widget.existing?.accessToken ?? "");
@@ -64,6 +73,10 @@ class _SourceFormState extends State<SourceForm> {
 
   bool get _isLocal => widget.kind == MediaSourceKind.local;
   bool get _isMpd => widget.kind == MediaSourceKind.mpd;
+  bool get _isDlna => widget.kind == MediaSourceKind.dlna;
+
+  /// The UDN of the server picked from discovery, kept in [MediaSourceConfig.userId].
+  late String _dlnaUdn = widget.existing?.userId ?? "";
 
   @override
   void dispose() {
@@ -88,22 +101,38 @@ class _SourceFormState extends State<SourceForm> {
         ? (_localPath.split(RegExp(r"[/\\]")).lastWhere((s) => s.isNotEmpty, orElse: () => "Local"))
         : _isMpd
         ? "MPD (${_address.text.trim()})"
+        : _isDlna
+        ? "DLNA (${Uri.tryParse(_dlnaAddress(_address.text))?.host ?? _address.text.trim()})"
         : (Uri.tryParse(_address.text.trim())?.host ?? sourceKindPresentation(widget.kind).label);
 
     return MediaSourceConfig(
       sourceId: widget.existing?.sourceId ?? service.newSourceId(widget.kind),
       kind: widget.kind,
       name: _name.text.trim().isEmpty ? fallbackName : _name.text.trim(),
-      publicAddress: _isLocal ? "" : (_isMpd ? _address.text.trim() : _normalizeUrl(_address.text)),
-      localAddress: _isLocal ? "" : _normalizeUrl(_localNetworkAddress.text),
-      preferLocalNetwork: !_isLocal && _preferLocalNetwork,
+      publicAddress: _isLocal
+          ? ""
+          : _isMpd
+          ? _address.text.trim()
+          : _isDlna
+          ? _dlnaAddress(_address.text)
+          : _normalizeUrl(_address.text),
+      localAddress: _isLocal || _isDlna ? "" : _normalizeUrl(_localNetworkAddress.text),
+      preferLocalNetwork: !_isLocal && !_isDlna && _preferLocalNetwork,
       isLocal: widget.existing?.isLocal ?? false,
+      userId: _isDlna ? _dlnaUdn : (widget.existing?.userId ?? ""),
       username: _username.text.trim(),
       password: _password.text,
       accessToken: _token.text.trim(),
       localPath: _localPath,
       enabled: widget.existing?.enabled ?? true,
     );
+  }
+
+  /// DLNA servers live on the LAN and speak plain HTTP.
+  static String _dlnaAddress(String raw) {
+    final text = raw.trim();
+    if (text.isEmpty || text.contains("://")) return text;
+    return "http://$text";
   }
 
   static String _normalizeUrl(String raw) {
@@ -173,14 +202,35 @@ class _SourceFormState extends State<SourceForm> {
                 style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12.0),
               ),
           ] else ...[
+            if (_isDlna) ...[
+              DlnaDiscoveryList(
+                selectedLocation: _address.text.trim(),
+                onSelected: (device) => setState(() {
+                  _address.text = device.location.toString();
+                  if (_name.text.trim().isEmpty) _name.text = device.friendlyName;
+                  _dlnaUdn = device.udn;
+                  _reachable = null;
+                }),
+              ),
+              const SizedBox(height: 16.0),
+            ],
             TextFormField(
               controller: _address,
               focusNode: _addressFocus,
               autocorrect: false,
               keyboardType: TextInputType.url,
+              readOnly: _preset?.locked ?? false,
               decoration: InputDecoration(
-                labelText: AppLocalizations.of(context)!.sourceFormServerAddress,
+                labelText: _isDlna
+                    ? AppLocalizations.of(context)!.dlnaAddressLabel
+                    : AppLocalizations.of(context)!.sourceFormServerAddress,
                 hintText: presentation.hint,
+                helperText: _isDlna
+                    ? AppLocalizations.of(context)!.dlnaAddressHelper
+                    : (_preset?.locked ?? false)
+                    ? AppLocalizations.of(context)!.webServerLockedHelper
+                    : null,
+                helperMaxLines: 3,
               ),
               validator: (v) => (v == null || v.trim().isEmpty)
                   ? AppLocalizations.of(context)!.sourceFormServerAddressRequired
@@ -206,7 +256,7 @@ class _SourceFormState extends State<SourceForm> {
               ),
             ],
 
-            if (!_isMpd)
+            if (!_isMpd && !_isDlna)
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 title: Text(AppLocalizations.of(context)!.sourceFormLocalAddressOptional),

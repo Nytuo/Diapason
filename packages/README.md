@@ -58,3 +58,23 @@ Diapason change (`lib/src/helper.dart`): `@Name`, `@Enumerated` and
 only from the synthetic field. Upstream drops them for getter/setter pairs,
 which would rename `FinampUser.currentViewId` in the database schema and lose
 that column on upgrade. Worth reporting upstream; drop the copy once fixed.
+
+Second Diapason change (`lib/src/code_gen/collection_schema_generator.dart`):
+collection, index and link ids (64-bit hashes) that a JS double can't hold
+exactly are written as `(0xHIGH << 32 | 0xLOW)` instead of a decimal literal.
+The VM evaluates that to the same 64-bit value, and dart2js stops rejecting
+the generated files, which unblocks the web build (Isar itself is never
+opened on the web).
+
+## just_audio_media_kit
+
+Upstream: [Komodo5197/just_audio_media_kit](https://github.com/Komodo5197/just_audio_media_kit),
+`feat/queue-shuffle` at `8359da2` (the Linux/Windows libmpv backend).
+
+Diapason changes (marked `Diapason:`):
+
+- `JustAudioMediaKit.onPlayerReady` and `JustAudioMediaKit.players` expose the
+  libmpv `Player` instances, so `lib/services/hifi/mpv_output.dart` can set the
+  bit-perfect mpv properties (`audio-exclusive`, `audio-device`, `af`,
+  `replaygain`, `volume`) and read `audio-params` / `audio-out-params` for the
+  signal path panel.

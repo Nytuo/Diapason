@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/components/global_snackbar.dart';
 import 'package:diapason/l10n/app_localizations.dart';
 import 'package:diapason/menus/components/menuEntries/menu_entry.dart';
@@ -42,7 +43,7 @@ class GoToAlbumMenuEntry extends ConsumerWidget implements HideableMenuEntry {
           }
           if (context.mounted) {
             Navigator.pop(context);
-            await Navigator.of(context).pushNamed(AlbumScreen.routeName, arguments: album);
+            await DesktopRouter.pushNamed(context, AlbumScreen.routeName, arguments: album);
           }
         },
       ),

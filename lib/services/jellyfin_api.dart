@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io' show HttpClient, Platform;
+import 'package:diapason/utils/platform.dart';
 
 import 'package:app_set_id/app_set_id.dart';
 import 'package:chopper/chopper.dart';
@@ -8,9 +8,12 @@ import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/services/http_aggregate_logging_interceptor.dart';
 import 'package:diapason/services/tvos/appletv_audio_channel.dart';
 import 'package:flutter/foundation.dart';
+import 'package:hive_ce/hive.dart';
+import 'package:uuid/uuid.dart';
 import 'package:flutter_tvos/flutter_tvos.dart';
 import 'package:get_it/get_it.dart';
-import 'package:http/io_client.dart' as http;
+import 'package:diapason/utils/connect_timeout_client.dart'
+    if (dart.library.js_interop) 'package:diapason/utils/connect_timeout_client_web.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../models/jellyfin_models.dart';
@@ -581,12 +584,8 @@ abstract class JellyfinApi extends ChopperService {
     final chopperHttpLogLevel = Level.body; //TODO allow changing the log level in settings (and a debug config file?)
 
     final client = ChopperClient(
-      client: http.IOClient(
-        HttpClient()
-          ..connectionTimeout = const Duration(
-            seconds: 10,
-          ), // if we don't get a response by then, it's probably not worth it to wait any longer. this prevents the server connection test from taking too long
-      ),
+      // if we don't get a response by then, it's probably not worth it to wait any longer. this prevents the server connection test from taking too long
+      client: connectTimeoutClient(const Duration(seconds: 10)),
       // The first part of the URL is now here
       services: [
         // The generated implementation
@@ -708,7 +707,18 @@ Future<DeviceInfo> getDeviceInfo() async {
       : kProfileMode
       ? "profile"
       : "";
-  if (Platform.isAndroid) {
+  if (kIsWeb) {
+    // Browsers expose no hardware id; a random one is minted once and kept with this origin's Hive data, so the
+    // server sees the same device across reloads (clearing site data makes a new one).
+    final box = await Hive.openBox<String>("WebDeviceId");
+    var webId = box.get("id");
+    if (webId == null) {
+      webId = const Uuid().v4();
+      await box.put("id", webId);
+    }
+    final browser = (await deviceInfo.webBrowserInfo).browserName.name;
+    info = DeviceInfo(name: "Diapason Web ($browser)", id: "$webId-$idExtension");
+  } else if (Platform.isAndroid) {
     AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
     final appSetId = await AppSetId().getIdentifier();
     info = DeviceInfo(name: androidDeviceInfo.name, id: "$appSetId-$idExtension");

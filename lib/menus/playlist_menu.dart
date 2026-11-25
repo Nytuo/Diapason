@@ -1,3 +1,5 @@
+import 'package:diapason/screens/desktop/desktop_item_menu.dart';
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'package:diapason/menus/components/menuEntries/share_link_menu_entry.dart';
 import 'dart:async';
 
@@ -28,7 +30,16 @@ Future<void> showModalPlaylistMenu({
   required BuildContext context,
   required BaseItemDto item,
   FinampStorableQueueInfo? queueInfo,
+  bool desktopMenu = true,
 }) async {
+  if (desktopMenu && DesktopRouter.isActive && queueInfo == null) {
+    await showDesktopItemMenu(
+      context: context,
+      item: item,
+      openFullMenu: () => unawaited(showModalPlaylistMenu(context: context, item: item, desktopMenu: false)),
+    );
+    return;
+  }
   final playableItem = Playlist.fromItem(item);
   // Normal menu entries, excluding headers
   List<HideableMenuEntry> getMenuEntries(BuildContext context) {

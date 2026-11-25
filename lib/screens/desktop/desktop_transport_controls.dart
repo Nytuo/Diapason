@@ -1,6 +1,10 @@
+import 'package:diapason/components/live_badge.dart';
 import 'package:diapason/services/audio_position.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:diapason/components/PlayerScreen/chapter_track.dart';
+import 'package:diapason/components/PlayerScreen/waveform_seek_bar.dart';
+import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/models/jellyfin_models.dart' as jellyfin_models;
 import 'package:diapason/screens/desktop/desktop_theme.dart';
@@ -191,8 +195,63 @@ class _DesktopSeekBarState extends State<DesktopSeekBar> with SingleTickerProvid
     );
   }
 
+  /// The waveform of the local player's track instead of [slider], when enabled and its peaks are known.
+  Widget _waveformOr(BuildContext context, DesktopPalette p, Widget slider, double value, void Function(double) seek) {
+    return Consumer(
+      builder: (context, ref, _) {
+        if (!ref.watch(finampSettingsProvider.waveformSeekBar)) return slider;
+        return StreamBuilder<MediaItem?>(
+          stream: GetIt.instance<MusicPlayerBackgroundTask>().mediaItem,
+          initialData: GetIt.instance<MusicPlayerBackgroundTask>().mediaItem.valueOrNull,
+          builder: (context, snapshot) => WaveformPeaksBuilder(
+            item: snapshot.data,
+            builder: (context, peaks) {
+              if (peaks == null) return slider;
+              return WaveformSeekBar(
+                peaks: peaks,
+                height: widget.compact ? 22 : 28,
+                value: value,
+                activeColor: p.accent,
+                inactiveColor: p.textTertiary.withValues(alpha: 0.45),
+                onChanged: _onWaveformDrag,
+                onChangeEnd: seek,
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  void _onWaveformDrag(double v) => setState(() => _dragValue = v);
+
   Widget _bar(BuildContext context, Duration position, Duration buffered, bool loading) {
     final p = DesktopThemeScope.of(context);
+    if (widget.positionListenable == null &&
+        isLiveMediaItem(GetIt.instance<MusicPlayerBackgroundTask>().mediaItem.valueOrNull)) {
+      // Live radio: nothing to seek, just the time listened and a "LIVE" badge.
+      final labelStyle = TextStyle(color: p.textTertiary, fontSize: 11);
+      return SizedBox(
+        height: 16,
+        child: Row(
+          children: [
+            Text(_liveElapsed(position), style: labelStyle),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Container(
+                height: 4,
+                decoration: BoxDecoration(
+                  color: p.accent.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            const LiveBadge(compact: true),
+          ],
+        ),
+      );
+    }
     final totalMs = widget.duration.inMilliseconds;
     final value = _dragValue ?? (totalMs == 0 ? 0.0 : (position.inMilliseconds / totalMs).clamp(0.0, 1.0));
     final bufferedValue = totalMs == 0 ? 0.0 : (buffered.inMilliseconds / totalMs).clamp(0.0, 1.0);
@@ -258,6 +317,10 @@ class _DesktopSeekBarState extends State<DesktopSeekBar> with SingleTickerProvid
             );
     }
 
+    final Widget seekTrack = showIndeterminate || widget.positionListenable != null || totalMs == 0
+        ? track
+        : _waveformOr(context, p, track, value.toDouble(), seek);
+
     // Fixed-width, tabular-figure time labels so a digit changing width in a
     // proportional font (e.g. "1" vs "8") doesn't nudge the whole bar every
     // second. Timestamps are given a little extra room once the track is an
@@ -276,7 +339,7 @@ class _DesktopSeekBarState extends State<DesktopSeekBar> with SingleTickerProvid
           width: timeColumnWidth,
           child: Text(showIndeterminate ? "--:--" : formatDuration(position), style: timeStyle),
         ),
-        Expanded(child: track),
+        Expanded(child: seekTrack),
         SizedBox(
           width: timeColumnWidth,
           child: Text(formatDuration(widget.duration), textAlign: TextAlign.right, style: timeStyle),
@@ -314,4 +377,11 @@ class _IndeterminatePainter extends CustomPainter {
   @override
   bool shouldRepaint(_IndeterminatePainter old) =>
       old.progress != progress || old.track != track || old.accent != accent;
+}
+
+String _liveElapsed(Duration d) {
+  String two(int n) => n.toString().padLeft(2, "0");
+  return d.inHours > 0
+      ? "${d.inHours}:${two(d.inMinutes % 60)}:${two(d.inSeconds % 60)}"
+      : "${d.inMinutes}:${two(d.inSeconds % 60)}";
 }

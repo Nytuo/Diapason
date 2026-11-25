@@ -1,7 +1,10 @@
+import 'dart:async';
+import 'package:diapason/models/radio_station.dart';
 import 'dart:convert';
 
 import 'package:diapason/models/jellyfin_models.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
+import 'package:diapason/services/plugins/plugins.dart';
 import 'package:diapason/services/scrobbling/lastfm_client.dart';
 import 'package:diapason/services/scrobbling/listenbrainz_client.dart';
 import 'package:logging/logging.dart';
@@ -42,19 +45,24 @@ class ScrobbleService {
   }
 
   Future<void> nowPlaying(BaseItemDto item) async {
+    // Live radio is not a track the user chose to play: never scrobbled, not even to plugins.
+    if (RadioStation.isLiveItem(item)) return;
+    unawaited(scrobbleToPlugins(item));
     if (!anyEnabled) return;
     if (listenBrainzEnabled) await _listenBrainz.submitPlayingNow(item, _listenBrainzToken);
     if (lastFmEnabled) await _lastFm.updateNowPlaying(item, _lastFmSession);
   }
 
   Future<void> scrobble(BaseItemDto item, {required Duration played, DateTime? startedAt}) async {
-    if (!anyEnabled) return;
+    if (RadioStation.isLiveItem(item) || (!anyEnabled && !hasPluginScrobblers)) return;
     if (!qualifies(played, item.runTimeTicksDuration())) {
       _log.fine("'${item.name}' played ${played.inSeconds}s — too short to scrobble");
       return;
     }
 
     final started = startedAt ?? DateTime.now().subtract(played);
+    unawaited(scrobbleToPlugins(item, playedAt: started));
+    if (!anyEnabled) return;
     await _send(item, started);
     await retryPending();
   }

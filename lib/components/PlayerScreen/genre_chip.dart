@@ -1,3 +1,4 @@
+import 'package:diapason/screens/desktop/desktop_router.dart';
 import 'dart:async';
 
 import 'package:collection/collection.dart';
@@ -196,7 +197,7 @@ class _GenreChipContent extends ConsumerWidget {
                 label: AppLocalizations.of(context)!.applyFilterOnGenreChipTapPromptButton,
                 onPressed: () {
                   updateGenreFilter!(null);
-                  unawaited(Navigator.of(context).pushNamed(GenreScreen.routeName, arguments: genreItem));
+                  unawaited(DesktopRouter.pushNamed(context, GenreScreen.routeName, arguments: genreItem));
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
                 },
               );
@@ -204,7 +205,7 @@ class _GenreChipContent extends ConsumerWidget {
           );
         }
       } else {
-        unawaited(Navigator.of(context).pushNamed(GenreScreen.routeName, arguments: genreItem));
+        unawaited(DesktopRouter.pushNamed(context, GenreScreen.routeName, arguments: genreItem));
       }
     } else {
       GlobalSnackbar.message(

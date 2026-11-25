@@ -1,3 +1,4 @@
+import 'package:diapason/components/mobile_ambient_theme.dart';
 import 'package:diapason/components/AlbumScreen/track_list_tile.dart';
 import 'package:diapason/models/finamp_models.dart';
 import 'package:diapason/services/finamp_settings_helper.dart';
@@ -31,10 +32,10 @@ class FinampSectionHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return SliverStickyHeader(
-      sticky: sticky,
-      header: Material(
-        color: Theme.of(context).colorScheme.surface,
+    return SliverStickyHeader.builder(
+      sticky: sticky && headersMaySticky(context),
+      builder: (context, state) => Material(
+        color: ambientHeaderColor(context, pinned: state.isPinned),
         child: InkWell(
           onLongPress: onSecondaryTap,
           onSecondaryTap: onSecondaryTap,

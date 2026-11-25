@@ -35,7 +35,8 @@ class StreamCacheService {
     return _directory = cache;
   }
 
-  bool get enabled => FinampSettingsHelper.finampSettings.cacheStreamedTracks;
+  /// Never in a browser: there is no file system to cache into (the browser's HTTP cache does that job).
+  bool get enabled => !kIsWeb && FinampSettingsHelper.finampSettings.cacheStreamedTracks;
 
   int get maxBytes => FinampSettingsHelper.finampSettings.maxCacheSizeMegabytes * 1024 * 1024;
 

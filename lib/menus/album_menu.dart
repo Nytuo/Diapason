@@ -1,3 +1,6 @@
+import 'package:diapason/screens/desktop/desktop_item_menu.dart';
+import 'package:diapason/screens/desktop/desktop_router.dart';
+import 'package:diapason/menus/components/menuEntries/plugin_command_menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/share_link_menu_entry.dart';
 import 'dart:async';
 
@@ -5,6 +8,7 @@ import 'package:diapason/components/themed_bottom_sheet.dart';
 import 'package:diapason/menus/components/menuEntries/adaptive_download_lock_delete_menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/add_to_playlist_menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/delete_from_server_menu_entry.dart';
+import 'package:diapason/menus/components/menuEntries/edit_tags_menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/hide_from_browse_menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/instant_mix_menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/menu_entry.dart';
@@ -28,12 +32,21 @@ Future<void> showModalAlbumMenu({
   required BuildContext context,
   required FinampPlayable album,
   FinampStorableQueueInfo? queueInfo,
+  bool desktopMenu = true,
 }) async {
   final BaseItemDto baseItem = switch (album) {
     AlbumDisc() => album.item,
     Album() => album.item,
     _ => throw UnsupportedError("Cannot show album menu for item $album"),
   };
+  if (desktopMenu && DesktopRouter.isActive && queueInfo == null && album is Album) {
+    await showDesktopItemMenu(
+      context: context,
+      item: baseItem,
+      openFullMenu: () => unawaited(showModalAlbumMenu(context: context, album: album, desktopMenu: false)),
+    );
+    return;
+  }
 
   // Normal menu entries, excluding headers
   List<HideableMenuEntry> getMenuEntries(BuildContext context) {
@@ -51,6 +64,8 @@ Future<void> showModalAlbumMenu({
         // backend is not flexible too
         ToggleFavoriteMenuEntry(baseItem: baseItem),
         ShareLinkMenuEntry(baseItem: baseItem),
+        EditTagsMenuEntry(baseItem: baseItem),
+        ...pluginCommandMenuEntries(baseItem),
         HideFromBrowseMenuEntry(baseItem: baseItem),
         DeleteFromServerMenuEntry(baseItem: baseItem),
       ],

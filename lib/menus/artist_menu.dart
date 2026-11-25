@@ -1,3 +1,6 @@
+import 'package:diapason/screens/desktop/desktop_item_menu.dart';
+import 'package:diapason/screens/desktop/desktop_router.dart';
+import 'package:diapason/menus/components/menuEntries/plugin_command_menu_entry.dart';
 import 'package:diapason/menus/components/menuEntries/share_link_menu_entry.dart';
 import 'dart:async';
 
@@ -28,7 +31,16 @@ Future<void> showModalArtistMenu({
   required BuildContext context,
   required BaseItemDto item,
   FinampStorableQueueInfo? queueInfo,
+  bool desktopMenu = true,
 }) async {
+  if (desktopMenu && DesktopRouter.isActive && queueInfo == null) {
+    await showDesktopItemMenu(
+      context: context,
+      item: item,
+      openFullMenu: () => unawaited(showModalArtistMenu(context: context, item: item, desktopMenu: false)),
+    );
+    return;
+  }
   final playableItem = Artist.fromItem(item);
   // Normal menu entries, excluding headers
   List<HideableMenuEntry> getMenuEntries(BuildContext context) {
@@ -41,6 +53,7 @@ Future<void> showModalArtistMenu({
       AdaptiveDownloadLockDeleteMenuEntry(baseItem: item),
       ToggleFavoriteMenuEntry(baseItem: item),
       ShareLinkMenuEntry(baseItem: item),
+      ...pluginCommandMenuEntries(item),
       HideFromBrowseMenuEntry(baseItem: item),
     ];
   }
