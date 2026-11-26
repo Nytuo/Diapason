@@ -887,15 +887,22 @@ jobs:
       run: |
         BASE="diapason-${VERSION}_macos_aarch64"
         cd build/macos/Build/Products/Release
+        df -h / | tail -1
         zip -r -y "$GITHUB_WORKSPACE/${BASE}.zip" Diapason.app
-        mkdir -p "$GITHUB_WORKSPACE/dmg-staging"
-        cp -r Diapason.app "$GITHUB_WORKSPACE/dmg-staging/"
-        ln -s /Applications "$GITHUB_WORKSPACE/dmg-staging/Applications"
-        hdiutil create -volname Diapason -srcfolder "$GITHUB_WORKSPACE/dmg-staging" \
-          -ov -format UDZO "$GITHUB_WORKSPACE/${BASE}.dmg"
+        # pkg first (reads the app in place), then move the app into the dmg staging
+        # folder instead of copying it: hdiutil needs headroom for its own image.
         pkgbuild --identifier fr.nytuo.diapason --version "$VERSION" \
           --install-location /Applications --component Diapason.app \
           "$GITHUB_WORKSPACE/${BASE}.pkg"
+        mkdir -p "$GITHUB_WORKSPACE/dmg-staging"
+        mv Diapason.app "$GITHUB_WORKSPACE/dmg-staging/"
+        ln -s /Applications "$GITHUB_WORKSPACE/dmg-staging/Applications"
+        # Free everything we no longer need before the disk image is built.
+        rm -rf "$GITHUB_WORKSPACE/build/macos" "$HOME/Library/Developer/Xcode/DerivedData" \
+          "$HOME/Library/Caches/CocoaPods" || true
+        df -h / | tail -1
+        hdiutil create -volname Diapason -srcfolder "$GITHUB_WORKSPACE/dmg-staging" \
+          -ov -format UDZO "$GITHUB_WORKSPACE/${BASE}.dmg"
 
     - uses: actions/upload-artifact@v6
       with:

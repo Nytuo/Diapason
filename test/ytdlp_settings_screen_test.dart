@@ -26,6 +26,23 @@ Future<void> _tapAndWait(WidgetTester tester, Finder finder, {Duration wait = co
   await tester.pump();
 }
 
+/// Taps [finder], then waits in real time until [until] matches (or [timeout]
+/// passes) — a fixed sleep is flaky on slow CI runners.
+Future<void> _tapAndWaitFor(
+  WidgetTester tester,
+  Finder finder,
+  Finder until, {
+  Duration timeout = const Duration(seconds: 20),
+}) async {
+  await tester.runAsync(() => tester.tap(finder));
+  final deadline = DateTime.now().add(timeout);
+  while (DateTime.now().isBefore(deadline)) {
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+    await tester.pump();
+    if (until.evaluate().isNotEmpty) return;
+  }
+}
+
 void main() {
   if (!FakeYtDlp.supported || !Platform.isMacOS && !Platform.isLinux) {
     test('desktop only', () {}, skip: 'this page is the desktop yt-dlp manager');
@@ -104,7 +121,7 @@ void main() {
   testWidgets('"Test with a real video" runs a full lookup and reports success in plain words', (tester) async {
     await open(tester);
 
-    await _tapAndWait(tester, find.text('Test with a real video'));
+    await _tapAndWaitFor(tester, find.text('Test with a real video'), find.textContaining('Me at the zoo'));
 
     expect(find.textContaining('Me at the zoo'), findsOneWidget);
     expect(fake.operations, isNotEmpty);
@@ -114,11 +131,10 @@ void main() {
     await open(tester);
     await tester.runAsync(() => fake.setMode('bot'));
 
-    await _tapAndWait(tester, find.text('Test with a real video'));
+    final result = find.byWidgetPredicate((w) => w is SelectableText && (w.data ?? '').contains('bot'));
+    await _tapAndWaitFor(tester, find.text('Test with a real video'), result);
 
-    final text = tester
-        .widget<SelectableText>(find.byWidgetPredicate((w) => w is SelectableText && (w.data ?? '').contains('bot')))
-        .data!;
+    final text = tester.widget<SelectableText>(result).data!;
     expect(text.indexOf('prove it isn'), lessThan(text.indexOf('Sign in to confirm')));
   });
 
